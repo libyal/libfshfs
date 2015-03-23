@@ -1,0 +1,977 @@
+= Hierarchical File System (HFS)
+Analysis of MFS, HFS, HFS+ and HFSX
+
+:numbered!:
+[abstract]
+== Summary
+The Hierarchical File System (HFS) is mainly used on the Apple Macintosh 
+platform. It has evolved from the Mactintosh File System (MFS). The current 
+variant of HFS is known as HFS+. This document is based on the Apple 
+documentation of HFS `[APPLE96]` and HFS+ `[APPLE04]`.
+
+This document is intended as a working document for the HFS and HFS+ 
+specification. Which should allow existing Open Source forensic tooling to be 
+able to process this file system type.
+
+[preface]
+== Document information
+[cols="1,5"]
+|===
+| Author(s): | Joachim Metz <joachim.metz@gmail.com>
+| Abstract: | This document contains information about the Hierarchical File System (HFS).
+| Classification: | Public
+| Keywords: | Hierarchical File System, HFS, HFS+, HFSX, Mactintosh File System, MFS
+|===
+
+[preface]
+== License
+....
+Copyright (C) 2009-2015, Joachim Metz <joachim.metz@gmail.com>.
+Permission is granted to copy, distribute and/or modify this document under the 
+terms of the GNU Free Documentation License, Version 1.3 or any later version 
+published by the Free Software Foundation; with no Invariant Sections, no 
+Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included 
+in the section entitled "GNU Free Documentation License".
+....
+
+[preface]
+== Revision history
+[cols="1,1,1,5",options="header"]
+|===
+| Version | Author | Date | Comments
+| 0.0.1 | J.B. Metz | February 2009 | Initial version.
+| 0.0.2 | J.B. Metz | October 2010 | Fixed several typos. +
+Email change
+| 0.0.3 | J.B. Metz | July 2012 | Email change
+| 0.0.4 | J.B. Metz | March 2015 | Switched to asciidoc format.
+|===
+
+:numbered:
+== Overview
+The Hierarchical File System (HFS) is mainly used on the Macintosh platform. 
+The Mactintosh File System (MFS) is the predecessor of HFS.
+
+[cols="1,5",options="header"]
+|===
+| Version | Introduced in
+| MFS | 400 KiB floppies
+| HFS | Early Mac OS
+| HFS+ 8.10 | Mac OS 8.1 to 9.2.2
+| HFS+ 10.0 | Mac OS 10.0
+| HFSX | Mac OS 10.3
+|===
+
+[cols="1,5",options="header"]
+|===
+| Characteristics | Description
+| Byte order | big-endian
+| Date and time values | <<hfs_timestamp,HFS/HFS+ date and time>>
+| Character strings | [yellow-background]*TODO*
+|===
+
+=== HFS and HFS+
+
+[cols="1,1,",options="header"]
+|===
+| Feature | HFS | HFS+
+| Maximum file size | 231 (2 GiB) | 263 (8 EiB)
+| Maximum filename length | 31 characters | 255 characters
+| Maximum allocation blocks | 216 (65,535) | 232 (4,294,967,296)
+| Character set | MacRoman +
+[yellow-background]*(extended ASCII with codepage?)* | Unicode UTF-16 big-endian
+| Time stamps | In local time | In UTC (GMT)
+| Catalog node size | 512 bytes | 4096 bytes
+| File attributes | none | Basic and extended
+|===
+
+=== HFSX
+HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow 
+additional features that are incompatible with HFS+. An HFSX volume cannot be 
+wrapped in an HFS volume.
+
+Currently the only such feature defined is case-sensitive filenames. An HFSX 
+volume may be either case-sensitive or case-insensitive. Case sensitivity (or 
+lack thereof) is global to the volume; the setting applies to all file and 
+directory names on the volume.
+
+The Apple iPhone uses the HFSX.
+
+== [[hfs_timestamp]]Date and time values
+In HFS+ date and time values are stored in an unsigned 32-bit integer 
+containing the number of seconds since January 1, 1904 at 00:00:00 (midnight) 
+UTC (GMT). This is slightly different from HFS where the date and time value 
+are stored using the local time.
+
+The maximum representable date is February 6, 2040 at 06:28:15 UTC (GMT).
+
+The date values do not account for leap seconds. They do include a leap day in 
+every year that is evenly divisible by four. This is sufficient given that the 
+range of representable dates does not contain 1900 or 2100, neither of which 
+have leap days.
+
+== [[btree_file]]B-tree file
+Both HFS and HFS+ use B-trees files for efficient retrieval. The structure of 
+the B-trees on an HFS and HFS+ volume are closely related. There are three 
+principal differences:
+
+* the size of nodes
+* the size of keys within index nodes
+* the size of a key length.
+
+A B-tree file entirely consists of fixed size B‑tree nodes.
+
+The node size of a B-tree is determined when the B-tree is created.
+
+* In an HFS B-tree, nodes always have a fixed size of 512 bytes.
+* In an HFS+ B-tree, the node size is determined by a node size value in the header node. The node size must be a power from 512 through 32768.
+
+HFS+ uses the following default node sizes:
+
+* 4 KiB (8 KiB in Mac OS X) for the catalog file
+* 1 KiB (4 KiB in Mac OS X) for the extents overflow file
+* 4 KiB for the attributes file
+
+The size of a B-tree file is the number of nodes times the node size.
+
+In a B-tree, all the information that needs to be stored is intelligently 
+classified and sorted into objects called nodes. Only the data fork of the 
+B-tree is used; the resource fork of a B-tree file is left unused.
+
+The tree node contains records, which are used for a variety of purposes. Some records contain:
+
+* information about the structure of the B-tree as:
+  * header nodes;
+  * map nodes;
+  * index (root and branch) nodes.
+* the actual data that is to be retrieved and possibly updated (leaf nodes).
+
+=== The B-tree (file) node
+A B-tree file consists of 512 byte nodes. Each node has the same structure and 
+consists of three main parts:
+
+* the node descriptor;
+* the node records;
+* the node record offsets.
+
+==== The B-tree node descriptor
+The node descriptor contains information about the node, like the forward and 
+backward links to other nodes. 
+
+The B-tree node descriptor is 14 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | The next tree node number +
+Forward link +
+Contains 0 if empty
+| 4 | 4 | | The previous tree node number +
+Backward link +
+Contains 0 if empty
+| 8 | 1 | | The node type +
+Signed 8-bit integer +
+0x00 => index node +
+0x01 => header node +
+0x02 => map node +
+0xff => leaf node
+| 9 | 1 | | The node level +
+Signed 8-bit integer +
+The root node is 0, with a maximum depth of 8.
+| 10 | 2 | | The number of records
+| 12 | 2 | 0 | Reserved +
+Should be empty
+|===
+
+==== The B-tree node record
+The B-tree node record contains either data or a reference to some other node 
+in the tree.
+
+* In an HFS B-tree, all of the keys in an index node occupy a fixed amount of space: the maximum key length for that B-tree.
+* In an HFS+ B-tree, the keys in an index node are allowed to vary in size.
+
+The B-tree node record is variable of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 or 2 | | Key byte size +
+HFS => Unsigned 8-bit integer +
+HFS+ => Unsigned 8 or 16-bit integer
+| 1 or 2 | ... | | Record key
+| ... | ... | | Record data or reference +
+[yellow-background]*(contains what? File offset? identifier?)*
+|===
+
+Each record contains a search key, which is used to search through the B-tree 
+to locate the information. The key can contain any information at all that is 
+deemed useful in finding the corresponding data which is contained in the leaf 
+nodes.
+
+* In a catalog file the search key is a combination of the file or directory name and the parent  directory identifier of the specific file or directory.
+* In an extents overflow file the search key is a combination of that file's type, its file identifier and the index of the first allocation block in the extent.
+
+The records in each node are always grouped so that their keys are in ascending 
+order. The nodes on any given level are linked in such a way as to preserve the 
+ascending order of record keys throughout that level.
+
+==== The B-tree node offset
+The B-tree node offset is a 16-bit integer referring to the start offset of the 
+B-tree node record. The B-tree node offset of the first record is found at 
+offset 510 (0x1fe), the second at 508 (0x1fc), etc. The last B-tree node offset 
+is used to signify the start of the B-tree node's free space.
+
+=== The header node
+The header node contains basic information about the B-tree like the:
+
+* size and depth of the tree;
+* location of the root node.
+
+For both the extents overflow and the catalog file the location of the header 
+node is stored in the first 2 bytes (first record) of the corresponding extent 
+data records of the MDB. The location is stored as the allocation block index.
+
+The header node contains three records:
+
+* the B-tree header record;
+* the user data record, which consist of 128 bytes (reserved within HFS);
+* the B-tree map record.
+
+These record do not have keys.
+
+==== The B-tree header record
+The B-tree header record contains information about the beginning of the tree, 
+as well as the size of the tree.
+
+The B-tree header record is 106 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | The depth of the tree
+| 2 | 4 | | A reference to the root node +
+[yellow-background]*(number?)* +
+The root node is the start of the B-tree structure; usually the root node is first index node, but it might be a leaf node if there are no index nodes. 
+| 6 | 4 | | The number of data records contained in leaf nodes +
+[yellow-background]*(Does this equals the number of leaf nodes?)*
+| 10 | 4 | | A reference to the first leaf node +
+[yellow-background]* (number?)*
+| 14 | 4 | | A reference to the last leaf node +
+[yellow-background]*(number?)*
+| 18 | 2 | | The node (byte) size +
+Typically 512 bytes.
+| 20 | 2 | | The maximum key (byte) size
+| 22 | 4 | | The number of nodes
+| 26 | 4 | | The number of free nodes
+| 30 | ( 77 x 1 ) = 76 | | Reserved +
+Array of signed 8-bit integers
+|===
+
+In HFS+ the reserved last 76 bytes are used for the following values:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 30 | 2 | | Reserved
+| 32 | 4 | | Clump size
+| 36 | 1 | | B-tree type +
+0x00 => control file +
+0x80 => first user B-tree type +
+0xff => reserved B-tree type
+| 37 | 1 | | Key compare type +
+0xbc => Binary compare (case-sensitive) +
+0xcf => Case folding (case-insensitive)
+| 38 | 4 | | Attributes
+| 42 | ( 16 x 4 ) = 64 | | Reserved
+|===
+
+===== Attributes
+The bits in the attributes value have the following meaning:
+
+[cols="1,5",options="header"]
+|===
+| Bit(s) | Description
+| 0 | Bad close +
+This bit indicates that the B-tree was not closed properly and should be checked for consistency. This bit is not used for HFS+ B-trees.
+| 1 | Big keys +
+If this bit is set, the key size value of the keys in index and leaf nodes is 16-bit integer; otherwise, it is an 8-bit integer. This bit must be set for all HFS+ B‑trees.
+| 2 | Variable index keys +
+| If this bit is set, the keys in index nodes occupy the number of bytes indicated by their key size; otherwise, the keys in index nodes always occupy maximum key size. This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Extents B-tree.
+|===
+
+==== The B-tree map record
+The B-tree map record contains of a bitmap that indicates which nodes in the 
+B-tree file are used and which are not. The bits are interpreted in exactly the 
+same way as the bits in the volume bitmap: if a bit in the map record is set, 
+then the corresponding node in the B-tree file is being used.
+
+The bitmap is 256 bytes of size and can therefore contain information about 
+2048 nodes at most. If more nodes are needed a map node is used to store 
+additional mapping information.
+
+=== The map node
+If a B-tree file contains more than 2048 nodes, which are enough for about 8000 
+files, a map node is used to store additional node-mapping information.
+
+The next tree node value in the B-tree node descriptor of the header node is 
+used to refer to the first map node.
+
+A map node consists of a B-tree node descriptor and one B-tree map record. The 
+map record is 494 bytes of size ( 512 - ( 14 + 2 ) ) and can therefore contain 
+mapping information for 3952 nodes.
+
+If a B-tree contains more than 6000 nodes (enough for about 25,000 files) a 
+second map node is needed. The next tree node value in the B-tree node 
+descriptor of the first map node is used to refer to the second. If more map 
+nodes are required, each additional map node is similarly linked to the 
+previous one.
+
+=== The index node
+The index node contains records that point to other nodes in the B-tree 
+hierarchy. These nodes are used to navigate through the tree structure. The 
+first index node in a B-tree is called the root node, of which the node number 
+is found in the header node.
+
+The records stored in an index node are called pointer records. A pointer 
+record consists of a key followed by the node number of the corresponding node. 
+The size of the key varies according to the type of B-tree file.
+
+* In a catalog file, the search key is a combination of the file or directory name and the parent directory identifier of that file or directory.
+* In an extents overflow file, the search key is a combination of that file's type, its file identifier and the index of the first allocation block in the extent.
+
+The immediate descendants of an index node are called the children of the index 
+node. An index node can have from 1 to 15 children, depending on the size of 
+the pointer records that the index node contains.
+
+=== The leaf node
+The bottom level of a B-tree structure is occupied exclusively by leaf nodes. 
+The leaf nodes contain data records. The structure of the leaf node data 
+records varies according to the type of B-tree.
+
+* In an extents overflow file, the leaf node data records consist of a key and an extent record.
+* In a catalog file, the leaf node data records can be any one of four kinds of records.
+
+== The HFS volume
+The information on all block-formatted volumes is organized in logical blocks. 
+These logical blocks are referred to as allocation blocks and contain a number 
+of bytes of standard information (512 bytes on Macintosh-initialized volumes).
+
+The allocation block size is a volume parameter whose value is set when the 
+volume is initialized. To promote file contiguity and avoid fragmentation, 
+space is allocated to files in groups of allocation blocks, or clumps. The 
+clump size is always a multiple of the allocation block size, and it's the 
+minimum number of bytes to allocate.
+
+Each HFS volume begins with two boot blocks. The boot blocks on the startup 
+volume are read at system startup time and contain booting instructions and 
+other important information such as the name of the System file and the Finder. 
+Following the boot blocks are two additional structures:
+
+* the master directory block, which contains information about the volume, such as the date and time of the volume's creation and the number of files on the volume;
+* the volume bitmap, which contains a record of which blocks in the volume are currently in use.
+
+All the areas on a volume are of fixed size and location, except for the 
+catalog file and the extents overflow file. These two files can appear anywhere 
+between the volume bitmap and the alternate master directory block (MDB). They 
+can appear in any order and are not necessarily contiguous. The catalog and 
+extents overflow files are both organized as B-trees.
+
+The last block (512 bytes) were used during Apple's CPU manufacturing process.
+
+=== Boot blocks
+The first two logical blocks on every Macintosh volume are boot blocks. These 
+blocks contain system startup information: instructions and information 
+necessary to start up (or "boot") a Macintosh computer. This information 
+consists of certain configurable system parameters (such as the capacity of the 
+event queue, the number of open files allowed, and so forth) and is contained 
+in a boot block header. The system startup information also includes actual 
+machine-language instructions that could be used to load and execute the System 
+file. Usually these instructions follow immediately after the boot block 
+header. Generally, however, the boot code stored on disk is ignored in favor of 
+boot code stored in a resource in the System file.
+
+Note that there are two boot block header formats. The current format includes 
+two fields at the end that are not contained in the older format. These fields 
+allow the Operating System to size the System heap relative to the amount of 
+available physical RAM. A boot block header that conforms to the older format 
+sets the size of the System heap absolutely, using values specified in the 
+header itself. You can determine whether a boot block header uses the current 
+or the older format by inspecting a bit in the high-order byte of the version 
+value.
+
+The boot block header is 141 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | "LK" ("\x4c\x4b) | The boot block signature
+| 2 | 4 | | Boot code entry point
+| 6 | 2 | | Boot blocks version number
+| 8 | 2 | | Page flags +
+(used internally)
+| 10 | 15 | | System filename +
+ASCII string
+| 25 | 15 | | Shell or Finder filename +
+ASCII string typically "Finder"
+| 40 | 15 | | Debugger 1 filename +
+ASCII string typically "Macsbug"
+| 55 | 15 | | Debugger 2 filename +
+ASCII string typically "Disassembler"
+| 70 | 15 | | The name of the startup screen +
+ASCII string typically "StartUpScreen"
+| 85 | 15 | | The name of the startup program +
+ASCII string typically "Finder"
+| 100 | 15 | | The scrap filename +
+ASCII string typically "Clipboard"
+| 115 | 2 | | The (initial) number of allocated file control blocks (FCBs)
+| 117 | 2 | | The maximum number of event queue elements +
+This number determines the maximum number of events that the Event Manager can store at any one time. Usually this field contains the value 20. 
+| 119 | 4 | | The system heap size on 128K Mac +
+The size of the System heap on a Macintosh computer having 128 KiB of RAM. 
+| 123 | 4 | | The system heap size on 256K Mac +
+The size of the System heap on a Macintosh computer having 256 KiB of RAM. 
+| 127 | 4 | | The system heap size on all machines +
+The size of the System heap on a Macintosh computer having 512 KiB or more of RAM.
+| 131 | 2 | | Filler +
+(used internally)
+| 133 | 4 | | Additional system heap space
+| 137 | 4 | | Fraction of available RAM for the system heap
+|===
+
+==== Boot code entry point
+
+*TODO migrate remaining documentation*
+
+== The HFS+/HFSX volume
+
+*TODO migrate remaining documentation*
+
+== The HFS wrapper
+
+*TODO migrate remaining documentation*
+
+== The catalog file
+
+*TODO migrate remaining documentation*
+
+== The extents overflow file
+
+*TODO migrate remaining documentation*
+
+== The HFS+ allocation (bitmap) file
+HFS+ uses an allocation file to keep track of whether each allocation block in 
+a volume is currently allocated to some file system structure or not. The 
+contents of the allocation file is a bitmap. The bitmap contains one bit for 
+each allocation block in the volume.
+
+* If a bit is set, the corresponding allocation block is currently in use by some file system structure.
+* If a bit is clear, the corresponding allocation block is not currently in use, and is available for allocation.
+
+The size of the allocation file depends on the number of allocation blocks in 
+the volume, which in turn depends both on the size of the disk and on the size 
+of the volume's allocation blocks. For example, a volume on a 1 GB disk and 
+having an allocation block size of 4 KB needs an allocation file size of 256 
+Kbits (32 KB, or 8 allocation blocks). Since the allocation file itself is 
+allocated using allocation blocks, it always occupies an integral number of 
+allocation blocks (its size may be rounded up).
+
+The allocation file may be larger than the minimum number of bits required for 
+the given volume size. Any unused bits in the bitmap must be set to zero.
+
+[yellow-background]*Each byte in the allocation file holds the state of eight 
+allocation blocks. The byte at offset X into the file contains the allocation 
+state of allocations blocks (X * 8) through (X * 8 + 7). Within each byte, the 
+most significant bit holds information about the allocation block with the 
+lowest number, the least significant bit holds information about the allocation 
+block with the highest number. Listing 1 shows how you would test whether an 
+allocation block is in use, assuming that you've read the entire allocation 
+file into memory.*
+
+....
+static Boolean IsAllocationBlockUsed(UInt32 thisAllocationBlock,
+                                     UInt8 *allocationFileContents)
+{
+    UInt8 thisByte;
+
+    thisByte = allocationFileContents[thisAllocationBlock / 8];
+    return (thisByte & (1 << (7 - (thisAllocationBlock % 8)))) != 0;
+}
+
+Listing 1 Determining whether an allocation block is in use.
+....
+
+== The HFS+ attributes file
+
+*TODO migrate remaining documentation*
+
+== The HFS+ startup file
+The startup file is a special file intended to hold information needed when 
+booting a system that does not have built-in (ROM) support for HFS+. A boot 
+loader can find the startup file without full knowledge of the HFS+ volume 
+format using the first eight extents of the startup file located in the volume 
+header.
+
+Format wise it is valid for the startup file to contain more than eight 
+extents, but in doing so the purpose of the startup file is defeated.
+
+== The HFS+ Hot file
+
+*TODO migrate remaining documentation*
+
+== The HFS+ journal
+
+*TODO migrate remaining documentation*
+
+== Application specific data structures
+
+*TODO migrate remaining documentation*
+
+== Notes
+=== MDB and Volume header
+==== Start of next allocation search
+The nextAllocation field is used by Mac OS as a hint for where to start 
+searching for free allocation blocks when allocating space for a file. It 
+contains the allocation block number where the search should begin.
+
+Traditional Mac OS implementations typically set it to the first allocation 
+block of the extent most recently allocated. It is not set to the allocation 
+block immediately following the most recently allocated extent because of the 
+likelihood of that extent being shortened when the file is closed. Since a 
+whole clump may have been allocated but not actually used.
+
+http://developer.apple.com/technotes/tn/tn1150.html#AllocationFile
+
+==== The default clump size for resource/data forks
+The default clump size for resource/data forks, in bytes. This is a hint to the 
+implementation as to the size by which a growing file should be extended. All 
+Apple implementations to date ignore the rsrcClumpSize and use dataClumpSize 
+for both data and resource forks.
+
+=== File Manager
+==== Volume Control Blocks
+Thereafter, whenever the volume is mounted, the File Manager reads the 
+information in the MDB and copies some of that information into a volume 
+control block (VCB). A VCB is a private data structure maintained in memory by 
+the File Manager (in the VCB queue). The structure of a VCB is described in 
+"Volume Control Blocks," later in this chapter.
+
+==== B-tree record key search
+When the File Manager needs to find a data record, it begins searching at the 
+root node (which is an index node, unless the tree has only one level), moving 
+from one record to the next until it finds the record with the highest key that 
+is less than or equal to the search key. The pointer of that record leads to 
+another node, one level down in the tree. This process continues until the File 
+Manager reaches a leaf node; then the records of that leaf node are examined 
+until the desired key is found. At that point, the desired data has also been 
+found.
+
+=== Finder
+Finder information in MDB
+http://developer.apple.com/documentation/mac/Toolbox/Toolbox-2.html
+
+=== Determining the Amount of Free Space on a Volume
+http://developer.apple.com/documentation/mac/Files/Files-96.html#MARKER-9-379
+
+=== Other
+CPT/libhfs
+http://libhfs.sourceforge.net/dl.php
+
+HFS+ linux kernel module
+http://sourceforge.net/projects/linux-hfsplus
+
+:numbered!:
+[appendix]
+== References
+
+`[APPLE96]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | Inside Macintosh: Files
+| URL: | http://developer.apple.com/documentation/mac/Files/Files-2.html
+|===
+
+`[APPLE04]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | Technical Note TN1150: HFS plus volume format
+| URL: | http://developer.apple.com/technotes/tn/tn1150.html
+|===
+
+[appendix]
+== GNU Free Documentation License
+Version 1.3, 3 November 2008
+Copyright © 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc. 
+<http://fsf.org/>
+
+Everyone is permitted to copy and distribute verbatim copies of this license 
+document, but changing it is not allowed.
+
+=== 0. PREAMBLE
+The purpose of this License is to make a manual, textbook, or other functional 
+and useful document "free" in the sense of freedom: to assure everyone the 
+effective freedom to copy and redistribute it, with or without modifying it, 
+either commercially or noncommercially. Secondarily, this License preserves for 
+the author and publisher a way to get credit for their work, while not being 
+considered responsible for modifications made by others.
+
+This License is a kind of "copyleft", which means that derivative works of the 
+document must themselves be free in the same sense. It complements the GNU 
+General Public License, which is a copyleft license designed for free software.
+
+We have designed this License in order to use it for manuals for free software, 
+because free software needs free documentation: a free program should come with 
+manuals providing the same freedoms that the software does. But this License is 
+not limited to software manuals; it can be used for any textual work, 
+regardless of subject matter or whether it is published as a printed book. We 
+recommend this License principally for works whose purpose is instruction or 
+reference.
+
+=== 1. APPLICABILITY AND DEFINITIONS
+This License applies to any manual or other work, in any medium, that contains 
+a notice placed by the copyright holder saying it can be distributed under the 
+terms of this License. Such a notice grants a world-wide, royalty-free license, 
+unlimited in duration, to use that work under the conditions stated herein. The 
+"Document", below, refers to any such manual or work. Any member of the public 
+is a licensee, and is addressed as "you". You accept the license if you copy, 
+modify or distribute the work in a way requiring permission under copyright law.
+
+A "Modified Version" of the Document means any work containing the Document or 
+a portion of it, either copied verbatim, or with modifications and/or 
+translated into another language.
+
+A "Secondary Section" is a named appendix or a front-matter section of the 
+Document that deals exclusively with the relationship of the publishers or 
+authors of the Document to the Document's overall subject (or to related 
+matters) and contains nothing that could fall directly within that overall 
+subject. (Thus, if the Document is in part a textbook of mathematics, a 
+Secondary Section may not explain any mathematics.) The relationship could be a 
+matter of historical connection with the subject or with related matters, or of 
+legal, commercial, philosophical, ethical or political position regarding them.
+
+The "Invariant Sections" are certain Secondary Sections whose titles are 
+designated, as being those of Invariant Sections, in the notice that says that 
+the Document is released under this License. If a section does not fit the 
+above definition of Secondary then it is not allowed to be designated as 
+Invariant. The Document may contain zero Invariant Sections. If the Document 
+does not identify any Invariant Sections then there are none.
+
+The "Cover Texts" are certain short passages of text that are listed, as 
+Front-Cover Texts or Back-Cover Texts, in the notice that says that the 
+Document is released under this License. A Front-Cover Text may be at most 5 
+words, and a Back-Cover Text may be at most 25 words.
+
+A "Transparent" copy of the Document means a machine-readable copy, represented 
+in a format whose specification is available to the general public, that is 
+suitable for revising the document straightforwardly with generic text editors 
+or (for images composed of pixels) generic paint programs or (for drawings) 
+some widely available drawing editor, and that is suitable for input to text 
+formatters or for automatic translation to a variety of formats suitable for 
+input to text formatters. A copy made in an otherwise Transparent file format 
+whose markup, or absence of markup, has been arranged to thwart or discourage 
+subsequent modification by readers is not Transparent. An image format is not 
+Transparent if used for any substantial amount of text. A copy that is not 
+"Transparent" is called "Opaque".
+
+Examples of suitable formats for Transparent copies include plain ASCII without 
+markup, Texinfo input format, LaTeX input format, SGML or XML using a publicly 
+available DTD, and standard-conforming simple HTML, PostScript or PDF designed 
+for human modification. Examples of transparent image formats include PNG, XCF 
+and JPG. Opaque formats include proprietary formats that can be read and edited 
+only by proprietary word processors, SGML or XML for which the DTD and/or 
+processing tools are not generally available, and the machine-generated HTML, 
+PostScript or PDF produced by some word processors for output purposes only.
+
+The "Title Page" means, for a printed book, the title page itself, plus such 
+following pages as are needed to hold, legibly, the material this License 
+requires to appear in the title page. For works in formats which do not have 
+any title page as such, "Title Page" means the text near the most prominent 
+appearance of the work's title, preceding the beginning of the body of the text.
+
+The "publisher" means any person or entity that distributes copies of the 
+Document to the public.
+
+A section "Entitled XYZ" means a named subunit of the Document whose title 
+either is precisely XYZ or contains XYZ in parentheses following text that 
+translates XYZ in another language. (Here XYZ stands for a specific section 
+name mentioned below, such as "Acknowledgements", "Dedications", 
+"Endorsements", or "History".) To "Preserve the Title" of such a section when 
+you modify the Document means that it remains a section "Entitled XYZ" 
+according to this definition.
+
+The Document may include Warranty Disclaimers next to the notice which states 
+that this License applies to the Document. These Warranty Disclaimers are 
+considered to be included by reference in this License, but only as regards 
+disclaiming warranties: any other implication that these Warranty Disclaimers 
+may have is void and has no effect on the meaning of this License.
+
+=== 2. VERBATIM COPYING
+You may copy and distribute the Document in any medium, either commercially or 
+noncommercially, provided that this License, the copyright notices, and the 
+license notice saying this License applies to the Document are reproduced in 
+all copies, and that you add no other conditions whatsoever to those of this 
+License. You may not use technical measures to obstruct or control the reading 
+or further copying of the copies you make or distribute. However, you may 
+accept compensation in exchange for copies. If you distribute a large enough 
+number of copies you must also follow the conditions in section 3.
+
+You may also lend copies, under the same conditions stated above, and you may 
+publicly display copies.
+
+=== 3. COPYING IN QUANTITY
+If you publish printed copies (or copies in media that commonly have printed 
+covers) of the Document, numbering more than 100, and the Document's license 
+notice requires Cover Texts, you must enclose the copies in covers that carry, 
+clearly and legibly, all these Cover Texts: Front-Cover Texts on the front 
+cover, and Back-Cover Texts on the back cover. Both covers must also clearly 
+and legibly identify you as the publisher of these copies. The front cover must 
+present the full title with all words of the title equally prominent and 
+visible. You may add other material on the covers in addition. Copying with 
+changes limited to the covers, as long as they preserve the title of the 
+Document and satisfy these conditions, can be treated as verbatim copying in 
+other respects.
+
+If the required texts for either cover are too voluminous to fit legibly, you 
+should put the first ones listed (as many as fit reasonably) on the actual 
+cover, and continue the rest onto adjacent pages.
+
+If you publish or distribute Opaque copies of the Document numbering more than 
+100, you must either include a machine-readable Transparent copy along with 
+each Opaque copy, or state in or with each Opaque copy a computer-network 
+location from which the general network-using public has access to download 
+using public-standard network protocols a complete Transparent copy of the 
+Document, free of added material. If you use the latter option, you must take 
+reasonably prudent steps, when you begin distribution of Opaque copies in 
+quantity, to ensure that this Transparent copy will remain thus accessible at 
+the stated location until at least one year after the last time you distribute 
+an Opaque copy (directly or through your agents or retailers) of that edition 
+to the public.
+
+It is requested, but not required, that you contact the authors of the Document 
+well before redistributing any large number of copies, to give them a chance to 
+provide you with an updated version of the Document.
+
+=== 4. MODIFICATIONS
+You may copy and distribute a Modified Version of the Document under the 
+conditions of sections 2 and 3 above, provided that you release the Modified 
+Version under precisely this License, with the Modified Version filling the 
+role of the Document, thus licensing distribution and modification of the 
+Modified Version to whoever possesses a copy of it. In addition, you must do 
+these things in the Modified Version:
+
+A. Use in the Title Page (and on the covers, if any) a title distinct from that 
+of the Document, and from those of previous versions (which should, if there 
+were any, be listed in the History section of the Document). You may use the 
+same title as a previous version if the original publisher of that version 
+gives permission. 
+
+B. List on the Title Page, as authors, one or more persons or entities 
+responsible for authorship of the modifications in the Modified Version, 
+together with at least five of the principal authors of the Document (all of 
+its principal authors, if it has fewer than five), unless they release you from 
+this requirement. 
+
+C. State on the Title page the name of the publisher of the Modified Version, 
+as the publisher. 
+
+D. Preserve all the copyright notices of the Document. 
+
+E. Add an appropriate copyright notice for your modifications adjacent to the 
+other copyright notices. 
+
+F. Include, immediately after the copyright notices, a license notice giving 
+the public permission to use the Modified Version under the terms of this 
+License, in the form shown in the Addendum below. 
+
+G. Preserve in that license notice the full lists of Invariant Sections and 
+required Cover Texts given in the Document's license notice. 
+
+H. Include an unaltered copy of this License. 
+
+I. Preserve the section Entitled "History", Preserve its Title, and add to it 
+an item stating at least the title, year, new authors, and publisher of the 
+Modified Version as given on the Title Page. If there is no section Entitled 
+"History" in the Document, create one stating the title, year, authors, and 
+publisher of the Document as given on its Title Page, then add an item 
+describing the Modified Version as stated in the previous sentence. 
+
+J. Preserve the network location, if any, given in the Document for public 
+access to a Transparent copy of the Document, and likewise the network 
+locations given in the Document for previous versions it was based on. These 
+may be placed in the "History" section. You may omit a network location for a 
+work that was published at least four years before the Document itself, or if 
+the original publisher of the version it refers to gives permission. 
+
+K. For any section Entitled "Acknowledgements" or "Dedications", Preserve the 
+Title of the section, and preserve in the section all the substance and tone of 
+each of the contributor acknowledgements and/or dedications given therein. 
+
+L. Preserve all the Invariant Sections of the Document, unaltered in their text 
+and in their titles. Section numbers or the equivalent are not considered part 
+of the section titles. 
+
+M. Delete any section Entitled "Endorsements". Such a section may not be 
+included in the Modified Version. 
+
+N. Do not retitle any existing section to be Entitled "Endorsements" or to 
+conflict in title with any Invariant Section. 
+
+O. Preserve any Warranty Disclaimers. 
+
+If the Modified Version includes new front-matter sections or appendices that 
+qualify as Secondary Sections and contain no material copied from the Document, 
+you may at your option designate some or all of these sections as invariant. To 
+do this, add their titles to the list of Invariant Sections in the Modified 
+Version's license notice. These titles must be distinct from any other section 
+titles.
+
+You may add a section Entitled "Endorsements", provided it contains nothing but 
+endorsements of your Modified Version by various parties—for example, 
+statements of peer review or that the text has been approved by an organization 
+as the authoritative definition of a standard.
+
+You may add a passage of up to five words as a Front-Cover Text, and a passage 
+of up to 25 words as a Back-Cover Text, to the end of the list of Cover Texts 
+in the Modified Version. Only one passage of Front-Cover Text and one of 
+Back-Cover Text may be added by (or through arrangements made by) any one 
+entity. If the Document already includes a cover text for the same cover, 
+previously added by you or by arrangement made by the same entity you are 
+acting on behalf of, you may not add another; but you may replace the old one, 
+on explicit permission from the previous publisher that added the old one.
+
+The author(s) and publisher(s) of the Document do not by this License give 
+permission to use their names for publicity for or to assert or imply 
+endorsement of any Modified Version.
+
+=== 5. COMBINING DOCUMENTS
+You may combine the Document with other documents released under this License, 
+under the terms defined in section 4 above for modified versions, provided that 
+you include in the combination all of the Invariant Sections of all of the 
+original documents, unmodified, and list them all as Invariant Sections of your 
+combined work in its license notice, and that you preserve all their Warranty 
+Disclaimers.
+
+The combined work need only contain one copy of this License, and multiple 
+identical Invariant Sections may be replaced with a single copy. If there are 
+multiple Invariant Sections with the same name but different contents, make the 
+title of each such section unique by adding at the end of it, in parentheses, 
+the name of the original author or publisher of that section if known, or else 
+a unique number. Make the same adjustment to the section titles in the list of 
+Invariant Sections in the license notice of the combined work.
+
+In the combination, you must combine any sections Entitled "History" in the 
+various original documents, forming one section Entitled "History"; likewise 
+combine any sections Entitled "Acknowledgements", and any sections Entitled 
+"Dedications". You must delete all sections Entitled "Endorsements".
+
+=== 6. COLLECTIONS OF DOCUMENTS
+You may make a collection consisting of the Document and other documents 
+released under this License, and replace the individual copies of this License 
+in the various documents with a single copy that is included in the collection, 
+provided that you follow the rules of this License for verbatim copying of each 
+of the documents in all other respects.
+
+You may extract a single document from such a collection, and distribute it 
+individually under this License, provided you insert a copy of this License 
+into the extracted document, and follow this License in all other respects 
+regarding verbatim copying of that document.
+
+=== 7. AGGREGATION WITH INDEPENDENT WORKS
+A compilation of the Document or its derivatives with other separate and 
+independent documents or works, in or on a volume of a storage or distribution 
+medium, is called an "aggregate" if the copyright resulting from the 
+compilation is not used to limit the legal rights of the compilation's users 
+beyond what the individual works permit. When the Document is included in an 
+aggregate, this License does not apply to the other works in the aggregate 
+which are not themselves derivative works of the Document.
+
+If the Cover Text requirement of section 3 is applicable to these copies of the 
+Document, then if the Document is less than one half of the entire aggregate, 
+the Document's Cover Texts may be placed on covers that bracket the Document 
+within the aggregate, or the electronic equivalent of covers if the Document is 
+in electronic form. Otherwise they must appear on printed covers that bracket 
+the whole aggregate.
+
+=== 8. TRANSLATION
+Translation is considered a kind of modification, so you may distribute 
+translations of the Document under the terms of section 4. Replacing Invariant 
+Sections with translations requires special permission from their copyright 
+holders, but you may include translations of some or all Invariant Sections in 
+addition to the original versions of these Invariant Sections. You may include 
+a translation of this License, and all the license notices in the Document, and 
+any Warranty Disclaimers, provided that you also include the original English 
+version of this License and the original versions of those notices and 
+disclaimers. In case of a disagreement between the translation and the original 
+version of this License or a notice or disclaimer, the original version will 
+prevail.
+
+If a section in the Document is Entitled "Acknowledgements", "Dedications", or 
+"History", the requirement (section 4) to Preserve its Title (section 1) will 
+typically require changing the actual title.
+
+=== 9. TERMINATION
+You may not copy, modify, sublicense, or distribute the Document except as 
+expressly provided under this License. Any attempt otherwise to copy, modify, 
+sublicense, or distribute it is void, and will automatically terminate your 
+rights under this License.
+
+However, if you cease all violation of this License, then your license from a 
+particular copyright holder is reinstated (a) provisionally, unless and until 
+the copyright holder explicitly and finally terminates your license, and (b) 
+permanently, if the copyright holder fails to notify you of the violation by 
+some reasonable means prior to 60 days after the cessation.
+
+Moreover, your license from a particular copyright holder is reinstated 
+permanently if the copyright holder notifies you of the violation by some 
+reasonable means, this is the first time you have received notice of violation 
+of this License (for any work) from that copyright holder, and you cure the 
+violation prior to 30 days after your receipt of the notice.
+
+Termination of your rights under this section does not terminate the licenses 
+of parties who have received copies or rights from you under this License. If 
+your rights have been terminated and not permanently reinstated, receipt of a 
+copy of some or all of the same material does not give you any rights to use it.
+
+=== 10. FUTURE REVISIONS OF THIS LICENSE
+The Free Software Foundation may publish new, revised versions of the GNU Free 
+Documentation License from time to time. Such new versions will be similar in 
+spirit to the present version, but may differ in detail to address new problems 
+or concerns. See http://www.gnu.org/copyleft/.
+
+Each version of the License is given a distinguishing version number. If the 
+Document specifies that a particular numbered version of this License "or any 
+later version" applies to it, you have the option of following the terms and 
+conditions either of that specified version or of any later version that has 
+been published (not as a draft) by the Free Software Foundation. If the 
+Document does not specify a version number of this License, you may choose any 
+version ever published (not as a draft) by the Free Software Foundation. If the 
+Document specifies that a proxy can decide which future versions of this 
+License can be used, that proxy's public statement of acceptance of a version 
+permanently authorizes you to choose that version for the Document.
+
+=== 11. RELICENSING
+"Massive Multiauthor Collaboration Site" (or "MMC Site") means any World Wide 
+Web server that publishes copyrightable works and also provides prominent 
+facilities for anybody to edit those works. A public wiki that anybody can edit 
+is an example of such a server. A "Massive Multiauthor Collaboration" (or 
+"MMC") contained in the site means any set of copyrightable works thus 
+published on the MMC site.
+
+"CC-BY-SA" means the Creative Commons Attribution-Share Alike 3.0 license 
+published by Creative Commons Corporation, a not-for-profit corporation with a 
+principal place of business in San Francisco, California, as well as future 
+copyleft versions of that license published by that same organization.
+
+"Incorporate" means to publish or republish a Document, in whole or in part, as 
+part of another Document.
+
+An MMC is "eligible for relicensing" if it is licensed under this License, and 
+if all works that were first published under this License somewhere other than 
+this MMC, and subsequently incorporated in whole or in part into the MMC, (1) 
+had no cover texts or invariant sections, and (2) were thus incorporated prior 
+to November 1, 2008.
+
+The operator of an MMC Site may republish an MMC contained in the site under 
+CC-BY-SA on the same site at any time before August 1, 2009, provided the MMC 
+is eligible for relicensing.
+
