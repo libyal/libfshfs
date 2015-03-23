@@ -140,9 +140,9 @@ B-tree is used; the resource fork of a B-tree file is left unused.
 The tree node contains records, which are used for a variety of purposes. Some records contain:
 
 * information about the structure of the B-tree as:
-  * header nodes;
-  * map nodes;
-  * index (root and branch) nodes.
+** header nodes;
+** map nodes;
+** index (root and branch) nodes.
 * the actual data that is to be retrieved and possibly updated (leaf nodes).
 
 === The B-tree (file) node
@@ -438,22 +438,291 @@ The size of the System heap on a Macintosh computer having 512 KiB or more of RA
 |===
 
 ==== Boot code entry point
+The boot code entry point contains machine-language instructions that translate 
+to:
+....
+BRA.S *+ 0x90
+....
 
-*TODO migrate remaining documentation*
+Or for older versions of the boot block header:
+....
+BRA.S *+ 0x88
+....
+
+This instruction jumps to the main boot code following the boot block header.
+
+This field is ignored, however, if bit 6 is clear in the high-order byte of the 
+boot block version number or if the low-order byte contains 0x0d.
+
+==== Boot blocks version number
+The boot blocks version number consists of a flag byte (high order) and a 
+version byte (low order).
+
+[yellow-background]*TODO determine MSB and LSB*
+
+The bits in the flag byte have the following meaning:
+
+[cols="1,5",options="header"]
+|===
+| Bit(s) | Description
+| 0 – 4 | Reserved; must be 0
+| 5 | Use relative system heap sizing
+| 6 | Execute boot code
+| 7 | Newer boot block header used
+|===
+
+If bit 7 of the flag byte is clear, then bits 5 and 6 are ignored and the 
+version number is found in the version byte. 
+
+If the version byte is:
+
+* less than 0x15, the values in the system heap size on 128K Mac and 256K Mac should be ignored and the value in system heap size on all machines should be used.
+* 0x0d the boot code should be executed using the value in boot code entry point.
+* greater than or equal to 0x15 the value in system heap size on all machines should be used.
+
+If bit 7 of the flag byte is set
+
+* bit 6 should be used to determine whether to execute the boot code using the value in boot code entry point.
+* bit 5 should be used to determine whether to use relative System heap sizing. If bit 5 is
+** clear the value in system heap size on all machines should be used.
+** is set the System heap is extended by the value in the additional system heap space plus the fraction of available RAM for the system heap.
+
+=== Master directory block (MDB)
+The master directory block (MDB), also known as the volume information block 
+(VIB), contains information about the data in the volume. This information is 
+written into the MDB when the volume is initialized.
+
+The MDB is 161 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 |"BD" ("\x42\x44") | The volume signature +
+For Mactintosh File System (MFS) volumes the signature contains "\xd2\xd7".
+| 2 | 4 | | Volume creation date and time +
+Contains a HFS timestamp
+| 6 | 4 | | Volume modification date and time +
+Contains a HFS timestamp +
+This is not necessarily the data and time when the volume was last flushed. 
+| 10 | 2 | | Volume attributes
+| 12 | 2 | | Number of files in the root directory
+| 14 | 2 | | The volume bitmap first volume block index +
+Typically 3 in the current implementation.
+| 16 | 2 | | Start of the next allocation search +
+The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
+| 18 | 2 | | Number of allocation blocks in the volume +
+Unsigned 16-bit integer. +
+A volume can contain at most 65,535 allocation blocks.
+| 20 | 4 | | The byte size of the allocation blocks in the volume +
+This value must always be a multitude of 512 bytes. 
+| 24 | 4 | | Default clump size
+| 28 | 2 | | Allocation block first volume block index
+| 30 | 4 | | The next unused catalog node identifier +
+Can be a directory or file identifier.
+| 34 | 2 | | The number of unused allocation blocks +
+Unsigned 16-bit integer
+| 36 | 27 | | The volume name +
+ASCII string +
+[yellow-background]*This field consists of a length byte followed by 27 bytes. Note that the volume name can occupy at most 27 characters; this is an exception to the normal file and directory name limit of 31 characters.*
+| 63 | 4 | | Last backup date and time
+| 67 | 2 | | Volume backup sequence number
+| 69 | 4 | | Volume write count +
+Contains the number of times the volume has been written to.
+| 73 | 4 | | Clump size for extents overflow file
+| 77 | 4 | | Clump size for catalog file
+| 81 | 2 | | The number of sub directories in the root directory
+| 83 | 4 | | The number of files in the volume
+| 87 | 4 | | The number of directories in the volume
+| 91 | 32 | | Finder information +
+See section: <<finder_information,Finder information>>
+| 123 | 2 | | Allocation block size of the volume cache
+| 125 | 2 | | Allocation block size of the volume bitmap cache
+| 127 | 2 | | Allocation block size of the common volume cache
+| 129 | 4 | | Allocation block size of the extents overflow file
+| 133 | 12 | | The extent data record for the extents overflow file +
+See section: <<hfs_extent_data,The HFS extent data>>
+| 145 | 4 | | Allocation block size of the catalog file
+| 149 | 12 | | The extent data record for the catalog file +
+See section: <<hfs_extent_data,The HFS extent data>>
+|===
+
+==== Volume attributes
+The volume attributes uses the following bit flags:
+
+[cols="1,5",options="header"]
+|===
+| Bit(s) | Description
+| 7 | Set if the volume is locked by hardware
+| 8 | Set if the volume was successfully unmounted
+| 9 | Set if the volume has had its bad blocks spared
+| 15 | Set if the volume is locked by software
+|===
+
+==== Alternate MDB
+A copy of the MDB is maintained in the Alternate MDB. This copy is updated when 
+the extents overflow or the catalog file grows larger. The Alternate MBD is 
+intended for use solely by disk utilities.
+
+=== Volume bitmaps
+The volume bitmap is used to keep track of block allocation. The bitmap 
+contains one bit for each allocation block in the volume. If a bit is set, the 
+corresponding allocation block is currently in use by some file. If a bit is 
+clear, the corresponding allocation block is not currently in use by any file 
+and is available for allocation.
+
+The volume bitmap does not indicate which files occupy which blocks. The actual 
+file-mapping information in maintained in two locations:
+
+* in each file's catalog entry;
+* in the extents overflow file.
+
+The size of the volume bitmap depends on the number of allocation blocks in the 
+volume. The number of allocation blocks depends both on the number of physical 
+blocks in the volume and the size of the volume's allocation blocks (the number 
+of physical blocks per allocation block). The size of the volume bitmap is 
+rounded up so that the volume bitmap occupies an integral number of physical 
+blocks.
+
+A floppy disk that can hold 800 KiB of data and has an allocation block size of 
+one physical block (512 bytes) has a volume bitmap size of:
+....
+( ( 800 x 1024 ) / ( 512 x 8 ) ) = 1600 bits (200 bytes).
+....
+
+A volume containing 32 MiB of data and having an allocation block size of one 
+physical block has a volume bitmap size of:
+....
+( ( 32 x 1024 x 1024 ) / ( 512 x 8 ) ) = 65,536 bits (8192 bytes). 
+....
+
+Because the number of allocation blocks in the volume in the MDB consists of a 
+16-bit value no more that 65,535 allocation blocks can be addressed. The volume 
+bitmap is never larger than 8192 bytes (or 16 physical blocks). For volumes 
+containing more than 32 MB of space, the allocation block size must be 
+increased.
+
+A volume containing 40 MiB of space must have an allocation block size that is 
+at least 2 physical blocks (2 x 512 bytes).
+
+A volume containing 80 MiB of space must have an allocation block size that is 
+at least 3 physical blocks (3 x 512 bytes).
 
 == The HFS+/HFSX volume
+In HFS+ the boot blocks have been removed, therefore the first two blocks are 
+reserved (unused).
+
+=== Volume header
+The volume header replaces the master directory block (MDB). The volume header 
+starts at offset 1024 of the volume.
+
+The allocation block containing the first 1536 bytes (reserved space plus 
+volume header) are marked as used in the allocation file.
+
+The volume header is 352 bytes of size and consists of:
 
 *TODO migrate remaining documentation*
 
 == The HFS wrapper
+An HFS+ volume can be wrapped in an HFS volume.
 
-*TODO migrate remaining documentation*
+Mac OS does not use the startup file to boot from HFS+ disks. Instead, it uses 
+the HFS wrapper, as described later in this document.
+
+When an HFS+ volume is embedded within an HFS wrapper the space used by the 
+HFS+ volume is marked as part of the bad block file within the HFS wrapper 
+itself.
+
+=== Notes
+....
+An HFS+ volume may be contained within an HFS volume in a way that makes the volume look like an HFS volume to systems without HFS+ support. This has a two important advantages:
+
+   1. It allows a computer with HFS (but no HFS+) support in ROM to start up from an HFS+ volume. When creating the wrapper, Mac OS includes a System file containing the minimum code to locate and mount the embedded HFS+ volume and continue booting from its System file.
+   2. It improves the user experience when an HFS+ volume is inserted in a computer that has HFS support but no HFS+ support. On such a computer, the HFS wrapper will be mounted as a volume, which prevents error dialogs that might confuse the user into thinking the volume is empty, damaged, or unreadable. The HFS wrapper may also contain a Read Me document to explain the steps the user should take to access their files.
+
+The rest of this section describes how the HFS wrapper is laid out and how the HFS+ volume is embedded within the wrapper.
+
+IMPORTANT:
+This section does not describe the HFS+ volume format; instead, it describes additions to the HFS volume format that allow an HFS+ volume (or some other volume) to be embedded in an HFS volume. However, as all Mac OS volumes are formatted with an HFS wrapper, all implementations should be able to parse the wrapper to find the embedded HFS+ volume.
+
+Note:
+An HFS+ volume is not required to have an HFS wrapper. In that case, the volume will start at the beginning of the disk, and the volume header will be at offset 1024 bytes. However, Apple software currently initializes all HFS+ volumes with an HFS wrapper.
+HFS Master Directory Block
+
+An HFS volume always contains a Master Directory Block (MDB), at offset 1024 bytes. The MDB is similar to an HFS+ volume header. In order to support volumes embedded within an HFS volume, several unused fields of the MDB have been changed, and are now used to indicate the type, location, and size of the embedded volume.
+
+What was formerly the drVCSize field (at offset 0x7C) is now named drEmbedSigWord. This two-byte field contains a unique value that identifies the type of embedded volume. When an HFS+ volume is embedded, drEmbedSigWord must be kHFSPlusSigWord ('H+'), the same value stored in the signature field of an HFS+ volume header.
+
+What were formerly the drVBMCSize and drCtlCSize fields (at offset 0x7E) have been combined into a single field occupying four bytes. The new structure is named drEmbedExtent and is of type HFSExtentDescriptor. It contains the starting allocation block number (startBlock) where the embedded volume begins and number of allocation blocks (blockCount ) the embedded volume occupies. The embedded volume must be contiguous. Both of these values are in terms of the HFS wrapper's allocation blocks, not HFS+ allocation blocks.
+
+Note:
+The description of the HFS volume format in Inside Macintosh: Files describes these fields as being used to store the size of various caches, and labels each one as "used internally".
+
+To actually find the embedded volume's location on disk, an implementation must use the drAlBlkSiz and drAlBlSt fields of the MDB. The drAlBlkSiz field contains the size (in bytes) of the HFS allocation blocks. The drAlBlSt field contains the offset, in 512-byte blocks, of the wrapper's allocation block 0 relative to the start of the volume.
+
+IMPORTANT:
+This embedding introduces a transform between HFS+ volume offsets and disk offsets. The HFS+ volume exists on a virtual disk embedded within the real disk. When accessing an HFS+ structure on an embedded disk, an implementation must add the offset of the embedded disk to the HFS+ location. Listing 2 shows how one might do this, assuming 512-byte sectors.
+
+static UInt32 HFSPlusSectorToDiskSector(UInt32 hfsPlusSector)
+{
+    UInt32 embeddedDiskOffset;
+
+    embeddedDiskOffset = gMDB.drAlBlSt +
+                         gMDB.drEmbedExtent.startBlock * (drAlBlkSiz / 512)
+    return embeddedDiskOffset + hfsPlusSector;
+}
+
+Listing 2. Sector transform for embedded volumes.
+
+In order to prevent accidentally changing the files in the HFS wrapper, the wrapper volume must be marked as software-write-protected by setting kHFSVolumeSoftwareLockBit in the drAtrb (volume attributes) field of the MDB. All correct HFS implementations will prevent any changes to the wrapper volume.
+
+To improve performance of HFS+ volumes, the size of the wrapper's allocation blocks should be a multiple of the size of the HFS+ volume's allocation blocks. In addition, the wrapper's allocation block start (drAlBlSt) should be a multiple of the HFS+ volume's allocation block size (or perhaps 4 KB, if the HFS+ allocation blocks are larger). If these recommendations are followed, the HFS+ allocation blocks will be properly aligned on the disk. And, if the HFS+ allocation block size is a multiple of the sector size, then blocking and deblocking at the device driver level will be minimized.
+Allocating Space for the Embedded Volume
+
+The space occupied by the embedded volume must be marked as allocated in the HFS wrapper's volume bitmap (similar to the HFS+ allocation file) and placed in the HFS wrapper's bad block file (similar to the HFS+ bad block file). This doesn't mean the blocks are actually bad; it merely prevents the HFS+ volume from being overwritten by newly created files in the HFS wrapper, being deleted accidentally, or being marked as free, usable space by HFS disk repair utilities.
+
+The kHFSVolumeSparedBlocksMask bit of the drAtrb (volume attributes) field of the MDB must be set to indicate that the volume has a bad blocks file.
+Read Me and System Files
+
+IMPORTANT:
+This section is not part of the HFS+ volume format. It describes how the existing Mac OS implementation of HFS+ creates HFS wrappers. It is provided for your information only.
+
+As initialized by the Mac OS Disk Initialization Package, the HFS wrapper volume contains five files in the root folder.
+
+    * Read Me -- The Read Me file, whose name is actually "Where_have_all_my_files_gone?", contains text explaining that this volume is really an HFS+ volume but the contents cannot be accessed because HFS+ is not currently installed on the computer. It also describes the steps needed to install HFS+ support. Localized system software will also create a localized version of the file with localized file name and text content.
+    * System and Finder (invisible) -- The System file contains the minimum code to locate and mount the embedded HFS+ volume, and to continue booting from the System file in the embedded volume. The Finder file is empty; it is there to prevent older versions of the Finder from de-blessing the wrapper's root directory, which would prevent booting from the volume.
+    * Desktop DB and Desktop DF (invisible) -- The Desktop DB and Desktop DF files are an artifact of the way the files on the wrapper volume are created.
+
+In addition, the root folder is set as the blessed folder by placing its folder ID in the first SInt32 of the drFndrInfo (Finder information) field of the MDB.
+....
 
 == The catalog file
 
 *TODO migrate remaining documentation*
 
 == The extents overflow file
+In HFS and HFS+ extents (contiguous ranges of allocation blocks) are used to 
+track which blocks belong to a file. The first three (HFS) and eight (HFS+) are 
+stored in the catelog file. Additional extents are stored in the extents 
+overflow file.
+
+The structure of an extents overflow file is relatively simple compared to that 
+of a catalog file. The function of the extents overflow file is to store those 
+file extents that are not contained in the master directory block (MDB) or 
+volume header and the catalog file.
+
+=== The extent key (record)
+[yellow-background]*Disks initialized using the enhanced Disk Initialization 
+Manager introduced in system software version might contain extent records for 
+some blocks that do not belong to any actual file in the file system. These 
+extent records have been marked as a bad block (CNID 5). See the chapter "Disk 
+Initialization Manager" in this book for details on bad block sparing.*
+
+The key has been selected so that the extent records for a particular fork are 
+grouped together in the B-tree, right next to all the extent records for the 
+other fork of the file. The fork offset of the preceding extent record is 
+needed to determine the key of the next extent record.
+
+==== The HFS extent key (record)
 
 *TODO migrate remaining documentation*
 
@@ -514,14 +783,188 @@ Format wise it is valid for the startup file to contain more than eight
 extents, but in doing so the purpose of the startup file is defeated.
 
 == The HFS+ Hot file
+=== Notes
+....
+Hot Files
 
-*TODO migrate remaining documentation*
+Most files on a disk are rarely, if ever, accessed. Most frequently accessed (hot) files are small. To improve performance of these small, frequently access files, they are moved near the volume's metadata, into the metadata zone. This reduces seek times for most accesses. As files are moved into the metadata zone, they are also defragmented (allocated in a single extent), which further improves performance. This process is known as adaptive hot file clustering.
+
+The relative importance of a frequently used (hot) file is called its temperature. Files with the hottest (largest) temperatures are the ones actually moved into the metadata zone. In Mac OS X version 10.3, a file's temperature is computed as the number of bytes read from the file during the recording period divided by the file's size in bytes. This is a measure of how often the file is read.
+
+This section describes the on-disk structures used for tracking hot files. The algorithms used at run time are subject to change, and are not documented here.
+
+Migration of files into or out of the hot file area of the metadata zone is a gradual process, based upon the user's actual file access patterns. The migration happens in several phases:
+
+Recording
+    Watch file accesses to determine which files are used most
+Evaluation
+    Merge recently used hot files with previously found hot files
+Eviction
+    Move older and less frequently used hot files out of metadata zone to make room for newer, hotter files
+Adoption
+    Move newer and hotter files into the metadata zone
+
+Hot File B-Tree
+
+A B-Tree is used to keep track of the files that currently occupy the hot file area of the metadata zone. The hot file B-tree is an ordinary file on the volume (that is, it has records in the catalog). It is a file named ".hotfiles.btree" in the root directory. To avoid accidental manipulation of this file, the kIsInvisible and kNameLocked bits in the finderFlags field of the Finder info should be set.
+
+The node size of the hot file B-tree is at least 512 bytes, and is typically the same as the the volume's allocation block size. Like other B-trees on an HFS+ volume, the key length field is 16 bits, and kBTBigKeysMask is set in the B-tree header's attributes. The btreeType in the header record must be set to kUserBTreeType.
+
+The B-tree's user data record contains information about hot file recording. The format of the user data is described by the HotFilesInfo structure:
+
+#define HFC_MAGIC   0xFF28FF26
+#define HFC_VERSION 1
+#define HFC_DEFAULT_DURATION     (3600 * 60)
+#define HFC_MINIMUM_TEMPERATURE  16
+#define HFC_MAXIMUM_FILESIZE     (10 * 1024 * 1024)
+char hfc_tag[] = "CLUSTERED HOT FILES B-TREE     ";
+
+struct HotFilesInfo {
+    UInt32  magic;
+    UInt32  version;
+    UInt32  duration;    /* duration of sample period */
+    UInt32  timebase;    /* recording period start time */
+    UInt32  timeleft;    /* recording period stop time */
+    UInt32  threshold;
+    UInt32  maxfileblks;
+    UInt32  maxfilecnt;
+    UInt8   tag[32];
+};
+typedef struct HotFilesInfo HotFilesInfo;
+
+The fields have the following meaning:
+
+magic
+    Must contain the value HFC_MAGIC (0xFF28FF26).
+version
+    Contains the version of the HotFilesInfo structure. Version 1 of the structure is described here. If your implementation encounters any other version number, it should not read or modify the hot file B-tree.
+duration
+    Contains the duration of the current recording phase, in seconds. In Mac OS X 10.3, this value is typically HFC_DEFAULT_DURATION (60 hours).
+timebase
+    Contains the time that the current recording phase began, in seconds since Jan 1, 1970 GMT.
+timeleft
+    Contains the time remaining in the current recording phase, in seconds.
+threshold
+    Contains the minimum temperature for a file to be eligible to be moved into the hot file area. Files whose temperature is less than this value will be moved out of the hot file area.
+maxfileblks
+    Contains the maximum file size, in allocation blocks, for a file to be eligible to be moved into the hot file area. Files larger than this size will not be moved into the hot file area. In Mac OS X 10.3, this value is typically HFC_MAXIMUM_FILESIZE divided by the volume's allocation block size.
+maxfilecnt
+    Contains the maximum number of files to place into the hot file area. Note that the hot file area may actually contain more than this number of files, especially if they previously existed in the hot file area before the beginning of the recording phase. This number represents the number of files that the hot file recording code intents to track and eventually place into the hot file area.
+tag
+    Contains the null-terminated (C-style) string containing the ASCII text "CLUSTERED HOT FILES B-TREE " (not including the quotes). Note that the last six bytes are five spaces and the null (zero) byte. This field exists to make it easier to recognize the hot file B-tree when debugging or using a disk editor. An implementation should not attempt to verify or change this field.
+
+Hot File Record Key
+
+A key in the hot file B-tree is of type HotFileKey.
+
+struct HotFileKey {
+    UInt16   keyLength;
+    UInt8    forkType;
+    UInt8    pad;
+    UInt32   temperature;
+    UInt32   fileID;
+};
+typedef struct HotFileKey HotFileKey;
+
+#define HFC_LOOKUPTAG   0xFFFFFFFF
+#define HFC_KEYLENGTH   (sizeof(HotFileKey) - sizeof(UInt32))
+
+The fields have the following meaning:
+
+keyLength
+    The length of a hot file key, not including the keyLength field itself. Hot file keys are of fixed size. This field must contain the value 10.
+forkType
+    Indicates whether the fork being tracked is a data fork (value 0x00) or a resource fork (value 0xFF). In Mac OS X version 10.3, only data forks are eligible for placement into the hot file area.
+pad
+    An implementation must treat this as a pad field.
+temperature
+    The fork's temperature. For hot file thread records, this field contains the value HFC_LOOKUPTAG (0xFFFFFFFF).
+fileID
+    The catalog node ID of the file being tracked.
+
+Hot file keys are compared first by temperature, then fileID, and lastly by forkType. All of these comparisons are unsigned.
+Hot File Records
+
+Much like the catalog file, the hot file B-tree stores two kinds of records: hot file records and thread records. Every fork in the hot file area has both a hot file record and a thread record in the hot file B-tree. Hot file records are used to find hot files based on their temperature. Thread records are used to find hot files based on their catalog node ID and fork type.
+
+Thread records in the hot file B-tree use a special value (HFC_LOOKUPTAG) in the temperature field of the key. The data for a thread record is the temperature of that fork, stored as a UInt32. So, given a catalog node ID and fork type, it is possible to construct a key for the fork's thread record. If a thread record exists, you can get the temperature from the thread's data to construct the key for the hot file record. If a thread record does not exist, then the fork is not being tracked as a hot file.
+
+Hot file records use all of the key fields as described above. The data for a hot file record is 4 bytes. The data in a hot file record is not meaningful. To aid in debugging, Mac OS X version 10.3 typically stores the first four bytes of the file name (encoded in UTF-8), or the ASCII text "????".
+
+When an implementation changes a hot file's temperature, the old hot file record must be removed, a new hot file with the new temperature must be inserted, and the thread record's data must be changed to contain the new temperature.
+Recording Hot File Temperatures
+
+The recording phase gathers information about file usage over time. In order to gather useful statistics, the recording phase may last longer than the duration of a single mount. Therefore, information about file usage is stored on disk so that it can accumulate over time.
+
+The clumpSize field of the fork data structure is used to record the amount of data actually read from a fork. Since the field is only 32 bits long, it stores the number of allocation blocks read from the file. The fork's temperature can be computed by dividing its clumpSize by its totalBlocks.
+....
 
 == The HFS+ journal
+An HFS+ volume may have an optional journal to speed recovery when mounting a 
+volume that was not unmounted safely. The purpose of the journal is to ensure 
+that when a group of related changes are being made, that either all of those 
+changes are actually made, or none of them are made. The journal makes it quick 
+and easy to restore the volume structures to a consistent state, without having 
+to scan all of the structures. The journal is used only for the volume 
+structures and metadata; it does not protect the contents of a fork.
+
+The volume header specifies if journalling is activated.
+
+The journal data stuctures consist of:
+
+* a journal information block, contains the location and size of the journal header and journal buffer;
+* a journal header, describes which part of the journal buffer is active and contains transactions waiting to be committed;
+* a journal buffer, a cyclic buffer to hold the file system meta data transactions.
+
+On HFS+ volumes, the journal information block is stored as a file. The name of 
+that file is ".journal_info_block" and it is stored in the volume's root 
+directory.
+
+The journal header and journal buffer are stored together in a different file 
+named ".journal", also in the volume's root directory. Each of these files are 
+contiguous on disk, they occupy exactly one extent.
+
+The volume header contains the extent of the journal information block file. 
+The journal information block contains the location of the journal file.
+
+=== The journal information block
+The journal information block describes where the journal header and journal 
+buffer are stored. The journal information block is stored at the start of the 
+allocation block referred to by the volume header.
+
+The HFS+ journal information block is 44 bytes of size and consists of:
 
 *TODO migrate remaining documentation*
 
+=== [[journal_checksums]]Journal checksums
+The journal header and block list header both contain checksum values. The 
+checksums are verified as part of a basic consistency check of these journal 
+data structures. To verify the checksum, temporarily set the checksum field to 
+zero and then call the hfs_plus_calculate_checksum routine as specified below.
+
+....
+uint32_t hfs_plus_calculate_checksum(
+          uint8_t *buffer,
+          size_t buffer_size )
+{
+    size_t buffer_offset = 0;
+    uint32_t checksum    = 0;
+
+    for( buffer_offset = 0;
+         buffer_offset < buffer_size;
+         buffer_offset++)
+    {
+        checksum = ( checksum << 8 ) ^ ( checksum + buffer[ buffer_offset ] );
+    }
+    return( ~checksum );
+}
+....
+
 == Application specific data structures
+Both HFS and HFS+ contain application specific data structures. These 
+structures are defined in this chapter.
+
+=== [[finder_information]]Finder information
 
 *TODO migrate remaining documentation*
 
