@@ -71,7 +71,7 @@ The Mactintosh File System (MFS) is the predecessor of HFS.
 
 === HFS and HFS+
 
-[cols="1,1,",options="header"]
+[cols="1,1,1",options="header"]
 |===
 | Feature | HFS | HFS+
 | Maximum file size | 231 (2 GiB) | 263 (8 EiB)
