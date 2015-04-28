@@ -85,7 +85,7 @@ The Mactintosh File System (MFS) is the predecessor of HFS.
 | Feature | HFS | HFS+
 | Maximum file size | 231 (2 GiB) | 263 (8 EiB)
 | Maximum filename length | 31 characters | 255 characters
-| Maximum allocation blocks | 216 (65,535) | 232 (4,294,967,296)
+| Maximum allocation blocks | 216 (65535 bytes) | 232 (4294967296 bytes)
 | Character set | MacRoman +
 [yellow-background]*(extended ASCII with codepage?)* | Unicode UTF-16 big-endian
 | Time stamps | In local time | In UTC (GMT)
@@ -300,11 +300,14 @@ The bits in the attributes value have the following meaning:
 |===
 | Bit(s) | Description
 | 0 | Bad close +
-This bit indicates that the B-tree was not closed properly and should be checked for consistency. This bit is not used for HFS+ B-trees.
+This bit indicates that the B-tree was not closed properly and should be checked for consistency. +
+This bit is not used for HFS+ B-trees.
 | 1 | Big keys +
-If this bit is set, the key size value of the keys in index and leaf nodes is 16-bit integer; otherwise, it is an 8-bit integer. This bit must be set for all HFS+ B‑trees.
+If this bit is set, the key size value of the keys in index and leaf nodes is 16-bit integer; otherwise, it is an 8-bit integer. +
+This bit must be set for all HFS+ B‑trees.
 | 2 | Variable index keys +
-| If this bit is set, the keys in index nodes occupy the number of bytes indicated by their key size; otherwise, the keys in index nodes always occupy maximum key size. This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Extents B-tree.
+| If this bit is set, the keys in index nodes occupy the number of bytes indicated by their key size; otherwise, the keys in index nodes always occupy maximum key size. +
+This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Extents B-tree.
 |===
 
 ==== The B-tree map record
@@ -328,7 +331,7 @@ A map node consists of a B-tree node descriptor and one B-tree map record. The
 map record is 494 bytes of size ( 512 - ( 14 + 2 ) ) and can therefore contain 
 mapping information for 3952 nodes.
 
-If a B-tree contains more than 6000 nodes (enough for about 25,000 files) a 
+If a B-tree contains more than 6000 nodes (enough for about 25000 files) a 
 second map node is needed. The next tree node value in the B-tree node 
 descriptor of the first map node is used to refer to the second. If more map 
 nodes are required, each additional map node is similarly linked to the 
@@ -433,7 +436,8 @@ ASCII string typically "Finder"
 ASCII string typically "Clipboard"
 | 115 | 2 | | The (initial) number of allocated file control blocks (FCBs)
 | 117 | 2 | | The maximum number of event queue elements +
-This number determines the maximum number of events that the Event Manager can store at any one time. Usually this field contains the value 20. 
+This number determines the maximum number of events that the Event Manager can store at any one time. +
+Usually this field contains the value 20. 
 | 119 | 4 | | The system heap size on 128K Mac +
 The size of the System heap on a Macintosh computer having 128 KiB of RAM. 
 | 123 | 4 | | The system heap size on 256K Mac +
@@ -521,7 +525,7 @@ Typically 3 in the current implementation.
 The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
 | 18 | 2 | | Number of allocation blocks in the volume +
 Unsigned 16-bit integer. +
-A volume can contain at most 65,535 allocation blocks.
+A volume can contain at most 65535 allocation blocks.
 | 20 | 4 | | The byte size of the allocation blocks in the volume +
 This value must always be a multitude of 512 bytes. 
 | 24 | 4 | | Default clump size
@@ -601,11 +605,11 @@ one physical block (512 bytes) has a volume bitmap size of:
 A volume containing 32 MiB of data and having an allocation block size of one 
 physical block has a volume bitmap size of:
 ....
-( ( 32 x 1024 x 1024 ) / ( 512 x 8 ) ) = 65,536 bits (8192 bytes). 
+( ( 32 x 1024 x 1024 ) / ( 512 x 8 ) ) = 65536 bits (8192 bytes). 
 ....
 
 Because the number of allocation blocks in the volume in the MDB consists of a 
-16-bit value no more that 65,535 allocation blocks can be addressed. The volume 
+16-bit value no more that 65535 allocation blocks can be addressed. The volume 
 bitmap is never larger than 8192 bytes (or 16 physical blocks). For volumes 
 containing more than 32 MB of space, the allocation block size must be 
 increased.
@@ -1029,10 +1033,6 @@ Note:
 The pathname stored in a symbolic link is assumed to be a POSIX pathname, as used by the Mac OS X BSD and Cocoa programming interfaces. It is not a traditional Mac OS, or Carbon, pathname. The path is encoded in UTF-8. It must be a valid UTF-8 sequence, with no null (zero) bytes. The path may refer to another volume. The path need not refer to any existing file or directory. The path may be full or partial (with or without a leading forward slash). For maximum compatibility, the length of the path should be 1024 bytes or less.
 ....
 
-== The catalog file
-
-*TODO migrate remaining documentation*
-
 == The HFS wrapper
 An HFS+ volume can be wrapped in an HFS volume.
 
@@ -1107,6 +1107,130 @@ In addition, the root folder is set as the blessed folder by placing its folder 
 ....
 
 == The catalog file
+The catalog file is a B-tree file used to maintain information about the 
+hierarchy of files and directories of a volume.
+
+The allocation block number of the first file extent of the catalog file (the 
+header node) is stored in the master directory block (HFS) or the volume header 
+(HFS+). The B-tree structure is described in section: <<btree_file,B-tree file>>.
+
+Each node in the catalog file is assigned a unique catalog node identifier 
+(CNID). The CNID is used for both directory and file identifiers. For any given 
+file or directory the parent identifier is the CNID of the parent directory. 
+The first 16 CNIDs are reserved for use by Apple and include the following 
+standard assignments:
+
+[cols="1,5",options="header"]
+|===
+| CNID | Assignment
+| 0 | Reserved
+| 1 | Parent identifier of the root directory (folder)
+| 2 | Directory identifier of the root directory (folder)
+| 3 | File number of the extents file
+| 4 | File number of the catalog file
+| 5 | File number of the bad allocation block file
+| 6 | File identifier of the allocation file (HFS+)
+| 7 | File identifier of the startup file (HFS+)
+| 8 | File identifier of the attributes file (HFS+)
+| | 
+| 14 | Used temporarily by fsck_hfs when rebuilding the catalog file.
+| 15 | File identifier of the bogus extent file +
+Used temporarily during exchange files operations.
+|===
+
+CNID 16 is the first available for use by a user's files and folders.
+
+=== Catalog file index keys
+The catalog file index key consists principally of the name of that file or 
+directory and its parent directory identifier. The volume reference number is 
+not included in the catalog file index key.
+
+==== HFS catalog file index key
+The HFS catalog file index key is at most 38 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | The key (byte) size +
+Signed 8-bit integer +
+The value in this field does not include the byte occupied by the field itself. +
+If this field contains 0, the key indicates a deleted record. 
+| 1 | 1 | | Reserved
+| 2 | 4 | | The parent directory identifier +
+Contains a CNID
+| 6 | 32 | | Catalog node name +
+Contains an ASCII string +
+The name of the file or directory whose catalog entry.
+|===
+
+The catalog key slightly differs when it is used in an index or leaf node. If 
+the key is used:
+
+* in a pointer record (an index node), the catalog node name always occupies the full 32 bytes and the key (byte) size always contains the value 37 (0x25).
+* in a data record (a leaf node), then the catalog node name varies in length; it only uses the number of bytes required to hold the file or directory name. The key is padded with null characters so that the data following it begins on a word boundary. The key (byte) size may contain values from 7 to 37.
+
+==== HFS+ catalog file index key
+The HFS+ catalog file index key is at most 262 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | The key (byte) size
+| 2 | 4 | | The parent directory identifier +
+Contains a CNID
+| 6 | 256 | | Catalog node name +
+Unicode string +
+The name of the file or directory whose catalog entry.
+|===
+
+=== The catalog file data
+A catalog file leaf node can contain four different types of records:
+
+* a directory record, which contains information about a single directory.
+* a file record, which contains information about a single file.
+* a directory thread record, which provides a link between a directory and its parent directory.
+* a file thread record, which provides a link between a file and its parent directory.
+
+The thread records are used to find the name and directory identifier of the 
+parent of a given file or directory.
+
+Each catalog file data record consists of:
+
+* the catalog file data record header;
+* the catalog file data record data.
+
+==== The catalog file data record header
+===== The HFS catalog file data record header
+The HFS catalog file data record header is 2 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | The record type +
+Signed 8-bit integer +
+0x01 => Directory record +
+0x02 => File record +
+0x03 => Directory thread record +
+0x04 => File thread record
+| 1 | 1 | | Reserved +
+Signed 8-bit integer
+|===
+
+===== The HFS+ catalog file data record header
+The HFS+ catalog file data record header is 2 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | The record type +
+0x0001 => Directory record +
+0x0002 => File record +
+0x0003 => Directory thread record +
+0x0004 => File thread record
+|===
+
+==== The catalog file directory record data
+===== The HFS catalog file directory record data
 
 *TODO migrate remaining documentation*
 
@@ -1215,9 +1339,9 @@ Eviction
 Adoption
     Move newer and hotter files into the metadata zone
 
-Hot File B-Tree
+Hot File B-tree
 
-A B-Tree is used to keep track of the files that currently occupy the hot file area of the metadata zone. The hot file B-tree is an ordinary file on the volume (that is, it has records in the catalog). It is a file named ".hotfiles.btree" in the root directory. To avoid accidental manipulation of this file, the kIsInvisible and kNameLocked bits in the finderFlags field of the Finder info should be set.
+A B-tree is used to keep track of the files that currently occupy the hot file area of the metadata zone. The hot file B-tree is an ordinary file on the volume (that is, it has records in the catalog). It is a file named ".hotfiles.btree" in the root directory. To avoid accidental manipulation of this file, the kIsInvisible and kNameLocked bits in the finderFlags field of the Finder info should be set.
 
 The node size of the hot file B-tree is at least 512 bytes, and is typically the same as the the volume's allocation block size. Like other B-trees on an HFS+ volume, the key length field is 16 bits, and kBTBigKeysMask is set in the B-tree header's attributes. The btreeType in the header record must be set to kUserBTreeType.
 
