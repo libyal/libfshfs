@@ -1231,8 +1231,182 @@ The HFS+ catalog file data record header is 2 bytes of size and consists of:
 
 ==== The catalog file directory record data
 ===== The HFS catalog file directory record data
+The HFS catalog file directory record data is 68 bytes of size and consists of:
 
-*TODO migrate remaining documentation*
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Directory (folder) flags +
+[yellow-background]*No bits are currently defined for folder records.*
+| 2 | 2 | | Directory valence +
+The number of files ([yellow-background]*and sub directories*) in this directory.
+| 4 | 4 | | The directory identifier +
+Contains a CNID
+| 8 | 4 | | Creation date and time
+| 12 | 4 | | Modification date and time
+| 16 | 4 | | Backup date and time
+| 20 | 16 | | Folder information +
+See section: <<hfs_folder_information,HFS folder information>>
+| 36 | 16 | | Extended folder information +
+See section: <<hfs_extended_folder_information,HFS extended folder information>>
+| 52 | ( 4 x 4 ) = 16 | | Reserved +
+Array of 32-bit integer values
+|===
+
+===== The HFS+ catalog file directory record data
+The HFS+ catalog file directory record data is 86 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Directory (folder) flags +
+No bits are currently defined for folder records.
+| 2 | 4 | | Directory valence +
+The number of files and folders directly contained by this folder.
+| 6 | 4 | | The directory identifier +
+Contains a CNID
+| 10 | 4 | | Creation date and time
+| 14 | 4 | | Content modification date and time
+| 18 | 4 | | Attribute modification date and time
+| 22 | 4 | | Access date and time
+| 26 | 4 | | Backup date and time
+| 30 | 16 | | Permissions +
+See section: <<permissions,Permissions>>
+| 46 | 16 | | Folder information +
+See section: <<hfs_plus_folder_information,HFS+ folder information>>
+| 62 | 16 | | Extended folder information +
+See section: <<hfs_plus_extended_folder_information,HFS+ extended folder information>>
+| 78 | 4 | | Text encoding
+| 82 | 4 | 0x00 | Reserved
+|===
+
+==== The catalog file file record data
+===== The HFS catalog file file record data
+The HFS catalog file file record data is 100 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | File flags +
+Signed 8-bit integer +
+0x01 => File is locked and cannot be written to. +
+0x02 => A file thread record exists for this file. +
+0x08 => File record is used, otherwise the file record should be considered empty.
+| 1 | 1 | | File type +
+Signed 8-bit integer +
+This field should always contain 0.
+| 2 | 16 | | File information +
+See section: <<hfs_file_information,HFS file information>>
+| 18 | 4 | | The file identifier +
+Contains a CNID
+| 22 | 2 | | First allocation block of data fork
+| 24 | 4 | | Logical end of file (EOF) of data fork
+| 28 | 4 | | Physical end of file (EOF) of data fork
+| 32 | 2 | | First allocation block of resource fork
+| 34 | 4 | | Logical end of file (EOF) of resource fork
+| 38 | 4 | | Physical end of file (EOF) of resource fork
+| 42 | 4 | | Creation date and time
+| 46 | 4 | | Modification date and time
+| 50 | 4 | | Backup date and time
+| 54 | 16 | | Extended (additional) finder information
+| 70 | 2 | | The file clump size
+| 72 | (3 x 4 ) = 12 | | The first data fork extent record +
+See section: <<hfs_extent_data,The HFS extent data>>
+| 84 | (3 x 4 ) = 12 | | The first resource fork extent record +
+See section: <<hfs_extent_data,The HFS extent data>>
+| 96 | 4 | 0x00 | Reserved
+|===
+
+===== The HFS+ catalog file file record data
+The HFS+ catalog file directory record data is 246 bytes of size and consists 
+of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | File flags
+| 2 | 4 | 0x00 | Reserved
+| 6 | 4 | | The file identifier +
+Contains a CNID
+| 10 | 4 | | Creation date and time
+| 14 | 4 | | Content modification date and time
+| 18 | 4 | | Attribute modification date and time
+| 22 | 4 | | Access date and time
+| 26 | 4 | | Backup date and time
+| 30 | 16 | | Permissions +
+See section: <<permissions,Permissions>>
+| 46 | 16 | | File (user) information +
+See section: <<hfs_plus_file_information,HFS+ file information>>
+| 62 | 16 | | Extended file (user) information +
+See section: <<hfs_plus_exteded_file_information,HFS+ extended file information>>
+| 78 | 4 | | Text encoding
+| 82 | 4 | 0x00 | Reserved
+| 86 | 80 | | Data fork +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+| 166 | 80 | | Resource fork +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+|===
+
+==== The catalog file thread record data
+The file thread record is exactly the same as a directory thread record except 
+that the associated object is a file, not a directory.
+
+===== The HFS catalog file thread record data
+The HFS catalog file thread record data is at most 44 bytes of size and 
+consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | ( 2 x 4 ) = 8 | 0x00 | Reserved +
+Array of 32-bit integer values
+| 8 | 4 | | The parent directory identifier +
+Contains a CNID
+| 12 | 32 | | The name of the associated directory or filename. +
+Contains an ASCII string
+|===
+
+===== The HFS+ catalog file file thread record data
+The HFS+ catalog file thread record data is at most 262 bytes of size and 
+consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | 0x00 | Reserved +
+Unsigned 16-bit integer
+| 2 | 4 | | The parent directory identifier +
+Contains a CNID
+| 6 | 256 | | The name of the associated file +
+Contains an Unicode string
+|===
+
+=== File forks
+Forks in HFS and HFS+ can be compared to streams in NTFS. In HFS+ the fork data 
+is grouped in a separate data structure. HFS+ also defines named forks. Thes 
+named forks are not stored in the catalog file but in the attributes file.
+
+==== [[hfs_plus_fork_data_structure]]HFS+ fork data structure
+HFS+ maintains information about file contents using the HFS+ fork data structure.
+
+The fork data structure is 80 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | Logical (byte) size
+| 8 | 4 | | Clump size
+| 12 | 4 | | Total number of allocation blocks +
+The total number of allocation blocks used by all the extents in this fork.
+| 16 | ( 8 x 8 ) = 64 | | The extent (data) record +
+See section: <<hfs_plus_extent_data,The HFS+ extent data>>
+|===
+
+===== Clump size
+For fork data structures:
+
+* in the volume header this is the fork's clump size, which is used in preference to the default clump size in the volume header.
+* in a catalog record, this value was intended to store a per-fork clump size to override the default clump size in the volume header. However, Apple implementations prior to Mac OS X version 10.3 ignored this field. As of Mac OS X version 10.3, this field is used to keep track of the number of blocks actually read from the fork.
 
 == The extents overflow file
 In HFS and HFS+ extents (contiguous ranges of allocation blocks) are used to 
