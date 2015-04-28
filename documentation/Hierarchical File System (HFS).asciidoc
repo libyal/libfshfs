@@ -1,6 +1,11 @@
 = Hierarchical File System (HFS)
 Analysis of MFS, HFS, HFS+ and HFSX
 
+:toc:
+:toc-placement: manual
+:toc-title: 
+:toclevels: 4
+
 :numbered!:
 [abstract]
 == Summary
@@ -33,6 +38,10 @@ published by the Free Software Foundation; with no Invariant Sections, no
 Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included 
 in the section entitled "GNU Free Documentation License".
 ....
+
+[preface]
+== Table of contents
+toc::[]
 
 [preface]
 == Revision history
@@ -619,6 +628,408 @@ The allocation block containing the first 1536 bytes (reserved space plus
 volume header) are marked as used in the allocation file.
 
 The volume header is 352 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | "\x48\x2b" +
+"\x48\x58" | The volume signature +
+"H+" => HFS+ +
+"HX" => HFSX
+| 2 | 2 | | The volume version +
+4 => HFS+ +
+5 => HFSX
+| 4 | 4 | | The volume attribute flags
+| 8 | 4 | | Last mounted version +
+'8.10' => used by Mac OS 8.1 to 9.2.2 +
+'10.0' => used by Mac OS X +
+'HFSJ' => used by journaled HFS+/HFSX +
+'fsck' => used by fsck_hfs on Mac OS X
+| 12 | 4 | | Journal information block +
+This field is used if the volume journaled bit has been set in the volumes attribute flags. +
+The allocation block number of the allocation block which contains the journal information block of the volume's journal.
+| 16 | 4 | | Creation date and time +
+In local time instead of UTC (GMT) +
+The date and time when the volume was created.
+| 20 | 4 | | Modification date and time +
+The date and time when the volume was last modified.
+| 24 | 4 | | Backup date and time +
+The date and time when the volume was last backed up.
+| 28 | 4 | | Checked date and time +
+The date and time when the volume was last checked for consistency.
+| 32 | 4 | | Total number of files +
+The value does not include the special files. +
+It should equal the number of file records found in the catalog file.
+| 36 | 4 | | Total number of directories (folders) +
+The value does not include the root folder. +
+It should equal the number of folder records in the catalog file minus one.
+| 40 | 4 | | The allocation block (byte) size
+| 44 | 4 | | Total number of allocation blocks
+| 48 | 4 | | Total number of unused (free) allocation blocks
+| 52 | 4 | | Start of next allocation search +
+The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
+| 56 | 4 | | Resource clump size +
+The default clump (byte) size for resource forks.
+| 60 | 4 | | Data clump size +
+The default clump (byte) size for data forks.
+| 64 | 4 | | The next unused catalog node identifier +
+Can be a directory or file identifier.
+| 68 | 4 | | Volume write count +
+Contains the number of times the volume has been written to.
+| 72 | 8 | | Encodings bitmap +
+This field keeps track of the text encodings used in the file and folder names on the volume. +
+See section: <<text_encoding,Text encoding>>
+| 80 | 32 | | Finder information +
+See section: <<finder_information,Finder information>>
+| 112 | 48 | | Allocation file fork data +
+Information about the location and size of the allocation file. +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+| 160 | 48 | | Extents file fork data +
+Information about the location and size of the extents file. +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+| 208 | 48 | | Catalog file fork data +
+Information about the location and size of the catalog file. +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+| 256 | 48 | | Attributes file fork data +
+Information about the location and size of the attributes file. +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+| 304 | 48 | | Startup file fork data +
+Information about the location and size of the startup file. +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+|===
+
+==== Total number of allocation blocks
+For a disk whose size is an even multiple of the allocation block size, all 
+areas on the disk are included in an allocation block, including the volume 
+header and alternate volume header. For a disk whose size is not an even 
+multiple of the allocation block size, only the allocation blocks that will fit 
+entirely on the disk are counted here. The remaining space at the end of the 
+disk is not used by the volume format (except for storing the alternate volume 
+header, as described above).
+
+==== The volume attribute flags
+The value attributes flags are specified as following.
+
+[yellow-background]*TODO: determine MSB and LSB*
+
+[cols="1,5",options="header"]
+|===
+| Bit(s) | Description
+| 0 – 6 | Reserved; must be 0
+| 7 | Volume hardware lock +
+This bit is set if the volume is write-protected due to a hardware setting.
+| 8 | Volume unmounted +
+This bit is set if the volume was correctly flushed before being unmounted or ejected.
+| 9 | Volume spared blocks +
+This bit is set if there are any records in the extents overflow file for bad blocks.
+| 10 | Volume no cache required +
+This bit is set if the blocks from this volume should not be cached.
+| 11 | Boot volume inconsistent +
+This bit is set if the volume was mounted for writing.
+| 12 | Catalog node identifiers reused +
+This bit is set when the next catalog identifier value overflows 32 bits, forcing smaller catalog node identifiers to be reused.
+| 13 | Volume journaled +
+If this bit is set, the volume has a journal.
+| 14 | Reserved
+| 15 | Volume software lock +
+This bit is set if the volume is write-protected due to a software setting.
+| 16 – 31 | Reserved
+|===
+
+==== Alternate volume header
+A copy of the volume header, the alternate volume header, is stored starting 
+1024 bytes before the end of the volume. The alternate volume header is 
+intended for use solely by disk repair utilities.
+
+In order to accommodate the alternate volume header and the reserved space 
+following it, the last allocation block is also marked as used in the 
+allocation file.
+
+The alternate volume header is always stored at offset 1024 bytes from the end 
+of the volume. If the disk size is not an even multiple of the allocation block 
+size, this area may lie beyond the last allocation block. However, the last 
+allocation block (or two allocation blocks for a volume formatted with 512-byte 
+allocation blocks) is still reserved even if the alternate volume header is not 
+stored there.
+
+=== Metadata zone
+==== Notes
+....
+Mac OS X version 10.3 introduced a new policy for determining where to allocate space for files, which improves performance for most users. This policy places the volume metadata and frequently used small files ("hot files") near each other on disk, which reduces the seek time for typical accesses. This area on disk is known as the metadata zone.
+
+The volume metadata are the structures that let the file system manage the contents of the volume. It includes the allocation bitmap file, extents overflow file, and the catalog file, and the journal file. The volume header and alternate volume header are also metadata, but they have fixed locations within the volume, so they are not located in the hot file area. Mac OS X may use a quota users file and quota groups file to manage disk space quotas on a volume. These files aren't strictly metadata, but they are included in the metadata zone because of their heavy use by the OS and they are too large to be considered ordinary hot files.
+
+Implementations are encouraged not to interfere with the metadata zone policy. For example, a disk optimizer should avoid moving files into the metadata zone unless that file is known to be frequently accessed, in which case it may be added to the "hot file" list. Similarly, files in the metadata zone should not be moved elsewhere on disk unless they are also removed from the hot file list.
+
+This policy is only applied to volumes whose size is at least 10GB, and which have journaling enabled. The metadata zone is established when the volume is mounted. The size of the zone is based upon the following sizes:
+Item 	Contribution to the Metadata Zone size
+Allocation Bitmap File 	Physical size (totalBlocks times the volume's allocation block size) of the allocation bitmap file.
+Extents Overflow File 	4MB, plus 4MB per 100GB (up to 128MB maximum)
+Journal File 	8MB, plus 8MB per 100GB (up to 512MB maximum)
+Catalog File 	10 bytes per KB (1GB minimum)
+Hot Files 	5 bytes per KB (10MB minimum; 512MB maximum)
+Quota Users File 	Described below
+Quota Groups File 	Described below
+
+In Mac OS X version 10.3, the amount of space reserved for the allocation file is actually the minimum allocation file size for the volume (the total number of allocation blocks, divided by 8, rounded up to a multiple of the allocation block size). If the allocation file is larger than that (which is sometimes done to allow a volume to be more easily grown at a later time), then there will be less space available for other metadata or hot files in the metadata zone. This is a bug (r. 3522516).
+
+The amount of space reserved for each type of metadata (except for the allocation bitmap file) is based on the total size of the volume. For the purposes of these computations, the total size of the volume is the allocation block size multiplied by the total number of allocation blocks.
+
+The sizes reserved for quota users and groups files are the result of complex calculations. In each case, the size reserved is a value of the form (items + 1) * 64 bytes, where items is based on the size of the volume in gigabytes, rounded down. For the quota users file, items is 256 per gigabyte, rounded up to a power of 2, with a minimum of 2048, and a maximum of 2097152 (2M). For the quota groups file, items is 32 per gigabyte, rounded up to a power of 2, with a minimum of 2048, and a maximum of 262144 (256K). The quota files are considered hot files, and occupy the hot file area, even though they are larger than the maximum file size normally eligible to be a hot file.
+
+The total size of the metadata zone is the sum of the above sizes, rounded up so that the metadata zone is represented by a whole number of allocation blocks within the volume bitmap. That is, the start and end of the metadata zone fall on allocation block boundaries in the volume bitmap. That means that the size of the metadata zone is rounded up to a multiple of 8 times the square of the allocation block size. In Mac OS X version 10.3, the extra space due to the round up of the metadata zone is split up between the catalog and the hot file area (2/3 and 1/3, respectively).
+
+The calculations for the extents overflow file and journal file divide the total size of the volume by 100GB, rounding down. Then they add one (to compensate for any remainder lost as part of the rounding). The result is then multiplied by 4MB or 8MB, respectively. If the volume's total size is not a multiple of 100GB, this is equivalent to 4MB (or 8MB) per 100GB, rounded up.
+
+In Mac OS X version 10.3, the metadata zone is located at the start of the volume, following the volume header. The hot file area is located towards the end of the metadata zone.
+
+When performing normal file allocations, the allocator will skip over the metadata zone. This ensures that the metadata will be less fragmented, and all of the metadata will be located in the same area on the disk. If the area outside the metadata zone is exhausted, the allocator will then use space inside the metadata zone for normal file allocations. Similarly, when allocating space for metadata, the allocator will use space inside the metadata zone first. If all of the metadata zone is in use, then metadata allocations will use space outside the metadata zone.
+....
+
+=== [[text_encoding]]Text encoding
+HFS+ includes features specifically designed to help Mac OS handle the 
+conversion between Mac OS-encoded strings and Unicode.
+
+The first feature is the text encoding value of the file and folder catalog 
+records. The value refers to a specific encoding type.
+
+[cols="1,1,1",options="header"]
+|===
+| Encoding type | Value | Encodings bitmap number
+| MacRoman | 0 | 0
+| MacJapanese | 1 | 1
+| MacChineseTrad | 2 | 2
+| MacKorean | 3 | 3
+| MacArabic | 4 | 4
+| MacHebrew | 5 | 5
+| MacGreek | 6 | 6
+| MacCyrillic | 7 | 7
+| MacDevanagari | 9 | 9
+| MacGurmukhi | 10 | 10
+| MacGujarati | 11 | 11
+| MacOriya | 12 | 12
+| MacBengali | 13 | 13
+| MacTamil | 14 | 14
+| MacTelugu | 15 | 15
+| MacKannada | 16 | 16
+| MacMalayalam | 17 | 17
+| MacSinhalese | 18 | 18
+| MacBurmese | 19 | 19
+| MacKhmer | 20 | 20
+| MacThai | 21 | 21
+| MacLaotian | 22 | 22
+| MacGeorgian | 23 | 23
+| MacArmenian | 24 | 24
+| MacChineseSimp | 25 | 25
+| MacTibetan | 26 | 26
+| MacMongolian | 27 | 27
+| MacEthiopic | 28 | 28
+| MacCentralEurRoman | 29 | 29
+| MacVietnamese | 30 | 30
+| MacExtArabic | 31 | 31
+| MacSymbol | 33 | 33
+| MacDingbats | 34 | 34
+| MacTurkish | 35 | 35
+| MacCroatian | 36 | 36
+| MacIcelandic | 37 | 37
+| MacRomanian | 38 | 38
+| MacFarsi | 140 | 49
+| MacUkrainian | 152 | 48
+|===
+
+The second use of text encodings in HFS+ is the encodings bitmap value of the 
+volume header. For each encoding used by a catalog node on the volume, the 
+corresponding bit in the encodings bitmap field must be set.
+
+The text encoding value is used as the number of the bit to set in encodings 
+bitmap to indicate that the encoding is used on the volume. However, encodings 
+bitmap is only 64 bits long, and thus the text encoding values for MacFarsi and 
+MacUkrainian cannot be used as bit numbers. Instead, another bit number is used.
+
+It is acceptable for a bit in this bitmap to be set even though no names on the 
+volume use that encoding. This means that when an implementation deletes or 
+renames an object, it does not have to clear the encoding bit if that was the 
+last name to use the given encoding.
+
+=== [[permissions]]Permissions
+For each file and folder HFS+ maintains basic access permissions record for 
+each file and folder. These are similar to basic Unix file permissions.
+
+The permissions record is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Owner identifier
+| 4 | 4 | | Group identifier
+| 8 | 1 | | Administration flags +
+BSD like flags settable by the super-user only +
+0x01 => File has been archived (SF_ARCHIVED) +
+0x02 => File is immutable and may not be changed (SF_IMMUTABLE) +
+0x04 => Writes to file may only append (SF_APPEND)
+| 9 | 1 | | Owner flags +
+BSD like flags settable by the owner +
+0x01 => Do not backup (dump) this file (UF_NODUMP) +
+0x02 => File is immutabl and may not be changed (UF_IMMUTABLE) +
+0x04 => Writes to file may only append (UF_APPEND) +
+0x08 => Directory is opaque (UF_OPAQUE)
+| 10 | 2 | | File mode
+| 12 | 4 | | Special +
+* inode number +
+* link count +
+* raw device
+|===
+
+==== Owner and group identifier
+The Mac OS X user ID of the owner of the file or folder. Mac OS X versions 
+prior to 10.3 treats user ID 99 as if it was the user ID of the user currently 
+logged in to the console. If no user is logged in to the console, user ID 99 is 
+treated as user ID 0 (root). Mac OS X version 10.3 treats user ID 99 as if it 
+was the user ID of the process making the call (in effect, making it owned by 
+everyone simultaneously). These substitutions happen at run time. The actual 
+user ID on disk is not changed.
+
+The Mac OS X group ID of the group associated with the file or folder. Mac OS X 
+typically maps group ID 99 to the group named "unknown." There is no run time 
+substitution of group IDs in Mac OS X.
+
+==== File mode
+HFS+ uses the BSD file type and mode bits. Note that the constants from the 
+header shown below are in octal (base eight), not hexadecimal.
+
+[cols="1,5",options="header"]
+|===
+| Octal value | Description
+| 0004000 | Set user identifier on execution (S_ISUID)
+| 0002000 | Set group identifier on execution (S_ISGID)
+| 0001000 | Sticky bit (S_ISTXT)
+| | 
+| 0000700 | Read, write and execute access for owner (S_IRWXU)
+| 0000400 | Read access for owner (S_IRUSR)
+| 0000200 | Write access for owner (S_IWUSR)
+| 0000100 | Execute access for owner (S_IXUSR)
+| | 
+| 0000070 | Read, write and execute access for group (S_IRWXG)
+| 0000040 | Read access for group (S_IRGRP)
+| 0000020 | Write access for group (S_IWGRP)
+| 0000010 | Execute access for group (S_IXGRP)
+| | 
+| 0000007 | Read, write and execute access for other (S_IRWXO)
+| 0000004 | Read access for other (S_IROTH)
+| 0000002 | Write access for other (S_IWOTH)
+| 0000001 | Execute access for other (S_IXOTH)
+|===
+
+===== Notes
+....
+    #define S_IFMT   0170000    /* type of file mask */
+    #define S_IFIFO  0010000    /* named pipe (fifo) */
+    #define S_IFCHR  0020000    /* character special */
+    #define S_IFDIR  0040000    /* directory */
+    #define S_IFBLK  0060000    /* block special */
+    #define S_IFREG  0100000    /* regular */
+    #define S_IFLNK  0120000    /* symbolic link */
+    #define S_IFSOCK 0140000    /* socket */
+    #define S_IFWHT  0160000    /* whiteout */
+
+    In some versions of Unix, the sticky bit, S_ISTXT, is used to indicate that an executable file's code should remain in memory after the executable finishes; this can help performance if the same executable is used again soon. Mac OS X does not use this optimization. If the sticky bit is set for a directory, then Mac OS X restricts movement, deletion, and renaming of files in that directory. Files may be removed or renamed only if the user has write access to the directory; and is the owner of the file or the directory, or is the super-user. 
+special
+    This field is used only for certain special kinds of files. For directories, and most files, this field is unused and reserved. When used, this field is used as one of the following:
+iNodeNum
+    For hard link files, this field contains the link reference number. See the Hard Links section for more information.
+linkCount
+    For indirect node files, this field contains the number of hard links that point at this indirect node file. See the Hard Links section for more information.
+rawDevice
+    For block and character special devices files (when the S_IFMT field contains S_IFCHR or S_IFBLK), this field contains the device number.
+
+WARNING:
+Mac OS 8 and 9 treat the permissions as reserved.
+
+Note:
+The S_IFWHT and UF_OPAQUE values are used when the file system is mounted as part of a union mount. A union mount presents the combination (union) of several file systems as a single file system. Conceptually, these file systems are layered, one on top of another. If a file or directory appears in multiple layers, the one in the top most layer is used. All changes are made to the top most file system only; the others are read-only. To delete a file or directory that appears in a layer other than the top layer, a whiteout entry (file type S_IFWHT) is created in the top layer. If a directory that appears in a layer other than the top layer is deleted and later recreated, the contents in the lower layer must be hidden by setting the UF_OPAQUE flag in the directory in the top layer. Both S_IFWHT and UF_OPAQUE hide corresponding names in lower layers by preventing a union mount from accessing the same file or directory name in a lower layer.
+
+Note:
+If the S_IFMT field (upper 4 bits) of the fileMode field is zero, then Mac OS X assumes that the permissions structure is uninitialized, and internally uses default values for all of the fields. The default user and group IDs are 99, but can be changed at the time the volume is mounted. This default ownerID is then subject to substitution as described above.
+
+This means that files created by Mac OS 8 and 9, or any other implementation that sets the permissions fields to zeroes, will behave as if the "ignore ownership" option is enabled for those files, even if "ignore ownership" is disabled for the volume as a whole.
+....
+
+=== Links
+[yellow-background]*TODO: add text*
+
+==== Hard Links
+===== Notes
+....
+Hard links are a feature that allows multiple directory entries to refer to a single file's content. They are a way to give a single file multiple names, possibly in multiple directories. This section describes how Mac OS X implements hard links on HFS+ volumes.
+
+The Mac OS X implementation of hard links on HFS+ volumes was done using the existing metadata fields of the catalog records. This makes it possible to back up and restore a volume using hard links, by backing up and restoring individual files, without having to understand or interpret the hard links. An HFS+ implementation may choose to automatically follow hard links, or not.
+
+Hard links in HFS+ are represented by a set of several files. The actual file content (which is shared by each of the hard links) is stored in a special indirect node file. This indirect node file is the equivalent of an inode in a traditional UNIX file system.
+
+HFS+ uses special hard link files (or links) to refer (or point) to an indirect node file. There is one hard link file for each directory entry or name that refers to the file content.
+
+Indirect node files exist in a special directory called the metadata directory. This directory exists in the volume's root directory. The name of the metadata directory is four null characters followed by the string "HFS+ Private Data". The directory's creation date is set to the creation date of the volume's root directory. The kIsInvisible and kNameLocked bits are set in the directory's Finder information. The icon location in the Finder info is set to the point (22460, 22460). These Finder info settings are not mandatory, but they tend to reduce accidental changes to the metadata directory. An implementation that automatically follows hard links should make the metadata directory inaccessable from its normal file system interface.
+
+Note:
+The case-insensitive Unicode string comparison used by HFS+ and case-insensitive HFSX sorts null characters after all other characters, so the metadata directory will typically be the last item in the root directory. On case-sensitive HFSX volumes, null characters sort before other characters, so the metadata directory will typically be the first item in the root directory.
+
+Indirect node files have a special identifying number called a link reference. The link reference is unique among indirect node files on a given volume. The link reference is not related to catalog node IDs. When a new indirect node file is created, it is assigned a new link reference randomly chosen from the range 100 to 1073741923.
+
+The file name of an indirect node file is the string "iNode" immediately followed by the link reference converted to decimal text, with no leading zeroes. For example, an indirect node file with link reference 123 would have the name "iNode123".
+
+An indirect node file must be a file, not a directory. Hard links to directories are not allowed because they could cause cycles in the directory hierarchy if a hard link pointed to one of its ancestor directories.
+
+The linkCount field in the permissions is an estimate of the number of links referring to this indirect node file. An implementation that understands hard links should increment this value when creating an additional link, and decrement the value when removing a link. However, some implementations (such as traditional Mac OS) do not understand hard links and may make changes that cause the linkCount to be inaccurate. Similarly, it is possible for a link to refer to an indirect node file that does not exist. When removing a link, an implementation should not allow the linkCount to underflow; if it is already zero, do not change it.
+
+Note:
+The inode number returned by the POSIX stat or lstat routines in the st_ino field of the stat structure is actually the catalog node ID of the indirect node file, not the link reference mentioned above.
+
+The reason for using a separate link reference number, instead of a catalog node ID, is to allow hard links to be backed up and restored by utilities that are not specifically aware of hard links. As long as they preserve filenames, Finder info, and permissions, then the hard links will be preserved.
+
+Hard link files are ordinary files in the catalog. The catalog node ID of a hard link file is different from the catalog node ID of the indirect node file it refers to, and different from the catalog node ID of any other hard link file.
+
+The fileType and fileCreator fields of the userInfo in the catalog record of a hard link file must be set to kHardLinkFileType and kHFSPlusCreator, respectively. The hard link file's creation date should be set to the creation date of the metadata directory. The hard link file's creation date may also be set to the creation date of the volume's root directory (if it differs from the creation date of the metadata directory), though this is deprecated. The iNodeNum field in the permissions is set to the link reference of the indirect node file that the link refers to. For better compatibility with older versions of the Mac OS Finder, the kHasBeenInited flag should be set in the Finder flags. The other Finder information, and other dates in the catalog record are reserved.
+
+enum {
+    kHardLinkFileType = 0x686C6E6B,  /* 'hlnk' */
+    kHFSPlusCreator   = 0x6866732B   /* 'hfs+' */
+};
+
+POSIX semantics allow an open file to be unlinked (deleted). These open but unlinked files are stored on HFS+ volumes much like a hard link. When the open file is deleted, it is renamed and moved into the metadata directory. The new name is the string "temp" followed by the catalog node ID converted to decimal text. When the file is eventually closed, this temporary file may be removed. All such temporary files may be removed when repairing an unmounted HFS+ volume.
+Repairing the Metadata Directory
+
+When repairing an HFS+ volume with hard links or a metadata directory, there are several conditions that might need to be repaired:
+
+    * Opened but deleted files (which are now orphaned).
+    * Orphaned indirect node files (no hard links refer to them).
+    * Broken hard link (hard link exists, but indirect node file does not).
+    * Incorrect link count.
+    * Link reference was 0.
+
+Opened but deleted files are files whose names start with "temp", and are in the metadata directory. If the volume is not in use (not mounted, and not being used by any other utility), then these files can be deleted. Volumes with a journal, even one with no active transactions, may have opened but undeleted files that need to be deleted.
+
+Detecting an orphaned indirect node file, broken hard link, or incorrect link count requires finding all hard link files in the catalog, and comparing the number of found hard links for each link reference with the link count of the corresponding indirect node file.
+
+A hard link with a link reference equal to 0 is invalid. Such a hard link may be the result of a hard link being copied or restored by an implementation or utility that does not use the permissions in catalog records. It may be possible to repair the hard link by determining the proper link reference. Otherwise, the hard link should be deleted.
+....
+
+==== Symbolic Links
+===== Notes
+....
+Similar to a hard link, a symbolic link is a special kind of file that refers to another file or directory. A symbolic link stores the path name of the file or directory it refers to.
+
+On an HFS+ volume, a symbolic link is stored as an ordinary file with special values in some of the fields of its catalog record. The pathname of the file being referred to is stored in the data fork. The file type in the fileMode field of the permissions is set to S_IFLNK. For compatibility with Carbon and Classic applications, the file type of a symbolic link is set to kSymLinkFileType, and the creator code is set to kSymLinkCreator. The resource fork of the symbolic link has zero length and is reserved.
+
+enum {
+    kSymLinkFileType  = 0x736C6E6B, /* 'slnk' */
+    kSymLinkCreator   = 0x72686170  /* 'rhap' */
+};
+
+Note:
+The pathname stored in a symbolic link is assumed to be a POSIX pathname, as used by the Mac OS X BSD and Cocoa programming interfaces. It is not a traditional Mac OS, or Carbon, pathname. The path is encoded in UTF-8. It must be a valid UTF-8 sequence, with no null (zero) bytes. The path may refer to another volume. The path need not refer to any existing file or directory. The path may be full or partial (with or without a leading forward slash). For maximum compatibility, the length of the path should be 1024 bytes or less.
+....
+
+== The catalog file
 
 *TODO migrate remaining documentation*
 
