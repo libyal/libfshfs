@@ -1958,8 +1958,247 @@ Both HFS and HFS+ contain application specific data structures. These
 structures are defined in this chapter.
 
 === [[finder_information]]Finder information
+The finder information in the master directory block (MDB) and volume header 
+consists of an array of 32-bit value. This array contains information used by 
+the Mac OS Finder and the system software boot process.
 
-*TODO migrate remaining documentation*
+[cols="1,5",options="header"]
+|===
+| Array entry | Description
+| 0 | Contains the directory identifier of the directory containing the bootable system. I.e. "System Folder" in Mac OS 8 or 9, or "/System/Library/CoreServices" in Mac OS X. +
+It is zero if there is no bootable system on the volume. +
+Typically this value equals the value in entry 3 or 5.
+| 1 | Contains the parent directory identifier of the startup application, i.e. "Finder". The value is zero if the volume is not bootable.
+| 2 | Contains the directory identifier of a directory whose window should be displayed in the Finder when the volume is mounted, or zero if no directory window should be opened. +
+[yellow-background]*In traditional Mac OS, this is the first in a linked list of windows to open; the frOpenChain field of the directory's Finder Info contains the next directory ID in the list. The open window list is deprecated. The Mac OS X Finder will open this directory's window, but ignores the rest of the open window list. The Mac OS X Finder does not modify this field.*
+| 3 | Contains the directory identifier of a bootable Mac OS 8 or 9 System Folder, or zero if not available.
+| 4 | Reserved
+| 5 | Contains the directory identifier of a bootable Mac OS X system, the "/System/Library/CoreServices" directory, or zero if not available.
+| 6 and 7 | Used by Mac OS X to store an unique 64-bit volume identifier. +
+This identifier is used for tracking whether a given volume's ownership (user identifier) information should be honored. +
+These elements may be zero if no such identifier has been created for the volume.
+|===
+
+=== File information
+==== [[hfs_file_information]]HFS file information
+The HFS file information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | ( 4 x 1 ) = 4 | | File type +
+Array of unsigned 8-bit integers
+| 4 | ( 4 x 1 ) = 4 | | File creator +
+Array of unsigned 8-bit integers
+| 8 | 2 | | Finder flags +
+See section: <<finder_flags,Finder flags>>
+| 10 | 4 | | Location within the parent +
+Contains x and y-coordinate values +
+If set to {0, 0}, the Finder will place the item automatically
+| 14 | 2 | | File icon window +
+The window in which the file's icon appears.
+|===
+
+==== [[hfs_extended_file_information]]HFS extended file information
+The HFS extended file information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Icon identifier +
+An identifier, assigned by the Finder, of the file's icon.
+| 2 | ( 3 x 2 ) = 6 | | Reserved +
+Array of signed 16-bit integers
+| 8 | 1 | | Extended finder script code flags +
+These flags are used if the script code flag is set.
+| 9 | 1 | | Extended finder flags +
+See section: <<extended_finder_flags,Extended finder flags>>
+| 10 | 2 | | Comment +
+Signed 16-bit integer +
+If the high-bit is clear, an identifier, assigned by the Finder, for the comment that is displayed in the information window when the user selects a file and chooses the Get Info command from the File menu.
+| 12 | 4 | | Put away folder identifier +
+[yellow-background]*Contains a CNID*
+|===
+
+==== [[hfs_plus_file_information]]HFS+ file information
+The HFS+ file information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | ( 4 x 1 ) = 4 | | File type +
+Array of unsigned 8-bit integers
+| 4 | ( 4 x 1 ) = 4 | | File creator +
+Array of unsigned 8-bit integers
+| 8 | 2 | | Finder flags +
+See section: <<finder_flags,Finder flags>>
+| 10 | 4 | | Location within the parent +
+Contains x and y-coordinate values +
+If set to {0, 0}, the Finder will place the item automatically
+| 14 | 2 | | Reserved
+|===
+
+==== [[hfs_plus_extended_file_information]]HFS+ extended file information
+The HFS+ extended file information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | ( 4 x 2 ) = 8 | | Reserved +
+Array of signed 16-bit integers
+| 8 | 2 | | Extended Finder flags +
+See section: <<extended_finder_flags,Extended finder flags>>
+| 10 | 2 | | Reserved +
+Signed 16-bit integers
+| 12 | 4 | | Put away folder identifier +
+[yellow-background]*Contains a CNID*
+|===
+
+=== Folder information
+==== [[hfs_folder_information]]HFS folder information
+The HFS folder information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | Window boundaries +
+The position and dimension of the folder's window +
+Contains top, left, bottom, right-coordinate values
+| 8 | 2 | | Finder flags +
+See section: <<finder_flags,Finder flags>>
+| 10 | 4 | | Location within the parent +
+Contains x and y-coordinate values +
+If set to {0, 0}, the Finder will place the item automatically
+| 14 | 2 | | Folder view +
+The manner in which folders are displayed.
+|===
+
+==== [[hfs_extended_folder_information]]HFS extended folder information
+The HFS extended folder information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Scroll position +
+The scroll position for icon views +
+Contains x and y-coordinate values
+| 4 | 4 | | Open directory identifier chain +
+Signed 32-bit integer +
+Chain of directory identifiers for open folders.
+| 8 | 1 | | Extended finder script code flags +
+These flags are used if the script code flag is set.
+| 9 | 1 | | Extended Finder flags +
+See section: <<extended_finder_flags,Extended finder flags>>
+| 10 | 2 | | Comment +
+Signed 16-bit integer +
+If the high-bit is clear, an identifier, assigned by the Finder, for the comment that is displayed in the information window when the user selects a folder and chooses the Get Info command from the File menu.
+| 12 | 4 | | Put away folder identifier +
+[yellow-background]*Contains a CNID*
+|===
+
+==== [[hfs_plus_folder_information]]HFS+ folder information
+The HFS+ folder information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | Window boundaries +
+The position and dimension of the folder's window +
+Contains top, left, bottom, right-coordinate values
+| 8 | 2 | | Finder flags +
+See section: <<finder_flags,Finder flags>>
+| 10 | 4 | | Location within the parent +
+Contains x and y-coordinate values +
+If set to {0, 0}, the Finder will place the item automatically
+| 14 | 2 | | Reserved
+|===
+
+==== [[hfs_plus_extended_folder_information]]HFS+ extended folder information
+The HFS+ extended folder information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Scroll position +
+The scroll position for icon views +
+Contains x and y-coordinate values
+| 4 | 4 | | Reserved +
+Signed 32-bit integer
+| 8 | 2 | | Extended Finder flags +
+See section: <<extended_finder_flags,Extended finder flags>>
+| 10 | 2 | | Reserved +
+Signed 16-bit integer
+| 12 | 4 | | Put away folder identifier +
+[yellow-background]*Contains a CNID*
+|===
+
+=== [[finder_flags]]Finder flags
+The finder flags consists of the following values:
+
+[cols="1,5",options="header"]
+|===
+| Value(s) | Description
+| 0x0001 | Is on desk +
+(used for files and folders)
+| 0x000e | Color +
+(used for files and folders)
+| 0x0040 | Is shared +
+if clear, the application needs to write to its resource fork, and therefore cannot be shared on a server +
+(used for files)
+| 0x0080 | Has no inits +
+(used for files)
+| 0x0100 | Bas been inited +
+Clear if the file contains desktop database resources that have not been added yet. +
+(used for files)
+| 0x0400 | Has custom icon +
+(used for files and folders)
+| 0x0800 | Is stationary +
+(used for files)
+| 0x1000 | Name locked +
+(used for files and folders)
+| 0x2000 | Has bundle +
+(used for files)
+| 0x4000 | Is invisible +
+(used for files and folders)
+| 0x8000 | Is alias +
+(used for files)
+|===
+
+=== [[extended_finder_flags]]Extended finder flags
+The extended finder flags consists of the following values:
+
+[cols="1,5",options="header"]
+|===
+| Value(s) | Description
+| 0x0004 | Has routing information +
+The file contains routing info resource
+| 0x0100 | Has custom badge +
+The file or folder has a badge resource.
+| 0x8000 | Extended flags are invalid +
+If set the other extended flags should be ignored
+|===
+
+==== Notes
+....
+struct Point {
+  SInt16              v;
+  SInt16              h;
+};
+typedef struct Point  Point;
+
+struct Rect {
+  SInt16              top;
+  SInt16              left;
+  SInt16              bottom;
+  SInt16              right;
+};
+typedef struct Rect   Rect;
+
+/* OSType is a 32-bit value made by packing four 1-byte characters 
+   together. */
+typedef UInt32        FourCharCode;
+typedef FourCharCode  OSType;
+....
 
 == Notes
 === MDB and Volume header
