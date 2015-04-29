@@ -1310,9 +1310,9 @@ Contains a CNID
 | 50 | 4 | | Backup date and time
 | 54 | 16 | | Extended (additional) finder information
 | 70 | 2 | | The file clump size
-| 72 | (3 x 4 ) = 12 | | The first data fork extent record +
+| 72 | ( 3 x 4 ) = 12 | | The first data fork extent record +
 See section: <<hfs_extent_data,The HFS extent data>>
-| 84 | (3 x 4 ) = 12 | | The first resource fork extent record +
+| 84 | ( 3 x 4 ) = 12 | | The first resource fork extent record +
 See section: <<hfs_extent_data,The HFS extent data>>
 | 96 | 4 | 0x00 | Reserved
 |===
@@ -1432,8 +1432,97 @@ other fork of the file. The fork offset of the preceding extent record is
 needed to determine the key of the next extent record.
 
 ==== The HFS extent key (record)
+The HFS extent key (record) is 8 bytes of size and consists of:
 
-*TODO migrate remaining documentation*
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 1 | | Key byte size +
+Signed 8-bit integer +
+Typically 7
+| 1 | 1 | | Fork type +
+Signed 8-bit integer +
+0x00 => is data fork +
+0xff => is resource fork
+| 2 | 4 | | File identifier +
+Contains a CNID
+| 6 | 2 | | Start block +
+The first allocation block index described by the corresponding extent record
+|===
+
+[yellow-background]*The first three extents in a fork are held in its catalog 
+file record. So the number of extent records for a fork is ((number of extents 
+- 3 + 2) / 4).*
+
+==== The HFS+ extent key (record)
+The HFS+ extent key (record) is 12 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Key byte size +
+unsigned 16-bit integer +
+Typically 10
+| 2 | 1 | | Fork type +
+Signed 8-bit integer +
+0x00 => is data fork +
+0xff => is resource fork
+| 3 | 1 | 0x00 | Padding
+| 4 | 4 | | File identifier +
+Contains a CNID
+| 8 | 4 | | Start block +
+The first allocation block index described by the corresponding extent record
+|===
+
+The first eight extents in a fork are held in its catalog file record. So the 
+number of extent records for a fork is ((number of extents - 8 + 7) / 8).
+
+=== The extent (data) record
+An extent is a contiguous range of allocation blocks that have been allocated 
+to some file. An extent is represented by an extent descriptor. 
+
+An unused extent descriptor in an extent record would have both the start block 
+and number of blocks set to zero.
+
+==== [[hfs_extent_data]]The HFS extent data
+The HFS extent data consist of an array of three HFS extent descriptors. The 
+size of the HFS extent data is 3 x 4 = 12.
+
+The HFS extent descriptor is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | The start allocation block of the extent
+| 2 | 2 | | The number of allocation blocks in the extent
+|===
+
+==== [[hfs_plus_extent_data]]The HFS+ extent data
+The HFS+ extent data consist of an array of eight HFS+ extent descriptors. The 
+size of the HFS+ extent data is 8 x 8 = 64.
+
+The HFS+ extent descriptor is 8 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | The start allocation block of the extent
+| 4 | 4 | | The number of allocation blocks in the extent
+|===
+
+=== Bad Block File
+The extent overflow file is also used to hold information about the bad blocks; 
+refered to as the bad block file. The bad block file is used to mark areas on 
+the disk as bad, unable to be used for storing data; typically to map out bad 
+sectors on the storage medium.
+
+Typically, allocation blocks are larger than sectors. If a single sector is 
+found to be bad, the entire allocation block is unusable. The bad block file is 
+sometimes used to mark blocks as unusable when they are not bad, e.g. in the 
+HFS wrapper.
+
+Bad block extent records are always assumed to reference the data fork (fork 
+type of 0).
 
 == The HFS+ allocation (bitmap) file
 HFS+ uses an allocation file to keep track of whether each allocation block in 
@@ -1478,8 +1567,60 @@ Listing 1 Determining whether an allocation block is in use.
 ....
 
 == The HFS+ attributes file
+The HFS+ attributes file is a B-tree file. The location of the attributes file 
+can be found in the volume header. The HFS+ attributes file is intended for 
+named forks, but is also used to store extended attributes.
 
-*TODO migrate remaining documentation*
+=== Attributes file index keys
+[yellow-background]*An attributes files has a variable length key. The 
+structure of the keys in the attribute B-tree has not been finalized and is 
+subject to change.*
+
+=== The attributes file data
+The attributes file defines two types of attributes:
+
+1. Fork data attributes, which are used for attributes whose data is large. The 
+attribute's data is stored in extents on the volume and the attribute merely 
+contains a reference to those extents.
+2. Extension attributes, which are used to augment fork data attributes, 
+allowing an fork data attribute to have more than eight extents.
+
+==== The HFS+ attributes file data record header
+Each attributes file record starts with a type value, which describes the type 
+of attribute data record.
+
+The HFS+ attributes file data record header is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | The record type +
+0x0010 => Inline data attribute +
+0x0020 => Fork data attribute +
+0x0030 => Extention attribute
+|===
+
+==== The fork data attribute
+The HFS+ attributes file fork data attribute is 84 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x00 | Reserved
+| 4 | 80 | | Attribute fork data +
+See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+|===
+
+==== The extension attribute
+The HFS+ attributes file extension attribute is 68 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x00 | Reserved
+| 4 | ( 8 x 8 ) = 64 | | Attribute extent data +
+See section: <<hfs_plus_extent_data,The HFS+ extent data>>
+|===
 
 == The HFS+ startup file
 The startup file is a special file intended to hold information needed when 
@@ -1643,7 +1784,150 @@ allocation block referred to by the volume header.
 
 The HFS+ journal information block is 44 bytes of size and consists of:
 
-*TODO migrate remaining documentation*
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | Journal flags
+| 4 | ( 8 x 4 ) = 32 | | Reserved +
+Device signature
+| 36 | 8 | | Journal header offset +
+The offset in bytes to the start of the journal header.
+| 44 | 8 | | The journal size +
+This includes the journal header and the journal buffer and not the journal information block.
+| 52 | ( 32 x 4 ) = 128 | 0x00 | Reserved
+|===
+
+==== Journal flags
+The journal flags consist of the following values:
+
+[cols="1,5",options="header"]
+|===
+| Value(s) | Description
+| 0x00000001 | In file system +
+The journal resides on the volume +
+The journal header offset is relative to the start of the volume.
+| 0x00000002 | On other device +
+The journal resides on another device. +
+The device signature value describes the device containing the journal. +
+The journal header offset is relative to the start of the device. +
+Journals stored on a separate device are not currently supported. The format of the device signature value is not yet defined.
+| 0x00000004 | Need initialization +
+The journal header is invalid (there are no valid transactions in the journal) and needs to be initialized.
+|===
+
+=== The journal header
+The journal begins with a journal header, whose main purpose is to describe the 
+location of transactions in the journal buffer. The journal header is stored 
+using the journal_header data type.
+
+The HFS+ journal header is 44 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | "\x4a\x4e\x4c\x78" | Signature +
+Used to verify the integrity of the journal header.
+| 4 | 4 | "\x12\x34\x56\x78" | Endian signature +
+Used to verify the integrity of the journal header.
+| 8 | 8 | | First transaction start offset
+| 16 | 8 | | Next transaction start offset
+| 24 | 8 | | Journal (byte) size +
+The size includes the journal header and the journal buffer. +
+This value must be equal to the size in the journal information block.
+| 32 | 4 | | Journal block header (byte) size +
+Typically ranges from 4096 to 16384
+| 36 | 4 | | Journal checksum +
+See section: <<journal_checksums,Journal checksums>>
+| 40 | 4 | | Journal header (byte) size +
+Typically the size of one sector
+|===
+
+==== First and next transaction offset
+The first transaction offset contains the offset in bytes from the start of the 
+journal header to the start of the first (oldest) transaction.
+
+The next transaction offset contains the offset in bytes from the start of the 
+journal header to the end of the last (newest) transaction. Note that this 
+field may be less than the start field, indicating that the transactions wrap 
+around the end of the journal's circular buffer. If end equals start, then the 
+journal is empty, and there are no transactions that need to be replayed.
+
+=== Journal transactions
+A single transaction is stored in the journal as several blocks. These blocks 
+include both the data to be written and the location where that data is to be 
+written. This is represented on storage medium by a block list header, which 
+describes the number and sizes of the blocks, immediately followed by the 
+contents of those blocks.
+
+Since block list headers are of limited size, a single transaction may consist 
+of several block list headers and their associated block contents. If the next 
+value in the first block information structure is non-zero, then the next block 
+list header is a continuation of the same transaction.
+
+The journal buffer is treated as a circular buffer. When reading or writing the 
+journal buffer, the I/O operation must stop at the end of the journal buffer 
+and resume (wrap around) immediately following the journal header. Block list 
+headers or the contents of blocks may wrap around in this way. Only a portion 
+of the journal buffer is active at any given time; this portion is indicated by 
+the start and end fields of the journal header. The part of the journal buffer 
+that is not active contains no meaningful data, and must be ignored.
+
+To prevent ambiguity when start equals end, the journal is never allowed to be 
+perfectly full (all of the journal buffer used by block lists and blocks). If 
+the journal was perfectly full, and start was not equal to jhdr_size, then end 
+would be equal to start. You would then be unable to differentiate between an 
+empty and full journal.
+
+When the journal is not empty (contains transactions), it must be replayed to 
+be sure the volume is consistent. That is, the data from each of the 
+transactions must be written to the correct blocks on disk.
+
+=== The journal block list header
+The block list header describes a list of blocks included in a transaction. A 
+transaction may include several block lists if it modifies more blocks than can 
+be represented in a single block list. The block list header is stored in a 
+structure of type block_list_header.
+
+The HFS+ journal block list header is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | Reserved +
+Is used in memory for the maximum number of journal blocks
+| 2 | 2 | | The number of journal blocks following the journal block header +
+Typically 1
+| 4 | 4 | | The block list (byte) size +
+The block list size contains the number of bytes used for the block list, including the header and the data in each block.
+| 8 | 4 | | Checksum +
+See section: <<journal_checksums,Journal checksums>>
+| 12 | 4 | 0x00 | Padding +
+used for alignment
+| 16 | ... | | Journal block information array
+|===
+
+[NOTE]
+The number of journal blocks includes the first journal block, The first 
+journal block is reserved to be used when multiple blocks need to be chained, 
+therefore the number of journal blocks actually containing data is minus one (- 
+1).
+
+=== Journal block information
+The HFS+ journal block information is 16 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 8 | | Reserved +
+Is used in memory for the sector number where the block should be written +
+Only used in the first journal block information
+| 8 | 4 | | Size +
+The number of bytes to be copied from the journal buffer to the sector number. +
+Only used in the first journal block information
+| 12 | 4 | | Next journal block +
+Is used in memory to refer to the next journal block information +
+When stored a value of 0 indicates the end of the journal block list.
+|===
 
 === [[journal_checksums]]Journal checksums
 The journal header and block list header both contain checksum values. The 
