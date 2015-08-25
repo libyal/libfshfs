@@ -415,7 +415,7 @@ The boot block header is 141 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | "LK" ("\x4c\x4b) | The boot block signature
+| 0 | 2 | "LK" ("\x4c\x4b") | The boot block signature
 | 2 | 4 | | Boot code entry point
 | 6 | 2 | | Boot blocks version number
 | 8 | 2 | | Page flags +
