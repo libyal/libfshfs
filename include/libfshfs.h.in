@@ -1,0 +1,310 @@
+/*
+ * Library to access the Hierarchical File System (HFS) format
+ *
+ * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
+ *
+ * Refer to AUTHORS for acknowledgements.
+ *
+ * This software is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#if !defined( _LIBFSHFS_H )
+#define _LIBFSHFS_H
+
+#include <libfshfs/codepage.h>
+#include <libfshfs/definitions.h>
+#include <libfshfs/error.h>
+#include <libfshfs/extern.h>
+#include <libfshfs/features.h>
+#include <libfshfs/types.h>
+
+#include <stdio.h>
+
+#if defined( LIBFSHFS_HAVE_BFIO )
+#include <libbfio.h>
+#endif
+
+#if defined( __cplusplus )
+extern "C" {
+#endif
+
+/* -------------------------------------------------------------------------
+ * Support functions
+ * ------------------------------------------------------------------------- */
+
+/* Returns the library version
+ */
+LIBFSHFS_EXTERN \
+const char *libfshfs_get_version(
+             void );
+
+/* Returns the access flags for reading
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_get_access_flags_read(
+     void );
+
+/* Retrieves the narrow system string codepage
+ * A value of 0 represents no codepage, UTF-8 encoding is used instead
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_get_codepage(
+     int *codepage,
+     libfshfs_error_t **error );
+
+/* Sets the narrow system string codepage
+ * A value of 0 represents no codepage, UTF-8 encoding is used instead
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_set_codepage(
+     int codepage,
+     libfshfs_error_t **error );
+
+/* Determines if a file contains an ext volume signature
+ * Returns 1 if true, 0 if not or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_check_volume_signature(
+     const char *filename,
+     libfshfs_error_t **error );
+
+#if defined( LIBFSHFS_HAVE_WIDE_CHARACTER_TYPE )
+
+/* Determines if a file contains an ext volume signature
+ * Returns 1 if true, 0 if not or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_check_volume_signature_wide(
+     const wchar_t *filename,
+     libfshfs_error_t **error );
+
+#endif /* defined( LIBFSHFS_HAVE_WIDE_CHARACTER_TYPE ) */
+
+#if defined( LIBFSHFS_HAVE_BFIO )
+
+/* Determines if a file contains an ext volume signature using a Basic File IO (bfio) handle
+ * Returns 1 if true, 0 if not or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_check_volume_signature_file_io_handle(
+     libbfio_handle_t *file_io_handle,
+     libfshfs_error_t **error );
+
+#endif /* defined( LIBFSHFS_HAVE_BFIO ) */
+
+/* -------------------------------------------------------------------------
+ * Notify functions
+ * ------------------------------------------------------------------------- */
+
+/* Sets the verbose notification
+ */
+LIBFSHFS_EXTERN \
+void libfshfs_notify_set_verbose(
+      int verbose );
+
+/* Sets the notification stream
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_notify_set_stream(
+     FILE *stream,
+     libfshfs_error_t **error );
+
+/* Opens the notification stream using a filename
+ * The stream is opened in append mode
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_notify_stream_open(
+     const char *filename,
+     libfshfs_error_t **error );
+
+/* Closes the notification stream if opened using a filename
+ * Returns 0 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_notify_stream_close(
+     libfshfs_error_t **error );
+
+/* -------------------------------------------------------------------------
+ * Error functions
+ * ------------------------------------------------------------------------- */
+
+/* Frees an error
+ */
+LIBFSHFS_EXTERN \
+void libfshfs_error_free(
+      libfshfs_error_t **error );
+
+/* Prints a descriptive string of the error to the stream
+ * Returns the number of printed characters if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_error_fprint(
+     libfshfs_error_t *error,
+     FILE *stream );
+
+/* Prints a descriptive string of the error to the string
+ * The end-of-string character is not included in the return value
+ * Returns the number of printed characters if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_error_sprint(
+     libfshfs_error_t *error,
+     char *string,
+     size_t size );
+
+/* Prints a backtrace of the error to the stream
+ * Returns the number of printed characters if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_error_backtrace_fprint(
+     libfshfs_error_t *error,
+     FILE *stream );
+
+/* Prints a backtrace of the error to the string
+ * The end-of-string character is not included in the return value
+ * Returns the number of printed characters if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_error_backtrace_sprint(
+     libfshfs_error_t *error,
+     char *string,
+     size_t size );
+
+/* -------------------------------------------------------------------------
+ * Volume functions
+ * ------------------------------------------------------------------------- */
+
+/* Creates a volume
+ * Make sure the value volume is referencing, is set to NULL
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_initialize(
+     libfshfs_volume_t **volume,
+     libfshfs_error_t **error );
+
+/* Frees a volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_free(
+     libfshfs_volume_t **volume,
+     libfshfs_error_t **error );
+
+/* Signals the volume to abort its current activity
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_signal_abort(
+     libfshfs_volume_t *volume,
+     libfshfs_error_t **error );
+
+/* Opens a volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_open(
+     libfshfs_volume_t *volume,
+     const char *filename,
+     int access_flags,
+     libfshfs_error_t **error );
+
+#if defined( LIBFSHFS_HAVE_WIDE_CHARACTER_TYPE )
+
+/* Opens a volume
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_open_wide(
+     libfshfs_volume_t *volume,
+     const wchar_t *filename,
+     int access_flags,
+     libfshfs_error_t **error );
+
+#endif /* defined( LIBFSHFS_HAVE_WIDE_CHARACTER_TYPE ) */
+
+#if defined( LIBFSHFS_HAVE_BFIO )
+
+/* Opens a volume using a Basic File IO (bfio) handle
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_open_file_io_handle(
+     libfshfs_volume_t *volume,
+     libbfio_handle_t *file_io_handle,
+     int access_flags,
+     libfshfs_error_t **error );
+
+#endif /* defined( LIBFSHFS_HAVE_BFIO ) */
+
+/* Closes a volume
+ * Returns 0 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_close(
+     libfshfs_volume_t *volume,
+     libfshfs_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded label
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_utf8_label_size(
+     libfshfs_volume_t *volume,
+     size_t *utf8_label_size,
+     libfshfs_error_t **error );
+
+/* Retrieves the UTF-8 encoded label
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_utf8_label(
+     libfshfs_volume_t *volume,
+     uint8_t *utf8_label,
+     size_t utf8_label_size,
+     libfshfs_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded label
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_utf16_label_size(
+     libfshfs_volume_t *volume,
+     size_t *utf16_label_size,
+     libfshfs_error_t **error );
+
+/* Retrieves the UTF-16 encoded label
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_utf16_label(
+     libfshfs_volume_t *volume,
+     uint16_t *utf16_label,
+     size_t utf16_label_size,
+     libfshfs_error_t **error );
+
+#if defined( __cplusplus )
+}
+#endif
+
+#endif
+

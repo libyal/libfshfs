@@ -1,0 +1,80 @@
+AM_CPPFLAGS = \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/common \
+	@LIBCSTRING_CPPFLAGS@ \
+	@LIBCERROR_CPPFLAGS@ \
+	@LIBCDATA_CPPFLAGS@ \
+	@LIBCLOCALE_CPPFLAGS@ \
+	@LIBCNOTIFY_CPPFLAGS@ \
+	@LIBCSPLIT_CPPFLAGS@ \
+	@LIBUNA_CPPFLAGS@ \
+	@LIBCFILE_CPPFLAGS@ \
+	@LIBCPATH_CPPFLAGS@ \
+	@LIBBFIO_CPPFLAGS@ \
+	@LIBFCACHE_CPPFLAGS@ \
+	@LIBFDATA_CPPFLAGS@ \
+	@LIBFDATETIME_CPPFLAGS@ \
+	@LIBFGUID_CPPFLAGS@
+
+lib_LTLIBRARIES = libfshfs.la
+
+libfshfs_la_SOURCES = \
+	fshfs_volume.h \
+	libfshfs.c \
+	libfshfs_debug.c libfshfs_debug.h \
+	libfshfs_definitions.h \
+	libfshfs_error.c libfshfs_error.h \
+	libfshfs_extern.h \
+	libfshfs_io_handle.c libfshfs_io_handle.h \
+	libfshfs_libbfio.h \
+	libfshfs_libcdata.h \
+	libfshfs_libcerror.h \
+	libfshfs_libclocale.h \
+	libfshfs_libcnotify.h \
+	libfshfs_libcstring.h \
+	libfshfs_libfcache.h \
+	libfshfs_libfdata.h \
+	libfshfs_libfdatetime.h \
+	libfshfs_libfguid.h \
+	libfshfs_libuna.h \
+	libfshfs_notify.c libfshfs_notify.h \
+	libfshfs_support.c libfshfs_support.h \
+	libfshfs_types.h \
+	libfshfs_unused.h \
+	libfshfs_volume.c libfshfs_volume.h
+
+libfshfs_la_LIBADD = \
+	@LIBCSTRING_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBFCACHE_LIBADD@ \
+	@LIBFDATA_LIBADD@ \
+	@LIBFDATETIME_LIBADD@ \
+	@LIBFGUID_LIBADD@
+
+libfshfs_la_LDFLAGS = -no-undefined -version-info 1:0:0
+
+EXTRA_DIST = \
+	libfshfs_definitions.h.in \
+	libfshfs.rc \
+	libfshfs.rc.in
+
+MAINTAINERCLEANFILES = \
+	Makefile.in
+
+distclean: clean
+	/bin/rm -f libfshfs_definitions.h
+	/bin/rm -f libfshfs.rc
+	/bin/rm -f Makefile
+
+splint:
+	@echo "Running splint on libfshfs ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libfshfs_la_SOURCES)
+
