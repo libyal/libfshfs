@@ -34,23 +34,8 @@ extern "C" {
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
-void libfshfs_debug_print_file_system_state_flags(
-      uint16_t file_system_state_flags );
-
-void libfshfs_debug_print_compatible_features_flags(
-      uint32_t compatible_features_flags );
-
-void libfshfs_debug_print_incompatible_features_flags(
-      uint32_t incompatible_features_flags );
-
-void libfshfs_debug_print_read_only_compatible_features_flags(
-      uint32_t read_only_compatible_features_flags );
-
-const char *libfshfs_debug_print_error_handling_status(
-             uint16_t error_handling_status );
-
-const char *libfshfs_debug_print_creator_operating_system(
-             uint32_t creator_operating_system );
+void libfshfs_debug_print_volume_attribute_flags(
+      uint32_t volume_attribute_flags );
 
 int libfshfs_debug_print_read_offsets(
      libbfio_handle_t *file_io_handle,

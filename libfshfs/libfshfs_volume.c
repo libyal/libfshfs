@@ -780,10 +780,10 @@ int libfshfs_volume_open_read(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "Reading superblock:\n" );
+		 "Reading volume header:\n" );
 	}
 #endif
-	if( libfshfs_io_handle_read_superblock(
+	if( libfshfs_io_handle_read_volume_header(
 	     internal_volume->io_handle,
 	     file_io_handle,
 	     file_offset,
@@ -793,7 +793,7 @@ int libfshfs_volume_open_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read superblock at offset: %" PRIi64 ".",
+		 "%s: unable to read volume header at offset: %" PRIi64 ".",
 		 function,
 		 file_offset );
 

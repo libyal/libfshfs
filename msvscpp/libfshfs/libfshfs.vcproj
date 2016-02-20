@@ -204,11 +204,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\libfshfs\fshfs_group_descriptor.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libfshfs\fshfs_superblock.h"
+				RelativePath="..\..\libfshfs\fshfs_volume.h"
 				>
 			</File>
 			<File

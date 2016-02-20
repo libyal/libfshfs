@@ -29,10 +29,12 @@
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
+#include "libfshfs_libfdatetime.h"
 
 #include "fshfs_volume.h"
 
-const char fshfs_volume_signature[ 2 ] = "\x53\xef";
+const char fshfs_volume_signature_hfsplus[ 2 ] = "H+";
+const char fshfs_volume_signature_hfsx[ 2 ]    = "HX";
 
 /* Creates an IO handle
  * Make sure the value io_handle is referencing, is set to NULL
@@ -190,8 +192,14 @@ int libfshfs_io_handle_read_volume_header(
 	static char *function                = "libfshfs_io_handle_read_volume_header";
 	ssize_t read_count                   = 0;
 
+
 #if defined( HAVE_DEBUG_OUTPUT )
+	libcstring_system_character_t hfs_time_string[ 32 ];
+
+	libfdatetime_hfs_time_t *hfs_time    = NULL;
 	uint32_t value_32bit                 = 0;
+	uint16_t value_16bit                 = 0;
+	int result                           = 0;
 #endif
 
 	if( io_handle == NULL )
@@ -263,8 +271,17 @@ int libfshfs_io_handle_read_volume_header(
 
 	if( memory_compare(
 	     volume_header->signature,
-	     fshfs_volume_signature,
-	     2 ) != 0 )
+	     fshfs_volume_signature_hfsplus,
+	     2 ) == 0 )
+	{
+	}
+	else if( memory_compare(
+	          volume_header->signature,
+	          fshfs_volume_signature_hfsx,
+	          2 ) == 0 )
+	{
+	}
+	else
 	{
 		libcerror_error_set(
 		 error,
@@ -278,21 +295,399 @@ int libfshfs_io_handle_read_volume_header(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		byte_stream_copy_to_uint32_little_endian(
-		 volume_header->number_of_inodes,
+		if( libfdatetime_hfs_time_initialize(
+		     &hfs_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create HFS time.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: signature\t\t\t: %c%c\n",
+		 function,
+		 volume_header->signature[ 0 ],
+		 volume_header->signature[ 1 ] );
+
+		byte_stream_copy_to_uint16_big_endian(
+		 volume_header->version,
+		 value_16bit );
+		libcnotify_printf(
+		 "%s: version\t\t\t\t: %" PRIu16 "\n",
+		 function,
+		 value_16bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->attribute_flags,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: number of inodes\t\t\t: %" PRIu32 "\n",
+		 "%s: attribute flags\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
 		libcnotify_printf(
-		 "\n" );
+		 "%s: last mounted version\t\t: %c%c%c%c\n",
+		 function,
+		 volume_header->last_mounted_version[ 0 ],
+		 volume_header->last_mounted_version[ 1 ],
+		 volume_header->last_mounted_version[ 2 ],
+		 volume_header->last_mounted_version[ 3 ] );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->journal_information_block_number,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: journal information block number\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		if( libfdatetime_hfs_time_copy_from_byte_stream(
+		     hfs_time,
+		     volume_header->creation_time,
+		     4,
+		     LIBFDATETIME_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time from byte stream.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfdatetime_hfs_time_copy_to_utf16_string(
+			  hfs_time,
+			  (uint16_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#else
+		result = libfdatetime_hfs_time_copy_to_utf8_string(
+			  hfs_time,
+			  (uint8_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time to string.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: creation time\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 function,
+		 hfs_time_string );
+
+		if( libfdatetime_hfs_time_copy_from_byte_stream(
+		     hfs_time,
+		     volume_header->modification_time,
+		     4,
+		     LIBFDATETIME_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time from byte stream.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfdatetime_hfs_time_copy_to_utf16_string(
+			  hfs_time,
+			  (uint16_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#else
+		result = libfdatetime_hfs_time_copy_to_utf8_string(
+			  hfs_time,
+			  (uint8_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time to string.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: modification time\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 function,
+		 hfs_time_string );
+
+		if( libfdatetime_hfs_time_copy_from_byte_stream(
+		     hfs_time,
+		     volume_header->backup_time,
+		     4,
+		     LIBFDATETIME_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time from byte stream.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfdatetime_hfs_time_copy_to_utf16_string(
+			  hfs_time,
+			  (uint16_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#else
+		result = libfdatetime_hfs_time_copy_to_utf8_string(
+			  hfs_time,
+			  (uint8_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time to string.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: backup time\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 function,
+		 hfs_time_string );
+
+		if( libfdatetime_hfs_time_copy_from_byte_stream(
+		     hfs_time,
+		     volume_header->checked_time,
+		     4,
+		     LIBFDATETIME_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time from byte stream.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfdatetime_hfs_time_copy_to_utf16_string(
+			  hfs_time,
+			  (uint16_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#else
+		result = libfdatetime_hfs_time_copy_to_utf8_string(
+			  hfs_time,
+			  (uint8_t *) hfs_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy HFS time to string.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: checked time\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 function,
+		 hfs_time_string );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->number_of_special_files,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: number of special files\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->number_of_directories,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: number of directories\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->block_size,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: block size\t\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->number_of_blocks,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: number of blocks\t\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->number_of_unused_blocks,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: number of unused blocks\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->next_available_block_number,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: next available block number\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->resource_clump_size,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: resource clump size\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->data_clump_size,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: data clump size\t\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 volume_header->volume_write_count,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: volume write count\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		libcnotify_printf(
+		 "%s: encodings bitmap:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->encodings_bitmap,
+		 8,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: finder information:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->encodings_bitmap,
+		 32,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: allocation file fork data:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->allocation_file_fork_data,
+		 80,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: extents file fork data:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->extents_file_fork_data,
+		 80,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: catalog file fork data:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->catalog_file_fork_data,
+		 80,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: attributes file fork data:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->attributes_file_fork_data,
+		 80,
+		 0 );
+
+		libcnotify_printf(
+		 "%s: startup file fork data:\n",
+		 function );
+		libcnotify_print_data(
+		 volume_header->startup_file_fork_data,
+		 80,
+		 0 );
+
+		if( libfdatetime_hfs_time_free(
+		     &hfs_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free HFS time.",
+			 function );
+
+			goto on_error;
+		}
 	}
 #endif
 	return( 1 );
 
 on_error:
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( hfs_time != NULL )
+	{
+		libfdatetime_hfs_time_free(
+		 &hfs_time,
+		 NULL );
+	}
+#endif
 	return( -1 );
 }
 

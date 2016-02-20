@@ -29,7 +29,7 @@ able to process this file system type.
 [preface]
 == License
 ....
-Copyright (C) 2009-2015, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the 
 terms of the GNU Free Documentation License, Version 1.3 or any later version 
 published by the Free Software Foundation; with no Invariant Sections, no 
@@ -47,6 +47,7 @@ in the section entitled "GNU Free Documentation License".
 Email change
 | 0.0.3 | J.B. Metz | July 2012 | Email change
 | 0.0.4 | J.B. Metz | March 2015 | Switched to asciidoc format.
+| 0.0.5 | J.B. Metz | February 2016 | Textual changes.
 |===
 
 :numbered:
@@ -472,7 +473,7 @@ The bits in the flag byte have the following meaning:
 [cols="1,5",options="header"]
 |===
 | Bit(s) | Description
-| 0 – 4 | Reserved; must be 0
+| 0 - 4 | Reserved; must be 0
 | 5 | Use relative system heap sizing
 | 6 | Execute boot code
 | 7 | Newer boot block header used
@@ -625,7 +626,7 @@ starts at offset 1024 of the volume.
 The allocation block containing the first 1536 bytes (reserved space plus 
 volume header) are marked as used in the allocation file.
 
-The volume header is 352 bytes of size and consists of:
+The volume header is 512 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -637,13 +638,14 @@ The volume header is 352 bytes of size and consists of:
 | 2 | 2 | | The volume version +
 4 => HFS+ +
 5 => HFSX
-| 4 | 4 | | The volume attribute flags
+| 4 | 4 | | The volume attribute flags +
+See section: <<volume_attribute_flags,Volume attribute flags>>
 | 8 | 4 | | Last mounted version +
 '8.10' => used by Mac OS 8.1 to 9.2.2 +
 '10.0' => used by Mac OS X +
 'HFSJ' => used by journaled HFS+/HFSX +
 'fsck' => used by fsck_hfs on Mac OS X
-| 12 | 4 | | Journal information block +
+| 12 | 4 | | Journal information block number +
 This field is used if the volume journaled bit has been set in the volumes attribute flags. +
 The allocation block number of the allocation block which contains the journal information block of the volume's journal.
 | 16 | 4 | | Creation date and time +
@@ -661,16 +663,19 @@ It should equal the number of file records found in the catalog file.
 | 36 | 4 | | Total number of directories (folders) +
 The value does not include the root folder. +
 It should equal the number of folder records in the catalog file minus one.
-| 40 | 4 | | The allocation block (byte) size
-| 44 | 4 | | Total number of allocation blocks
-| 48 | 4 | | Total number of unused (free) allocation blocks
-| 52 | 4 | | Start of next allocation search +
+| 40 | 4 | | The (allocation) block size +
+Contains the number of bytes
+| 44 | 4 | | Total number of (allocation) blocks
+| 48 | 4 | | Number of unused (allocation) blocks
+| 52 | 4 | | Next available (allocation) block number +
 The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
-| 56 | 4 | | Resource clump size +
-The default clump (byte) size for resource forks.
-| 60 | 4 | | Data clump size +
-The default clump (byte) size for data forks.
-| 64 | 4 | | The next unused catalog node identifier +
+| 56 | 4 | | Default resource clump size +
+The default clump size for resource forks. +
+Contains the number of bytes
+| 60 | 4 | | Default data clump size +
+The default clump size for data forks. +
+Contains the number of bytes
+| 64 | 4 | | Next available catalog node identifier +
 Can be a directory or file identifier.
 | 68 | 4 | | Volume write count +
 Contains the number of times the volume has been written to.
@@ -679,19 +684,19 @@ This field keeps track of the text encodings used in the file and folder names o
 See section: <<text_encoding,Text encoding>>
 | 80 | 32 | | Finder information +
 See section: <<finder_information,Finder information>>
-| 112 | 48 | | Allocation file fork data +
+| 112 | 80 | | Allocation file fork data +
 Information about the location and size of the allocation file. +
 See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 160 | 48 | | Extents file fork data +
+| 192 | 80 | | Extents file fork data +
 Information about the location and size of the extents file. +
 See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 208 | 48 | | Catalog file fork data +
+| 272 | 80 | | Catalog file fork data +
 Information about the location and size of the catalog file. +
 See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 256 | 48 | | Attributes file fork data +
+| 352 | 80 | | Attributes file fork data +
 Information about the location and size of the attributes file. +
 See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 304 | 48 | | Startup file fork data +
+| 432 | 80 | | Startup file fork data +
 Information about the location and size of the startup file. +
 See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
 |===
@@ -705,33 +710,33 @@ entirely on the disk are counted here. The remaining space at the end of the
 disk is not used by the volume format (except for storing the alternate volume 
 header, as described above).
 
-==== The volume attribute flags
+==== [[volume_attribute_flags]]Volume attribute flags
 The value attributes flags are specified as following.
 
 [yellow-background]*TODO: determine MSB and LSB*
 
-[cols="1,5",options="header"]
+[cols="1,1,5",options="header"]
 |===
-| Bit(s) | Description
-| 0 – 6 | Reserved; must be 0
-| 7 | Volume hardware lock +
+| Bit(s) | Identifier | Description
+| 0 - 6 | | Reserved; must be 0
+| 7 | | Volume hardware lock +
 This bit is set if the volume is write-protected due to a hardware setting.
-| 8 | Volume unmounted +
+| 8 | | Volume unmounted +
 This bit is set if the volume was correctly flushed before being unmounted or ejected.
-| 9 | Volume spared blocks +
+| 9 | | Volume spared blocks +
 This bit is set if there are any records in the extents overflow file for bad blocks.
-| 10 | Volume no cache required +
+| 10 | | Volume no cache required +
 This bit is set if the blocks from this volume should not be cached.
-| 11 | Boot volume inconsistent +
+| 11 | | Boot volume inconsistent +
 This bit is set if the volume was mounted for writing.
-| 12 | Catalog node identifiers reused +
+| 12 | | Catalog node identifiers reused +
 This bit is set when the next catalog identifier value overflows 32 bits, forcing smaller catalog node identifiers to be reused.
-| 13 | Volume journaled +
+| 13 | | Volume journaled +
 If this bit is set, the volume has a journal.
-| 14 | Reserved
-| 15 | Volume software lock +
+| 14 | | Reserved
+| 15 | | Volume software lock +
 This bit is set if the volume is write-protected due to a software setting.
-| 16 – 31 | Reserved
+| 16 - 31 | | Reserved
 |===
 
 ==== Alternate volume header
@@ -1388,9 +1393,11 @@ The fork data structure is 80 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | Logical (byte) size
-| 8 | 4 | | Clump size
-| 12 | 4 | | Total number of allocation blocks +
+| 0 | 8 | | Logical size +
+Contains the number of bytes
+| 8 | 4 | | Clump size +
+Contains the number of bytes
+| 12 | 4 | | Number of (allocation) blocks +
 The total number of allocation blocks used by all the extents in this fork.
 | 16 | ( 8 x 8 ) = 64 | | The extent (data) record +
 See section: <<hfs_plus_extent_data,The HFS+ extent data>>
@@ -1469,7 +1476,10 @@ The first allocation block index described by the corresponding extent record
 |===
 
 The first eight extents in a fork are held in its catalog file record. So the 
-number of extent records for a fork is ((number of extents - 8 + 7) / 8).
+number of extent records for a fork is:
+....
+((number of extents - 8 + 7) / 8)
+....
 
 === The extent (data) record
 An extent is a contiguous range of allocation blocks that have been allocated 
@@ -1480,7 +1490,10 @@ and number of blocks set to zero.
 
 ==== [[hfs_extent_data]]The HFS extent data
 The HFS extent data consist of an array of three HFS extent descriptors. The 
-size of the HFS extent data is 3 x 4 = 12.
+size of the HFS extent data is:
+....
+3 x 4 = 12
+....
 
 The HFS extent descriptor is 4 bytes of size and consists of:
 
@@ -1493,7 +1506,10 @@ The HFS extent descriptor is 4 bytes of size and consists of:
 
 ==== [[hfs_plus_extent_data]]The HFS+ extent data
 The HFS+ extent data consist of an array of eight HFS+ extent descriptors. The 
-size of the HFS+ extent data is 8 x 8 = 64.
+size of the HFS+ extent data is:
+....
+8 x 8 = 64
+....
 
 The HFS+ extent descriptor is 8 bytes of size and consists of:
 

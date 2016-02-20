@@ -1,5 +1,5 @@
 /*
- * The libfdatetime header wrapper
+ * The HFS fork entry definition
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,37 +19,43 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_LIBFDATETIME_H )
-#define _LIBFSHFS_LIBFDATETIME_H
+#if !defined( _FSHFS_FORK_ENTRY_H )
+#define _FSHFS_FORK_ENTRY_H
 
 #include <common.h>
+#include <types.h>
 
-/* Define HAVE_LOCAL_LIBFDATETIME for local use of libfdatetime
- */
-#if defined( HAVE_LOCAL_LIBFDATETIME )
-
-#include <libfdatetime_date_time_values.h>
-#include <libfdatetime_definitions.h>
-#include <libfdatetime_error.h>
-#include <libfdatetime_fat_date_time.h>
-#include <libfdatetime_filetime.h>
-#include <libfdatetime_hfs_time.h>
-#include <libfdatetime_nsf_timedate.h>
-#include <libfdatetime_posix_time.h>
-#include <libfdatetime_systemtime.h>
-#include <libfdatetime_types.h>
-
-#else
-
-/* If libtool DLL support is enabled set LIBFDATETIME_DLL_IMPORT
- * before including libfdatetime.h
- */
-#if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBFDATETIME_DLL_IMPORT
+#if defined( __cplusplus )
+extern "C" {
 #endif
 
-#include <libfdatetime.h>
+typedef struct fshfs_fork_entry fshfs_fork_entry_t;
 
+struct fshfs_fork_entry
+{
+	/* The logical size
+	 * Consists of 8 bytes
+	 */
+	uint8_t logical_size[ 8 ];
+
+	/* The clump size
+	 * Consists of 4 bytes
+	 */
+	uint8_t clump_size[ 4 ];
+
+	/* The number of blocks
+	 * Consists of 4 bytes
+	 */
+	uint8_t number_of_blocks[ 4 ];
+
+	/* The first 8 extents
+	 * Consists of 8 x 8 bytes
+	 */
+	uint8_t extents[ 64 ];
+};
+
+#if defined( __cplusplus )
+}
 #endif
 
 #endif
