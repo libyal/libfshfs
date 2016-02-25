@@ -182,6 +182,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_fork_descriptor.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_io_handle.c"
 				>
 			</File>
@@ -204,6 +208,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\libfshfs\fshfs_fork.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\fshfs_volume.h"
 				>
 			</File>
@@ -221,6 +229,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_extern.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_fork_descriptor.h"
 				>
 			</File>
 			<File

@@ -25,6 +25,7 @@
 #include <types.h>
 
 #include "libfshfs_debug.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
@@ -188,18 +189,19 @@ int libfshfs_io_handle_read_volume_header(
 {
 	uint8_t volume_header_data[ 1024 ];
 
-	fshfs_volume_header_t *volume_header = NULL;
-	static char *function                = "libfshfs_io_handle_read_volume_header";
-	ssize_t read_count                   = 0;
+	fshfs_volume_header_t *volume_header        = NULL;
+	static char *function                       = "libfshfs_io_handle_read_volume_header";
+	ssize_t read_count                          = 0;
 
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	libcstring_system_character_t hfs_time_string[ 32 ];
 
-	libfdatetime_hfs_time_t *hfs_time    = NULL;
-	uint32_t value_32bit                 = 0;
-	uint16_t value_16bit                 = 0;
-	int result                           = 0;
+	libfdatetime_hfs_time_t *hfs_time           = NULL;
+	libfshfs_fork_descriptor_t *fork_descriptor = NULL;
+	uint32_t value_32bit                        = 0;
+	uint16_t value_16bit                        = 0;
+	int result                                  = 0;
 #endif
 
 	if( io_handle == NULL )
@@ -622,46 +624,6 @@ int libfshfs_io_handle_read_volume_header(
 		 32,
 		 0 );
 
-		libcnotify_printf(
-		 "%s: allocation file fork data:\n",
-		 function );
-		libcnotify_print_data(
-		 volume_header->allocation_file_fork_data,
-		 80,
-		 0 );
-
-		libcnotify_printf(
-		 "%s: extents file fork data:\n",
-		 function );
-		libcnotify_print_data(
-		 volume_header->extents_file_fork_data,
-		 80,
-		 0 );
-
-		libcnotify_printf(
-		 "%s: catalog file fork data:\n",
-		 function );
-		libcnotify_print_data(
-		 volume_header->catalog_file_fork_data,
-		 80,
-		 0 );
-
-		libcnotify_printf(
-		 "%s: attributes file fork data:\n",
-		 function );
-		libcnotify_print_data(
-		 volume_header->attributes_file_fork_data,
-		 80,
-		 0 );
-
-		libcnotify_printf(
-		 "%s: startup file fork data:\n",
-		 function );
-		libcnotify_print_data(
-		 volume_header->startup_file_fork_data,
-		 80,
-		 0 );
-
 		if( libfdatetime_hfs_time_free(
 		     &hfs_time,
 		     error ) != 1 )
@@ -675,12 +637,139 @@ int libfshfs_io_handle_read_volume_header(
 
 			goto on_error;
 		}
+		if( libfshfs_fork_descriptor_initialize(
+		     &fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: allocation file fork descriptor:\n",
+		 function );
+
+		if( libfshfs_fork_descriptor_read(
+		     fork_descriptor,
+		     volume_header->allocation_file_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read allocation file fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: extents file fork descriptor:\n",
+		 function );
+
+		if( libfshfs_fork_descriptor_read(
+		     fork_descriptor,
+		     volume_header->extents_file_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read extents file fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: catalog file fork descriptor:\n",
+		 function );
+
+		if( libfshfs_fork_descriptor_read(
+		     fork_descriptor,
+		     volume_header->catalog_file_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read catalog file fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: attributes file fork descriptor:\n",
+		 function );
+
+		if( libfshfs_fork_descriptor_read(
+		     fork_descriptor,
+		     volume_header->attributes_file_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read attributes file fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%s: startup file fork descriptor:\n",
+		 function );
+
+		if( libfshfs_fork_descriptor_read(
+		     fork_descriptor,
+		     volume_header->startup_file_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read startup file fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_fork_descriptor_free(
+		     &fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
 	}
 #endif
 	return( 1 );
 
 on_error:
 #if defined( HAVE_DEBUG_OUTPUT )
+	if( fork_descriptor != NULL )
+	{
+		libfshfs_fork_descriptor_free(
+		 &fork_descriptor,
+		 NULL );
+	}
 	if( hfs_time != NULL )
 	{
 		libfdatetime_hfs_time_free(

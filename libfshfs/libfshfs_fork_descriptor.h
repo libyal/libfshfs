@@ -1,5 +1,5 @@
 /*
- * The HFS fork definitions
+ * Fork descriptor functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,40 +19,48 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FSHFS_FORK_H )
-#define _FSHFS_FORK_H
+#if !defined( _LIBFSHFS_FORK_DESCRIPTOR_H )
+#define _LIBFSHFS_FORK_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
+
+#include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct fshfs_fork_descriptor fshfs_fork_descriptor_t;
+typedef struct libfshfs_fork_descriptor libfshfs_fork_descriptor_t;
 
-struct fshfs_fork_descriptor
+struct libfshfs_fork_descriptor
 {
-	/* The logical size
-	 * Consists of 8 bytes
+	/* The (logical) size
 	 */
-	uint8_t logical_size[ 8 ];
+	uint64_t size;
 
 	/* The clump size
-	 * Consists of 4 bytes
 	 */
-	uint8_t clump_size[ 4 ];
+	uint32_t clump_size;
 
 	/* The number of blocks
-	 * Consists of 4 bytes
 	 */
-	uint8_t number_of_blocks[ 4 ];
-
-	/* The first 8 extents
-	 * Consists of 8 x ( 4 + 4 ) = 64 bytes
-	 */
-	uint8_t extents[ 64 ];
+	uint32_t number_of_blocks;
 };
+
+int libfshfs_fork_descriptor_initialize(
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_fork_descriptor_free(
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_fork_descriptor_read(
+     libfshfs_fork_descriptor_t *fork_descriptor,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

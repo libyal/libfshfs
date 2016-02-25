@@ -684,21 +684,21 @@ This field keeps track of the text encodings used in the file and folder names o
 See section: <<text_encoding,Text encoding>>
 | 80 | 32 | | Finder information +
 See section: <<finder_information,Finder information>>
-| 112 | 80 | | Allocation file fork data +
+| 112 | 80 | | Allocation file fork descriptor +
 Information about the location and size of the allocation file. +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 192 | 80 | | Extents file fork data +
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
+| 192 | 80 | | Extents file fork descriptor +
 Information about the location and size of the extents file. +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 272 | 80 | | Catalog file fork data +
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
+| 272 | 80 | | Catalog file fork descriptor +
 Information about the location and size of the catalog file. +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 352 | 80 | | Attributes file fork data +
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
+| 352 | 80 | | Attributes file fork descriptor +
 Information about the location and size of the attributes file. +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
-| 432 | 80 | | Startup file fork data +
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
+| 432 | 80 | | Startup file fork descriptor +
 Information about the location and size of the startup file. +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
 
 ==== Total number of allocation blocks
@@ -1341,9 +1341,9 @@ See section: <<hfs_plus_exteded_file_information,HFS+ extended file information>
 | 78 | 4 | | Text encoding
 | 82 | 4 | 0x00 | Reserved
 | 86 | 80 | | Data fork +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 | 166 | 80 | | Resource fork +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
 
 ==== The catalog file thread record data
@@ -1381,14 +1381,16 @@ Contains an Unicode string
 |===
 
 === File forks
-Forks in HFS and HFS+ can be compared to streams in NTFS. In HFS+ the fork data 
-is grouped in a separate data structure. HFS+ also defines named forks. Thes 
-named forks are not stored in the catalog file but in the attributes file.
+Forks in HFS and HFS+ can be compared to streams in NTFS. In HFS+ the fork
+values are grouped in a separate fork descriptor structure. HFS+ also defines
+named forks. These named forks are not stored in the catalog file but in
+the attributes file.
 
-==== [[hfs_plus_fork_data_structure]]HFS+ fork data structure
-HFS+ maintains information about file contents using the HFS+ fork data structure.
+==== [[hfs_plus_fork_descriptor_structure]]HFS+ fork descriptor structure
+HFS+ maintains information about file contents using the HFS+ fork descriptor 
+structure (also referred to as fork data structure).
 
-The fork data structure is 80 bytes of size and consists of:
+The fork descriptor structure is 80 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1399,12 +1401,12 @@ Contains the number of bytes
 Contains the number of bytes
 | 12 | 4 | | Number of (allocation) blocks +
 The total number of allocation blocks used by all the extents in this fork.
-| 16 | ( 8 x 8 ) = 64 | | The extent (data) record +
-See section: <<hfs_plus_extent_data,The HFS+ extent data>>
+| 16 | ( 8 x ( 4 + 4 ) ) = 64 | | The extent (data) record +
+See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
 
 ===== Clump size
-For fork data structures:
+For fork descriptor structures:
 
 * in the volume header this is the fork's clump size, which is used in preference to the default clump size in the volume header.
 * in a catalog record, this value was intended to store a per-fork clump size to override the default clump size in the volume header. However, Apple implementations prior to Mac OS X version 10.3 ignored this field. As of Mac OS X version 10.3, this field is used to keep track of the number of blocks actually read from the fork.
@@ -1504,9 +1506,9 @@ The HFS extent descriptor is 4 bytes of size and consists of:
 | 2 | 2 | | The number of allocation blocks in the extent
 |===
 
-==== [[hfs_plus_extent_data]]The HFS+ extent data
-The HFS+ extent data consist of an array of eight HFS+ extent descriptors. The 
-size of the HFS+ extent data is:
+==== [[hfs_plus_extents_array]]The HFS+ extents array
+The HFS+ extents array (or extent data) consist of an array of eight HFS+ 
+extent descriptors. The size of the HFS+ extent data is:
 ....
 8 x 8 = 64
 ....
@@ -1592,8 +1594,8 @@ The attributes file defines two types of attributes:
 1. Fork data attributes, which are used for attributes whose data is large. The 
 attribute's data is stored in extents on the volume and the attribute merely 
 contains a reference to those extents.
-2. Extension attributes, which are used to augment fork data attributes, 
-allowing an fork data attribute to have more than eight extents.
+2. Extension attributes, which are used to augment fork descriptor structure, 
+allowing a forks to have more than eight extents.
 
 ==== The HFS+ attributes file data record header
 Each attributes file record starts with a type value, which describes the type 
@@ -1617,8 +1619,8 @@ The HFS+ attributes file fork data attribute is 84 bytes of size and consists of
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | 0x00 | Reserved
-| 4 | 80 | | Attribute fork data +
-See section: <<hfs_plus_fork_data_structure,HFS+ fork data structure>>
+| 4 | 80 | | Attribute fork descriptor +
+See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
 
 ==== The extension attribute
@@ -1629,7 +1631,7 @@ The HFS+ attributes file extension attribute is 68 bytes of size and consists of
 | Offset | Size | Value | Description
 | 0 | 4 | 0x00 | Reserved
 | 4 | ( 8 x 8 ) = 64 | | Attribute extent data +
-See section: <<hfs_plus_extent_data,The HFS+ extent data>>
+See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
 
 == The HFS+ startup file
@@ -1756,7 +1758,7 @@ Recording Hot File Temperatures
 
 The recording phase gathers information about file usage over time. In order to gather useful statistics, the recording phase may last longer than the duration of a single mount. Therefore, information about file usage is stored on disk so that it can accumulate over time.
 
-The clumpSize field of the fork data structure is used to record the amount of data actually read from a fork. Since the field is only 32 bits long, it stores the number of allocation blocks read from the file. The fork's temperature can be computed by dividing its clumpSize by its totalBlocks.
+The clumpSize field of the fork descriptor structure is used to record the amount of data actually read from a fork. Since the field is only 32 bits long, it stores the number of allocation blocks read from the file. The fork's temperature can be computed by dividing its clumpSize by its totalBlocks.
 ....
 
 == The HFS+ journal

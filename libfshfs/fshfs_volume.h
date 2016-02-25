@@ -138,30 +138,30 @@ struct fshfs_volume_header
 	 */
 	uint8_t finder_information[ 32 ];
 
-	/* The allocation file fork data
+	/* The allocation file fork descriptor
 	 * Consists of 80 bytes
 	 */
-	uint8_t allocation_file_fork_data[ 80 ];
+	uint8_t allocation_file_fork_descriptor[ 80 ];
 
-	/* The extents file fork data
+	/* The extents file fork descriptor
 	 * Consists of 80 bytes
 	 */
-	uint8_t extents_file_fork_data[ 80 ];
+	uint8_t extents_file_fork_descriptor[ 80 ];
 
-	/* The catalog file fork data
+	/* The catalog file fork descriptor
 	 * Consists of 80 bytes
 	 */
-	uint8_t catalog_file_fork_data[ 80 ];
+	uint8_t catalog_file_fork_descriptor[ 80 ];
 
-	/* The attributes file fork data
+	/* The attributes file fork descriptor
 	 * Consists of 80 bytes
 	 */
-	uint8_t attributes_file_fork_data[ 80 ];
+	uint8_t attributes_file_fork_descriptor[ 80 ];
 
-	/* The startup file fork data
+	/* The startup file fork descriptor
 	 * Consists of 80 bytes
 	 */
-	uint8_t startup_file_fork_data[ 80 ];
+	uint8_t startup_file_fork_descriptor[ 80 ];
 };
 
 #if defined( __cplusplus )

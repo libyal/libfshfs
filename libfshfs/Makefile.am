@@ -26,6 +26,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_definitions.h \
 	libfshfs_error.c libfshfs_error.h \
 	libfshfs_extern.h \
+	libfshfs_fork_descriptor.c libfshfs_fork_descriptor.h \
 	libfshfs_io_handle.c libfshfs_io_handle.h \
 	libfshfs_libbfio.h \
 	libfshfs_libcdata.h \
