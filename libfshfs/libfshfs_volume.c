@@ -25,6 +25,7 @@
 
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -740,6 +741,71 @@ int libfshfs_volume_close(
 
 		result = -1;
 	}
+	if( libfshfs_fork_descriptor_free(
+	     &( internal_volume->allocation_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free allocation file fork descriptor.",
+		 function );
+
+		result = -1;
+	}
+	if( libfshfs_fork_descriptor_free(
+	     &( internal_volume->extents_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free extents file fork descriptor.",
+		 function );
+
+		result = -1;
+	}
+	if( libfshfs_fork_descriptor_free(
+	     &( internal_volume->catalog_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free catalog file fork descriptor.",
+		 function );
+
+		result = -1;
+	}
+	if( libfshfs_fork_descriptor_free(
+	     &( internal_volume->attributes_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free attributes file fork descriptor.",
+		 function );
+
+		result = -1;
+	}
+	if( libfshfs_fork_descriptor_free(
+	     &( internal_volume->startup_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free startup file fork descriptor.",
+		 function );
+
+		result = -1;
+	}
 	return( result );
 }
 
@@ -776,6 +842,71 @@ int libfshfs_volume_open_read(
 
 		return( -1 );
 	}
+	if( libfshfs_fork_descriptor_initialize(
+	     &( internal_volume->allocation_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create allocation file fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_initialize(
+	     &( internal_volume->extents_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents file fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_initialize(
+	     &( internal_volume->catalog_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create catalog file fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_initialize(
+	     &( internal_volume->attributes_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create attributes file fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_initialize(
+	     &( internal_volume->startup_file_fork_descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create startup file fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -787,6 +918,11 @@ int libfshfs_volume_open_read(
 	     internal_volume->io_handle,
 	     file_io_handle,
 	     file_offset,
+	     internal_volume->allocation_file_fork_descriptor,
+	     internal_volume->extents_file_fork_descriptor,
+	     internal_volume->catalog_file_fork_descriptor,
+	     internal_volume->attributes_file_fork_descriptor,
+	     internal_volume->startup_file_fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -797,10 +933,45 @@ int libfshfs_volume_open_read(
 		 function,
 		 file_offset );
 
-		return( -1 );
+		goto on_error;
 	}
-/* TODO */
+	if( internal_volume->catalog_file_fork_descriptor->size > 0 )
+	{
+	}
 	return( 1 );
+
+on_error:
+	if( internal_volume->startup_file_fork_descriptor == NULL )
+	{
+		libfshfs_fork_descriptor_free(
+		 &( internal_volume->startup_file_fork_descriptor ),
+		 NULL );
+	}
+	if( internal_volume->attributes_file_fork_descriptor == NULL )
+	{
+		libfshfs_fork_descriptor_free(
+		 &( internal_volume->attributes_file_fork_descriptor ),
+		 NULL );
+	}
+	if( internal_volume->catalog_file_fork_descriptor == NULL )
+	{
+		libfshfs_fork_descriptor_free(
+		 &( internal_volume->catalog_file_fork_descriptor ),
+		 NULL );
+	}
+	if( internal_volume->extents_file_fork_descriptor == NULL )
+	{
+		libfshfs_fork_descriptor_free(
+		 &( internal_volume->extents_file_fork_descriptor ),
+		 NULL );
+	}
+	if( internal_volume->allocation_file_fork_descriptor == NULL )
+	{
+		libfshfs_fork_descriptor_free(
+		 &( internal_volume->allocation_file_fork_descriptor ),
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Retrieves the size of the UTF-8 encoded label

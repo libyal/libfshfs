@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
@@ -38,6 +39,14 @@ typedef struct libfshfs_io_handle libfshfs_io_handle_t;
 
 struct libfshfs_io_handle
 {
+	/* The file system type
+	 */
+	uint8_t file_system_type;
+
+	/* The block size
+	 */
+	uint32_t block_size;
+
 	/* Value to indicate if abort was signalled
 	 */
 	int abort;
@@ -59,6 +68,11 @@ int libfshfs_io_handle_read_volume_header(
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
+     libfshfs_fork_descriptor_t *allocation_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *extents_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *catalog_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *attributes_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *startup_file_fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

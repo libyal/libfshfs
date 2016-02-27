@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_extern.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
@@ -39,6 +40,26 @@ typedef struct libfshfs_internal_volume libfshfs_internal_volume_t;
 
 struct libfshfs_internal_volume
 {
+	/* The allocation file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *allocation_file_fork_descriptor;
+
+	/* The extents file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *extents_file_fork_descriptor;
+
+	/* The catalog file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *catalog_file_fork_descriptor;
+
+	/* The attributes file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *attributes_file_fork_descriptor;
+
+	/* The startup file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *startup_file_fork_descriptor;
+
 	/* The IO handle
 	 */
 	libfshfs_io_handle_t *io_handle;

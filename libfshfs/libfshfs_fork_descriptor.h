@@ -46,6 +46,10 @@ struct libfshfs_fork_descriptor
 	/* The number of blocks
 	 */
 	uint32_t number_of_blocks;
+
+	/* The extents
+	 */
+	uint32_t extents[ 8 ][ 2 ];
 };
 
 int libfshfs_fork_descriptor_initialize(
