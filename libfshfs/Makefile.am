@@ -19,9 +19,13 @@ AM_CPPFLAGS = \
 lib_LTLIBRARIES = libfshfs.la
 
 libfshfs_la_SOURCES = \
+	fshfs_btree.h \
 	fshfs_fork.h \
 	fshfs_volume.h \
 	libfshfs.c \
+	libfshfs_allocation_block.c libfshfs_allocation_block.h \
+	libfshfs_allocation_block_vector.c libfshfs_allocation_block_vector.h \
+	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_debug.c libfshfs_debug.h \
 	libfshfs_definitions.h \
 	libfshfs_error.c libfshfs_error.h \

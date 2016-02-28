@@ -24,7 +24,6 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libfshfs_debug.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"

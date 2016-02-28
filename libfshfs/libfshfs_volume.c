@@ -23,15 +23,14 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_btree_file.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
-#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libcstring.h"
-#include "libfshfs_libuna.h"
 #include "libfshfs_volume.h"
 
 /* Creates a volume
@@ -817,8 +816,9 @@ int libfshfs_volume_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_volume_open_read";
-	off64_t file_offset   = 1024;
+	libfshfs_btree_file_t *btree_file = NULL;
+	static char *function             = "libfshfs_volume_open_read";
+	off64_t file_offset               = 1024;
 
 	if( internal_volume == NULL )
 	{
@@ -937,10 +937,66 @@ int libfshfs_volume_open_read(
 	}
 	if( internal_volume->catalog_file_fork_descriptor->size > 0 )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "Reading catalog B-tree file:\n" );
+		}
+#endif
+		if( libfshfs_btree_file_initialize(
+		     &btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create B-tree file.",
+			 function );
+
+			goto on_error;
+		}
+/* TODO what about extra extents? */
+		if( libfshfs_btree_file_read(
+		     btree_file,
+		     internal_volume->io_handle,
+		     file_io_handle,
+		     internal_volume->catalog_file_fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to read catalog B-tree file.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_btree_file_free(
+		     &btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free B-tree file.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	return( 1 );
 
 on_error:
+	if( btree_file == NULL )
+	{
+		libfshfs_btree_file_free(
+		 &btree_file,
+		 NULL );
+	}
 	if( internal_volume->startup_file_fork_descriptor == NULL )
 	{
 		libfshfs_fork_descriptor_free(

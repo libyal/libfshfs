@@ -174,6 +174,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block_vector.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_file.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_debug.c"
 				>
 			</File>
@@ -208,11 +220,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\libfshfs\fshfs_btree.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\fshfs_fork.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\fshfs_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block_vector.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_file.h"
 				>
 			</File>
 			<File

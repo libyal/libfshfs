@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * The allocation block vector functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,27 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DEBUG_H )
-#define _LIBFSHFS_DEBUG_H
+#if !defined( _LIBFSHFS_ALLOCATION_BLOCK_VECTOR_H )
+#define _LIBFSHFS_ALLOCATION_BLOCK_VECTOR_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_libbfio.h"
+#include "libfshfs_fork_descriptor.h"
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
-
-void libfshfs_debug_print_volume_attribute_flags(
-      uint32_t volume_attribute_flags );
-
-const char *libfshfs_debug_print_btree_node_type(
-             uint8_t btree_node_type );
-
-int libfshfs_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
+int libfshfs_allocation_block_vector_initialize(
+     libfdata_vector_t **allocation_block_vector,
+     libfshfs_io_handle_t *io_handle,
+     uint32_t block_size,
+     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error );
-
-#endif
 
 #if defined( __cplusplus )
 }

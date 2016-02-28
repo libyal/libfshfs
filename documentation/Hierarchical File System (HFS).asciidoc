@@ -120,7 +120,7 @@ principal differences:
 
 * the size of nodes
 * the size of keys within index nodes
-* the size of a key length.
+* the size of a key length
 
 A B-tree file entirely consists of fixed size B‑tree nodes.
 
@@ -153,37 +153,43 @@ The tree node contains records, which are used for a variety of purposes. Some r
 A B-tree file consists of 512 byte nodes. Each node has the same structure and 
 consists of three main parts:
 
-* the node descriptor;
-* the node records;
-* the node record offsets.
+* the node descriptor
+* the node records
+* the node record offsets
 
 ==== The B-tree node descriptor
-The node descriptor contains information about the node, like the forward and 
-backward links to other nodes. 
+The node descriptor (BTNodeDescriptor) contains information about the node, 
+like the forward and backward links to other nodes. 
 
 The B-tree node descriptor is 14 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | The next tree node number +
-Forward link +
+| 0 | 4 | | The next tree node number (Forward link) +
 Contains 0 if empty
-| 4 | 4 | | The previous tree node number +
-Backward link +
+| 4 | 4 | | The previous tree node number (Backward link) +
 Contains 0 if empty
 | 8 | 1 | | The node type +
 Signed 8-bit integer +
-0x00 => index node +
-0x01 => header node +
-0x02 => map node +
-0xff => leaf node
+See section: <<btree_node_type,B-Tree node type>>
 | 9 | 1 | | The node level +
 Signed 8-bit integer +
-The root node is 0, with a maximum depth of 8.
+The root node level is 0, with a maximum depth of 8.
 | 10 | 2 | | The number of records
-| 12 | 2 | 0 | Reserved +
-Should be empty
+| 12 | 2 | 0 | [yellow-background]*Unknown (Reserved)* +
+Should contain 0-byte values
+|===
+
+===== [[btree_node_type]]B-Tree node type
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| -1 | kBTLeafNode | leaf node
+| 0 | kBTIndexNode | index node
+| 1 | kBTHeaderNode | header node
+| 2 | kBTMapNode | map node
 |===
 
 ==== The B-tree node record
@@ -218,33 +224,33 @@ The records in each node are always grouped so that their keys are in ascending
 order. The nodes on any given level are linked in such a way as to preserve the 
 ascending order of record keys throughout that level.
 
-==== The B-tree node offset
-The B-tree node offset is a 16-bit integer referring to the start offset of the 
-B-tree node record. The B-tree node offset of the first record is found at 
-offset 510 (0x1fe), the second at 508 (0x1fc), etc. The last B-tree node offset 
-is used to signify the start of the B-tree node's free space.
+==== The B-tree record offsets
+The B-tree record offsets are an array of 16-bit integers relative from the 
+start of the B-tree node record. The first record offset is found at offset 510 
+(0x1fe) in the node data, the second at 508 (0x1fc), etc. An additional record
+offset is added at the end to signify the start of the free space.
 
-=== The header node
-The header node contains basic information about the B-tree like the:
-
-* size and depth of the tree;
-* location of the root node.
-
-For both the extents overflow and the catalog file the location of the header 
-node is stored in the first 2 bytes (first record) of the corresponding extent 
-data records of the MDB. The location is stored as the allocation block index.
-
-The header node contains three records:
+=== The B-tree header node
+The B-tree header node is stored in the first node of the B-tree file and 
+contains 3 records:
 
 * the B-tree header record;
 * the user data record, which consist of 128 bytes (reserved within HFS);
 * the B-tree map record.
 
-These record do not have keys.
+[NOTE]
+The records in the B-tree header node do not have keys.
+
+[yellow-background]*TODO: reword*
+....
+For both the extents overflow and the catalog file the location of the header 
+node is stored in the first 2 bytes (first record) of the corresponding extent 
+data records of the MDB. The location is stored as the allocation block index.
+....
 
 ==== The B-tree header record
-The B-tree header record contains information about the beginning of the tree, 
-as well as the size of the tree.
+The B-tree header record (BTHeaderRec) contains information about the beginning 
+of the tree, as well as the size of the tree.
 
 The B-tree header record is 106 bytes of size and consists of:
 
@@ -620,8 +626,8 @@ In HFS+ the boot blocks have been removed, therefore the first two blocks are
 reserved (unused).
 
 === Volume header
-The volume header replaces the master directory block (MDB). The volume header 
-starts at offset 1024 of the volume.
+The volume header (HFSPlusVolumeHeader) replaces the master directory block 
+(MDB). The volume header starts at offset 1024 of the volume.
 
 The allocation block containing the first 1536 bytes (reserved space plus 
 volume header) are marked as used in the allocation file.
@@ -719,22 +725,22 @@ The value attributes flags are specified as following.
 |===
 | Bit(s) | Identifier | Description
 | 0 - 6 | | Reserved; must be 0
-| 7 | | Volume hardware lock +
+| 7 | kHFSVolumeHardwareLockBit | Volume hardware lock +
 This bit is set if the volume is write-protected due to a hardware setting.
-| 8 | | Volume unmounted +
+| 8 | kHFSVolumeUnmountedBit | Volume unmounted +
 This bit is set if the volume was correctly flushed before being unmounted or ejected.
-| 9 | | Volume spared blocks +
+| 9 | kHFSVolumeSparedBlocksBit | Volume spared blocks +
 This bit is set if there are any records in the extents overflow file for bad blocks.
-| 10 | | Volume no cache required +
+| 10 | kHFSVolumeNoCacheRequiredBit | Volume no cache required +
 This bit is set if the blocks from this volume should not be cached.
-| 11 | | Boot volume inconsistent +
+| 11 | kHFSBootVolumeInconsistentBit | Boot volume inconsistent +
 This bit is set if the volume was mounted for writing.
-| 12 | | Catalog node identifiers reused +
+| 12 | kHFSCatalogNodeIDsReusedBit | Catalog node identifiers reused +
 This bit is set when the next catalog identifier value overflows 32 bits, forcing smaller catalog node identifiers to be reused.
-| 13 | | Volume journaled +
+| 13 | kHFSVolumeJournaledBit | Volume journaled +
 If this bit is set, the volume has a journal.
 | 14 | | Reserved
-| 15 | | Volume software lock +
+| 15 | kHFSVolumeSoftwareLockBit | Volume software lock +
 This bit is set if the volume is write-protected due to a software setting.
 | 16 - 31 | | Reserved
 |===
@@ -1388,7 +1394,7 @@ the attributes file.
 
 ==== [[hfs_plus_fork_descriptor_structure]]HFS+ fork descriptor structure
 HFS+ maintains information about file contents using the HFS+ fork descriptor 
-structure (also referred to as fork data structure).
+structure (HFSPlusForkData).
 
 The fork descriptor structure is 80 bytes of size and consists of:
 
@@ -1507,13 +1513,14 @@ The HFS extent descriptor is 4 bytes of size and consists of:
 |===
 
 ==== [[hfs_plus_extents_array]]The HFS+ extents array
-The HFS+ extents array (or extent data) consist of an array of eight HFS+ 
+The HFS+ extents array (HFSPlusExtentRecord) consist of an array of eight HFS+ 
 extent descriptors. The size of the HFS+ extent data is:
 ....
 8 x 8 = 64
 ....
 
-The HFS+ extent descriptor is 8 bytes of size and consists of:
+The HFS+ extent descriptor (HFSPlusExtentDescriptor) is 8 bytes of size and 
+consists of:
 
 [cols="1,1,1,5",options="header"]
 |===

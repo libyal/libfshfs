@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * Cluster block functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,56 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DEBUG_H )
-#define _LIBFSHFS_DEBUG_H
+#if !defined( _LIBFSHFS_ALLOCATION_BLOCK_H )
+#define _LIBFSHFS_ALLOCATION_BLOCK_H
 
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libfcache.h"
+#include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+typedef struct libfshfs_allocation_block libfshfs_allocation_block_t;
 
-void libfshfs_debug_print_volume_attribute_flags(
-      uint32_t volume_attribute_flags );
+struct libfshfs_allocation_block
+{
+	/* The data
+	 */
+	uint8_t *data;
 
-const char *libfshfs_debug_print_btree_node_type(
-             uint8_t btree_node_type );
+	/* The data size
+	 */
+	size_t data_size;
+};
 
-int libfshfs_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
+int libfshfs_allocation_block_initialize(
+     libfshfs_allocation_block_t **allocation_block,
+     size_t data_size,
      libcerror_error_t **error );
 
-#endif
+int libfshfs_allocation_block_free(
+     libfshfs_allocation_block_t **allocation_block,
+     libcerror_error_t **error );
+
+int libfshfs_allocation_block_read_element_data(
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfdata_vector_t *vector,
+     libfcache_cache_t *cache,
+     int element_index,
+     int element_data_file_index,
+     off64_t allocation_block_offset,
+     size64_t allocation_block_size,
+     uint32_t range_flags,
+     uint8_t read_flags,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

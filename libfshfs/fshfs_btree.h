@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * The HFS B-tree definitions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,50 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DEBUG_H )
-#define _LIBFSHFS_DEBUG_H
+#if !defined( _FSHFS_BTREE_H )
+#define _FSHFS_BTREE_H
 
 #include <common.h>
 #include <types.h>
-
-#include "libfshfs_libbfio.h"
-#include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+typedef struct fshfs_btree_node_descriptor fshfs_btree_node_descriptor_t;
 
-void libfshfs_debug_print_volume_attribute_flags(
-      uint32_t volume_attribute_flags );
+struct fshfs_btree_node_descriptor
+{
+	/* The next node number
+	 * Consists of 4 bytes
+	 */
+	uint8_t next_node_number[ 4 ];
 
-const char *libfshfs_debug_print_btree_node_type(
-             uint8_t btree_node_type );
+	/* The previous node number
+	 * Consists of 4 bytes
+	 */
+	uint8_t previous_node_number[ 4 ];
 
-int libfshfs_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
-     libcerror_error_t **error );
+	/* The node type
+	 * Consists of 1 byte
+	 */
+	uint8_t node_type;
 
-#endif
+	/* The node level
+	 * Consists of 1 byte
+	 */
+	uint8_t node_level;
+
+	/* The number of records
+	 * Consists of 2 bytes
+	 */
+	uint8_t number_of_records[ 2 ];
+
+	/* Unknown
+	 * Consists of 2 bytes
+	 */
+	uint8_t unknown1[ 2 ];
+};
 
 #if defined( __cplusplus )
 }

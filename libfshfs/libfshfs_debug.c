@@ -39,8 +39,32 @@ void libfshfs_debug_print_volume_attribute_flags(
 	if( ( volume_attribute_flags & 0x00000040UL ) != 0 )
 	{
 		libcnotify_printf(
-		 "\tVolume hardware lock\n" );
+		 "\tVolume hardware lock (kHFSVolumeHardwareLockBit)\n" );
 	}
+/* TODO add remaining flags */
+/* TODO add definitions for flags */
+}
+
+/* Prints the B-tree node type
+ */
+const char *libfshfs_debug_print_btree_node_type(
+             uint8_t btree_node_type )
+{
+	switch( btree_node_type )
+	{
+		case LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE:
+			return( "Leaf node (kBTLeafNode)" );
+
+		case LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE:
+			return( "Index node (kBTIndexNode)" );
+
+		case LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE:
+			return( "Header node (kBTHeaderNode)" );
+
+		case LIBFSHFS_BTREE_NODE_TYPE_MAP_NODE:
+			return( "Map node (kBTMapNode)" );
+	}
+	return( "Unknown" );
 }
 
 /* Prints the read offsets

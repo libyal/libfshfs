@@ -88,10 +88,10 @@ struct fshfs_volume_header
 	 */
 	uint8_t number_of_directories[ 4 ];
 
-	/* The block size
+	/* The allocation block size
 	 * Consists of 4 bytes
 	 */
-	uint8_t block_size[ 4 ];
+	uint8_t allocation_block_size[ 4 ];
 
 	/* The number of blocks
 	 * Consists of 4 bytes

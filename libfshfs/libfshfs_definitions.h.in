@@ -81,5 +81,15 @@ enum LIBFSHFS_FILE_SYSTEM_TYPES
 
 #endif
 
+/* The B-tree node types
+ */
+enum LIBFSHFS_BTREE_NODE_TYPES
+{
+        LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE				= -1,
+        LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE				= 0,
+        LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE				= 1,
+        LIBFSHFS_BTREE_NODE_TYPE_MAP_NODE				= 2
+};
+
 #endif
 

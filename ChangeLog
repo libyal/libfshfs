@@ -1,5 +1,18 @@
+Debug info:
+* create a B-tree node vector
+* complete and use libfshfs_debug_print_volume_attribute_flags
+
 Format support:
 * implement format suport
+
+20160228
+* worked on format support
+
+20160227
+* worked on format support
+
+20160226
+* worked on format support
 
 20160220
 * worked on format support

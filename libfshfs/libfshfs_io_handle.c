@@ -302,8 +302,8 @@ int libfshfs_io_handle_read_volume_header(
 		goto on_error;
 	}
 	byte_stream_copy_to_uint32_big_endian(
-	 volume_header->block_size,
-	 io_handle->block_size );
+	 volume_header->allocation_block_size,
+	 io_handle->allocation_block_size );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -564,9 +564,9 @@ int libfshfs_io_handle_read_volume_header(
 		 value_32bit );
 
 		libcnotify_printf(
-		 "%s: block size\t\t\t: %" PRIu32 "\n",
+		 "%s: allocation block size\t\t: %" PRIu32 "\n",
 		 function,
-		 io_handle->block_size );
+		 io_handle->allocation_block_size );
 
 		byte_stream_copy_to_uint32_big_endian(
 		 volume_header->number_of_blocks,
