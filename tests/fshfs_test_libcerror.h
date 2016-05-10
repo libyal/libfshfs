@@ -1,5 +1,5 @@
 /*
- * The internal libclocale header
+ * The internal libcerror header
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_LIBCLOCALE_H )
-#define _LIBFSHFS_LIBCLOCALE_H
+#if !defined( _FSHFS_TEST_LIBCERROR_H )
+#define _FSHFS_TEST_LIBCERROR_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBCLOCALE for local use of libclocale
+/* Define HAVE_LOCAL_LIBCERROR for local use of libcerror
  */
-#if defined( HAVE_LOCAL_LIBCLOCALE )
+#if defined( HAVE_LOCAL_LIBCERROR )
 
-#include <libclocale_codepage.h>
-#include <libclocale_definitions.h>
-#include <libclocale_locale.h>
-#include <libclocale_support.h>
+#include <libcerror_definitions.h>
+#include <libcerror_error.h>
+#include <libcerror_system.h>
+#include <libcerror_types.h>
 
 #else
 
-/* If libtool DLL support is enabled set LIBCLOCALE_DLL_IMPORT
- * before including libclocale.h
+/* If libtool DLL support is enabled set LIBCERROR_DLL_IMPORT
+ * before including libcerror.h
  */
 #if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCLOCALE_DLL_IMPORT
+#define LIBCERROR_DLL_IMPORT
 #endif
 
-#include <libclocale.h>
+#include <libcerror.h>
 
-#endif /* defined( HAVE_LOCAL_LIBCLOCALE ) */
+#endif /* defined( HAVE_LOCAL_LIBCERROR ) */
 
-#endif /* !defined( _LIBFSHFS_LIBCLOCALE_H ) */
+#endif /* !defined( _FSHFS_TEST_LIBCERROR_H ) */
 

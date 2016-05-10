@@ -33,7 +33,8 @@
 extern "C" {
 #endif
 
-extern const char fshfs_volume_signature[ 2 ];
+extern const char fshfs_volume_signature_hfsplus[ 2 ];
+extern const char fshfs_volume_signature_hfsx[ 2 ];
 
 typedef struct libfshfs_io_handle libfshfs_io_handle_t;
 

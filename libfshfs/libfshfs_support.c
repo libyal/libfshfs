@@ -434,9 +434,16 @@ int libfshfs_check_volume_signature_file_io_handle(
 		}
 	}
 	if( memory_compare(
-	     fshfs_volume_signature,
+	     fshfs_volume_signature_hfsplus,
 	     signature,
 	     2 ) == 0 )
+	{
+		return( 1 );
+	}
+	else if( memory_compare(
+	          fshfs_volume_signature_hfsx,
+	          signature,
+	          2 ) == 0 )
 	{
 		return( 1 );
 	}

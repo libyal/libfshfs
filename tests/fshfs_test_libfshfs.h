@@ -1,5 +1,5 @@
 /*
- * The internal libclocale header
+ * The internal libfshfs header
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,19 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_LIBCLOCALE_H )
-#define _LIBFSHFS_LIBCLOCALE_H
+#if !defined( _FSHFS_TEST_LIBFSHFS_H )
+#define _FSHFS_TEST_LIBFSHFS_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBCLOCALE for local use of libclocale
+/* If Cygwin libtool DLL support is enabled and do not want to create static
+ * executables set LIBFSHFS_DLL_IMPORT before including libfshfs.h
  */
-#if defined( HAVE_LOCAL_LIBCLOCALE )
-
-#include <libclocale_codepage.h>
-#include <libclocale_definitions.h>
-#include <libclocale_locale.h>
-#include <libclocale_support.h>
-
-#else
-
-/* If libtool DLL support is enabled set LIBCLOCALE_DLL_IMPORT
- * before including libclocale.h
- */
-#if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCLOCALE_DLL_IMPORT
+#if defined( _WIN32 ) && defined( DLL_EXPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
+#define LIBFSHFS_DLL_IMPORT
 #endif
 
-#include <libclocale.h>
+#include <libfshfs.h>
 
-#endif /* defined( HAVE_LOCAL_LIBCLOCALE ) */
-
-#endif /* !defined( _LIBFSHFS_LIBCLOCALE_H ) */
+#endif /* !defined( _FSHFS_TEST_LIBFSHFS_H ) */
 
