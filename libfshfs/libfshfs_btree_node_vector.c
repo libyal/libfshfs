@@ -1,5 +1,5 @@
 /*
- * The allocation block vector functions
+ * The B-tree file node vector functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -23,8 +23,8 @@
 #include <types.h>
 
 #include "libfshfs_definitions.h"
-#include "libfshfs_allocation_block.h"
-#include "libfshfs_allocation_block_vector.h"
+#include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_vector.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
@@ -32,30 +32,30 @@
 #include "libfshfs_libfdata.h"
 #include "libfshfs_unused.h"
 
-/* Creates an allocation block vector
- * Make sure the value allocation_block_vector is referencing, is set to NULL
+/* Creates a B-tree file node vector
+ * Make sure the value btree_node_vector is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_allocation_block_vector_initialize(
-     libfdata_vector_t **allocation_block_vector,
+int libfshfs_btree_node_vector_initialize(
+     libfdata_vector_t **btree_node_vector,
      libfshfs_io_handle_t *io_handle,
-     uint32_t block_size,
+     uint16_t node_size,
      libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
-	static char *function  = "libfshfs_allocation_block_vector_initialize";
+	static char *function  = "libfshfs_btree_node_vector_initialize";
 	off64_t segment_offset = 0;
 	size64_t segment_size  = 0;
 	int extent_index       = 0;
 	int segment_index      = 0;
 
-	if( allocation_block_vector == NULL )
+	if( btree_node_vector == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid allocation block vector.",
+		 "%s: invalid B-tree node vector.",
 		 function );
 
 		return( -1 );
@@ -83,12 +83,12 @@ int libfshfs_allocation_block_vector_initialize(
 		return( -1 );
 	}
 	if( libfdata_vector_initialize(
-	     allocation_block_vector,
-	     (size64_t) block_size,
+	     btree_node_vector,
+	     (size64_t) node_size,
 	     (intptr_t *) io_handle,
 	     NULL,
 	     NULL,
-	     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfcache_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfshfs_allocation_block_read_element_data,
+	     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfcache_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfshfs_btree_node_read_element_data,
 	     NULL,
 	     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
 	     error ) != 1 )
@@ -97,7 +97,7 @@ int libfshfs_allocation_block_vector_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create allocation block vector.",
+		 "%s: unable to create B-tree node vector.",
 		 function );
 
 		goto on_error;
@@ -110,7 +110,7 @@ int libfshfs_allocation_block_vector_initialize(
 		segment_size   = fork_descriptor->extents[ extent_index ][ 1 ] * io_handle->allocation_block_size;
 
 		if( libfdata_vector_append_segment(
-		     *allocation_block_vector,
+		     *btree_node_vector,
 		     &segment_index,
 		     0,
 		     segment_offset,
@@ -133,10 +133,10 @@ int libfshfs_allocation_block_vector_initialize(
 	return( 1 );
 
 on_error:
-	if( *allocation_block_vector != NULL )
+	if( *btree_node_vector != NULL )
 	{
 		libfdata_vector_free(
-		 allocation_block_vector,
+		 btree_node_vector,
 		 NULL );
 	}
 	return( -1 );

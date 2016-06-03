@@ -228,9 +228,11 @@ ascending order of record keys throughout that level.
 ==== The B-tree record offsets
 The B-tree record offsets are an array of 16-bit integers relative from the 
 start of the B-tree node record. The first record offset is found at node
-size - 2, e.g. 512 - 2 = 510, in the node data, the second at e.g. 508, etc. An
+size - 2, e.g. 512 - 2 = 510, the second 2 bytes before that, e.g. 508, etc. An
 additional record offset is added at the end to signify the start of the free
 space.
+
+[yellow-background]*TODO: are the record offsets always stored in order?*
 
 === The B-tree header node
 The B-tree header node is stored in the first node of the B-tree file and 
@@ -1232,10 +1234,7 @@ The HFS catalog file data record header is 2 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 1 | | The record type +
 Signed 8-bit integer +
-0x01 => Directory record +
-0x02 => File record +
-0x03 => Directory thread record +
-0x04 => File thread record
+See section: <<catalog_file_data_record_types,Record types>>
 | 1 | 1 | | Reserved +
 Signed 8-bit integer
 |===
@@ -1247,10 +1246,18 @@ The HFS+ catalog file data record header is 2 bytes of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 2 | | The record type +
-0x0001 => Directory record +
-0x0002 => File record +
-0x0003 => Directory thread record +
-0x0004 => File thread record
+See section: <<catalog_file_data_record_types,Record types>>
+|===
+
+===== [[catalog_file_data_record_types]]The catalog file data record types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 1 | | Directory record
+| 2 | | File record
+| 3 | | Directory thread record
+| 4 | | File thread record
 |===
 
 ==== The catalog file directory record data

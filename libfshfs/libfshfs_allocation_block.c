@@ -32,7 +32,7 @@
 #include "libfshfs_types.h"
 #include "libfshfs_unused.h"
 
-/* Creates a allocation block
+/* Creates an allocation block
  * Make sure the value allocation_block is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
@@ -140,7 +140,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees a allocation block
+/* Frees an allocation block
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_allocation_block_free(
@@ -175,7 +175,7 @@ int libfshfs_allocation_block_free(
 	return( 1 );
 }
 
-/* Reads a allocation block
+/* Reads an allocation block
  * Callback function for the allocation block vector
  * Returns 1 if successful or -1 on error
  */

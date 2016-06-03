@@ -1,5 +1,5 @@
 /*
- * Cluster block functions
+ * The B-tree file node vector functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,60 +19,31 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_ALLOCATION_BLOCK_H )
-#define _LIBFSHFS_ALLOCATION_BLOCK_H
+#if !defined( _LIBFSHFS_BTREE_NODE_VECTOR_H )
+#define _LIBFSHFS_BTREE_NODE_VECTOR_H
 
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
-#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfcache.h"
 #include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfshfs_allocation_block libfshfs_allocation_block_t;
-
-struct libfshfs_allocation_block
-{
-	/* The data
-	 */
-	uint8_t *data;
-
-	/* The data size
-	 */
-	size_t data_size;
-};
-
-int libfshfs_allocation_block_initialize(
-     libfshfs_allocation_block_t **allocation_block,
-     size_t data_size,
-     libcerror_error_t **error );
-
-int libfshfs_allocation_block_free(
-     libfshfs_allocation_block_t **allocation_block,
-     libcerror_error_t **error );
-
-int libfshfs_allocation_block_read_element_data(
+int libfshfs_btree_node_vector_initialize(
+     libfdata_vector_t **btree_node_vector,
      libfshfs_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     libfdata_vector_t *vector,
-     libfcache_cache_t *cache,
-     int element_index,
-     int element_data_file_index,
-     off64_t allocation_block_offset,
-     size64_t allocation_block_size,
-     uint32_t range_flags,
-     uint8_t read_flags,
+     uint16_t node_size,
+     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_ALLOCATION_BLOCK_H ) */
+#endif /* !defined( _LIBFSHFS_BTREE_NODE_VECTOR_H ) */
 

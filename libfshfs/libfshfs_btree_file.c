@@ -24,10 +24,9 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libfshfs_allocation_block.h"
-#include "libfshfs_allocation_block_vector.h"
 #include "libfshfs_btree_file.h"
 #include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_vector.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_fork_descriptor.h"
@@ -180,22 +179,11 @@ int libfshfs_btree_file_read(
 {
 	uint8_t header_node_data[ 512 ];
 
-	libfshfs_allocation_block_t *allocation_block        = NULL;
-	libfshfs_btree_node_t *btree_node                    = NULL;
-	fshfs_btree_node_descriptor_t *btree_node_descriptor = NULL;
-	static char *function                                = "libfshfs_btree_file_read";
-	off64_t file_offset                                  = 0;
-	size_t btree_node_data_offset                        = 0;
-	ssize_t read_count                                   = 0;
-	uint32_t next_node_number                            = 0;
-	uint32_t previous_node_number                        = 0;
-	uint16_t record_index                                = 0;
-	uint16_t record_offset                               = 0;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	uint16_t value_16bit                                 = 0;
-	size_t btree_node_record_offsets_data_size           = 0;
-#endif
+	libfshfs_btree_node_t *btree_header_node = NULL;
+	libfshfs_btree_node_t *btree_root_node   = NULL;
+	static char *function                    = "libfshfs_btree_file_read";
+	off64_t file_offset                      = 0;
+	ssize_t read_count                       = 0;
 
 	if( btree_file == NULL )
 	{
@@ -288,7 +276,8 @@ int libfshfs_btree_file_read(
 		goto on_error;
 	}
 	if( libfshfs_btree_node_initialize(
-	     &btree_node,
+	     &btree_header_node,
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -301,7 +290,7 @@ int libfshfs_btree_file_read(
 		goto on_error;
 	}
 	if( libfshfs_btree_node_read_descriptor(
-	     btree_node,
+	     btree_header_node,
 	     header_node_data,
 	     512,
 	     error ) != 1 )
@@ -315,7 +304,7 @@ int libfshfs_btree_file_read(
 
 		goto on_error;
 	}
-	if( btree_node->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
+	if( btree_header_node->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
 	{
 		libcerror_error_set(
 		 error,
@@ -342,7 +331,7 @@ int libfshfs_btree_file_read(
 		goto on_error;
 	}
 	if( libfshfs_btree_node_free(
-	     &btree_node,
+	     &btree_header_node,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -356,7 +345,7 @@ int libfshfs_btree_file_read(
 	}
 	/* Read the root node using the nodes vector
 	 */
-	if( libfshfs_allocation_block_vector_initialize(
+	if( libfshfs_btree_node_vector_initialize(
 	     &( btree_file->nodes_vector ),
 	     io_handle,
 	     btree_file->node_size,
@@ -391,7 +380,7 @@ int libfshfs_btree_file_read(
 	     (intptr_t *) file_io_handle,
 	     btree_file->nodes_cache,
 	     btree_file->root_node_number,
-	     (intptr_t **) &allocation_block,
+	     (intptr_t **) &btree_root_node,
 	     0,
 	     error ) == -1 )
 	{
@@ -405,118 +394,15 @@ int libfshfs_btree_file_read(
 
 		goto on_error;
 	}
-	if( allocation_block == NULL )
+	if( btree_root_node == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid allocation block: %" PRIu32 ".",
+		 "%s: invalid B-tree root node: %" PRIu32 ".",
 		 function,
 		 btree_file->root_node_number );
-
-		goto on_error;
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: B-tree root node data:\n",
-		 function );
-		libcnotify_print_data(
-		 (uint8_t *) allocation_block->data,
-		 btree_file->node_size,
-		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-	}
-#endif
-	if( libfshfs_btree_node_initialize(
-	     &btree_node,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create B-tree root node.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfshfs_btree_node_read_descriptor(
-	     btree_node,
-	     allocation_block->data,
-	     allocation_block->data_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree node descriptor.",
-		 function );
-
-		goto on_error;
-	}
-/* TODO add bounds checks btree_node_record_offsets_data_size */
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		btree_node_record_offsets_data_size = ( btree_node->number_of_records + 1 ) * 2;
-
-		libcnotify_printf(
-		 "%s: B-tree node record offsets data:\n",
-		 function );
-		libcnotify_print_data(
-		 (uint8_t *) &( allocation_block->data[ btree_file->node_size - btree_node_record_offsets_data_size ] ),
-		 btree_node_record_offsets_data_size,
-		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-	}
-#endif
-	btree_node_data_offset = btree_file->node_size - 2;
-
-	for( record_index = 0;
-	     record_index < btree_node->number_of_records;
-	     record_index++ )
-	{
-		byte_stream_copy_to_uint16_big_endian(
-		 &( ( allocation_block->data )[ btree_node_data_offset ] ),
-		 record_offset );
-
-		btree_node_data_offset -= 2;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: record offset: %" PRIu16 "\t\t\t\t: 0x%04" PRIx16 "\n",
-			 function,
-			 record_index,
-			 record_offset );
-		}
-#endif
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		byte_stream_copy_to_uint16_big_endian(
-		 &( ( allocation_block->data )[ btree_node_data_offset ] ),
-		 value_16bit );
-		libcnotify_printf(
-		 "%s: free space offset\t\t\t\t: 0x%04" PRIx16 "\n",
-		 function,
-		 value_16bit );
-	}
-#endif
-	if( libfshfs_btree_node_free(
-	     &btree_node,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free B-tree root node.",
-		 function );
 
 		goto on_error;
 	}
@@ -535,10 +421,10 @@ on_error:
 		 &( btree_file->nodes_vector ),
 		 NULL );
 	}
-	if( btree_node != NULL )
+	if( btree_header_node != NULL )
 	{
 		libfshfs_btree_node_free(
-		 &btree_node,
+		 &btree_header_node,
 		 NULL );
 	}
 	return( -1 );
@@ -730,6 +616,8 @@ int libfshfs_btree_file_read_header_record(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
+/* TODO check if node side is supported: 512 or 4096
+ */
 	return( 1 );
 }
 

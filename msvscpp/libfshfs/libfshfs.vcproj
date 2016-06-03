@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_node_vector.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_debug.c"
 				>
 			</File>
@@ -228,6 +232,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\fshfs_catalog_file.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\fshfs_fork.h"
 				>
 			</File>
@@ -249,6 +257,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_btree_node.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_node_vector.h"
 				>
 			</File>
 			<File

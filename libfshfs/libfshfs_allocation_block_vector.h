@@ -45,5 +45,5 @@ int libfshfs_allocation_block_vector_initialize(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFSHFS_ALLOCATION_BLOCK_VECTOR_H ) */
 

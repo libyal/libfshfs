@@ -80,5 +80,5 @@ int libfshfs_io_handle_read_volume_header(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFSHFS_IO_HANDLE_H ) */
 
