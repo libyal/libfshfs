@@ -48,6 +48,7 @@ Email change
 | 0.0.3 | J.B. Metz | July 2012 | Email change
 | 0.0.4 | J.B. Metz | March 2015 | Switched to asciidoc format.
 | 0.0.5 | J.B. Metz | February 2016 | Textual changes.
+| 0.0.6 | J.B. Metz | June 2016 | Textual changes.
 |===
 
 :numbered:
@@ -150,8 +151,8 @@ The tree node contains records, which are used for a variety of purposes. Some r
 * the actual data that is to be retrieved and possibly updated (leaf nodes).
 
 === The B-tree (file) node
-A B-tree file consists of 512 byte nodes. Each node has the same structure and 
-consists of three main parts:
+A B-tree file consists of nodes. Each node has the same structure and consists
+of three main parts:
 
 * the node descriptor
 * the node records
@@ -166,9 +167,9 @@ The B-tree node descriptor is 14 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | The next tree node number (Forward link) +
+| 0 | 4 | | The next tree node number (forward link) +
 Contains 0 if empty
-| 4 | 4 | | The previous tree node number (Backward link) +
+| 4 | 4 | | The previous tree node number (backward link) +
 Contains 0 if empty
 | 8 | 1 | | The node type +
 Signed 8-bit integer +
@@ -226,9 +227,10 @@ ascending order of record keys throughout that level.
 
 ==== The B-tree record offsets
 The B-tree record offsets are an array of 16-bit integers relative from the 
-start of the B-tree node record. The first record offset is found at offset 510 
-(0x1fe) in the node data, the second at 508 (0x1fc), etc. An additional record
-offset is added at the end to signify the start of the free space.
+start of the B-tree node record. The first record offset is found at node
+size - 2, e.g. 512 - 2 = 510, in the node data, the second at e.g. 508, etc. An
+additional record offset is added at the end to signify the start of the free
+space.
 
 === The B-tree header node
 The B-tree header node is stored in the first node of the B-tree file and 
@@ -257,57 +259,74 @@ The B-tree header record is 106 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | The depth of the tree
-| 2 | 4 | | A reference to the root node +
-[yellow-background]*(number?)* +
-The root node is the start of the B-tree structure; usually the root node is first index node, but it might be a leaf node if there are no index nodes. 
-| 6 | 4 | | The number of data records contained in leaf nodes +
+| 0 | 2 | | Depth of the tree
+| 2 | 4 | | Root node number
+| 6 | 4 | | Number of data records contained in leaf nodes +
 [yellow-background]*(Does this equals the number of leaf nodes?)*
-| 10 | 4 | | A reference to the first leaf node +
-[yellow-background]* (number?)*
-| 14 | 4 | | A reference to the last leaf node +
-[yellow-background]*(number?)*
-| 18 | 2 | | The node (byte) size +
-Typically 512 bytes.
-| 20 | 2 | | The maximum key (byte) size
-| 22 | 4 | | The number of nodes
-| 26 | 4 | | The number of free nodes
-| 30 | ( 77 x 1 ) = 76 | | Reserved +
-Array of signed 8-bit integers
-|===
-
-In HFS+ the reserved last 76 bytes are used for the following values:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 30 | 2 | | Reserved
+| 10 | 4 | | First leaf node number
+| 14 | 4 | | Last leaf node number
+| 18 | 2 | | The node size +
+Contains the number of bytes
+| 20 | 2 | | Maximum key size +
+Contains the number of bytes
+| 22 | 4 | | Number of nodes
+| 26 | 4 | | Number of free nodes
+4+| _Introduced in HFS+_
+| 30 | 2 | | [yellow-background]*Unknown (Reserved)*
 | 32 | 4 | | Clump size
-| 36 | 1 | | B-tree type +
-0x00 => control file +
-0x80 => first user B-tree type +
-0xff => reserved B-tree type
+| 36 | 1 | | B-tree file type +
+See section: <<btree_header_record_file_type,File type>>
 | 37 | 1 | | Key compare type +
-0xbc => Binary compare (case-sensitive) +
-0xcf => Case folding (case-insensitive)
-| 38 | 4 | | Attributes
-| 42 | ( 16 x 4 ) = 64 | | Reserved
+See section: <<btree_header_record_key_compare_type,Key compare type>>
+| 38 | 4 | | Attributes +
+See section: <<btree_header_record_attributes,Attributes>>
+| 42 | ( 16 x 4 ) = 64 | | [yellow-background]*Unknown (Reserved)*
 |===
 
-===== Attributes
+The root node is the start of the B-tree structure; usually the root node is 
+first index node, but it might be a leaf node if there are no index nodes.
+
+The first node in the file is referenced by node number 0.
+
+The node offset relative to the start of the file given a node number can be
+calculated in the following manner:
+....
+node offset = node number x node size
+....
+
+===== [[btree_header_record_file_type]]File type
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00 | | Control file
+| 0x80 | | First user B-tree type
+| 0xff | | Reserved B-tree type
+|===
+
+===== [[btree_header_record_key_compare_type]]Key compare type
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0xbc | | Binary compare (case-sensitive)
+| 0xcf | | Case folding (case-insensitive)
+|===
+
+===== [[btree_header_record_attributes]]Attributes
 The bits in the attributes value have the following meaning:
 
-[cols="1,5",options="header"]
+[cols="1,1,5",options="header"]
 |===
-| Bit(s) | Description
-| 0 | Bad close +
+| Value | Identifier | Description
+| 0x00000001 | kBTBadCloseMask | Bad close +
 This bit indicates that the B-tree was not closed properly and should be checked for consistency. +
 This bit is not used for HFS+ B-trees.
-| 1 | Big keys +
+| 0x00000002 | kBTBigKeysMask | Big keys +
 If this bit is set, the key size value of the keys in index and leaf nodes is 16-bit integer; otherwise, it is an 8-bit integer. +
 This bit must be set for all HFS+ B‑trees.
-| 2 | Variable index keys +
-| If this bit is set, the keys in index nodes occupy the number of bytes indicated by their key size; otherwise, the keys in index nodes always occupy maximum key size. +
+| 0x00000004 | kBTVariableIndexKeysMask | Variable index keys +
+If this bit is set, the keys in index nodes occupy the number of bytes indicated by their key size; otherwise, the keys in index nodes always occupy maximum key size. +
 This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Extents B-tree.
 |===
 

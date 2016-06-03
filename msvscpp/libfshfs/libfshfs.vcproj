@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_node.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_debug.c"
 				>
 			</File>
@@ -241,6 +245,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_btree_file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_node.h"
 				>
 			</File>
 			<File

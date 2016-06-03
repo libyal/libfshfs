@@ -64,9 +64,91 @@ struct fshfs_btree_node_descriptor
 	uint8_t unknown1[ 2 ];
 };
 
+typedef struct fshfs_btree_header_record fshfs_btree_header_record_t;
+
+struct fshfs_btree_header_record
+{
+	/* The depth
+	 * Consists of 2 bytes
+	 */
+	uint8_t depth[ 2 ];
+
+	/* The root node number
+	 * Consists of 4 bytes
+	 */
+	uint8_t root_node_number[ 4 ];
+
+	/* The number of data records
+	 * Consists of 4 bytes
+	 */
+	uint8_t number_of_data_records[ 4 ];
+
+	/* The first leaf node number
+	 * Consists of 4 bytes
+	 */
+	uint8_t first_leaf_node_number[ 4 ];
+
+	/* The last leaf node number
+	 * Consists of 4 bytes
+	 */
+	uint8_t last_leaf_node_number[ 4 ];
+
+	/* The node size
+	 * Consists of 2 bytes
+	 */
+	uint8_t node_size[ 2 ];
+
+	/* The maximum key size
+	 * Consists of 2 bytes
+	 */
+	uint8_t maximum_key_size[ 2 ];
+
+	/* The number of nodes
+	 * Consists of 4 bytes
+	 */
+	uint8_t number_of_nodes[ 4 ];
+
+	/* The number of free nodes
+	 * Consists of 4 bytes
+	 */
+	uint8_t number_of_free_nodes[ 4 ];
+
+	/* Unknown (Reserved)
+	 * Consists of 2 bytes
+	 */
+	uint8_t unknown1[ 2 ];
+
+	/* Introduced in HFS+ */
+
+	/* The clump size
+	 * Consists of 4 bytes
+	 */
+	uint8_t clump_size[ 4 ];
+
+	/* The file type
+	 * Consists of 1 byte
+	 */
+	uint8_t file_type;
+
+	/* The key compare type
+	 * Consists of 1 byte
+	 */
+	uint8_t key_compare_type;
+
+	/* The attributes
+	 * Consists of 4 bytes
+	 */
+	uint8_t attributes[ 4 ];
+
+	/* Unknown (Reserved)
+	 * Consists of 64 bytes
+	 */
+	uint8_t unknown2[ 64 ];
+};
+
 #if defined( __cplusplus )
 }
 #endif
 
-#endif
+#endif /* !defined( _FSHFS_BTREE_H ) */
 

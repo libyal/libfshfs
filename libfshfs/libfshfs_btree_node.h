@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * B-tree node functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,36 +19,60 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DEBUG_H )
-#define _LIBFSHFS_DEBUG_H
+#if !defined( _LIBFSHFS_BTREE_NODE_H )
+#define _LIBFSHFS_BTREE_NODE_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+typedef struct libfshfs_btree_node libfshfs_btree_node_t;
 
-void libfshfs_debug_print_volume_attribute_flags(
-      uint32_t volume_attribute_flags );
+struct libfshfs_btree_node
+{
+	/* The (node) type
+	 */
+	uint8_t type;
 
-const char *libfshfs_debug_print_btree_node_type(
-             uint8_t btree_node_type );
+	/* The (node) level
+	 */
+	uint8_t level;
 
-int libfshfs_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
+	/* The number of records
+	 */
+	uint16_t number_of_records;
+
+	/* The next node number
+	 */
+	uint32_t next_node_number;
+
+	/* The previous node number
+	 */
+	uint32_t previous_node_number;
+};
+
+int libfshfs_btree_node_initialize(
+     libfshfs_btree_node_t **btree_node,
      libcerror_error_t **error );
 
-#endif
+int libfshfs_btree_node_free(
+     libfshfs_btree_node_t **btree_node,
+     libcerror_error_t **error );
+
+int libfshfs_btree_node_read_descriptor(
+     libfshfs_btree_node_t *btree_node,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_DEBUG_H ) */
+#endif /* !defined( _LIBFSHFS_BTREE_NODE_H ) */
 
