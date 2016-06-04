@@ -500,7 +500,7 @@ The bits in the flag byte have the following meaning:
 [cols="1,5",options="header"]
 |===
 | Bit(s) | Description
-| 0 - 4 | Reserved; must be 0
+| 0 - 4 | [yellow-background]*Unknown (Reserved)*, must be 0
 | 5 | Use relative system heap sizing
 | 6 | Execute boot code
 | 7 | Newer boot block header used
@@ -745,7 +745,7 @@ The value attributes flags are specified as following.
 [cols="1,1,5",options="header"]
 |===
 | Bit(s) | Identifier | Description
-| 0 - 6 | | Reserved; must be 0
+| 0 - 6 | | [yellow-background]*Unknown (Reserved)*, must be 0
 | 7 | kHFSVolumeHardwareLockBit | Volume hardware lock +
 This bit is set if the volume is write-protected due to a hardware setting.
 | 8 | kHFSVolumeUnmountedBit | Volume unmounted +
@@ -760,10 +760,10 @@ This bit is set if the volume was mounted for writing.
 This bit is set when the next catalog identifier value overflows 32 bits, forcing smaller catalog node identifiers to be reused.
 | 13 | kHFSVolumeJournaledBit | Volume journaled +
 If this bit is set, the volume has a journal.
-| 14 | | Reserved
+| 14 | | [yellow-background]*Unknown (Reserved)*
 | 15 | kHFSVolumeSoftwareLockBit | Volume software lock +
 This bit is set if the volume is write-protected due to a software setting.
-| 16 - 31 | | Reserved
+| 16 - 31 | | [yellow-background]*Unknown (Reserved)*
 |===
 
 ==== Alternate volume header
@@ -1149,18 +1149,18 @@ standard assignments:
 [cols="1,5",options="header"]
 |===
 | CNID | Assignment
-| 0 | Reserved
+| 0 | [yellow-background]*Unknown (Reserved)*
 | 1 | Parent identifier of the root directory (folder)
 | 2 | Directory identifier of the root directory (folder)
-| 3 | File number of the extents file
-| 4 | File number of the catalog file
-| 5 | File number of the bad allocation block file
-| 6 | File identifier of the allocation file (HFS+)
-| 7 | File identifier of the startup file (HFS+)
-| 8 | File identifier of the attributes file (HFS+)
+| 3 | The extents file
+| 4 | The catalog file
+| 5 | The bad allocation block file
+| 6 | The allocation file (HFS+)
+| 7 | The startup file (HFS+)
+| 8 | The attributes file (HFS+)
 | | 
 | 14 | Used temporarily by fsck_hfs when rebuilding the catalog file.
-| 15 | File identifier of the bogus extent file +
+| 15 | The bogus extent file +
 Used temporarily during exchange files operations.
 |===
 
@@ -1172,22 +1172,26 @@ directory and its parent directory identifier. The volume reference number is
 not included in the catalog file index key.
 
 ==== HFS catalog file index key
-The HFS catalog file index key is at most 38 bytes of size and consists of:
+The HFS catalog file index key is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 1 | | The key (byte) size +
+| 0 | 1 | | The key data size +
 Signed 8-bit integer +
-The value in this field does not include the byte occupied by the field itself. +
-If this field contains 0, the key indicates a deleted record. 
-| 1 | 1 | | Reserved
+Contains the number of bytes
+4+| _If key data size > 0_
+| 1 | 1 | | [yellow-background]*Unknown (Reserved)*
 | 2 | 4 | | The parent directory identifier +
 Contains a CNID
-| 6 | 32 | | Catalog node name +
+| 6 | ... | | Catalog node name +
 Contains an ASCII string +
-The name of the file or directory whose catalog entry.
+Contains the name of the file or directory
 |===
+
+A deleted record is indicated by a key data size of 0.
+
+[yellow-background]*Maximum name string length 32 characters?*
 
 The catalog key slightly differs when it is used in an index or leaf node. If 
 the key is used:
@@ -1196,18 +1200,24 @@ the key is used:
 * in a data record (a leaf node), then the catalog node name varies in length; it only uses the number of bytes required to hold the file or directory name. The key is padded with null characters so that the data following it begins on a word boundary. The key (byte) size may contain values from 7 to 37.
 
 ==== HFS+ catalog file index key
-The HFS+ catalog file index key is at most 262 bytes of size and consists of:
+The HFS+ catalog file index key is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | The key (byte) size
+| 0 | 2 | | The key data size +
+Contains the number of bytes
+4+| _If key data size > 0_
 | 2 | 4 | | The parent directory identifier +
 Contains a CNID
-| 6 | 256 | | Catalog node name +
-Unicode string +
-The name of the file or directory whose catalog entry.
+4+| _If key data size > 6_
+| 6 | 2 | | Number of characters in the name string
+| 8 | ... | | Name string +
+UTF-16 big-endian string without end-of-string character +
+Contains the name of the file or directory
 |===
+
+[yellow-background]*Maximum name string length 256 characters?*
 
 === The catalog file data
 A catalog file leaf node can contain four different types of records:
@@ -1235,9 +1245,13 @@ The HFS catalog file data record header is 2 bytes of size and consists of:
 | 0 | 1 | | The record type +
 Signed 8-bit integer +
 See section: <<catalog_file_data_record_types,Record types>>
-| 1 | 1 | | Reserved +
+| 1 | 1 | 0x00 | [yellow-background]*Unknown (Reserved)* +
 Signed 8-bit integer
 |===
+
+[NOTE]
+To distinguish between HFS and HFS+ record types, record type should be treated
+as a 16-bit big-endian value.
 
 ===== The HFS+ catalog file data record header
 The HFS+ catalog file data record header is 2 bytes of size and consists of:
@@ -1254,61 +1268,69 @@ See section: <<catalog_file_data_record_types,Record types>>
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| 1 | | Directory record
-| 2 | | File record
-| 3 | | Directory thread record
-| 4 | | File thread record
+| 0x0001 | kHFSPlusFolderRecord | HFS+ Directory record
+| 0x0002 | kHFSPlusFileRecord | HFS+ File record
+| 0x0003 | kHFSPlusFolderThreadRecord | HFS+ Directory thread record
+| 0x0004 | kHFSPlusFileThreadRecord | HFS+ File thread record
+| | |
+| 0x0100 | kHFSFolderRecord | HFS Directory record
+| 0x0200 | kHFSFileRecord | HFS File record
+| 0x0300 | kHFSFolderThreadRecord | HFS Directory thread record
+| 0x0400 | kHFSFileThreadRecord | HFS File thread record
 |===
 
 ==== The catalog file directory record data
 ===== The HFS catalog file directory record data
-The HFS catalog file directory record data is 68 bytes of size and consists of:
+The HFS catalog file directory record data is 70 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | Directory (folder) flags +
+| 0 | 2 | 0x0100 | The record type
+| 2 | 2 | | Directory (folder) flags +
 [yellow-background]*No bits are currently defined for folder records.*
-| 2 | 2 | | Directory valence +
+| 4 | 2 | | Directory valence +
 The number of files ([yellow-background]*and sub directories*) in this directory.
-| 4 | 4 | | The directory identifier +
+| 6 | 4 | | The directory identifier +
 Contains a CNID
-| 8 | 4 | | Creation date and time
-| 12 | 4 | | Modification date and time
-| 16 | 4 | | Backup date and time
-| 20 | 16 | | Folder information +
+| 10 | 4 | | Creation date and time
+| 14 | 4 | | Modification date and time
+| 18 | 4 | | Backup date and time
+| 22 | 16 | | Folder information +
 See section: <<hfs_folder_information,HFS folder information>>
-| 36 | 16 | | Extended folder information +
+| 38 | 16 | | Extended folder information +
 See section: <<hfs_extended_folder_information,HFS extended folder information>>
-| 52 | ( 4 x 4 ) = 16 | | Reserved +
+| 54 | ( 4 x 4 ) = 16 | | [yellow-background]*Unknown (Reserved)* +
 Array of 32-bit integer values
 |===
 
 ===== The HFS+ catalog file directory record data
-The HFS+ catalog file directory record data is 86 bytes of size and consists of:
+The HFS+ catalog file directory record (HFSPlusCatalogFolder) data is 88 bytes 
+of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | Directory (folder) flags +
+| 0 | 2 | 0x00001 | The record type
+| 2 | 2 | | Directory (folder) flags +
 No bits are currently defined for folder records.
-| 2 | 4 | | Directory valence +
+| 4 | 4 | | Directory valence +
 The number of files and folders directly contained by this folder.
-| 6 | 4 | | The directory identifier +
+| 8 | 4 | | The directory identifier +
 Contains a CNID
-| 10 | 4 | | Creation date and time
-| 14 | 4 | | Content modification date and time
-| 18 | 4 | | Attribute modification date and time
-| 22 | 4 | | Access date and time
-| 26 | 4 | | Backup date and time
-| 30 | 16 | | Permissions +
+| 12 | 4 | | Creation date and time
+| 16 | 4 | | Content modification date and time
+| 20 | 4 | | Attribute modification date and time
+| 24 | 4 | | Access date and time
+| 28 | 4 | | Backup date and time
+| 32 | 16 | | Permissions +
 See section: <<permissions,Permissions>>
-| 46 | 16 | | Folder information +
+| 48 | 16 | | Folder information +
 See section: <<hfs_plus_folder_information,HFS+ folder information>>
-| 62 | 16 | | Extended folder information +
+| 64 | 16 | | Extended folder information +
 See section: <<hfs_plus_extended_folder_information,HFS+ extended folder information>>
-| 78 | 4 | | Text encoding
-| 82 | 4 | 0x00 | Reserved
+| 80 | 4 | | Text encoding
+| 84 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 |===
 
 ==== The catalog file file record data
@@ -1345,7 +1367,7 @@ Contains a CNID
 See section: <<hfs_extent_data,The HFS extent data>>
 | 84 | ( 3 x 4 ) = 12 | | The first resource fork extent record +
 See section: <<hfs_extent_data,The HFS extent data>>
-| 96 | 4 | 0x00 | Reserved
+| 96 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 |===
 
 ===== The HFS+ catalog file file record data
@@ -1356,7 +1378,7 @@ of:
 |===
 | Offset | Size | Value | Description
 | 0 | 2 | | File flags
-| 2 | 4 | 0x00 | Reserved
+| 2 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 | 6 | 4 | | The file identifier +
 Contains a CNID
 | 10 | 4 | | Creation date and time
@@ -1371,7 +1393,7 @@ See section: <<hfs_plus_file_information,HFS+ file information>>
 | 62 | 16 | | Extended file (user) information +
 See section: <<hfs_plus_exteded_file_information,HFS+ extended file information>>
 | 78 | 4 | | Text encoding
-| 82 | 4 | 0x00 | Reserved
+| 82 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 | 86 | 80 | | Data fork +
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 | 166 | 80 | | Resource fork +
@@ -1389,7 +1411,7 @@ consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | ( 2 x 4 ) = 8 | 0x00 | Reserved +
+| 0 | ( 2 x 4 ) = 8 | 0x00 | [yellow-background]*Unknown (Reserved)* +
 Array of 32-bit integer values
 | 8 | 4 | | The parent directory identifier +
 Contains a CNID
@@ -1404,7 +1426,7 @@ consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | 0x00 | Reserved +
+| 0 | 2 | 0x00 | [yellow-background]*Unknown (Reserved)* +
 Unsigned 16-bit integer
 | 2 | 4 | | The parent directory identifier +
 Contains a CNID
@@ -1651,7 +1673,7 @@ The HFS+ attributes file fork data attribute is 84 bytes of size and consists of
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x00 | Reserved
+| 0 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 | 4 | 80 | | Attribute fork descriptor +
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
@@ -1662,7 +1684,7 @@ The HFS+ attributes file extension attribute is 68 bytes of size and consists of
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x00 | Reserved
+| 0 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 | 4 | ( 8 x 8 ) = 64 | | Attribute extent data +
 See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
@@ -1833,13 +1855,13 @@ The HFS+ journal information block is 44 bytes of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | | Journal flags
-| 4 | ( 8 x 4 ) = 32 | | Reserved +
+| 4 | ( 8 x 4 ) = 32 | | [yellow-background]*Unknown (Reserved)* +
 Device signature
 | 36 | 8 | | Journal header offset +
 The offset in bytes to the start of the journal header.
 | 44 | 8 | | The journal size +
 This includes the journal header and the journal buffer and not the journal information block.
-| 52 | ( 32 x 4 ) = 128 | 0x00 | Reserved
+| 52 | ( 32 x 4 ) = 128 | 0x00 | [yellow-background]*Unknown (Reserved)*
 |===
 
 ==== Journal flags
@@ -1938,7 +1960,7 @@ The HFS+ journal block list header is 16 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | Reserved +
+| 0 | 2 | | [yellow-background]*Unknown (Reserved)* +
 Is used in memory for the maximum number of journal blocks
 | 2 | 2 | | The number of journal blocks following the journal block header +
 Typically 1
@@ -1963,7 +1985,7 @@ The HFS+ journal block information is 16 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 8 | | Reserved +
+| 0 | 8 | | [yellow-background]*Unknown (Reserved)* +
 Is used in memory for the sector number where the block should be written +
 Only used in the first journal block information
 | 8 | 4 | | Size +
@@ -2017,7 +2039,7 @@ Typically this value equals the value in entry 3 or 5.
 | 2 | Contains the directory identifier of a directory whose window should be displayed in the Finder when the volume is mounted, or zero if no directory window should be opened. +
 [yellow-background]*In traditional Mac OS, this is the first in a linked list of windows to open; the frOpenChain field of the directory's Finder Info contains the next directory ID in the list. The open window list is deprecated. The Mac OS X Finder will open this directory's window, but ignores the rest of the open window list. The Mac OS X Finder does not modify this field.*
 | 3 | Contains the directory identifier of a bootable Mac OS 8 or 9 System Folder, or zero if not available.
-| 4 | Reserved
+| 4 | [yellow-background]*Unknown (Reserved)*
 | 5 | Contains the directory identifier of a bootable Mac OS X system, the "/System/Library/CoreServices" directory, or zero if not available.
 | 6 and 7 | Used by Mac OS X to store an unique 64-bit volume identifier. +
 This identifier is used for tracking whether a given volume's ownership (user identifier) information should be honored. +
@@ -2052,7 +2074,7 @@ The HFS extended file information is 16 bytes of size and consists of:
 | Offset | Size | Value | Description
 | 0 | 2 | | Icon identifier +
 An identifier, assigned by the Finder, of the file's icon.
-| 2 | ( 3 x 2 ) = 6 | | Reserved +
+| 2 | ( 3 x 2 ) = 6 | | [yellow-background]*Unknown (Reserved)* +
 Array of signed 16-bit integers
 | 8 | 1 | | Extended finder script code flags +
 These flags are used if the script code flag is set.
@@ -2080,7 +2102,7 @@ See section: <<finder_flags,Finder flags>>
 | 10 | 4 | | Location within the parent +
 Contains x and y-coordinate values +
 If set to {0, 0}, the Finder will place the item automatically
-| 14 | 2 | | Reserved
+| 14 | 2 | | [yellow-background]*Unknown (Reserved)*
 |===
 
 ==== [[hfs_plus_extended_file_information]]HFS+ extended file information
@@ -2089,11 +2111,11 @@ The HFS+ extended file information is 16 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | ( 4 x 2 ) = 8 | | Reserved +
+| 0 | ( 4 x 2 ) = 8 | | [yellow-background]*Unknown (Reserved)* +
 Array of signed 16-bit integers
 | 8 | 2 | | Extended Finder flags +
 See section: <<extended_finder_flags,Extended finder flags>>
-| 10 | 2 | | Reserved +
+| 10 | 2 | | [yellow-background]*Unknown (Reserved)* +
 Signed 16-bit integers
 | 12 | 4 | | Put away folder identifier +
 [yellow-background]*Contains a CNID*
@@ -2155,7 +2177,7 @@ See section: <<finder_flags,Finder flags>>
 | 10 | 4 | | Location within the parent +
 Contains x and y-coordinate values +
 If set to {0, 0}, the Finder will place the item automatically
-| 14 | 2 | | Reserved
+| 14 | 2 | | [yellow-background]*Unknown (Reserved)*
 |===
 
 ==== [[hfs_plus_extended_folder_information]]HFS+ extended folder information
@@ -2167,11 +2189,11 @@ The HFS+ extended folder information is 16 bytes of size and consists of:
 | 0 | 4 | | Scroll position +
 The scroll position for icon views +
 Contains x and y-coordinate values
-| 4 | 4 | | Reserved +
+| 4 | 4 | | [yellow-background]*Unknown (Reserved)* +
 Signed 32-bit integer
 | 8 | 2 | | Extended Finder flags +
 See section: <<extended_finder_flags,Extended finder flags>>
-| 10 | 2 | | Reserved +
+| 10 | 2 | | [yellow-background]*Unknown (Reserved)* +
 Signed 16-bit integer
 | 12 | 4 | | Put away folder identifier +
 [yellow-background]*Contains a CNID*

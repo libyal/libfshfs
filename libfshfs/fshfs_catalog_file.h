@@ -33,10 +33,10 @@ typedef struct fshfs_catalog_file_index_key_hfs fshfs_catalog_file_index_key_hfs
 
 struct fshfs_catalog_file_index_key_hfs
 {
-	/* The size
+	/* The data size
 	 * Consists of 1 byte
 	 */
-	uint8_t size;
+	uint8_t data_size;
 
 	/* Unknown (reserved)
 	 * Consists of 1 byte
@@ -48,30 +48,33 @@ struct fshfs_catalog_file_index_key_hfs
 	 */
 	uint8_t parent_cnid[ 4 ];
 
-	/* The node name string
+	/* The name string
 	 * Variable of size
 	 */
-	uint8_t *node_name;
 };
 
 typedef struct fshfs_catalog_file_index_key_hfsplus fshfs_catalog_file_index_key_hfsplus_t;
 
 struct fshfs_catalog_file_index_key_hfsplus
 {
-	/* The size
+	/* The data size
 	 * Consists of 2 bytes
 	 */
-	uint8_t size[ 2 ];
+	uint8_t data_size[ 2 ];
 
 	/* The parent directory identifier (CNID)
 	 * Consists of 4 bytes
 	 */
 	uint8_t parent_cnid[ 4 ];
 
-	/* The node name string
+	/* The number of characters of the name string
+	 * Consists of 2 bytes
+	 */
+	uint8_t name_size[ 2 ];
+
+	/* The name string
 	 * Variable of size
 	 */
-	uint8_t *node_name;
 };
 
 #if defined( __cplusplus )

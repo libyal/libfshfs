@@ -35,16 +35,16 @@
 #include "fshfs_btree.h"
 
 /* Creates a B-tree node record
- * Make sure the value btree_node_record is referencing, is set to NULL
+ * Make sure the value node_record is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_record_initialize(
-     libfshfs_btree_node_record_t **btree_node_record,
+     libfshfs_btree_node_record_t **node_record,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_node_record_initialize";
 
-	if( btree_node_record == NULL )
+	if( node_record == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -55,7 +55,7 @@ int libfshfs_btree_node_record_initialize(
 
 		return( -1 );
 	}
-	if( *btree_node_record != NULL )
+	if( *node_record != NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -66,10 +66,10 @@ int libfshfs_btree_node_record_initialize(
 
 		return( -1 );
 	}
-	*btree_node_record = memory_allocate_structure(
-	                      libfshfs_btree_node_record_t );
+	*node_record = memory_allocate_structure(
+	                libfshfs_btree_node_record_t );
 
-	if( *btree_node_record == NULL )
+	if( *node_record == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -81,7 +81,7 @@ int libfshfs_btree_node_record_initialize(
 		goto on_error;
 	}
 	if( memory_set(
-	     *btree_node_record,
+	     *node_record,
 	     0,
 	     sizeof( libfshfs_btree_node_record_t ) ) == NULL )
 	{
@@ -97,12 +97,12 @@ int libfshfs_btree_node_record_initialize(
 	return( 1 );
 
 on_error:
-	if( *btree_node_record != NULL )
+	if( *node_record != NULL )
 	{
 		memory_free(
-		 *btree_node_record );
+		 *node_record );
 
-		*btree_node_record = NULL;
+		*node_record = NULL;
 	}
 	return( -1 );
 }
@@ -111,12 +111,12 @@ on_error:
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_record_free(
-     libfshfs_btree_node_record_t **btree_node_record,
+     libfshfs_btree_node_record_t **node_record,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_node_record_free";
 
-	if( btree_node_record == NULL )
+	if( node_record == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -127,12 +127,12 @@ int libfshfs_btree_node_record_free(
 
 		return( -1 );
 	}
-	if( *btree_node_record != NULL )
+	if( *node_record != NULL )
 	{
 		memory_free(
-		 *btree_node_record );
+		 *node_record );
 
-		*btree_node_record = NULL;
+		*node_record = NULL;
 	}
 	return( 1 );
 }
@@ -142,13 +142,13 @@ int libfshfs_btree_node_record_free(
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_initialize(
-     libfshfs_btree_node_t **btree_node,
+     libfshfs_btree_node_t **node,
      size_t data_size,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_node_initialize";
 
-	if( btree_node == NULL )
+	if( node == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -159,7 +159,7 @@ int libfshfs_btree_node_initialize(
 
 		return( -1 );
 	}
-	if( *btree_node != NULL )
+	if( *node != NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -181,10 +181,10 @@ int libfshfs_btree_node_initialize(
 
 		return( -1 );
 	}
-	*btree_node = memory_allocate_structure(
-	               libfshfs_btree_node_t );
+	*node = memory_allocate_structure(
+	         libfshfs_btree_node_t );
 
-	if( *btree_node == NULL )
+	if( *node == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -196,7 +196,7 @@ int libfshfs_btree_node_initialize(
 		goto on_error;
 	}
 	if( memory_set(
-	     *btree_node,
+	     *node,
 	     0,
 	     sizeof( libfshfs_btree_node_t ) ) == NULL )
 	{
@@ -208,18 +208,18 @@ int libfshfs_btree_node_initialize(
 		 function );
 
 		memory_free(
-		 *btree_node );
+		 *node );
 
-		*btree_node = NULL;
+		*node = NULL;
 
 		return( -1 );
 	}
 	if( data_size > 0 )
 	{
-		( *btree_node )->data = (uint8_t *) memory_allocate(
-		                                     sizeof( uint8_t ) * data_size );
+		( *node )->data = (uint8_t *) memory_allocate(
+		                               sizeof( uint8_t ) * data_size );
 
-		if( ( *btree_node )->data == NULL )
+		if( ( *node )->data == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -230,10 +230,10 @@ int libfshfs_btree_node_initialize(
 
 			goto on_error;
 		}
-		( *btree_node )->data_size = data_size;
+		( *node )->data_size = data_size;
 	}
 	if( libcdata_array_initialize(
-	     &( ( *btree_node )->records_array ),
+	     &( ( *node )->records_array ),
 	     0,
 	     error ) != 1 )
 	{
@@ -249,17 +249,17 @@ int libfshfs_btree_node_initialize(
 	return( 1 );
 
 on_error:
-	if( *btree_node != NULL )
+	if( *node != NULL )
 	{
-		if( ( *btree_node )->data != NULL )
+		if( ( *node )->data != NULL )
 		{
 			memory_free(
-			 ( *btree_node )->data );
+			 ( *node )->data );
 		}
 		memory_free(
-		 *btree_node );
+		 *node );
 
-		*btree_node = NULL;
+		*node = NULL;
 	}
 	return( -1 );
 }
@@ -268,13 +268,13 @@ on_error:
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_free(
-     libfshfs_btree_node_t **btree_node,
+     libfshfs_btree_node_t **node,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_node_free";
 	int result            = 1;
 
-	if( btree_node == NULL )
+	if( node == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -285,10 +285,10 @@ int libfshfs_btree_node_free(
 
 		return( -1 );
 	}
-	if( *btree_node != NULL )
+	if( *node != NULL )
 	{
 		if( libcdata_array_free(
-		     &( ( *btree_node )->records_array ),
+		     &( ( *node )->records_array ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_record_free,
 		     error ) != 1 )
 		{
@@ -301,24 +301,104 @@ int libfshfs_btree_node_free(
 
 			result = -1;
 		}
-		if( ( *btree_node )->data != NULL )
+		if( ( *node )->data != NULL )
 		{
 			memory_free(
-			 ( *btree_node )->data );
+			 ( *node )->data );
 		}
 		memory_free(
-		 *btree_node );
+		 *node );
 
-		*btree_node = NULL;
+		*node = NULL;
 	}
 	return( result );
+}
+
+/* Retrieves the data of a specific record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_node_get_record_data_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     uint8_t **record_data,
+     size_t *record_data_size,
+     libcerror_error_t **error )
+{
+	libfshfs_btree_node_record_t *node_record = NULL;
+	static char *function                     = "libfshfs_btree_node_get_record_data_by_index";
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	if( record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid record data.",
+		 function );
+
+		return( -1 );
+	}
+	if( record_data_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid record data size.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     node->records_array,
+	     record_index,
+	     (intptr_t **) &node_record,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to retrieve node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		return( -1 );
+	}
+	if( node_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		return( -1 );
+	}
+	*record_data      = node_record->data;
+	*record_data_size = (size_t) node_record->size;
+
+	return( 1 );
 }
 
 /* Reads a B-tree node
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_read(
-     libfshfs_btree_node_t *btree_node,
+     libfshfs_btree_node_t *node,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
@@ -334,7 +414,7 @@ int libfshfs_btree_node_read(
 	uint16_t value_16bit                      = 0;
 #endif
 
-	if( btree_node == NULL )
+	if( node == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -349,8 +429,8 @@ int libfshfs_btree_node_read(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid data.",
 		 function );
 
@@ -369,7 +449,7 @@ int libfshfs_btree_node_read(
 		return( -1 );
 	}
 	if( libfshfs_btree_node_read_descriptor(
-	     btree_node,
+	     node,
 	     data,
 	     data_size,
 	     error ) != 1 )
@@ -383,7 +463,7 @@ int libfshfs_btree_node_read(
 
 		goto on_error;
 	}
-	records_data_size = ( btree_node->number_of_records + 1 ) * 2;
+	records_data_size = ( node->number_of_records + 1 ) * 2;
 /* TODO add bounds checks records_data_size */
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -404,7 +484,7 @@ int libfshfs_btree_node_read(
 		records_data_offset = data_size - 2;
 
 		for( record_index = 0;
-		     record_index < (int) btree_node->number_of_records;
+		     record_index < (int) node->number_of_records;
 		     record_index++ )
 		{
 			byte_stream_copy_to_uint16_big_endian(
@@ -426,11 +506,14 @@ int libfshfs_btree_node_read(
 		 "%s: free space offset\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
+
+		libcnotify_printf(
+		 "\n" );
 	}
 #endif
 	if( libcdata_array_resize(
-	     btree_node->records_array,
-	     btree_node->number_of_records,
+	     node->records_array,
+	     node->number_of_records,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_record_free,
 	     error ) != 1 )
 	{
@@ -451,7 +534,7 @@ int libfshfs_btree_node_read(
 
 	records_data_offset += 2;
 
-	for( record_index = (int) btree_node->number_of_records - 1;
+	for( record_index = (int) node->number_of_records - 1;
 	     record_index >= 0;
 	     record_index-- )
 	{
@@ -485,10 +568,11 @@ int libfshfs_btree_node_read(
 
 			goto on_error;
 		}
+		node_record->data = &( data[ node_record->offset ] );
 		node_record->size = next_record_offset - node_record->offset;
 
 		if( libcdata_array_set_entry_by_index(
-		     btree_node->records_array,
+		     node->records_array,
 		     record_index,
 		     (intptr_t *) node_record,
 		     error ) != 1 )
@@ -515,7 +599,7 @@ on_error:
 		 NULL );
 	}
 	libcdata_array_empty(
-	 btree_node->records_array,
+	 node->records_array,
 	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_record_free,
 	 NULL );
 
@@ -526,7 +610,7 @@ on_error:
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_read_descriptor(
-     libfshfs_btree_node_t *btree_node,
+     libfshfs_btree_node_t *node,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
@@ -537,7 +621,7 @@ int libfshfs_btree_node_read_descriptor(
 	uint16_t value_16bit  = 0;
 #endif
 
-	if( btree_node == NULL )
+	if( node == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -552,8 +636,8 @@ int libfshfs_btree_node_read_descriptor(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid data.",
 		 function );
 
@@ -585,18 +669,18 @@ int libfshfs_btree_node_read_descriptor(
 #endif
 	byte_stream_copy_to_uint32_big_endian(
 	 ( (fshfs_btree_node_descriptor_t *) data )->next_node_number,
-	 btree_node->next_node_number );
+	 node->next_node_number );
 
 	byte_stream_copy_to_uint32_big_endian(
 	 ( (fshfs_btree_node_descriptor_t *) data )->previous_node_number,
-	 btree_node->previous_node_number );
+	 node->previous_node_number );
 
-	btree_node->type  = ( (fshfs_btree_node_descriptor_t *) data )->node_type;
-	btree_node->level = ( (fshfs_btree_node_descriptor_t *) data )->node_type;
+	node->type  = ( (fshfs_btree_node_descriptor_t *) data )->node_type;
+	node->level = ( (fshfs_btree_node_descriptor_t *) data )->node_type;
 
 	byte_stream_copy_to_uint16_big_endian(
 	 ( (fshfs_btree_node_descriptor_t *) data )->number_of_records,
-	 btree_node->number_of_records );
+	 node->number_of_records );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -604,29 +688,29 @@ int libfshfs_btree_node_read_descriptor(
 		libcnotify_printf(
 		 "%s: next node number\t\t\t: %" PRIu32 "\n",
 		 function,
-		 btree_node->next_node_number );
+		 node->next_node_number );
 
 		libcnotify_printf(
 		 "%s: previous node number\t\t: %" PRIu32 "\n",
 		 function,
-		 btree_node->previous_node_number );
+		 node->previous_node_number );
 
 		libcnotify_printf(
 		 "%s: node type\t\t\t\t: %" PRIi8 " (%s)\n",
 		 function,
-		 (int8_t) btree_node->type,
+		 (int8_t) node->type,
 		 libfshfs_debug_print_btree_node_type(
-		  btree_node->type ) );
+		  node->type ) );
 
 		libcnotify_printf(
 		 "%s: node level\t\t\t\t: %" PRIi8 "\n",
 		 function,
-		 (int8_t) btree_node->level );
+		 (int8_t) node->level );
 
 		libcnotify_printf(
 		 "%s: number of records\t\t\t: %" PRIu16 "\n",
 		 function,
-		 btree_node->number_of_records );
+		 node->number_of_records );
 
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_btree_node_descriptor_t *) data )->unknown1,
@@ -661,9 +745,9 @@ int libfshfs_btree_node_read_element_data(
      uint8_t read_flags LIBFSHFS_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
-	libfshfs_btree_node_t *btree_node = NULL;
-	static char *function             = "libfshfs_btree_node_read_element_data";
-	ssize_t read_count                = 0;
+	libfshfs_btree_node_t *node = NULL;
+	static char *function       = "libfshfs_btree_node_read_element_data";
+	ssize_t read_count          = 0;
 
 	LIBFSHFS_UNREFERENCED_PARAMETER( element_index )
 	LIBFSHFS_UNREFERENCED_PARAMETER( element_data_file_index )
@@ -693,7 +777,7 @@ int libfshfs_btree_node_read_element_data(
 		return( -1 );
 	}
 	if( libfshfs_btree_node_initialize(
-	     &btree_node,
+	     &node,
 	     (size_t) btree_node_size,
 	     error ) != 1 )
 	{
@@ -706,7 +790,7 @@ int libfshfs_btree_node_read_element_data(
 
 		goto on_error;
 	}
-	if( btree_node == NULL )
+	if( node == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -720,9 +804,9 @@ int libfshfs_btree_node_read_element_data(
 	if( ( range_flags & LIBFDATA_RANGE_FLAG_IS_SPARSE ) != 0 )
 	{
 		if( memory_set(
-		     btree_node->data,
+		     node->data,
 		     0,
-		     btree_node->data_size ) == NULL )
+		     node->data_size ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -775,11 +859,11 @@ int libfshfs_btree_node_read_element_data(
 		}
 		read_count = libbfio_handle_read_buffer(
 		              file_io_handle,
-		              btree_node->data,
-		              btree_node->data_size,
+		              node->data,
+		              node->data_size,
 		              error );
 
-		if( read_count != (ssize_t) btree_node->data_size )
+		if( read_count != (ssize_t) node->data_size )
 		{
 			libcerror_error_set(
 			 error,
@@ -798,15 +882,15 @@ int libfshfs_btree_node_read_element_data(
 		 "%s: B-tree root node data:\n",
 		 function );
 		libcnotify_print_data(
-		 (uint8_t *) btree_node->data,
-		 btree_node->data_size,
+		 (uint8_t *) node->data,
+		 node->data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	if( libfshfs_btree_node_read(
-	     btree_node,
-	     btree_node->data,
-	     btree_node->data_size,
+	     node,
+	     node->data,
+	     node->data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -823,7 +907,7 @@ int libfshfs_btree_node_read_element_data(
 	     (intptr_t *) file_io_handle,
 	     cache,
 	     element_index,
-	     (intptr_t *) btree_node,
+	     (intptr_t *) node,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_free,
 	     LIBFDATA_VECTOR_ELEMENT_VALUE_FLAG_MANAGED,
 	     error ) != 1 )
@@ -840,10 +924,10 @@ int libfshfs_btree_node_read_element_data(
 	return( 1 );
 
 on_error:
-	if( btree_node != NULL )
+	if( node != NULL )
 	{
 		libfshfs_btree_node_free(
-		 &btree_node,
+		 &node,
 		 NULL );
 	}
 	return( -1 );

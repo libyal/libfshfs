@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "libfshfs_btree_file.h"
+#include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_fork_descriptor.h"
@@ -963,6 +964,20 @@ int libfshfs_volume_open_read(
 		     internal_volume->io_handle,
 		     file_io_handle,
 		     internal_volume->catalog_file_fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to read catalog B-tree file.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_catalog_btree_file_test(
+		     btree_file,
+		     file_io_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

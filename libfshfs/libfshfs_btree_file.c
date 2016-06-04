@@ -167,6 +167,139 @@ int libfshfs_btree_file_free(
 	return( result );
 }
 
+/* Retrieves a specific B-tree node
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_file_get_node_by_number(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     int node_number,
+     libfshfs_btree_node_t **node,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_file_get_node_by_number";
+
+	if( btree_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree file.",
+		 function );
+
+		return( -1 );
+	}
+	if( btree_file->nodes_vector == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree file - missing nodes vector.",
+		 function );
+
+		return( -1 );
+	}
+	if( btree_file->nodes_cache == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree file - missing nodes cache.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfdata_vector_get_element_value_by_index(
+	     btree_file->nodes_vector,
+	     (intptr_t *) file_io_handle,
+	     btree_file->nodes_cache,
+	     node_number,
+	     (intptr_t **) node,
+	     0,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve B-tree node: %d.",
+		 function,
+		 node_number );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the B-tree root node
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_file_get_root_node(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t **root_node,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_file_get_root_node";
+
+	if( btree_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree file.",
+		 function );
+
+		return( -1 );
+	}
+	if( btree_file->nodes_vector == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree file - missing nodes vector.",
+		 function );
+
+		return( -1 );
+	}
+	if( btree_file->nodes_cache == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree file - missing nodes cache.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfdata_vector_get_element_value_by_index(
+	     btree_file->nodes_vector,
+	     (intptr_t *) file_io_handle,
+	     btree_file->nodes_cache,
+	     (int) btree_file->root_node_number,
+	     (intptr_t **) root_node,
+	     0,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve B-tree root node: %" PRIu32 ".",
+		 function,
+		 btree_file->root_node_number );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
 /* Reads the B-tree file
  * Returns 1 if successful or -1 on error
  */
@@ -179,11 +312,10 @@ int libfshfs_btree_file_read(
 {
 	uint8_t header_node_data[ 512 ];
 
-	libfshfs_btree_node_t *btree_header_node = NULL;
-	libfshfs_btree_node_t *btree_root_node   = NULL;
-	static char *function                    = "libfshfs_btree_file_read";
-	off64_t file_offset                      = 0;
-	ssize_t read_count                       = 0;
+	libfshfs_btree_node_t *header_node = NULL;
+	static char *function              = "libfshfs_btree_file_read";
+	off64_t file_offset                = 0;
+	ssize_t read_count                 = 0;
 
 	if( btree_file == NULL )
 	{
@@ -276,7 +408,7 @@ int libfshfs_btree_file_read(
 		goto on_error;
 	}
 	if( libfshfs_btree_node_initialize(
-	     &btree_header_node,
+	     &header_node,
 	     0,
 	     error ) != 1 )
 	{
@@ -290,7 +422,7 @@ int libfshfs_btree_file_read(
 		goto on_error;
 	}
 	if( libfshfs_btree_node_read_descriptor(
-	     btree_header_node,
+	     header_node,
 	     header_node_data,
 	     512,
 	     error ) != 1 )
@@ -304,7 +436,7 @@ int libfshfs_btree_file_read(
 
 		goto on_error;
 	}
-	if( btree_header_node->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
+	if( header_node->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
 	{
 		libcerror_error_set(
 		 error,
@@ -331,7 +463,7 @@ int libfshfs_btree_file_read(
 		goto on_error;
 	}
 	if( libfshfs_btree_node_free(
-	     &btree_header_node,
+	     &header_node,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -375,37 +507,6 @@ int libfshfs_btree_file_read(
 
 		goto on_error;
 	}
-	if( libfdata_vector_get_element_value_by_index(
-	     btree_file->nodes_vector,
-	     (intptr_t *) file_io_handle,
-	     btree_file->nodes_cache,
-	     btree_file->root_node_number,
-	     (intptr_t **) &btree_root_node,
-	     0,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve B-tree root node: %" PRIu32 ".",
-		 function,
-		 btree_file->root_node_number );
-
-		goto on_error;
-	}
-	if( btree_root_node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid B-tree root node: %" PRIu32 ".",
-		 function,
-		 btree_file->root_node_number );
-
-		goto on_error;
-	}
 	return( 1 );
 
 on_error:
@@ -421,10 +522,10 @@ on_error:
 		 &( btree_file->nodes_vector ),
 		 NULL );
 	}
-	if( btree_header_node != NULL )
+	if( header_node != NULL )
 	{
 		libfshfs_btree_node_free(
-		 &btree_header_node,
+		 &header_node,
 		 NULL );
 	}
 	return( -1 );
@@ -461,8 +562,8 @@ int libfshfs_btree_file_read_header_record(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid data.",
 		 function );
 
@@ -515,12 +616,12 @@ int libfshfs_btree_file_read_header_record(
 		 ( (fshfs_btree_header_record_t *) data )->depth,
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: depth\t\t\t\t: %" PRIu32 "\n",
+		 "%s: depth\t\t\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
 		libcnotify_printf(
-		 "%s: root node number\t\t: %" PRIu32 "\n",
+		 "%s: root node number\t\t: %" PRIu16 "\n",
 		 function,
 		 btree_file->root_node_number );
 
@@ -543,7 +644,7 @@ int libfshfs_btree_file_read_header_record(
 		 btree_file->last_leaf_node_number );
 
 		libcnotify_printf(
-		 "%s: node size\t\t\t: %" PRIu32 "\n",
+		 "%s: node size\t\t\t: %" PRIu16 "\n",
 		 function,
 		 btree_file->node_size );
 
@@ -551,7 +652,7 @@ int libfshfs_btree_file_read_header_record(
 		 ( (fshfs_btree_header_record_t *) data )->maximum_key_size,
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: maximum key size\t\t: %" PRIu32 "\n",
+		 "%s: maximum key size\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
@@ -577,7 +678,7 @@ int libfshfs_btree_file_read_header_record(
 		 ( (fshfs_btree_header_record_t *) data )->unknown1,
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t: %" PRIu32 "\n",
+		 "%s: unknown1\t\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
