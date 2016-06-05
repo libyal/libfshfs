@@ -107,7 +107,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees B-tree node record
+/* Frees a B-tree node record
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_record_free(
@@ -138,7 +138,7 @@ int libfshfs_btree_node_record_free(
 }
 
 /* Creates a B-tree node
- * Make sure the value btree_node is referencing, is set to NULL
+ * Make sure the value node is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_initialize(
@@ -264,7 +264,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees B-tree node
+/* Frees a B-tree node
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_btree_node_free(
@@ -389,7 +389,7 @@ int libfshfs_btree_node_get_record_data_by_index(
 		return( -1 );
 	}
 	*record_data      = node_record->data;
-	*record_data_size = (size_t) node_record->size;
+	*record_data_size = node->data_size - node_record->offset;
 
 	return( 1 );
 }
@@ -569,7 +569,6 @@ int libfshfs_btree_node_read(
 			goto on_error;
 		}
 		node_record->data = &( data[ node_record->offset ] );
-		node_record->size = next_record_offset - node_record->offset;
 
 		if( libcdata_array_set_entry_by_index(
 		     node->records_array,

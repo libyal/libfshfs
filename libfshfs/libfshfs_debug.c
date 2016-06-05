@@ -67,6 +67,40 @@ const char *libfshfs_debug_print_btree_node_type(
 	return( "Unknown" );
 }
 
+/* Prints the catalog record type
+ */
+const char *libfshfs_debug_print_catalog_record_type(
+             uint16_t record_type )
+{
+	switch( record_type )
+	{
+		case 0x0001:
+			return( "HFS+ directory record (kHFSPlusFolderRecord)" );
+
+		case 0x0002:
+			return( "HFS+ file record (kHFSPlusFileRecord)" );
+
+		case 0x0003:
+			return( "HFS+ directory thread record (kHFSPlusFolderThreadRecord)" );
+
+		case 0x0004:
+			return( "HFS+ file thread record (kHFSPlusFileThreadRecord)" );
+
+		case 0x0100:
+			return( "HFS directory record (kHFSFolderRecord)" );
+
+		case 0x0200:
+			return( "HFS file record (kHFSFileRecord)" );
+
+		case 0x0300:
+			return( "HFS directory thread record (kHFSFolderThreadRecord)" );
+
+		case 0x0400:
+			return( "HFS file thread record (kHFSFileThreadRecord)" );
+	}
+	return( "Unknown" );
+}
+
 /* Prints the read offsets
  * Returns 1 if successful or -1 on error
  */

@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * Catalog B-tree file directory record functions
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,39 +19,44 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DEBUG_H )
-#define _LIBFSHFS_DEBUG_H
+#if !defined( _LIBFSHFS_DIRECTORY_RECORD_H )
+#define _LIBFSHFS_DIRECTORY_RECORD_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+typedef struct libfshfs_directory_record libfshfs_directory_record_t;
 
-void libfshfs_debug_print_volume_attribute_flags(
-      uint32_t volume_attribute_flags );
+struct libfshfs_directory_record
+{
+	/* Dummy
+	 */
+	int dummy;
+};
 
-const char *libfshfs_debug_print_btree_node_type(
-             uint8_t btree_node_type );
-
-const char *libfshfs_debug_print_catalog_record_type(
-             uint16_t record_type );
-
-int libfshfs_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
+int libfshfs_directory_record_initialize(
+     libfshfs_directory_record_t **directory_record,
      libcerror_error_t **error );
 
-#endif
+int libfshfs_directory_record_free(
+     libfshfs_directory_record_t **directory_record,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_read(
+     libfshfs_directory_record_t *directory_record,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_DEBUG_H ) */
+#endif /* !defined( _LIBFSHFS_DIRECTORY_RECORD_H ) */
 

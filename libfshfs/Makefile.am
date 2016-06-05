@@ -32,8 +32,10 @@ libfshfs_la_SOURCES = \
 	libfshfs_catalog_btree_file.c libfshfs_catalog_btree_file.h \
 	libfshfs_debug.c libfshfs_debug.h \
 	libfshfs_definitions.h \
+	libfshfs_directory_record.c libfshfs_directory_record.h \
 	libfshfs_error.c libfshfs_error.h \
 	libfshfs_extern.h \
+	libfshfs_file_record.c libfshfs_file_record.h \
 	libfshfs_fork_descriptor.c libfshfs_fork_descriptor.h \
 	libfshfs_io_handle.c libfshfs_io_handle.h \
 	libfshfs_libbfio.h \
@@ -49,6 +51,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_libuna.h \
 	libfshfs_notify.c libfshfs_notify.h \
 	libfshfs_support.c libfshfs_support.h \
+	libfshfs_thread_record.c libfshfs_thread_record.h \
 	libfshfs_types.h \
 	libfshfs_unused.h \
 	libfshfs_volume.c libfshfs_volume.h

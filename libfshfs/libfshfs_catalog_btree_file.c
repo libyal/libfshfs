@@ -25,10 +25,13 @@
 #include <types.h>
 
 #include "libfshfs_catalog_btree_file.h"
+#include "libfshfs_directory_record.h"
+#include "libfshfs_file_record.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libuna.h"
+#include "libfshfs_thread_record.h"
 
 #include "fshfs_catalog_file.h"
 
@@ -37,14 +40,18 @@ int libfshfs_catalog_btree_file_test(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	libfshfs_btree_node_t *root_node            = NULL;
-	static char *function                       = "libfshfs_catalog_btree_file_test";
-	uint8_t *key_name_data                      = NULL;
-	uint8_t *record_data                        = NULL;
-	size_t record_data_size                     = 0;
-	uint16_t key_data_size                      = 0;
-	uint16_t key_name_size                      = 0;
-	uint16_t record_index                       = 0;
+	libfshfs_btree_node_t *root_node              = NULL;
+	libfshfs_directory_record_t *directory_record = NULL;
+	libfshfs_file_record_t *file_record           = NULL;
+	libfshfs_thread_record_t *thread_record       = NULL;
+	static char *function                         = "libfshfs_catalog_btree_file_test";
+	uint8_t *key_name_data                        = NULL;
+	uint8_t *record_data                          = NULL;
+	size_t record_data_size                       = 0;
+	uint16_t key_data_size                        = 0;
+	uint16_t key_name_size                        = 0;
+	uint16_t record_index                         = 0;
+	uint16_t record_type                          = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	libcstring_system_character_t *value_string = NULL;
@@ -114,10 +121,10 @@ int libfshfs_catalog_btree_file_test(
 		}
 /* TODO add HFS support */
 		byte_stream_copy_to_uint16_big_endian(
-		 ( (fshfs_catalog_file_index_key_hfsplus_t *) record_data )->data_size,
+		 ( (fshfs_catalog_index_key_hfsplus_t *) record_data )->data_size,
 		 key_data_size );
 
-/* TODO bounds check: key_data_size < record_data_size */
+/* TODO bounds check: key_data_size < ( record_data_size - 2 ) */
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -147,10 +154,10 @@ int libfshfs_catalog_btree_file_test(
 			if( libcnotify_verbose != 0 )
 			{
 				byte_stream_copy_to_uint32_big_endian(
-				 ( (fshfs_catalog_file_index_key_hfsplus_t *) record_data )->parent_cnid,
+				 ( (fshfs_catalog_index_key_hfsplus_t *) record_data )->parent_identifier,
 				 value_32bit );
 				libcnotify_printf(
-				 "%s: parent CNID\t\t\t\t: %" PRIu32 "\n",
+				 "%s: parent identifier\t\t\t: %" PRIu32 "\n",
 				 function,
 				 value_32bit );
 			}
@@ -159,7 +166,7 @@ int libfshfs_catalog_btree_file_test(
 		if( key_data_size >= 6 )
 		{
 			byte_stream_copy_to_uint16_big_endian(
-			 ( (fshfs_catalog_file_index_key_hfsplus_t *) record_data )->name_size,
+			 ( (fshfs_catalog_index_key_hfsplus_t *) record_data )->name_size,
 			 key_name_size );
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -175,7 +182,7 @@ int libfshfs_catalog_btree_file_test(
 
 			if( key_name_size > 0 )
 			{
-				key_name_data  = &( record_data[ sizeof( fshfs_catalog_file_index_key_hfsplus_t ) ] );
+				key_name_data  = &( record_data[ sizeof( fshfs_catalog_index_key_hfsplus_t ) ] );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 				if( libcnotify_verbose != 0 )
@@ -257,28 +264,173 @@ int libfshfs_catalog_btree_file_test(
 					 value_string );
 
 					value_string = NULL;
-
-					libcnotify_printf(
-					 "\n" );
 				}
+			}
+#endif
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "\n" );
 			}
 #endif
 		}
 		key_data_size += 2;
 
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
+		byte_stream_copy_to_uint16_big_endian(
+		 &( record_data[ key_data_size ] ),
+		 record_type );
+
+		switch( record_type )
 		{
-			libcnotify_printf(
-			 "%s: catalog record: %" PRIu16 " data:\n",
-			 function,
-			 record_index );
-			libcnotify_print_data(
-			 &( record_data[ key_data_size ] ),
-			 record_data_size - (size_t) key_data_size,
-			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+			case 0x0001:
+			case 0x0100:
+				if( libfshfs_directory_record_initialize(
+				     &directory_record,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create directory record.",
+					 function );
+
+					goto on_error;
+				}
+				if( libfshfs_directory_record_read(
+				     directory_record,
+				     &( record_data[ key_data_size ] ),
+				     record_data_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free directory record.",
+					 function );
+
+					goto on_error;
+				}
+				if( libfshfs_directory_record_free(
+				     &directory_record,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free directory record.",
+					 function );
+
+					goto on_error;
+				}
+				break;
+
+			case 0x0002:
+			case 0x0200:
+				if( libfshfs_file_record_initialize(
+				     &file_record,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create file record.",
+					 function );
+
+					goto on_error;
+				}
+				if( libfshfs_file_record_read(
+				     file_record,
+				     &( record_data[ key_data_size ] ),
+				     record_data_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free file record.",
+					 function );
+
+					goto on_error;
+				}
+				if( libfshfs_file_record_free(
+				     &file_record,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free file record.",
+					 function );
+
+					goto on_error;
+				}
+				break;
+
+			case 0x0003:
+			case 0x0300:
+			case 0x0004:
+			case 0x0400:
+				if( libfshfs_thread_record_initialize(
+				     &thread_record,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create thread record.",
+					 function );
+
+					goto on_error;
+				}
+				if( libfshfs_thread_record_read(
+				     thread_record,
+				     &( record_data[ key_data_size ] ),
+				     record_data_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free thread record.",
+					 function );
+
+					goto on_error;
+				}
+				if( libfshfs_thread_record_free(
+				     &thread_record,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free thread record.",
+					 function );
+
+					goto on_error;
+				}
+				break;
+
+			default:
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported record type: 0x%04" PRIx16 "\n",
+				 function,
+				 record_type );
+
+				goto on_error;
 		}
-#endif
 	}
 	return( 1 );
 
@@ -290,6 +442,24 @@ on_error:
 		 value_string );
 	}
 #endif
+	if( thread_record != NULL )
+	{
+		libfshfs_thread_record_free(
+		 &thread_record,
+		 NULL );
+	}
+	if( file_record != NULL )
+	{
+		libfshfs_file_record_free(
+		 &file_record,
+		 NULL );
+	}
+	if( directory_record != NULL )
+	{
+		libfshfs_directory_record_free(
+		 &directory_record,
+		 NULL );
+	}
 	return( -1 );
 }
 
