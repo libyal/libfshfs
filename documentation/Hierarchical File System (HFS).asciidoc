@@ -71,7 +71,9 @@ The Mactintosh File System (MFS) is the predecessor of HFS.
 | Characteristics | Description
 | Byte order | big-endian
 | Date and time values | <<hfs_timestamp,HFS/HFS+ date and time>>
-| Character strings | [yellow-background]*TODO*
+| Character strings | ASCII strings are Single Byte Character (SBC) or Multi Byte Character (MBC) string stored with a codepage. +
+Though technically maybe incorrect, this document will use term (extended) ASCII string. +
+Unicode strings are stored in UTF-16 big-endian without the byte order mark (BOM).
 |===
 
 === HFS and HFS+
@@ -82,10 +84,9 @@ The Mactintosh File System (MFS) is the predecessor of HFS.
 | Maximum file size | 231 (2 GiB) | 263 (8 EiB)
 | Maximum filename length | 31 characters | 255 characters
 | Maximum allocation blocks | 216 (65535 bytes) | 232 (4294967296 bytes)
-| Character set | MacRoman +
-[yellow-background]*(extended ASCII with codepage?)* | Unicode UTF-16 big-endian
+| Character set | extended ASCII with codepage | Unicode UTF-16 big-endian
 | Time stamps | In local time | In UTC (GMT)
-| Catalog node size | 512 bytes | 4096 bytes
+| Catalog B-tree file node size | 512 bytes | 4096 bytes
 | File attributes | none | Basic and extended
 |===
 
@@ -99,7 +100,7 @@ volume may be either case-sensitive or case-insensitive. Case sensitivity (or
 lack thereof) is global to the volume; the setting applies to all file and 
 directory names on the volume.
 
-The Apple iPhone uses the HFSX.
+The Apple iPhone OS (iOS) e.g. uses the HFSX.
 
 == [[hfs_timestamp]]HFS timestamp
 In HFS+ date and time values are stored in an unsigned 32-bit integer 
@@ -116,40 +117,43 @@ range of representable dates does not contain 1900 or 2100, neither of which
 have leap days.
 
 == [[btree_file]]B-tree file
-Both HFS and HFS+ use B-trees files for efficient retrieval. The structure of 
-the B-trees on an HFS and HFS+ volume are closely related. There are three 
-principal differences:
+Both HFS and HFS+ use B-trees files. A B-tree file consists of fixed sized nodes:
 
-* the size of nodes
-* the size of keys within index nodes
-* the size of a key length
+* header node
+* map nodes
+* index (root and branch) nodes
+* leaf nodes
 
-A B-tree file entirely consists of fixed size B‑tree nodes.
+[NOTE]
+The node size is determined when the B-tree is created. In an HFS+ B-tree the 
+node size is determined by the header node.
 
-The node size of a B-tree is determined when the B-tree is created.
-
-* In an HFS B-tree, nodes always have a fixed size of 512 bytes.
-* In an HFS+ B-tree, the node size is determined by a node size value in the header node. The node size must be a power from 512 through 32768.
+[cols="1,1,1",options="header"]
+|===
+| Feature | HFS | HFS+/HFSX
+| Node size | 512 bytes | 512 - 32768 bytes +
+The size value must be a power of 2
+|===
 
 HFS+ uses the following default node sizes:
 
-* 4 KiB (8 KiB in Mac OS X) for the catalog file
-* 1 KiB (4 KiB in Mac OS X) for the extents overflow file
-* 4 KiB for the attributes file
+[cols="1,1,1",options="header"]
+|===
+| Feature | HFS | HFS+/HFSX
+| catalog file | 512 | 4 KiB (8 KiB in Mac OS X)
+| extents overflow file | 512 | 1 KiB (4 KiB in Mac OS X)
+| attributes file | N/A | 4 KiB
+|===
 
-The size of a B-tree file is the number of nodes times the node size.
+[yellow-background]*TODO: determine what TN1150 means with "in Mac OS X"*
 
-In a B-tree, all the information that needs to be stored is intelligently 
-classified and sorted into objects called nodes. Only the data fork of the 
-B-tree is used; the resource fork of a B-tree file is left unused.
+The size of a B-tree file can be calculated in the following manner:
+....
+size = number of nodes x node size
+....
 
-The tree node contains records, which are used for a variety of purposes. Some records contain:
-
-* information about the structure of the B-tree as:
-** header nodes;
-** map nodes;
-** index (root and branch) nodes.
-* the actual data that is to be retrieved and possibly updated (leaf nodes).
+[NOTE]
+The data fork of the B-tree is used. The resource fork of a B-tree file is unused.
 
 === The B-tree (file) node
 A B-tree file consists of nodes. Each node has the same structure and consists
@@ -198,42 +202,27 @@ Should contain 0-byte values
 The B-tree node record contains either data or a reference to some other node 
 in the tree.
 
-* In an HFS B-tree, all of the keys in an index node occupy a fixed amount of space: the maximum key length for that B-tree.
-* In an HFS+ B-tree, the keys in an index node are allowed to vary in size.
+[yellow-background]*TODO: reword*
 
-The B-tree node record is variable of size and consists of:
+* In an HFS B-tree the keys in an index node occupy a fixed amount of space: the maximum key size for that B-tree.
+* In an HFS+ B-tree the keys in an index node are variable in size.
 
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 1 or 2 | | Key byte size +
-HFS => Unsigned 8-bit integer +
-HFS+ => Unsigned 8 or 16-bit integer
-| 1 or 2 | ... | | Record key
-| ... | ... | | Record data or reference +
-[yellow-background]*(contains what? File offset? identifier?)*
-|===
+Each B-tree node record contains a key, which is used to search through the 
+B-tree to locate the information. This also referred to as the search key. The 
+B-tree node record is variable of size and consists of:
 
-Each record contains a search key, which is used to search through the B-tree 
-to locate the information. The key can contain any information at all that is 
-deemed useful in finding the corresponding data which is contained in the leaf 
-nodes.
-
-* In a catalog file the search key is a combination of the file or directory name and the parent  directory identifier of the specific file or directory.
-* In an extents overflow file the search key is a combination of that file's type, its file identifier and the index of the first allocation block in the extent.
-
-The records in each node are always grouped so that their keys are in ascending 
-order. The nodes on any given level are linked in such a way as to preserve the 
-ascending order of record keys throughout that level.
+* key data
+* record data
 
 ==== The B-tree record offsets
 The B-tree record offsets are an array of 16-bit integers relative from the 
 start of the B-tree node record. The first record offset is found at node
-size - 2, e.g. 512 - 2 = 510, the second 2 bytes before that, e.g. 508, etc. An
-additional record offset is added at the end to signify the start of the free
-space.
+`size - 2`, e.g. `512 - 2 = 510`, the second 2 bytes before that, e.g. 508,
+etc. An additional record offset is added at the end to signify the start
+of the free space.
 
-[yellow-background]*TODO: are the record offsets always stored in order?*
+[NOTE]
+The record offsets are not necessarily stored in order.
 
 === The B-tree header node
 The B-tree header node is stored in the first node of the B-tree file and 
@@ -536,9 +525,9 @@ The MDB is 161 bytes of size and consists of:
 | 0 | 2 |"BD" ("\x42\x44") | The volume signature +
 For Mactintosh File System (MFS) volumes the signature contains "\xd2\xd7".
 | 2 | 4 | | Volume creation date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 6 | 4 | | Volume modification date and time +
-Contains a HFS timestamp +
+Contains an HFS timestamp +
 This is not necessarily the data and time when the volume was last flushed. 
 | 10 | 2 | | Volume attributes
 | 12 | 2 | | Number of files in the root directory
@@ -1163,15 +1152,16 @@ standard assignments:
 | 14 | kHFSRepairCatalogFileID | Used temporarily by fsck_hfs when rebuilding the catalog file.
 | 15 | kHFSBogusExtentFileID | The bogus extent file +
 Used temporarily during exchange files operations.
+| 16 | kHFSFirstUserCatalogNodeID | The first available CNID for user's files and folders
 |===
 
-CNID 16 (kHFSFirstUserCatalogNodeID) is the first available for use by a user's 
-files and folders.
-
 === Catalog file index keys
-The catalog file index key consists principally of the name of that file or 
-directory and its parent identifier. The volume reference number is not 
-included in the catalog file index key.
+In a catalog file the search key consists of:
+
+* parent directory identifier
+* file or directory name
+
+The volume reference number is not included in the search key.
 
 ==== HFS catalog index key
 The HFS catalog index key is variable in size and consists of:
@@ -1296,11 +1286,11 @@ consists of:
 | 6 | 4 | | The identifier +
 Contains a CNID
 | 10 | 4 | | Creation date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 14 | 4 | | (content) modification date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 18 | 4 | | Backup date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 22 | 16 | | Folder information +
 See section: <<hfs_folder_information,HFS folder information>>
 | 38 | 16 | | Extended folder information +
@@ -1323,15 +1313,15 @@ No bits are currently defined for folder records.
 | 8 | 4 | | The identifier +
 Contains a CNID
 | 12 | 4 | | Creation date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 16 | 4 | | (content) modification date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 20 | 4 | | Entry (or attribute) modification date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 24 | 4 | | Access date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 28 | 4 | | Backup date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 32 | 16 | | Permissions +
 See section: <<permissions,Permissions>>
 | 48 | 16 | | Folder information +
@@ -1369,11 +1359,11 @@ Contains a CNID
 | 36 | 4 | | Logical end of file (EOF) of resource fork
 | 40 | 4 | | Physical end of file (EOF) of resource fork
 | 44 | 4 | | Creation date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 48 | 4 | | (content) modification date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 52 | 4 | | Backup date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 56 | 16 | | Extended file information
 | 72 | 2 | | The clump size
 | 74 | ( 3 x 4 ) = 12 | | The first data fork extent record +
@@ -1397,15 +1387,15 @@ See section: <<catalog_file_record_flags,file record flags>>
 | 8 | 4 | | The identifier +
 Contains a CNID
 | 12 | 4 | | Creation date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 16 | 4 | | (content) modification date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 20 | 4 | | Entry (or attribute) modification date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 24 | 4 | | Access date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 28 | 4 | | Backup date and time +
-Contains a HFS timestamp
+Contains an HFS timestamp
 | 32 | 16 | | Permissions +
 See section: <<permissions,Permissions>>
 | 48 | 16 | | File information (or user information) +
@@ -1475,6 +1465,18 @@ Contains the name of the associated file or directory
 
 [yellow-background]*Maximum name string length 255 characters?*
 
+=== File system hierarchy
+File and directory (folder) records have a search key with a non-empty name 
+string. In thread records the name string in the search key is empty. E.g. to
+list the file entries in a directory:
+
+* find all the file or directory records given the parent CNID
+
+Finding a file or directory by its CNID is a two-step process:
+
+1. use the CNID to look up the thread record for the file or directory
+2. use the thread record to look up the file or directory record
+
 === File forks
 Forks in HFS and HFS+ can be compared to data streams in NTFS. In HFS+ the fork
 values are grouped in a separate fork descriptor structure. HFS+ also defines
@@ -1528,6 +1530,12 @@ The key has been selected so that the extent records for a particular fork are
 grouped together in the B-tree, right next to all the extent records for the 
 other fork of the file. The fork offset of the preceding extent record is 
 needed to determine the key of the next extent record.
+
+In an extents overflow the search key consists of:
+
+* file idnetifier
+* file type
+* first allocation block in the extent
 
 ==== The HFS extent key (record)
 The HFS extent key (record) is 8 bytes of size and consists of:

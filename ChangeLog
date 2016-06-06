@@ -1,4 +1,7 @@
 Debug info:
+* directory listing:
+  - get all sub file and directory records (from the catalog) given a CNID
+* Retrieve the volume name from the root directory entry
 * create a B-tree node vector
 * complete and use libfshfs_debug_print_volume_attribute_flags
 
