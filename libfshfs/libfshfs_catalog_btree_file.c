@@ -265,8 +265,8 @@ int libfshfs_catalog_btree_file_test(
 
 					value_string = NULL;
 				}
-			}
 #endif
+			}
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fshfs_test_get_version"
-	ProjectGUID="{69B314BF-D6C2-43B3-B043-5A90D1EC2F81}"
-	RootNamespace="fshfs_test_get_version"
+	Name="fshfs_test_error"
+	ProjectGUID="{9A49F667-A795-4A2A-9C69-CAD29ED588ED}"
+	RootNamespace="fshfs_test_error"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\fshfs_test_get_version.c"
+				RelativePath="..\..\tests\fshfs_test_error.c"
 				>
 			</File>
 		</Filter>

@@ -121,6 +121,7 @@ stamp-h[1-9]
 /libfshfs/libfshfs_definitions.h
 /pyfshfs-python[23]/*.[ch]
 /fshfstools/fshfsinfo
+/tests/fshsf_test_error
 /tests/fshsf_test_get_version
 /tests/input
 /tests/tmp*

@@ -406,11 +406,11 @@ int libfshfs_btree_node_read(
 	libfshfs_btree_node_record_t *node_record = NULL;
 	static char *function                     = "libfshfs_btree_node_read";
 	size_t records_data_offset                = 0;
+	size_t records_data_size                  = 0;
 	uint16_t next_record_offset               = 0;
 	int record_index                          = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	size_t records_data_size                  = 0;
 	uint16_t value_16bit                      = 0;
 #endif
 
@@ -464,6 +464,7 @@ int libfshfs_btree_node_read(
 		goto on_error;
 	}
 	records_data_size = ( node->number_of_records + 1 ) * 2;
+
 /* TODO add bounds checks records_data_size */
 
 #if defined( HAVE_DEBUG_OUTPUT )
