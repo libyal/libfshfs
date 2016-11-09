@@ -64,5 +64,5 @@ enum LIBFSHFS_FILE_SYSTEM_TYPES
         LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFSX
 };
 
-#endif
+#endif /* !defined( _LIBFSHFS_DEFINITIONS_H ) */
 

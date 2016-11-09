@@ -22,6 +22,7 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
+#include <system_string.h>
 #include <types.h>
 
 #include "libfshfs_debug.h"
@@ -149,7 +150,7 @@ int libfshfs_directory_record_read(
 	uint16_t record_type              = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libcstring_system_character_t hfs_time_string[ 32 ];
+	system_character_t hfs_time_string[ 32 ];
 
 	libfdatetime_hfs_time_t *hfs_time = NULL;
 	uint32_t value_32bit              = 0;
@@ -349,7 +350,7 @@ int libfshfs_directory_record_read(
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfdatetime_hfs_time_copy_to_utf16_string(
 			  hfs_time,
 			  (uint16_t *) hfs_time_string,
@@ -376,7 +377,7 @@ int libfshfs_directory_record_read(
 			goto on_error;
 		}
 		libcnotify_printf(
-		 "%s: creation time\t\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 "%s: creation time\t\t\t\t: %" PRIs_SYSTEM " UTC\n",
 		 function,
 		 hfs_time_string );
 
@@ -409,7 +410,7 @@ int libfshfs_directory_record_read(
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfdatetime_hfs_time_copy_to_utf16_string(
 			  hfs_time,
 			  (uint16_t *) hfs_time_string,
@@ -436,7 +437,7 @@ int libfshfs_directory_record_read(
 			goto on_error;
 		}
 		libcnotify_printf(
-		 "%s: modification time\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 "%s: modification time\t\t\t: %" PRIs_SYSTEM " UTC\n",
 		 function,
 		 hfs_time_string );
 
@@ -458,7 +459,7 @@ int libfshfs_directory_record_read(
 
 				goto on_error;
 			}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libfdatetime_hfs_time_copy_to_utf16_string(
 				  hfs_time,
 				  (uint16_t *) hfs_time_string,
@@ -485,7 +486,7 @@ int libfshfs_directory_record_read(
 				goto on_error;
 			}
 			libcnotify_printf(
-			 "%s: entry modification time\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+			 "%s: entry modification time\t\t\t: %" PRIs_SYSTEM " UTC\n",
 			 function,
 			 hfs_time_string );
 
@@ -505,7 +506,7 @@ int libfshfs_directory_record_read(
 
 				goto on_error;
 			}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libfdatetime_hfs_time_copy_to_utf16_string(
 				  hfs_time,
 				  (uint16_t *) hfs_time_string,
@@ -532,7 +533,7 @@ int libfshfs_directory_record_read(
 				goto on_error;
 			}
 			libcnotify_printf(
-			 "%s: access time\t\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+			 "%s: access time\t\t\t\t: %" PRIs_SYSTEM " UTC\n",
 			 function,
 			 hfs_time_string );
 		}
@@ -565,7 +566,7 @@ int libfshfs_directory_record_read(
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfdatetime_hfs_time_copy_to_utf16_string(
 			  hfs_time,
 			  (uint16_t *) hfs_time_string,
@@ -592,7 +593,7 @@ int libfshfs_directory_record_read(
 			goto on_error;
 		}
 		libcnotify_printf(
-		 "%s: backup time\t\t\t\t: %" PRIs_LIBCSTRING_SYSTEM " UTC\n",
+		 "%s: backup time\t\t\t\t: %" PRIs_SYSTEM " UTC\n",
 		 function,
 		 hfs_time_string );
 

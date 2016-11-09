@@ -22,12 +22,14 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "fshfstools_libbfio.h"
 #include "fshfstools_libcerror.h"
 #include "fshfstools_libclocale.h"
-#include "fshfstools_libcstring.h"
 #include "fshfstools_libcsystem.h"
 #include "fshfstools_libfdatetime.h"
 #include "fshfstools_libfguid.h"
@@ -250,7 +252,7 @@ int info_handle_signal_abort(
  */
 int info_handle_set_volume_offset(
      info_handle_t *info_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_set_volume_offset";
@@ -268,7 +270,7 @@ int info_handle_set_volume_offset(
 
 		return( -1 );
 	}
-	string_length = libcstring_system_string_length(
+	string_length = system_string_length(
 	                 string );
 
 	if( libcsystem_string_decimal_copy_to_64_bit(
@@ -296,7 +298,7 @@ int info_handle_set_volume_offset(
  */
 int info_handle_open_input(
      info_handle_t *info_handle,
-     const libcstring_system_character_t *filename,
+     const system_character_t *filename,
      libcerror_error_t **error )
 {
 	static char *function  = "info_handle_open_input";
@@ -313,10 +315,10 @@ int info_handle_open_input(
 
 		return( -1 );
 	}
-	filename_length = libcstring_system_string_length(
+	filename_length = system_string_length(
 	                   filename );
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libbfio_file_range_set_name_wide(
 	     info_handle->input_file_io_handle,
 	     filename,
@@ -440,10 +442,10 @@ int info_handle_volume_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
-	libcstring_system_character_t *volume_label = NULL;
-	static char *function                       = "info_handle_volume_fprint";
-	size_t volume_label_size                    = 0;
-	int result                                  = 0;
+	system_character_t *volume_label = NULL;
+	static char *function            = "info_handle_volume_fprint";
+	size_t volume_label_size         = 0;
+	int result                       = 0;
 
 	if( info_handle == NULL )
 	{
@@ -468,7 +470,7 @@ int info_handle_volume_fprint(
 	 info_handle->notify_stream,
 	 "\tName\t\t\t\t: " );
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libfshfs_volume_get_utf16_label_size(
 	          info_handle->input_volume,
 	          &volume_label_size,
@@ -492,7 +494,7 @@ int info_handle_volume_fprint(
 	}
 	if( volume_label_size > 0 )
 	{
-		volume_label = libcstring_system_string_allocate(
+		volume_label = system_string_allocate(
 		                volume_label_size );
 
 		if( volume_label == NULL )
@@ -506,7 +508,7 @@ int info_handle_volume_fprint(
 
 			goto on_error;
 		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libfshfs_volume_get_utf16_label(
 		          info_handle->input_volume,
 		          (uint16_t *) volume_label,
@@ -532,7 +534,7 @@ int info_handle_volume_fprint(
 		}
 		fprintf(
 		 info_handle->notify_stream,
-		 "%" PRIs_LIBCSTRING_SYSTEM "",
+		 "%" PRIs_SYSTEM "",
 		 volume_label );
 
 		memory_free(

@@ -20,6 +20,8 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
+#include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
@@ -108,7 +110,7 @@ int fshfs_test_error_backtrace_sprint(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain(
      int argc FSHFS_TEST_ATTRIBUTE_UNUSED,
      wchar_t * const argv[] FSHFS_TEST_ATTRIBUTE_UNUSED )
@@ -123,23 +125,23 @@ int main(
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_error_free",
-	 fshfs_test_error_free() )
+	 fshfs_test_error_free );
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_error_fprint",
-	 fshfs_test_error_fprint() )
+	 fshfs_test_error_fprint );
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_error_sprint",
-	 fshfs_test_error_sprint() )
+	 fshfs_test_error_sprint );
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_error_backtrace_fprint",
-	 fshfs_test_error_backtrace_fprint() )
+	 fshfs_test_error_backtrace_fprint );
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_error_backtrace_sprint",
-	 fshfs_test_error_backtrace_sprint() )
+	 fshfs_test_error_backtrace_sprint );
 
 	return( EXIT_SUCCESS );
 

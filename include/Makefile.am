@@ -11,7 +11,6 @@ pkginclude_HEADERS = \
 
 EXTRA_DIST = \
 	libfshfs.h.in \
-	libfshfs/codepage.h \
 	libfshfs/definitions.h.in \
 	libfshfs/features.h.in \
 	libfshfs/types.h.in

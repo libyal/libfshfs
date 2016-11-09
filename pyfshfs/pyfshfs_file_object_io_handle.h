@@ -27,7 +27,6 @@
 
 #include "pyfshfs_libbfio.h"
 #include "pyfshfs_libcerror.h"
-#include "pyfshfs_libcstring.h"
 #include "pyfshfs_python.h"
 
 #if defined( __cplusplus )

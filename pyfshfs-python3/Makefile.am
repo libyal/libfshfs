@@ -8,7 +8,6 @@ if HAVE_PYTHON3
 AM_CFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
@@ -28,7 +27,6 @@ BUILT_SOURCES = \
 	pyfshfs_integer.c pyfshfs_integer.h \
 	pyfshfs_libbfio.h \
 	pyfshfs_libcerror.h \
-	pyfshfs_libcstring.h \
 	pyfshfs_libfshfs.h \
 	pyfshfs_python.h \
 	pyfshfs_unused.h \
@@ -39,7 +37,6 @@ pyexec_LTLIBRARIES = pyfshfs.la
 nodist_pyfshfs_la_SOURCES = $(BUILT_SOURCES)
 
 pyfshfs_la_LIBADD = \
-	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCDATA_LIBADD@ \

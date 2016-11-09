@@ -28,22 +28,19 @@
  */
 #if !defined( HAVE_LOCAL_LIBFSHFS )
 
-/* If Cygwin libtool DLL support is enabled set LIBFSHFS_DLL_EXPORT
+/* If libtool DLL support is enabled set LIBFSHFS_DLL_EXPORT
  * before including libfshfs/extern.h
  */
 #if defined( _WIN32 ) && defined( DLL_EXPORT )
-#if !defined( HAVE_STATIC_EXECUTABLES )
 #define LIBFSHFS_DLL_EXPORT
-#endif
 #endif
 
 #include <libfshfs/extern.h>
 
 #else
-
-#define LIBFSHFS_EXTERN  extern
-
-#endif
+#define LIBFSHFS_EXTERN	extern
 
 #endif
+
+#endif /* !defined( _LIBFSHFS_INTERNAL_EXTERN_H ) */
 

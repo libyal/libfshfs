@@ -29,7 +29,6 @@
 #include "fshfstools_libcerror.h"
 #include "fshfstools_libclocale.h"
 #include "fshfstools_libcnotify.h"
-#include "fshfstools_libcstring.h"
 #include "fshfstools_libcsystem.h"
 #include "fshfstools_libfcache.h"
 #include "fshfstools_libfdata.h"

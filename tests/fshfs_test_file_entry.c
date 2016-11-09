@@ -1,5 +1,5 @@
 /*
- * Integer functions
+ * Library file_entry type testing program
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,38 +19,38 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYFSHFS_INTEGER_H )
-#define _PYFSHFS_INTEGER_H
-
 #include <common.h>
+#include <file_stream.h>
 #include <types.h>
 
-#include "pyfshfs_libcerror.h"
-#include "pyfshfs_python.h"
-
-#if defined( __cplusplus )
-extern "C" {
+#if defined( HAVE_STDLIB_H ) || defined( WINAPI )
+#include <stdlib.h>
 #endif
 
-PyObject *pyfshfs_integer_signed_new_from_64bit(
-           int64_t value_64bit );
+#include "fshfs_test_libcerror.h"
+#include "fshfs_test_libfshfs.h"
+#include "fshfs_test_macros.h"
+#include "fshfs_test_memory.h"
+#include "fshfs_test_unused.h"
 
-PyObject *pyfshfs_integer_unsigned_new_from_64bit(
-           uint64_t value_64bit );
+/* The main program
+ */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+int wmain(
+     int argc FSHFS_TEST_ATTRIBUTE_UNUSED,
+     wchar_t * const argv[] FSHFS_TEST_ATTRIBUTE_UNUSED )
+#else
+int main(
+     int argc FSHFS_TEST_ATTRIBUTE_UNUSED,
+     char * const argv[] FSHFS_TEST_ATTRIBUTE_UNUSED )
+#endif
+{
+	FSHFS_TEST_UNREFERENCED_PARAMETER( argc )
+	FSHFS_TEST_UNREFERENCED_PARAMETER( argv )
 
-int pyfshfs_integer_signed_copy_to_64bit(
-     PyObject *integer_object,
-     int64_t *value_64bit,
-     libcerror_error_t **error );
+	return( EXIT_SUCCESS );
 
-int pyfshfs_integer_unsigned_copy_to_64bit(
-     PyObject *integer_object,
-     uint64_t *value_64bit,
-     libcerror_error_t **error );
-
-#if defined( __cplusplus )
+on_error:
+	return( EXIT_FAILURE );
 }
-#endif
-
-#endif /* !defined( _PYFSHFS_INTEGER_H ) */
 

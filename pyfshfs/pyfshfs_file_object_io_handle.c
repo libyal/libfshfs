@@ -28,7 +28,6 @@
 #include "pyfshfs_integer.h"
 #include "pyfshfs_libbfio.h"
 #include "pyfshfs_libcerror.h"
-#include "pyfshfs_libcstring.h"
 #include "pyfshfs_python.h"
 
 /* Creates a file object IO handle

@@ -2,7 +2,6 @@ if HAVE_PYTHON
 AM_CFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
@@ -21,14 +20,12 @@ pyfshfs_la_SOURCES = \
 	pyfshfs_integer.c pyfshfs_integer.h \
 	pyfshfs_libbfio.h \
 	pyfshfs_libcerror.h \
-	pyfshfs_libcstring.h \
 	pyfshfs_libfshfs.h \
 	pyfshfs_python.h \
 	pyfshfs_unused.h \
 	pyfshfs_volume.c pyfshfs_volume.h
 
 pyfshfs_la_LIBADD = \
-	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCDATA_LIBADD@ \

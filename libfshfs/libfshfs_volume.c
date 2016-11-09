@@ -21,7 +21,9 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libfshfs_btree_file.h"
 #include "libfshfs_catalog_btree_file.h"
@@ -31,7 +33,6 @@
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
-#include "libfshfs_libcstring.h"
 #include "libfshfs_volume.h"
 
 /* Creates a volume
@@ -315,7 +316,7 @@ int libfshfs_volume_open(
 	if( libbfio_file_set_name(
 	     file_io_handle,
 	     filename,
-	     libcstring_narrow_string_length(
+	     narrow_string_length(
 	      filename ) + 1,
 	     error ) != 1 )
 	{
@@ -452,7 +453,7 @@ int libfshfs_volume_open_wide(
 	if( libbfio_file_set_name_wide(
 	     file_io_handle,
 	     filename,
-	     libcstring_wide_string_length(
+	     wide_string_length(
 	      filename ) + 1,
 	     error ) != 1 )
 	{
