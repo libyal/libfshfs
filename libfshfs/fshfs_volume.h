@@ -168,5 +168,5 @@ struct fshfs_volume_header
 }
 #endif
 
-#endif
+#endif /* !defined( _FSHFS_VOLUME_H ) */
 

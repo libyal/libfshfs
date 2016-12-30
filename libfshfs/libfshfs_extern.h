@@ -38,9 +38,9 @@
 #include <libfshfs/extern.h>
 
 #else
-#define LIBFSHFS_EXTERN	extern
+#define LIBFSHFS_EXTERN	/* extern */
 
-#endif
+#endif /* !defined( HAVE_LOCAL_LIBFSHFS ) */
 
 #endif /* !defined( _LIBFSHFS_INTERNAL_EXTERN_H ) */
 

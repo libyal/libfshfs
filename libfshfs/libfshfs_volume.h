@@ -155,5 +155,5 @@ int libfshfs_volume_get_utf16_label(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFSHFS_INTERNAL_VOLUME_H ) */
 

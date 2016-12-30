@@ -70,5 +70,5 @@ int libfshfs_fork_descriptor_read(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBFSHFS_FORK_DESCRIPTOR_H ) */
 

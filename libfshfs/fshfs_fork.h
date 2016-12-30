@@ -58,5 +58,5 @@ struct fshfs_fork_descriptor
 }
 #endif
 
-#endif
+#endif /* !defined( _FSHFS_FORK_H ) */
 

@@ -27,11 +27,11 @@
 /* If Cygwin libtool DLL support is enabled set LIBFSHFS_DLL_IMPORT
  * before including libfshfs.h
  */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
+#if defined( _WIN32 ) && defined( DLL_IMPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
 #define LIBFSHFS_DLL_IMPORT
 #endif
 
 #include <libfshfs.h>
 
-#endif
+#endif /* !defined( _FSHFSTOOLS_LIBFSHFS_H ) */
 

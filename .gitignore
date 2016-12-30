@@ -122,8 +122,17 @@ stamp-h[1-9]
 /libfshfs/libfshfs_definitions.h
 /pyfshfs-python[23]/*.[ch]
 /fshfstools/fshfsinfo
+/tests/fshfs_test_allocation_block
+/tests/fshfs_test_btree_file
+/tests/fshfs_test_btree_node
 /tests/fshfs_test_error
+/tests/fshfs_test_file_record
+/tests/fshfs_test_fork_descriptor
+/tests/fshfs_test_io_handle
+/tests/fshfs_test_notify
 /tests/fshfs_test_support
+/tests/fshfs_test_thread_record
+/tests/fshfs_test_volume
 /tests/input
 /tests/tmp*
 

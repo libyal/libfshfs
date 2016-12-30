@@ -1,5 +1,5 @@
 /*
- * Library volume type testing program
+ * Library volume type test program
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -30,15 +30,15 @@
 #include <stdlib.h>
 #endif
 
+#include "fshfs_test_getopt.h"
 #include "fshfs_test_libcerror.h"
 #include "fshfs_test_libclocale.h"
-#include "fshfs_test_libcsystem.h"
 #include "fshfs_test_libfshfs.h"
 #include "fshfs_test_libuna.h"
 #include "fshfs_test_macros.h"
 #include "fshfs_test_memory.h"
 
-#if SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
 #error Unsupported size of wchar_t
 #endif
 
@@ -256,8 +256,8 @@ int fshfs_test_volume_get_wide_source(
      libcerror_error_t **error )
 {
 	static char *function   = "fshfs_test_volume_get_wide_source";
-	size_t wide_source_size = 0;
 	size_t source_length    = 0;
+	size_t wide_source_size = 0;
 
 #if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result              = 0;
@@ -584,11 +584,17 @@ int fshfs_test_volume_close_source(
 int fshfs_test_volume_initialize(
      void )
 {
-	libcerror_error_t *error = NULL;
-	libfshfs_volume_t *volume      = NULL;
-	int result               = 0;
+	libcerror_error_t *error        = NULL;
+	libfshfs_volume_t *volume       = NULL;
+	int result                      = 0;
 
-	/* Test libfshfs_volume_initialize
+#if defined( HAVE_FSHFS_TEST_MEMORY )
+	int number_of_malloc_fail_tests = 1;
+	int number_of_memset_fail_tests = 1;
+	int test_number                 = 0;
+#endif
+
+	/* Test regular cases
 	 */
 	result = libfshfs_volume_initialize(
 	          &volume,
@@ -664,79 +670,89 @@ int fshfs_test_volume_initialize(
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
-	/* Test libfshfs_volume_initialize with malloc failing
-	 */
-	fshfs_test_malloc_attempts_before_fail = 0;
-
-	result = libfshfs_volume_initialize(
-	          &volume,
-	          &error );
-
-	if( fshfs_test_malloc_attempts_before_fail != -1 )
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
 	{
-		fshfs_test_malloc_attempts_before_fail = -1;
+		/* Test libfshfs_volume_initialize with malloc failing
+		 */
+		fshfs_test_malloc_attempts_before_fail = test_number;
 
-		if( volume != NULL )
+		result = libfshfs_volume_initialize(
+		          &volume,
+		          &error );
+
+		if( fshfs_test_malloc_attempts_before_fail != -1 )
 		{
-			libfshfs_volume_free(
-			 &volume,
-			 NULL );
+			fshfs_test_malloc_attempts_before_fail = -1;
+
+			if( volume != NULL )
+			{
+				libfshfs_volume_free(
+				 &volume,
+				 NULL );
+			}
+		}
+		else
+		{
+			FSHFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSHFS_TEST_ASSERT_IS_NULL(
+			 "volume",
+			 volume );
+
+			FSHFS_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
 		}
 	}
-	else
+	for( test_number = 0;
+	     test_number < number_of_memset_fail_tests;
+	     test_number++ )
 	{
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+		/* Test libfshfs_volume_initialize with memset failing
+		 */
+		fshfs_test_memset_attempts_before_fail = test_number;
 
-		FSHFS_TEST_ASSERT_IS_NULL(
-		 "volume",
-		 volume );
+		result = libfshfs_volume_initialize(
+		          &volume,
+		          &error );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
-
-		libcerror_error_free(
-		 &error );
-	}
-	/* Test libfshfs_volume_initialize with memset failing
-	 */
-	fshfs_test_memset_attempts_before_fail = 0;
-
-	result = libfshfs_volume_initialize(
-	          &volume,
-	          &error );
-
-	if( fshfs_test_memset_attempts_before_fail != -1 )
-	{
-		fshfs_test_memset_attempts_before_fail = -1;
-
-		if( volume != NULL )
+		if( fshfs_test_memset_attempts_before_fail != -1 )
 		{
-			libfshfs_volume_free(
-			 &volume,
-			 NULL );
+			fshfs_test_memset_attempts_before_fail = -1;
+
+			if( volume != NULL )
+			{
+				libfshfs_volume_free(
+				 &volume,
+				 NULL );
+			}
 		}
-	}
-	else
-	{
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+		else
+		{
+			FSHFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NULL(
-		 "volume",
-		 volume );
+			FSHFS_TEST_ASSERT_IS_NULL(
+			 "volume",
+			 volume );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+			FSHFS_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
 
-		libcerror_error_free(
-		 &error );
+			libcerror_error_free(
+			 &error );
+		}
 	}
 #endif /* defined( HAVE_FSHFS_TEST_MEMORY ) */
 
@@ -795,7 +811,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfshfs_volume_open functions
+/* Tests the libfshfs_volume_open function
  * Returns 1 if successful or 0 if not
  */
 int fshfs_test_volume_open(
@@ -803,9 +819,9 @@ int fshfs_test_volume_open(
 {
 	char narrow_source[ 256 ];
 
-	libcerror_error_t *error = NULL;
-	libfshfs_volume_t *volume      = NULL;
-	int result               = 0;
+	libcerror_error_t *error  = NULL;
+	libfshfs_volume_t *volume = NULL;
+	int result                = 0;
 
 	/* Initialize test
 	 */
@@ -858,21 +874,28 @@ int fshfs_test_volume_open(
          "error",
          error );
 
-	/* Clean up
+	/* Test error cases
 	 */
-	result = libfshfs_volume_close(
+	result = libfshfs_volume_open(
 	          volume,
+	          narrow_source,
+	          LIBFSHFS_OPEN_READ,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
+        FSHFS_TEST_ASSERT_IS_NOT_NULL(
          "error",
          error );
 
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
 	result = libfshfs_volume_free(
 	          &volume,
 	          &error );
@@ -909,7 +932,7 @@ on_error:
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Tests the libfshfs_volume_open_wide functions
+/* Tests the libfshfs_volume_open_wide function
  * Returns 1 if successful or 0 if not
  */
 int fshfs_test_volume_open_wide(
@@ -917,9 +940,9 @@ int fshfs_test_volume_open_wide(
 {
 	wchar_t wide_source[ 256 ];
 
-	libcerror_error_t *error = NULL;
-	libfshfs_volume_t *volume      = NULL;
-	int result               = 0;
+	libcerror_error_t *error  = NULL;
+	libfshfs_volume_t *volume = NULL;
+	int result                = 0;
 
 	/* Initialize test
 	 */
@@ -972,21 +995,28 @@ int fshfs_test_volume_open_wide(
          "error",
          error );
 
-	/* Clean up
+	/* Test error cases
 	 */
-	result = libfshfs_volume_close(
+	result = libfshfs_volume_open_wide(
 	          volume,
+	          wide_source,
+	          LIBFSHFS_OPEN_READ,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
+        FSHFS_TEST_ASSERT_IS_NOT_NULL(
          "error",
          error );
 
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
 	result = libfshfs_volume_free(
 	          &volume,
 	          &error );
@@ -1023,6 +1053,630 @@ on_error:
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
+/* Tests the libfshfs_volume_close function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_close(
+     void )
+{
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_close(
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        FSHFS_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_open and libfshfs_volume_close functions
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_open_close(
+     const system_character_t *source )
+{
+	libcerror_error_t *error  = NULL;
+	libfshfs_volume_t *volume = NULL;
+	int result                = 0;
+
+	/* Initialize test
+	 */
+	result = libfshfs_volume_initialize(
+	          &volume,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FSHFS_TEST_ASSERT_IS_NOT_NULL(
+         "volume",
+         volume );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test open and close
+	 */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfshfs_volume_open_wide(
+	          volume,
+	          source,
+	          LIBFSHFS_OPEN_READ,
+	          &error );
+#else
+	result = libfshfs_volume_open(
+	          volume,
+	          source,
+	          LIBFSHFS_OPEN_READ,
+	          &error );
+#endif
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	result = libfshfs_volume_close(
+	          volume,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test open and close a second time to validate clean up on close
+	 */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfshfs_volume_open_wide(
+	          volume,
+	          source,
+	          LIBFSHFS_OPEN_READ,
+	          &error );
+#else
+	result = libfshfs_volume_open(
+	          volume,
+	          source,
+	          LIBFSHFS_OPEN_READ,
+	          &error );
+#endif
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	result = libfshfs_volume_close(
+	          volume,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Clean up
+	 */
+	result = libfshfs_volume_free(
+	          &volume,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "volume",
+         volume );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( volume != NULL )
+	{
+		libfshfs_volume_free(
+		 &volume,
+		 NULL );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_signal_abort function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_signal_abort(
+     libfshfs_volume_t *volume )
+{
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_volume_signal_abort(
+	          volume,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        FSHFS_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_signal_abort(
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        FSHFS_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_get_utf8_label_size function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_get_utf8_label_size(
+     libfshfs_volume_t *volume )
+{
+	libcerror_error_t *error   = NULL;
+	size_t utf8_label_size     = 0;
+	int result                 = 0;
+	int utf8_label_size_is_set = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_volume_get_utf8_label_size(
+	          volume,
+	          &utf8_label_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf8_label_size_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_get_utf8_label_size(
+	          NULL,
+	          &utf8_label_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf8_label_size_is_set != 0 )
+	{
+		result = libfshfs_volume_get_utf8_label_size(
+		          volume,
+		          NULL,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FSHFS_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_get_utf8_label function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_get_utf8_label(
+     libfshfs_volume_t *volume )
+{
+	uint8_t utf8_label[ 512 ];
+
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+	int utf8_label_is_set    = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_volume_get_utf8_label(
+	          volume,
+	          utf8_label,
+	          512,
+	          &error );
+
+	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf8_label_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_get_utf8_label(
+	          NULL,
+	          utf8_label,
+	          512,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf8_label_is_set != 0 )
+	{
+		result = libfshfs_volume_get_utf8_label(
+		          volume,
+		          NULL,
+		          512,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FSHFS_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libfshfs_volume_get_utf8_label(
+		          volume,
+		          utf8_label,
+		          0,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+	        FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	         "error",
+	         error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libfshfs_volume_get_utf8_label(
+		          volume,
+		          utf8_label,
+		          (size_t) SSIZE_MAX + 1,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FSHFS_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_get_utf16_label_size function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_get_utf16_label_size(
+     libfshfs_volume_t *volume )
+{
+	libcerror_error_t *error    = NULL;
+	size_t utf16_label_size     = 0;
+	int result                  = 0;
+	int utf16_label_size_is_set = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_volume_get_utf16_label_size(
+	          volume,
+	          &utf16_label_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf16_label_size_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_get_utf16_label_size(
+	          NULL,
+	          &utf16_label_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf16_label_size_is_set != 0 )
+	{
+		result = libfshfs_volume_get_utf16_label_size(
+		          volume,
+		          NULL,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FSHFS_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_get_utf16_label function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_get_utf16_label(
+     libfshfs_volume_t *volume )
+{
+	uint16_t utf16_label[ 512 ];
+
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+	int utf16_label_is_set   = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_volume_get_utf16_label(
+	          volume,
+	          utf16_label,
+	          512,
+	          &error );
+
+	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf16_label_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_get_utf16_label(
+	          NULL,
+	          utf16_label,
+	          512,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf16_label_is_set != 0 )
+	{
+		result = libfshfs_volume_get_utf16_label(
+		          volume,
+		          NULL,
+		          512,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FSHFS_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libfshfs_volume_get_utf16_label(
+		          volume,
+		          utf16_label,
+		          0,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+	        FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	         "error",
+	         error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libfshfs_volume_get_utf16_label(
+		          volume,
+		          utf16_label,
+		          (size_t) SSIZE_MAX + 1,
+		          &error );
+
+		FSHFS_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		FSHFS_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 /* The main program
  */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -1036,12 +1690,12 @@ int main(
 #endif
 {
 	libcerror_error_t *error   = NULL;
+	libfshfs_volume_t *volume  = NULL;
 	system_character_t *source = NULL;
-	libfshfs_volume_t *volume        = NULL;
 	system_integer_t option    = 0;
 	int result                 = 0;
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = fshfs_test_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "" ) ) ) != (system_integer_t) -1 )
@@ -1101,7 +1755,14 @@ int main(
 
 #endif /* defined( LIBFSHFS_HAVE_BFIO ) */
 
-		/* TODO add test for libfshfs_volume_close */
+		FSHFS_TEST_RUN(
+		 "libfshfs_volume_close",
+		 fshfs_test_volume_close );
+
+		FSHFS_TEST_RUN_WITH_ARGS(
+		 "libfshfs_volume_open_close",
+		 fshfs_test_volume_open_close,
+		 source );
 
 		/* Initialize test
 		 */
@@ -1124,8 +1785,34 @@ int main(
 	         error );
 
 		FSHFS_TEST_RUN_WITH_ARGS(
-		 "libfshfs_volume_open",
-		 fshfs_test_volume_open,
+		 "libfshfs_volume_signal_abort",
+		 fshfs_test_volume_signal_abort,
+		 volume );
+
+#if defined( __GNUC__ )
+
+		/* TODO: add tests for libfshfs_volume_open_read */
+
+#endif /* defined( __GNUC__ ) */
+
+		FSHFS_TEST_RUN_WITH_ARGS(
+		 "libfshfs_volume_get_utf8_label_size",
+		 fshfs_test_volume_get_utf8_label_size,
+		 volume );
+
+		FSHFS_TEST_RUN_WITH_ARGS(
+		 "libfshfs_volume_get_utf8_label",
+		 fshfs_test_volume_get_utf8_label,
+		 volume );
+
+		FSHFS_TEST_RUN_WITH_ARGS(
+		 "libfshfs_volume_get_utf16_label_size",
+		 fshfs_test_volume_get_utf16_label_size,
+		 volume );
+
+		FSHFS_TEST_RUN_WITH_ARGS(
+		 "libfshfs_volume_get_utf16_label",
+		 fshfs_test_volume_get_utf16_label,
 		 volume );
 
 		/* Clean up
