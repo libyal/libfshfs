@@ -1052,7 +1052,7 @@ on_error:
  */
 int libfshfs_volume_get_utf8_label_size(
      libfshfs_volume_t *volume,
-     size_t *utf8_label_size,
+     size_t *utf8_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
@@ -1082,7 +1082,7 @@ int libfshfs_volume_get_utf8_label_size(
 int libfshfs_volume_get_utf8_label(
      libfshfs_volume_t *volume,
      uint8_t *utf8_label,
-     size_t utf8_label_size,
+     size_t utf8_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
@@ -1111,7 +1111,7 @@ int libfshfs_volume_get_utf8_label(
  */
 int libfshfs_volume_get_utf16_label_size(
      libfshfs_volume_t *volume,
-     size_t *utf16_label_size,
+     size_t *utf16_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
@@ -1140,8 +1140,8 @@ int libfshfs_volume_get_utf16_label_size(
  */
 int libfshfs_volume_get_utf16_label(
      libfshfs_volume_t *volume,
-     uint16_t *utf16_label,
-     size_t utf16_label_size,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;

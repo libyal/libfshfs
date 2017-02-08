@@ -18,7 +18,6 @@ SUBDIRS = \
 	libfdatetime \
 	libfguid \
 	libfshfs \
-	libcsystem \
 	fshfstools \
 	pyfshfs \
 	pyfshfs-python2 \
@@ -120,7 +119,6 @@ splint:
 	(cd $(srcdir)/libfdatetime && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfguid && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfshfs && $(MAKE) splint $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/fshfstools && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/pyfshfs && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) splint $(AM_MAKEFLAGS))

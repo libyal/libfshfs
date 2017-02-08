@@ -1,5 +1,5 @@
 /*
- * Python object definition of the libfshfs volume
+ * Python object wrapper of libfshfs_volume_t
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -25,8 +25,8 @@
 #include <common.h>
 #include <types.h>
 
-#include "pyfshfs_libfshfs.h"
 #include "pyfshfs_libbfio.h"
+#include "pyfshfs_libfshfs.h"
 #include "pyfshfs_python.h"
 
 #if defined( __cplusplus )
@@ -98,5 +98,5 @@ PyObject *pyfshfs_volume_get_label(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYFSHFS_VOLUME_H ) */
 

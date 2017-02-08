@@ -267,7 +267,7 @@ int libfshfs_volume_close(
 LIBFSHFS_EXTERN \
 int libfshfs_volume_get_utf8_label_size(
      libfshfs_volume_t *volume,
-     size_t *utf8_label_size,
+     size_t *utf8_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the UTF-8 encoded label
@@ -277,8 +277,8 @@ int libfshfs_volume_get_utf8_label_size(
 LIBFSHFS_EXTERN \
 int libfshfs_volume_get_utf8_label(
      libfshfs_volume_t *volume,
-     uint8_t *utf8_label,
-     size_t utf8_label_size,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the size of the UTF-16 encoded label
@@ -288,7 +288,7 @@ int libfshfs_volume_get_utf8_label(
 LIBFSHFS_EXTERN \
 int libfshfs_volume_get_utf16_label_size(
      libfshfs_volume_t *volume,
-     size_t *utf16_label_size,
+     size_t *utf16_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the UTF-16 encoded label
@@ -298,8 +298,8 @@ int libfshfs_volume_get_utf16_label_size(
 LIBFSHFS_EXTERN \
 int libfshfs_volume_get_utf16_label(
      libfshfs_volume_t *volume,
-     uint16_t *utf16_label,
-     size_t utf16_label_size,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libfshfs_error_t **error );
 
 #if defined( __cplusplus )

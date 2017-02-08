@@ -1,5 +1,5 @@
 /*
- * Python bindings for libfshfs (pyfshfs)
+ * Internationalization (i18n) functions
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,43 +19,30 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYFSHFS_H )
-#define _PYFSHFS_H
+#if !defined( _FSHFSTOOLS_I18N_H )
+#define _FSHFSTOOLS_I18N_H
 
 #include <common.h>
-#include <types.h>
 
-#include "pyfshfs_python.h"
+#if defined( HAVE_LIBINTL_H )
+#include <libintl.h>
+#endif
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-PyObject *pyfshfs_get_version(
-           PyObject *self,
-           PyObject *arguments );
+/* TODO for now do nothing i18n-like
+#define	_( string ) \
+	gettext( string )
+*/
 
-PyObject *pyfshfs_check_volume_signature(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyfshfs_check_volume_signature_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-#if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_pyfshfs(
-                void );
-#else
-PyMODINIT_FUNC initpyfshfs(
-                void );
-#endif
+#define	_( string ) \
+	string
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _PYFSHFS_H ) */
+#endif /* !defined( _FSHFSTOOLS_I18N_H ) */
 

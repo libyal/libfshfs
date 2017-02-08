@@ -1,5 +1,5 @@
 /*
- * Python bindings for libfshfs (pyfshfs)
+ * The unused definition
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,43 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYFSHFS_H )
-#define _PYFSHFS_H
+#if !defined( _FSHFSTOOLS_UNUSED_H )
+#define _FSHFSTOOLS_UNUSED_H
 
 #include <common.h>
-#include <types.h>
 
-#include "pyfshfs_python.h"
+#if !defined( FSHFSTOOLS_ATTRIBUTE_UNUSED )
 
-#if defined( __cplusplus )
-extern "C" {
-#endif
+#if defined( __GNUC__ ) && __GNUC__ >= 3
+#define FSHFSTOOLS_ATTRIBUTE_UNUSED	__attribute__ ((__unused__))
 
-PyObject *pyfshfs_get_version(
-           PyObject *self,
-           PyObject *arguments );
-
-PyObject *pyfshfs_check_volume_signature(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyfshfs_check_volume_signature_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-#if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_pyfshfs(
-                void );
 #else
-PyMODINIT_FUNC initpyfshfs(
-                void );
-#endif
+#define FSHFSTOOLS_ATTRIBUTE_UNUSED
 
-#if defined( __cplusplus )
-}
-#endif
+#endif /* defined( __GNUC__ ) && __GNUC__ >= 3 */
 
-#endif /* !defined( _PYFSHFS_H ) */
+#endif /* !defined( FSHFSTOOLS_ATTRIBUTE_UNUSED ) */
+
+#if defined( _MSC_VER )
+#define FSHFSTOOLS_UNREFERENCED_PARAMETER( parameter ) \
+	UNREFERENCED_PARAMETER( parameter );
+
+#else
+#define FSHFSTOOLS_UNREFERENCED_PARAMETER( parameter ) \
+	/* parameter */
+
+#endif /* defined( _MSC_VER ) */
+
+#endif /* !defined( _FSHFSTOOLS_UNUSED_H ) */
 

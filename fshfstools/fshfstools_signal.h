@@ -1,5 +1,5 @@
 /*
- * Python bindings for libfshfs (pyfshfs)
+ * Signal handling functions
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,43 +19,54 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYFSHFS_H )
-#define _PYFSHFS_H
+#if !defined( _FSHFSTOOLS_SIGNAL_H )
+#define _FSHFSTOOLS_SIGNAL_H
 
 #include <common.h>
 #include <types.h>
 
-#include "pyfshfs_python.h"
+#include "fshfstools_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-PyObject *pyfshfs_get_version(
-           PyObject *self,
-           PyObject *arguments );
-
-PyObject *pyfshfs_check_volume_signature(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyfshfs_check_volume_signature_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-#if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_pyfshfs(
-                void );
-#else
-PyMODINIT_FUNC initpyfshfs(
-                void );
+#if !defined( HAVE_SIGNAL_H ) && !defined( WINAPI )
+#error missing signal functions
 #endif
+
+#if defined( WINAPI )
+typedef unsigned long fshfstools_signal_t;
+
+#else
+typedef int fshfstools_signal_t;
+
+#endif /* defined( WINAPI ) */
+
+#if defined( WINAPI )
+
+BOOL WINAPI fshfstools_signal_handler(
+             fshfstools_signal_t signal );
+
+#if defined( _MSC_VER )
+
+void fshfstools_signal_initialize_memory_debug(
+      void );
+
+#endif /* defined( _MSC_VER ) */
+
+#endif /* defined( WINAPI ) */
+
+int fshfstools_signal_attach(
+     void (*signal_handler)( fshfstools_signal_t ),
+     libcerror_error_t **error );
+
+int fshfstools_signal_detach(
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _PYFSHFS_H ) */
+#endif /* !defined( _FSHFSTOOLS_SIGNAL_H ) */
 

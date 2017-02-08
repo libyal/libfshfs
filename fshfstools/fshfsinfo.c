@@ -33,12 +33,14 @@
 #include <stdlib.h>
 #endif
 
-#include "fshfsoutput.h"
+#include "fshfstools_getopt.h"
 #include "fshfstools_libcerror.h"
 #include "fshfstools_libclocale.h"
 #include "fshfstools_libcnotify.h"
-#include "fshfstools_libcsystem.h"
 #include "fshfstools_libfshfs.h"
+#include "fshfstools_output.h"
+#include "fshfstools_signal.h"
+#include "fshfstools_unused.h"
 #include "info_handle.h"
 
 enum FSHFSINFO_MODES
@@ -76,12 +78,12 @@ void usage_fprint(
 /* Signal handler for fshfsinfo
  */
 void fshfsinfo_signal_handler(
-      libcsystem_signal_t signal LIBCSYSTEM_ATTRIBUTE_UNUSED )
+      fshfstools_signal_t signal FSHFSTOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
-	static char *function   = "fshfsinfo_signal_handler";
+	static char *function    = "fshfsinfo_signal_handler";
 
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( signal )
+	FSHFSTOOLS_UNREFERENCED_PARAMETER( signal )
 
 	fshfsinfo_abort = 1;
 
@@ -103,8 +105,13 @@ void fshfsinfo_signal_handler(
 	}
 	/* Force stdin to close otherwise any function reading it will remain blocked
 	 */
-	if( libcsystem_file_io_close(
+#if defined( WINAPI ) && !defined( __CYGWIN__ )
+	if( _close(
 	     0 ) != 0 )
+#else
+	if( close(
+	     0 ) != 0 )
+#endif
 	{
 		libcnotify_printf(
 		 "%s: unable to close stdin.\n",
@@ -145,13 +152,13 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( libcsystem_initialize(
+        if( fshfstools_output_initialize(
              _IONBF,
              &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize system values.\n" );
+		 "Unable to initialize output settings.\n" );
 
 		goto on_error;
 	}
@@ -159,7 +166,7 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = fshfstools_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "hHo:vV" ) ) ) != (system_integer_t) -1 )

@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfshfs],
- [20161230],
+ [20170208],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -102,17 +102,8 @@ AX_LIBFGUID_CHECK_ENABLE
 dnl Check for library function support
 AX_LIBFSHFS_CHECK_LOCAL
 
-dnl Check for enabling libcsystem for cross-platform C generic system functions
-AX_LIBCSYSTEM_CHECK_ENABLE
-
-dnl Check if fshfstools should be build as static executables
-AX_COMMON_CHECK_ENABLE_STATIC_EXECUTABLES
-
-dnl Check if libfshfs should be build with verbose output
-AX_COMMON_CHECK_ENABLE_VERBOSE_OUTPUT
-
-dnl Check if libfshfs should be build with debug output
-AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
+dnl Check for fshfstools function support
+AX_FSHFSTOOLS_CHECK_LOCAL
 
 dnl Check if libsmdev python bindings (pysmdev) should be build
 AX_PYTHON_CHECK_PYPREFIX
@@ -137,29 +128,6 @@ AS_IF(
 dnl Check for test function support
 AX_TESTS_CHECK_LOCAL
 
-dnl Check if DLL support is needed
-AS_IF(
- [test "x$enable_shared" = xyes],
- [AS_CASE(
-  [$host],
-  [*cygwin* | *mingw*],
-  [AC_DEFINE(
-   [HAVE_DLLMAIN],
-   [1],
-   [Define to 1 to enable the DllMain function.])
-  AC_SUBST(
-   [HAVE_DLLMAIN],
-   [1])
-
-  AS_IF(
-   [test "x$ac_cv_enable_static_executables" = xno],
-   [AC_SUBST(
-    [LIBFSHFS_DLL_IMPORT],
-    ["-DLIBFSHFS_DLL_IMPORT"])
-   ])
-  ])
- ])
-
 dnl Set additional compiler flags
 CFLAGS="$CFLAGS -Wall";
 
@@ -171,13 +139,6 @@ AS_IF(
   [Requires:])
  AC_SUBST(
   [libfshfs_spec_build_requires],
-  [BuildRequires:])
- ])
-
-AS_IF(
- [test "x$ac_cv_libcsystem" = xyes],
- [AC_SUBST(
-  [libfshfs_spec_tools_build_requires],
   [BuildRequires:])
  ])
 
@@ -215,7 +176,6 @@ AC_CONFIG_FILES([libfdata/Makefile])
 AC_CONFIG_FILES([libfdatetime/Makefile])
 AC_CONFIG_FILES([libfguid/Makefile])
 AC_CONFIG_FILES([libfshfs/Makefile])
-AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([fshfstools/Makefile])
 AC_CONFIG_FILES([pyfshfs/Makefile])
 AC_CONFIG_FILES([pyfshfs-python2/Makefile])
@@ -260,7 +220,6 @@ Building:
    libfdata support:                           $ac_cv_libfdata
    libfdatetime support:                       $ac_cv_libfdatetime
    libfguid support:                           $ac_cv_libfguid
-   libcsystem support:                         $ac_cv_libcsystem
 
 Features:
    Multi-threading support:                    $ac_cv_libcthreads_multi_threading

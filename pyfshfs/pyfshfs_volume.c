@@ -1,5 +1,5 @@
 /*
- * Python object definition of the libfshfs volume
+ * Python object wrapper of libfshfs_volume_t
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *

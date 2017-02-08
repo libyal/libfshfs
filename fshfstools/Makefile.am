@@ -14,7 +14,6 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
-	@LIBCSYSTEM_CPPFLAGS@ \
 	@LIBFSHFS_DLL_IMPORT@
 
 AM_LDFLAGS = @STATIC_LDFLAGS@
@@ -24,22 +23,24 @@ bin_PROGRAMS = \
 
 fshfsinfo_SOURCES = \
 	fshfsinfo.c \
-	fshfsoutput.c fshfsoutput.h \
+	fshfstools_getopt.c fshfstools_getopt.h \
+	fshfstools_i18n.h \
 	fshfstools_libbfio.h \
 	fshfstools_libcerror.h \
 	fshfstools_libclocale.h \
 	fshfstools_libcnotify.h \
-	fshfstools_libcsystem.h \
 	fshfstools_libfcache.h \
 	fshfstools_libfdata.h \
 	fshfstools_libfdatetime.h \
 	fshfstools_libfguid.h \
 	fshfstools_libfshfs.h \
 	fshfstools_libuna.h \
+	fshfstools_output.c fshfstools_output.h \
+	fshfstools_signal.c fshfstools_signal.h \
+	fshfstools_unused.h \
 	info_handle.c info_handle.h
 
 fshfsinfo_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBFGUID_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
@@ -48,9 +49,9 @@ fshfsinfo_LDADD = \
 	@LIBUNA_LIBADD@ \
 	@LIBCSPLIT_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
-	../libfshfs/libfshfs.la \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
+	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@ \
 	@LIBINTL@
 
