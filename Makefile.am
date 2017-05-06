@@ -33,13 +33,12 @@ DPKG_FILES = \
 	dpkg/compat \
 	dpkg/control \
 	dpkg/copyright \
-	dpkg/copyright.in \
 	dpkg/rules \
-	dpkg/libfshfs.docs \
-	dpkg/libfshfs-dev.docs \
-	dpkg/libfshfs-python.docs \
-	dpkg/libfshfs-python3.docs \
-	dpkg/libfshfs-tools.docs \
+	dpkg/libfshfs.install \
+	dpkg/libfshfs-dev.install \
+	dpkg/libfshfs-python.install \
+	dpkg/libfshfs-python3.install \
+	dpkg/libfshfs-tools.install \
 	dpkg/source/format
 
 GETTEXT_FILES = \
