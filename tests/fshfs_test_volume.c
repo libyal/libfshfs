@@ -1789,11 +1789,11 @@ int main(
 		 fshfs_test_volume_signal_abort,
 		 volume );
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 		/* TODO: add tests for libfshfs_volume_open_read */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 		FSHFS_TEST_RUN_WITH_ARGS(
 		 "libfshfs_volume_get_utf8_label_size",

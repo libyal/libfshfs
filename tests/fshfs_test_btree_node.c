@@ -35,7 +35,7 @@
 
 #include "../libfshfs/libfshfs_btree_node.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 /* Tests the libfshfs_btree_node_free function
  * Returns 1 if successful or 0 if not
@@ -75,7 +75,7 @@ on_error:
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -92,7 +92,7 @@ int main(
 	FSHFS_TEST_UNREFERENCED_PARAMETER( argc )
 	FSHFS_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 	/* TODO: add tests for libfshfs_btree_node_initialize */
 
@@ -112,7 +112,7 @@ int main(
 
 	/* TODO: add tests for libfshfs_btree_node_read_element_data */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
