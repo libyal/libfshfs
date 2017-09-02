@@ -64,13 +64,13 @@ int fshfs_test_btree_file_initialize(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "btree_file",
-         btree_file );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "btree_file",
+	 btree_file );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfshfs_btree_file_free(
 	          &btree_file,
@@ -81,13 +81,13 @@ int fshfs_test_btree_file_initialize(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "btree_file",
-         btree_file );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "btree_file",
+	 btree_file );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int fshfs_test_btree_file_initialize(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int fshfs_test_btree_file_initialize(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int fshfs_test_btree_file_free(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

@@ -64,13 +64,13 @@ int fshfs_test_fork_descriptor_initialize(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "fork_descriptor",
-         fork_descriptor );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "fork_descriptor",
+	 fork_descriptor );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfshfs_fork_descriptor_free(
 	          &fork_descriptor,
@@ -81,13 +81,13 @@ int fshfs_test_fork_descriptor_initialize(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "fork_descriptor",
-         fork_descriptor );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "fork_descriptor",
+	 fork_descriptor );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int fshfs_test_fork_descriptor_initialize(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int fshfs_test_fork_descriptor_initialize(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int fshfs_test_fork_descriptor_free(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

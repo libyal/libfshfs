@@ -64,13 +64,13 @@ int fshfs_test_file_record_initialize(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "file_record",
-         file_record );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "file_record",
+	 file_record );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfshfs_file_record_free(
 	          &file_record,
@@ -81,13 +81,13 @@ int fshfs_test_file_record_initialize(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "file_record",
-         file_record );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "file_record",
+	 file_record );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int fshfs_test_file_record_initialize(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int fshfs_test_file_record_initialize(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int fshfs_test_file_record_free(
 	 result,
 	 -1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
