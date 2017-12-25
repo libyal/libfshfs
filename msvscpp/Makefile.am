@@ -1,6 +1,7 @@
 MSVSCPP_FILES = \
 	fshfs_test_allocation_block/fshfs_test_allocation_block.vcproj \
 	fshfs_test_btree_file/fshfs_test_btree_file.vcproj \
+	fshfs_test_btree_header/fshfs_test_btree_header.vcproj \
 	fshfs_test_btree_node/fshfs_test_btree_node.vcproj \
 	fshfs_test_btree_node_descriptor/fshfs_test_btree_node_descriptor.vcproj \
 	fshfs_test_directory_record/fshfs_test_directory_record.vcproj \

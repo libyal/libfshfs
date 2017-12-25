@@ -125,6 +125,7 @@ stamp-h[1-9]
 /tests/*.exe
 /tests/fshfs_test_allocation_block
 /tests/fshfs_test_btree_file
+/tests/fshfs_test_btree_header
 /tests/fshfs_test_btree_node
 /tests/fshfs_test_btree_node_descriptor
 /tests/fshfs_test_directory_record
