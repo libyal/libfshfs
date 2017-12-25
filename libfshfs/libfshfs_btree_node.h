@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_btree_node_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
@@ -53,13 +54,9 @@ typedef struct libfshfs_btree_node libfshfs_btree_node_t;
 
 struct libfshfs_btree_node
 {
-	/* The (node) type
+	/* The (node) descriptor
 	 */
-	uint8_t type;
-
-	/* The (node) level
-	 */
-	uint8_t level;
+	libfshfs_btree_node_descriptor_t *descriptor;
 
 	/* The data
 	 */
@@ -68,18 +65,6 @@ struct libfshfs_btree_node
 	/* The data size
 	 */
 	size_t data_size;
-
-	/* The number of records
-	 */
-	uint16_t number_of_records;
-
-	/* The next node number
-	 */
-	uint32_t next_node_number;
-
-	/* The previous node number
-	 */
-	uint32_t previous_node_number;
 
 	/* The records array
 	 */
@@ -111,12 +96,6 @@ int libfshfs_btree_node_get_record_data_by_index(
      libcerror_error_t **error );
 
 int libfshfs_btree_node_read(
-     libfshfs_btree_node_t *node,
-     const uint8_t *data,
-     size_t data_size,
-     libcerror_error_t **error );
-
-int libfshfs_btree_node_read_descriptor(
      libfshfs_btree_node_t *node,
      const uint8_t *data,
      size_t data_size,

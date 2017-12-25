@@ -27,6 +27,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_allocation_block_vector.c libfshfs_allocation_block_vector.h \
 	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_btree_node.c libfshfs_btree_node.h \
+	libfshfs_btree_node_descriptor.c libfshfs_btree_node_descriptor.h \
 	libfshfs_btree_node_vector.c libfshfs_btree_node_vector.h \
 	libfshfs_catalog_btree_file.c libfshfs_catalog_btree_file.h \
 	libfshfs_debug.c libfshfs_debug.h \

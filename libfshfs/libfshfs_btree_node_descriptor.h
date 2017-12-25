@@ -1,5 +1,5 @@
 /*
- * Catalog B-tree file directory record functions
+ * B-tree node descriptor functions
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DIRECTORY_RECORD_H )
-#define _LIBFSHFS_DIRECTORY_RECORD_H
+#if !defined( _LIBFSHFS_BTREE_NODE_DESCRIPTOR_H )
+#define _LIBFSHFS_BTREE_NODE_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
@@ -31,25 +31,41 @@
 extern "C" {
 #endif
 
-typedef struct libfshfs_directory_record libfshfs_directory_record_t;
+typedef struct libfshfs_btree_node_descriptor libfshfs_btree_node_descriptor_t;
 
-struct libfshfs_directory_record
+struct libfshfs_btree_node_descriptor
 {
-	/* Dummy
+	/* The (node) type
 	 */
-	int dummy;
+	uint8_t type;
+
+	/* The (node) level
+	 */
+	uint8_t level;
+
+	/* The number of records
+	 */
+	uint16_t number_of_records;
+
+	/* The next node number
+	 */
+	uint32_t next_node_number;
+
+	/* The previous node number
+	 */
+	uint32_t previous_node_number;
 };
 
-int libfshfs_directory_record_initialize(
-     libfshfs_directory_record_t **directory_record,
+int libfshfs_btree_node_descriptor_initialize(
+     libfshfs_btree_node_descriptor_t **btree_node_descriptor,
      libcerror_error_t **error );
 
-int libfshfs_directory_record_free(
-     libfshfs_directory_record_t **directory_record,
+int libfshfs_btree_node_descriptor_free(
+     libfshfs_btree_node_descriptor_t **btree_node_descriptor,
      libcerror_error_t **error );
 
-int libfshfs_directory_record_read_data(
-     libfshfs_directory_record_t *directory_record,
+int libfshfs_btree_node_descriptor_read_data(
+     libfshfs_btree_node_descriptor_t *btree_node_descriptor,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error );
@@ -58,5 +74,5 @@ int libfshfs_directory_record_read_data(
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_DIRECTORY_RECORD_H ) */
+#endif /* !defined( _LIBFSHFS_BTREE_NODE_DESCRIPTOR_H ) */
 

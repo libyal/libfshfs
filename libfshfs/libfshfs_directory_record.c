@@ -139,13 +139,13 @@ int libfshfs_directory_record_free(
 /* Reads a directory record
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_directory_record_read(
+int libfshfs_directory_record_read_data(
      libfshfs_directory_record_t *directory_record,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function             = "libfshfs_directory_record_read";
+	static char *function             = "libfshfs_directory_record_read_data";
 	size_t record_size                = 0;
 	uint16_t record_type              = 0;
 

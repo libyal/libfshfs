@@ -90,7 +90,7 @@ int libfshfs_catalog_btree_file_test(
 		goto on_error;
 	}
 	for( record_index = 0;
-	     record_index < root_node->number_of_records;
+	     record_index < root_node->descriptor->number_of_records;
 	     record_index++ )
 	{
 		if( libfshfs_btree_node_get_record_data_by_index(
@@ -301,7 +301,7 @@ int libfshfs_catalog_btree_file_test(
 
 					goto on_error;
 				}
-				if( libfshfs_directory_record_read(
+				if( libfshfs_directory_record_read_data(
 				     directory_record,
 				     &( record_data[ key_data_size ] ),
 				     record_data_size,

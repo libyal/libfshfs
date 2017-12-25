@@ -25,7 +25,7 @@
 #include <types.h>
 
 #include "libfshfs_btree_file.h"
-#include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_descriptor.h"
 #include "libfshfs_btree_node_vector.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
@@ -312,10 +312,10 @@ int libfshfs_btree_file_read(
 {
 	uint8_t header_node_data[ 512 ];
 
-	libfshfs_btree_node_t *header_node = NULL;
-	static char *function              = "libfshfs_btree_file_read";
-	off64_t file_offset                = 0;
-	ssize_t read_count                 = 0;
+	libfshfs_btree_node_descriptor_t *header_node_descriptor = NULL;
+	static char *function                                    = "libfshfs_btree_file_read";
+	ssize_t read_count                                       = 0;
+	off64_t file_offset                                      = 0;
 
 	if( btree_file == NULL )
 	{
@@ -407,22 +407,21 @@ int libfshfs_btree_file_read(
 
 		goto on_error;
 	}
-	if( libfshfs_btree_node_initialize(
-	     &header_node,
-	     0,
+	if( libfshfs_btree_node_descriptor_initialize(
+	     &header_node_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create B-tree header node.",
+		 "%s: unable to create B-tree header node descriptor.",
 		 function );
 
 		goto on_error;
 	}
-	if( libfshfs_btree_node_read_descriptor(
-	     header_node,
+	if( libfshfs_btree_node_descriptor_read_data(
+	     header_node_descriptor,
 	     header_node_data,
 	     512,
 	     error ) != 1 )
@@ -436,13 +435,26 @@ int libfshfs_btree_file_read(
 
 		goto on_error;
 	}
-	if( header_node->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
+	if( header_node_descriptor->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unuspported B-tree header node type.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_node_descriptor_free(
+	     &header_node_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free B-tree header node descriptor.",
 		 function );
 
 		goto on_error;
@@ -458,19 +470,6 @@ int libfshfs_btree_file_read(
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read B-tree header record.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfshfs_btree_node_free(
-	     &header_node,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free B-tree header node.",
 		 function );
 
 		goto on_error;
@@ -522,10 +521,10 @@ on_error:
 		 &( btree_file->nodes_vector ),
 		 NULL );
 	}
-	if( header_node != NULL )
+	if( header_node_descriptor != NULL )
 	{
-		libfshfs_btree_node_free(
-		 &header_node,
+		libfshfs_btree_node_descriptor_free(
+		 &header_node_descriptor,
 		 NULL );
 	}
 	return( -1 );

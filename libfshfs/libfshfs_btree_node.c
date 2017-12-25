@@ -24,6 +24,7 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_btree_node_descriptor.h"
 #include "libfshfs_btree_node.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
@@ -92,7 +93,12 @@ int libfshfs_btree_node_record_initialize(
 		 "%s: unable to clear B-tree node record.",
 		 function );
 
-		goto on_error;
+		memory_free(
+		 *node_record );
+
+		*node_record = NULL;
+
+		return( -1 );
 	}
 	return( 1 );
 
@@ -214,6 +220,19 @@ int libfshfs_btree_node_initialize(
 
 		return( -1 );
 	}
+	if( libfshfs_btree_node_descriptor_initialize(
+	     &( ( *node )->descriptor ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create descriptor.",
+		 function );
+
+		goto on_error;
+	}
 	if( data_size > 0 )
 	{
 		( *node )->data = (uint8_t *) memory_allocate(
@@ -256,6 +275,12 @@ on_error:
 			memory_free(
 			 ( *node )->data );
 		}
+		if( ( *node )->descriptor != NULL )
+		{
+			libfshfs_btree_node_descriptor_free(
+			 &( ( *node )->descriptor ),
+			 NULL );
+		}
 		memory_free(
 		 *node );
 
@@ -287,6 +312,19 @@ int libfshfs_btree_node_free(
 	}
 	if( *node != NULL )
 	{
+		if( libfshfs_btree_node_descriptor_free(
+		     &( ( *node )->descriptor ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free descriptor.",
+			 function );
+
+			result = -1;
+		}
 		if( libcdata_array_free(
 		     &( ( *node )->records_array ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_record_free,
@@ -448,8 +486,8 @@ int libfshfs_btree_node_read(
 
 		return( -1 );
 	}
-	if( libfshfs_btree_node_read_descriptor(
-	     node,
+	if( libfshfs_btree_node_descriptor_read_data(
+	     node->descriptor,
 	     data,
 	     data_size,
 	     error ) != 1 )
@@ -463,7 +501,7 @@ int libfshfs_btree_node_read(
 
 		goto on_error;
 	}
-	records_data_size = ( node->number_of_records + 1 ) * 2;
+	records_data_size = ( node->descriptor->number_of_records + 1 ) * 2;
 
 /* TODO add bounds checks records_data_size */
 
@@ -485,7 +523,7 @@ int libfshfs_btree_node_read(
 		records_data_offset = data_size - 2;
 
 		for( record_index = 0;
-		     record_index < (int) node->number_of_records;
+		     record_index < (int) node->descriptor->number_of_records;
 		     record_index++ )
 		{
 			byte_stream_copy_to_uint16_big_endian(
@@ -514,7 +552,7 @@ int libfshfs_btree_node_read(
 #endif
 	if( libcdata_array_resize(
 	     node->records_array,
-	     node->number_of_records,
+	     node->descriptor->number_of_records,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_record_free,
 	     error ) != 1 )
 	{
@@ -535,7 +573,7 @@ int libfshfs_btree_node_read(
 
 	records_data_offset += 2;
 
-	for( record_index = (int) node->number_of_records - 1;
+	for( record_index = (int) node->descriptor->number_of_records - 1;
 	     record_index >= 0;
 	     record_index-- )
 	{
@@ -604,128 +642,6 @@ on_error:
 	 NULL );
 
 	return( -1 );
-}
-
-/* Reads a B-tree node descriptor
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_btree_node_read_descriptor(
-     libfshfs_btree_node_t *node,
-     const uint8_t *data,
-     size_t data_size,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_btree_node_read_descriptor";
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	uint16_t value_16bit  = 0;
-#endif
-
-	if( node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid B-tree node.",
-		 function );
-
-		return( -1 );
-	}
-	if( data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid data.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( data_size < sizeof( fshfs_btree_node_descriptor_t ) )
-	 || ( data_size > (size_t) SSIZE_MAX ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid data size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: B-tree node descriptor data:\n",
-		 function );
-		libcnotify_print_data(
-		 (uint8_t *) data,
-		 sizeof( fshfs_btree_node_descriptor_t ),
-		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-	}
-#endif
-	byte_stream_copy_to_uint32_big_endian(
-	 ( (fshfs_btree_node_descriptor_t *) data )->next_node_number,
-	 node->next_node_number );
-
-	byte_stream_copy_to_uint32_big_endian(
-	 ( (fshfs_btree_node_descriptor_t *) data )->previous_node_number,
-	 node->previous_node_number );
-
-	node->type  = ( (fshfs_btree_node_descriptor_t *) data )->node_type;
-	node->level = ( (fshfs_btree_node_descriptor_t *) data )->node_type;
-
-	byte_stream_copy_to_uint16_big_endian(
-	 ( (fshfs_btree_node_descriptor_t *) data )->number_of_records,
-	 node->number_of_records );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: next node number\t\t\t: %" PRIu32 "\n",
-		 function,
-		 node->next_node_number );
-
-		libcnotify_printf(
-		 "%s: previous node number\t\t: %" PRIu32 "\n",
-		 function,
-		 node->previous_node_number );
-
-		libcnotify_printf(
-		 "%s: node type\t\t\t\t: %" PRIi8 " (%s)\n",
-		 function,
-		 (int8_t) node->type,
-		 libfshfs_debug_print_btree_node_type(
-		  node->type ) );
-
-		libcnotify_printf(
-		 "%s: node level\t\t\t\t: %" PRIi8 "\n",
-		 function,
-		 (int8_t) node->level );
-
-		libcnotify_printf(
-		 "%s: number of records\t\t\t: %" PRIu16 "\n",
-		 function,
-		 node->number_of_records );
-
-		byte_stream_copy_to_uint16_big_endian(
-		 ( (fshfs_btree_node_descriptor_t *) data )->unknown1,
-		 value_16bit );
-		libcnotify_printf(
-		 "%s: unknown1\t\t\t\t: 0x%04" PRIx16 "\n",
-		 function,
-		 value_16bit );
-
-		libcnotify_printf(
-		 "\n",
-		 function );
-	}
-#endif
-	return( 1 );
 }
 
 /* Reads a B-tree node
