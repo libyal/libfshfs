@@ -237,6 +237,10 @@
 				RelativePath="..\..\libfshfs\libfshfs_volume.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_volume_header.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -377,6 +381,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_volume.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_volume_header.h"
 				>
 			</File>
 		</Filter>

@@ -26,11 +26,11 @@
 #include <types.h>
 
 #include "libfshfs_extern.h"
-#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_types.h"
+#include "libfshfs_volume_header.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -40,25 +40,9 @@ typedef struct libfshfs_internal_volume libfshfs_internal_volume_t;
 
 struct libfshfs_internal_volume
 {
-	/* The allocation file fork descriptor
+	/* The volume header
 	 */
-	libfshfs_fork_descriptor_t *allocation_file_fork_descriptor;
-
-	/* The extents file fork descriptor
-	 */
-	libfshfs_fork_descriptor_t *extents_file_fork_descriptor;
-
-	/* The catalog file fork descriptor
-	 */
-	libfshfs_fork_descriptor_t *catalog_file_fork_descriptor;
-
-	/* The attributes file fork descriptor
-	 */
-	libfshfs_fork_descriptor_t *attributes_file_fork_descriptor;
-
-	/* The startup file fork descriptor
-	 */
-	libfshfs_fork_descriptor_t *startup_file_fork_descriptor;
+	libfshfs_volume_header_t *volume_header;
 
 	/* The IO handle
 	 */
@@ -100,13 +84,15 @@ int libfshfs_volume_open(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 LIBFSHFS_EXTERN \
 int libfshfs_volume_open_wide(
      libfshfs_volume_t *volume,
      const wchar_t *filename,
      int access_flags,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 LIBFSHFS_EXTERN \
 int libfshfs_volume_open_file_io_handle(

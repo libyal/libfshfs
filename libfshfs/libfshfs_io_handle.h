@@ -25,8 +25,6 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_fork_descriptor.h"
-#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
@@ -63,17 +61,6 @@ int libfshfs_io_handle_free(
 
 int libfshfs_io_handle_clear(
      libfshfs_io_handle_t *io_handle,
-     libcerror_error_t **error );
-
-int libfshfs_io_handle_read_volume_header(
-     libfshfs_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     off64_t file_offset,
-     libfshfs_fork_descriptor_t *allocation_file_fork_descriptor,
-     libfshfs_fork_descriptor_t *extents_file_fork_descriptor,
-     libfshfs_fork_descriptor_t *catalog_file_fork_descriptor,
-     libfshfs_fork_descriptor_t *attributes_file_fork_descriptor,
-     libfshfs_fork_descriptor_t *startup_file_fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

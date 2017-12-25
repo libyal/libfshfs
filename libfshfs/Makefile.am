@@ -52,7 +52,8 @@ libfshfs_la_SOURCES = \
 	libfshfs_thread_record.c libfshfs_thread_record.h \
 	libfshfs_types.h \
 	libfshfs_unused.h \
-	libfshfs_volume.c libfshfs_volume.h
+	libfshfs_volume.c libfshfs_volume.h \
+	libfshfs_volume_header.c libfshfs_volume_header.h
 
 libfshfs_la_LIBADD = \
 	@LIBCERROR_LIBADD@ \

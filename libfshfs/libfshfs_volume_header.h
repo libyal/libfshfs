@@ -25,6 +25,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_fork_descriptor.h"
+#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
@@ -35,9 +37,33 @@ typedef struct libfshfs_volume_header libfshfs_volume_header_t;
 
 struct libfshfs_volume_header
 {
-	/* Dummy
+	/* The file system type
 	 */
-	int dummy;
+	uint8_t file_system_type;
+
+	/* The allocation block size
+	 */
+	uint32_t allocation_block_size;
+
+	/* Allocation file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *allocation_file_fork_descriptor;
+
+	/* Extents file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *extents_file_fork_descriptor;
+
+	/* Catalog file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *catalog_file_fork_descriptor;
+
+	/* Attributes file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *attributes_file_fork_descriptor;
+
+	/* Startup file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *startup_file_fork_descriptor;
 };
 
 int libfshfs_volume_header_initialize(
@@ -46,6 +72,12 @@ int libfshfs_volume_header_initialize(
 
 int libfshfs_volume_header_free(
      libfshfs_volume_header_t **volume_header,
+     libcerror_error_t **error );
+
+int libfshfs_volume_header_read_file_io_handle(
+     libfshfs_volume_header_t *volume_header,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
      libcerror_error_t **error );
 
 int libfshfs_volume_header_read_data(
