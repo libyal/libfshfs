@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "allocation_block btree_file btree_node error file_record fork_descriptor io_handle notify thread_record"
+$LibraryTests = "allocation_block btree_file btree_node directory_record error file_record fork_descriptor io_handle notify thread_record"
 $LibraryTestsWithInput = "support volume"
 
 Function GetTestToolDirectory

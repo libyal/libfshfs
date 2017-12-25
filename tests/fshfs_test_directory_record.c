@@ -1,5 +1,5 @@
 /*
- * Library io_handle type test program
+ * Library directory_record type test program
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,30 +33,30 @@
 #include "fshfs_test_memory.h"
 #include "fshfs_test_unused.h"
 
-#include "../libfshfs/libfshfs_io_handle.h"
+#include "../libfshfs/libfshfs_directory_record.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
-/* Tests the libfshfs_io_handle_initialize function
+/* Tests the libfshfs_directory_record_initialize function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_io_handle_initialize(
+int fshfs_test_directory_record_initialize(
      void )
 {
-	libcerror_error_t *error        = NULL;
-	libfshfs_io_handle_t *io_handle = NULL;
-	int result                      = 0;
+	libcerror_error_t *error                      = NULL;
+	libfshfs_directory_record_t *directory_record = NULL;
+	int result                                    = 0;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
-	int number_of_malloc_fail_tests = 1;
-	int number_of_memset_fail_tests = 1;
-	int test_number                 = 0;
+	int number_of_malloc_fail_tests               = 1;
+	int number_of_memset_fail_tests               = 1;
+	int test_number                               = 0;
 #endif
 
 	/* Test regular cases
 	 */
-	result = libfshfs_io_handle_initialize(
-	          &io_handle,
+	result = libfshfs_directory_record_initialize(
+	          &directory_record,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -65,15 +65,15 @@ int fshfs_test_io_handle_initialize(
 	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "io_handle",
-	 io_handle );
+	 "directory_record",
+	 directory_record );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	result = libfshfs_io_handle_free(
-	          &io_handle,
+	result = libfshfs_directory_record_free(
+	          &directory_record,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -82,8 +82,8 @@ int fshfs_test_io_handle_initialize(
 	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
-	 "io_handle",
-	 io_handle );
+	 "directory_record",
+	 directory_record );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -91,7 +91,7 @@ int fshfs_test_io_handle_initialize(
 
 	/* Test error cases
 	 */
-	result = libfshfs_io_handle_initialize(
+	result = libfshfs_directory_record_initialize(
 	          NULL,
 	          &error );
 
@@ -107,10 +107,10 @@ int fshfs_test_io_handle_initialize(
 	libcerror_error_free(
 	 &error );
 
-	io_handle = (libfshfs_io_handle_t *) 0x12345678UL;
+	directory_record = (libfshfs_directory_record_t *) 0x12345678UL;
 
-	result = libfshfs_io_handle_initialize(
-	          &io_handle,
+	result = libfshfs_directory_record_initialize(
+	          &directory_record,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -125,7 +125,7 @@ int fshfs_test_io_handle_initialize(
 	libcerror_error_free(
 	 &error );
 
-	io_handle = NULL;
+	directory_record = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
@@ -133,22 +133,22 @@ int fshfs_test_io_handle_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfshfs_io_handle_initialize with malloc failing
+		/* Test libfshfs_directory_record_initialize with malloc failing
 		 */
 		fshfs_test_malloc_attempts_before_fail = test_number;
 
-		result = libfshfs_io_handle_initialize(
-		          &io_handle,
+		result = libfshfs_directory_record_initialize(
+		          &directory_record,
 		          &error );
 
 		if( fshfs_test_malloc_attempts_before_fail != -1 )
 		{
 			fshfs_test_malloc_attempts_before_fail = -1;
 
-			if( io_handle != NULL )
+			if( directory_record != NULL )
 			{
-				libfshfs_io_handle_free(
-				 &io_handle,
+				libfshfs_directory_record_free(
+				 &directory_record,
 				 NULL );
 			}
 		}
@@ -160,8 +160,8 @@ int fshfs_test_io_handle_initialize(
 			 -1 );
 
 			FSHFS_TEST_ASSERT_IS_NULL(
-			 "io_handle",
-			 io_handle );
+			 "directory_record",
+			 directory_record );
 
 			FSHFS_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -175,22 +175,22 @@ int fshfs_test_io_handle_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfshfs_io_handle_initialize with memset failing
+		/* Test libfshfs_directory_record_initialize with memset failing
 		 */
 		fshfs_test_memset_attempts_before_fail = test_number;
 
-		result = libfshfs_io_handle_initialize(
-		          &io_handle,
+		result = libfshfs_directory_record_initialize(
+		          &directory_record,
 		          &error );
 
 		if( fshfs_test_memset_attempts_before_fail != -1 )
 		{
 			fshfs_test_memset_attempts_before_fail = -1;
 
-			if( io_handle != NULL )
+			if( directory_record != NULL )
 			{
-				libfshfs_io_handle_free(
-				 &io_handle,
+				libfshfs_directory_record_free(
+				 &directory_record,
 				 NULL );
 			}
 		}
@@ -202,8 +202,8 @@ int fshfs_test_io_handle_initialize(
 			 -1 );
 
 			FSHFS_TEST_ASSERT_IS_NULL(
-			 "io_handle",
-			 io_handle );
+			 "directory_record",
+			 directory_record );
 
 			FSHFS_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -223,19 +223,19 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-	if( io_handle != NULL )
+	if( directory_record != NULL )
 	{
-		libfshfs_io_handle_free(
-		 &io_handle,
+		libfshfs_directory_record_free(
+		 &directory_record,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the libfshfs_io_handle_free function
+/* Tests the libfshfs_directory_record_free function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_io_handle_free(
+int fshfs_test_directory_record_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -243,7 +243,7 @@ int fshfs_test_io_handle_free(
 
 	/* Test error cases
 	 */
-	result = libfshfs_io_handle_free(
+	result = libfshfs_directory_record_free(
 	          NULL,
 	          &error );
 
@@ -266,134 +266,6 @@ on_error:
 	{
 		libcerror_error_free(
 		 &error );
-	}
-	return( 0 );
-}
-
-/* Tests the libfshfs_io_handle_clear function
- * Returns 1 if successful or 0 if not
- */
-int fshfs_test_io_handle_clear(
-     void )
-{
-	libcerror_error_t *error        = NULL;
-	libfshfs_io_handle_t *io_handle = NULL;
-	int result                      = 0;
-
-	/* Initialize test
-	 */
-	result = libfshfs_io_handle_initialize(
-	          &io_handle,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "io_handle",
-	 io_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = libfshfs_io_handle_clear(
-	          io_handle,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test error cases
-	 */
-	result = libfshfs_io_handle_clear(
-	          NULL,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-#if defined( HAVE_FSHFS_TEST_MEMORY )
-
-	/* Test libfshfs_io_handle_clear with memset failing
-	 */
-	fshfs_test_memset_attempts_before_fail = 0;
-
-	result = libfshfs_io_handle_clear(
-	          io_handle,
-	          &error );
-
-	if( fshfs_test_memset_attempts_before_fail != -1 )
-	{
-		fshfs_test_memset_attempts_before_fail = -1;
-	}
-	else
-	{
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
-
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
-
-		libcerror_error_free(
-		 &error );
-	}
-#endif /* defined( HAVE_FSHFS_TEST_MEMORY ) */
-
-	/* Clean up
-	 */
-	result = libfshfs_io_handle_free(
-	          &io_handle,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "io_handle",
-	 io_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( io_handle != NULL )
-	{
-		libfshfs_io_handle_free(
-		 &io_handle,
-		 NULL );
 	}
 	return( 0 );
 }
@@ -418,18 +290,14 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 	FSHFS_TEST_RUN(
-	 "libfshfs_io_handle_initialize",
-	 fshfs_test_io_handle_initialize );
+	 "libfshfs_directory_record_initialize",
+	 fshfs_test_directory_record_initialize );
 
 	FSHFS_TEST_RUN(
-	 "libfshfs_io_handle_free",
-	 fshfs_test_io_handle_free );
+	 "libfshfs_directory_record_free",
+	 fshfs_test_directory_record_free );
 
-	FSHFS_TEST_RUN(
-	 "libfshfs_io_handle_clear",
-	 fshfs_test_io_handle_clear );
-
-	/* TODO: add tests for libfshfs_io_handle_read_volume_header */
+	/* TODO: add test function for libfshfs_directory_record_read */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

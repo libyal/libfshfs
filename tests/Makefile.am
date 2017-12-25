@@ -23,10 +23,13 @@ endif
 
 TESTS = \
 	test_library.sh \
+	test_fshfsinfo.sh \
 	$(TESTS_PYFSHFS)
 
 check_SCRIPTS = \
 	pyfshfs_test_support.py \
+	pyfshfs_test_volume.py \
+	test_fshfsinfo.sh \
 	test_library.sh \
 	test_python_module.sh \
 	test_runner.sh
@@ -38,6 +41,7 @@ check_PROGRAMS = \
 	fshfs_test_allocation_block \
 	fshfs_test_btree_file \
 	fshfs_test_btree_node \
+	fshfs_test_directory_record \
 	fshfs_test_error \
 	fshfs_test_file_record \
 	fshfs_test_fork_descriptor \
@@ -80,6 +84,18 @@ fshfs_test_btree_node_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_btree_node_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_directory_record_SOURCES = \
+	fshfs_test_directory_record.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_directory_record_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 
@@ -138,6 +154,7 @@ fshfs_test_notify_LDADD = \
 	../libfshfs/libfshfs.la
 
 fshfs_test_support_SOURCES = \
+	fshfs_test_functions.c fshfs_test_functions.h \
 	fshfs_test_getopt.c fshfs_test_getopt.h \
 	fshfs_test_libbfio.h \
 	fshfs_test_libcerror.h \
@@ -146,7 +163,8 @@ fshfs_test_support_SOURCES = \
 	fshfs_test_libfshfs.h \
 	fshfs_test_libuna.h \
 	fshfs_test_macros.h \
-	fshfs_test_support.c
+	fshfs_test_support.c \
+	fshfs_test_unused.h
 
 fshfs_test_support_LDADD = \
 	@LIBBFIO_LIBADD@ \
@@ -173,7 +191,9 @@ fshfs_test_thread_record_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fshfs_test_volume_SOURCES = \
+	fshfs_test_functions.c fshfs_test_functions.h \
 	fshfs_test_getopt.c fshfs_test_getopt.h \
+	fshfs_test_libbfio.h \
 	fshfs_test_libcerror.h \
 	fshfs_test_libclocale.h \
 	fshfs_test_libcnotify.h \
@@ -181,10 +201,15 @@ fshfs_test_volume_SOURCES = \
 	fshfs_test_libuna.h \
 	fshfs_test_macros.h \
 	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h \
 	fshfs_test_volume.c
 
 fshfs_test_volume_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \

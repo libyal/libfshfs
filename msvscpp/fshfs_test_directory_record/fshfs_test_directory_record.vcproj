@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="fshfs_test_volume"
-	ProjectGUID="{11248BE9-0E74-4513-92A2-76D54A7E3894}"
-	RootNamespace="fshfs_test_volume"
+	Name="fshfs_test_directory_record"
+	ProjectGUID="{991E714A-76BD-4036-A0D4-F91BA1CE1D15}"
+	RootNamespace="fshfs_test_directory_record"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,19 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\fshfs_test_functions.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fshfs_test_getopt.c"
+				RelativePath="..\..\tests\fshfs_test_directory_record.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\tests\fshfs_test_memory.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fshfs_test_volume.c"
 				>
 			</File>
 		</Filter>
@@ -198,35 +190,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\tests\fshfs_test_functions.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fshfs_test_getopt.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fshfs_test_libbfio.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tests\fshfs_test_libcerror.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\fshfs_test_libclocale.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fshfs_test_libcnotify.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tests\fshfs_test_libfshfs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\fshfs_test_libuna.h"
 				>
 			</File>
 			<File
