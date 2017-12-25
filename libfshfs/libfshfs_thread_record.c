@@ -147,18 +147,18 @@ int libfshfs_thread_record_read(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function                       = "libfshfs_thread_record_read";
-	uint8_t *name_data                          = NULL;
-	size_t record_size                          = 0;
-	uint16_t name_size                          = 0;
-	uint16_t record_type                        = 0;
+	uint8_t *name_data               = NULL;
+	static char *function            = "libfshfs_thread_record_read";
+	size_t record_size               = 0;
+	uint16_t name_size               = 0;
+	uint16_t record_type             = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libcstring_system_character_t *value_string = NULL;
-	size_t value_string_size                    = 0;
-	uint32_t value_32bit                        = 0;
-	uint16_t value_16bit                        = 0;
-	int result                                  = 0;
+	system_character_t *value_string = NULL;
+	size_t value_string_size         = 0;
+	uint32_t value_32bit             = 0;
+	uint16_t value_16bit             = 0;
+	int result                       = 0;
 #endif
 
 	if( thread_record == NULL )

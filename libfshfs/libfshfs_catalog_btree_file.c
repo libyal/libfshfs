@@ -47,9 +47,9 @@ int libfshfs_catalog_btree_file_test(
 	libfshfs_directory_record_t *directory_record = NULL;
 	libfshfs_file_record_t *file_record           = NULL;
 	libfshfs_thread_record_t *thread_record       = NULL;
-	static char *function                         = "libfshfs_catalog_btree_file_test";
 	uint8_t *key_name_data                        = NULL;
 	uint8_t *record_data                          = NULL;
+	static char *function                         = "libfshfs_catalog_btree_file_test";
 	size_t record_data_size                       = 0;
 	uint16_t key_data_size                        = 0;
 	uint16_t key_name_size                        = 0;
@@ -57,10 +57,10 @@ int libfshfs_catalog_btree_file_test(
 	uint16_t record_type                          = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libcstring_system_character_t *value_string = NULL;
-	size_t value_string_size                    = 0;
-	uint32_t value_32bit                        = 0;
-	int result                                  = 0;
+	system_character_t *value_string              = NULL;
+	size_t value_string_size                      = 0;
+	uint32_t value_32bit                          = 0;
+	int result                                    = 0;
 #endif
 
 	if( libfshfs_btree_file_get_root_node(
