@@ -53,7 +53,7 @@ int libfshfs_file_record_free(
      libfshfs_file_record_t **file_record,
      libcerror_error_t **error );
 
-int libfshfs_file_record_read(
+int libfshfs_file_record_read_data(
      libfshfs_file_record_t *file_record,
      const uint8_t *data,
      size_t data_size,

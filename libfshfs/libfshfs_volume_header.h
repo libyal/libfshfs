@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * Volume header functions
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,48 +19,44 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_DEBUG_H )
-#define _LIBFSHFS_DEBUG_H
+#if !defined( _LIBFSHFS_VOLUME_HEADER_H )
+#define _LIBFSHFS_VOLUME_HEADER_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+typedef struct libfshfs_volume_header libfshfs_volume_header_t;
 
-void libfshfs_debug_print_volume_attribute_flags(
-      uint32_t volume_attribute_flags );
+struct libfshfs_volume_header
+{
+	/* Dummy
+	 */
+	int dummy;
+};
 
-const char *libfshfs_debug_print_btree_node_type(
-             uint8_t btree_node_type );
-
-const char *libfshfs_debug_print_catalog_record_type(
-             uint16_t record_type );
-
-int libfshfs_debug_print_hfs_time_value(
-     const char *function_name,
-     const char *value_name,
-     const uint8_t *byte_stream,
-     size_t byte_stream_size,
-     int byte_order,
-     uint32_t string_format_flags,
+int libfshfs_volume_header_initialize(
+     libfshfs_volume_header_t **volume_header,
      libcerror_error_t **error );
 
-int libfshfs_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
+int libfshfs_volume_header_free(
+     libfshfs_volume_header_t **volume_header,
      libcerror_error_t **error );
 
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+int libfshfs_volume_header_read_data(
+     libfshfs_volume_header_t *volume_header,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_DEBUG_H ) */
+#endif /* !defined( _LIBFSHFS_VOLUME_HEADER_H ) */
 

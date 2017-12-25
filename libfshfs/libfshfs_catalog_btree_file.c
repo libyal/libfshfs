@@ -346,7 +346,7 @@ int libfshfs_catalog_btree_file_test(
 
 					goto on_error;
 				}
-				if( libfshfs_file_record_read(
+				if( libfshfs_file_record_read_data(
 				     file_record,
 				     &( record_data[ key_data_size ] ),
 				     record_data_size,

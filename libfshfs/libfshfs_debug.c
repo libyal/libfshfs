@@ -28,6 +28,7 @@
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
+#include "libfshfs_libfdatetime.h"
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
@@ -41,8 +42,53 @@ void libfshfs_debug_print_volume_attribute_flags(
 		libcnotify_printf(
 		 "\tVolume hardware lock (kHFSVolumeHardwareLockBit)\n" );
 	}
-/* TODO add remaining flags */
-/* TODO add definitions for flags */
+	if( ( volume_attribute_flags & 0x00000080UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tVolume unmounted (kHFSVolumeUnmountedBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x00000100UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tVolume spared blocks (kHFSVolumeSparedBlocksBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x00000200UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tVolume no cache required (kHFSVolumeNoCacheRequiredBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x00000400UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tBoot volume inconsistent (kHFSBootVolumeInconsistentBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x00000800UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tCatalog node identifiers reused (kHFSCatalogNodeIDsReusedBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x00001000UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tVolume journaled (kHFSVolumeJournaledBit)\n" );
+	}
+
+	if( ( volume_attribute_flags & 0x00004000UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tVolume software lock (kHFSVolumeSoftwareLockBit)\n" );
+	}
+
+	if( ( volume_attribute_flags & 0x40000000UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSContentProtectionBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x80000000UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSUnusedNodeFixBit)\n" );
+	}
 }
 
 /* Prints the B-tree node type
@@ -99,6 +145,100 @@ const char *libfshfs_debug_print_catalog_record_type(
 			return( "HFS file thread record (kHFSFileThreadRecord)" );
 	}
 	return( "Unknown" );
+}
+
+/* Prints a HFS value
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_debug_print_hfs_time_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int byte_order,
+     uint32_t string_format_flags,
+     libcerror_error_t **error )
+{
+	char date_time_string[ 32 ];
+
+	libfdatetime_hfs_time_t *hfs_time = NULL;
+	static char *function             = "libfshfs_debug_print_hfs_time_value";
+
+	if( libfdatetime_hfs_time_initialize(
+	     &hfs_time,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create HFS time.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfdatetime_hfs_time_copy_from_byte_stream(
+	     hfs_time,
+	     byte_stream,
+	     byte_stream_size,
+	     byte_order,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy byte stream to HFS time.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfdatetime_hfs_time_copy_to_utf8_string(
+	     hfs_time,
+	     (uint8_t *) date_time_string,
+	     32,
+	     string_format_flags,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy HFS time to string.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO handle local time */
+	libcnotify_printf(
+	 "%s: %s: %s UTC\n",
+	 function_name,
+	 value_name,
+	 date_time_string );
+
+	if( libfdatetime_hfs_time_free(
+	     &hfs_time,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free HFS time.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( hfs_time != NULL )
+	{
+		libfdatetime_hfs_time_free(
+		 &hfs_time,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Prints the read offsets
