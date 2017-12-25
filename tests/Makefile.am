@@ -41,6 +41,7 @@ check_PROGRAMS = \
 	fshfs_test_allocation_block \
 	fshfs_test_btree_file \
 	fshfs_test_btree_node \
+	fshfs_test_btree_node_descriptor \
 	fshfs_test_directory_record \
 	fshfs_test_error \
 	fshfs_test_file_record \
@@ -85,6 +86,18 @@ fshfs_test_btree_node_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_btree_node_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_btree_node_descriptor_SOURCES = \
+	fshfs_test_btree_node_descriptor.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_btree_node_descriptor_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

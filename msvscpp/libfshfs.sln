@@ -31,6 +31,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fshfs_test_btree_node", "fs
 		{58EF72D6-030A-4742-A353-21B461635A96} = {58EF72D6-030A-4742-A353-21B461635A96}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fshfs_test_btree_node_descriptor", "fshfs_test_btree_node_descriptor\fshfs_test_btree_node_descriptor.vcproj", "{ECE1C3DE-702C-4DA2-BADB-F6AC4B910A6D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{13D05959-377F-408F-9A28-53DA9FA0DDEE} = {13D05959-377F-408F-9A28-53DA9FA0DDEE}
+		{58EF72D6-030A-4742-A353-21B461635A96} = {58EF72D6-030A-4742-A353-21B461635A96}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fshfs_test_directory_record", "fshfs_test_directory_record\fshfs_test_directory_record.vcproj", "{991E714A-76BD-4036-A0D4-F91BA1CE1D15}"
 	ProjectSection(ProjectDependencies) = postProject
 		{13D05959-377F-408F-9A28-53DA9FA0DDEE} = {13D05959-377F-408F-9A28-53DA9FA0DDEE}
@@ -254,6 +260,10 @@ Global
 		{E08E507E-E62C-45DF-8D25-4C8FE5F01CB4}.Release|Win32.Build.0 = Release|Win32
 		{E08E507E-E62C-45DF-8D25-4C8FE5F01CB4}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
 		{E08E507E-E62C-45DF-8D25-4C8FE5F01CB4}.VSDebug|Win32.Build.0 = VSDebug|Win32
+		{ECE1C3DE-702C-4DA2-BADB-F6AC4B910A6D}.Release|Win32.ActiveCfg = Release|Win32
+		{ECE1C3DE-702C-4DA2-BADB-F6AC4B910A6D}.Release|Win32.Build.0 = Release|Win32
+		{ECE1C3DE-702C-4DA2-BADB-F6AC4B910A6D}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
+		{ECE1C3DE-702C-4DA2-BADB-F6AC4B910A6D}.VSDebug|Win32.Build.0 = VSDebug|Win32
 		{991E714A-76BD-4036-A0D4-F91BA1CE1D15}.Release|Win32.ActiveCfg = Release|Win32
 		{991E714A-76BD-4036-A0D4-F91BA1CE1D15}.Release|Win32.Build.0 = Release|Win32
 		{991E714A-76BD-4036-A0D4-F91BA1CE1D15}.VSDebug|Win32.ActiveCfg = VSDebug|Win32

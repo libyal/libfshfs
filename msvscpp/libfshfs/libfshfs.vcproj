@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_node_descriptor.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_btree_node_vector.c"
 				>
 			</File>
@@ -277,6 +281,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_btree_node.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_btree_node_descriptor.h"
 				>
 			</File>
 			<File
