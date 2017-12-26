@@ -43,6 +43,7 @@ check_PROGRAMS = \
 	fshfs_test_btree_header \
 	fshfs_test_btree_node \
 	fshfs_test_btree_node_descriptor \
+	fshfs_test_catalog_btree_key \
 	fshfs_test_directory_record \
 	fshfs_test_error \
 	fshfs_test_file_record \
@@ -111,6 +112,18 @@ fshfs_test_btree_node_descriptor_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_btree_node_descriptor_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_catalog_btree_key_SOURCES = \
+	fshfs_test_catalog_btree_key.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_catalog_btree_key_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

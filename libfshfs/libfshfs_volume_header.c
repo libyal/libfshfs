@@ -310,7 +310,7 @@ int libfshfs_volume_header_read_file_io_handle(
 {
 	uint8_t volume_header_data[ 1024 ];
 
-	static char *function = "libfshfs_io_handle_read_volume_header";
+	static char *function = "libfshfs_volume_header_read_file_io_handle";
 	ssize_t read_count    = 0;
 
 	if( volume_header == NULL )

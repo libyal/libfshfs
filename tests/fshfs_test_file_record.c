@@ -297,7 +297,7 @@ int main(
 	 "libfshfs_file_record_free",
 	 fshfs_test_file_record_free );
 
-	/* TODO: add tests for libfshfs_file_record_read */
+	/* TODO: add tests for libfshfs_file_record_read_data */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

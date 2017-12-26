@@ -429,8 +429,6 @@ int main(
 	 "libfshfs_io_handle_clear",
 	 fshfs_test_io_handle_clear );
 
-	/* TODO: add tests for libfshfs_io_handle_read_volume_header */
-
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
