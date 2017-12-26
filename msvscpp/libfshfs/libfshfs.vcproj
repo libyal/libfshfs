@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_catalog_btree_key.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_debug.c"
 				>
 			</File>
@@ -301,6 +305,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_catalog_btree_file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_catalog_btree_key.h"
 				>
 			</File>
 			<File

@@ -1,5 +1,5 @@
 /*
- * Catalog B-tree file thread record functions
+ * The catalog B-tree key functions
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_THREAD_RECORD_H )
-#define _LIBFSHFS_THREAD_RECORD_H
+#if !defined( _LIBFSHFS_CATALOG_BTREE_KEY_H )
+#define _LIBFSHFS_CATALOG_BTREE_KEY_H
 
 #include <common.h>
 #include <types.h>
@@ -31,25 +31,29 @@
 extern "C" {
 #endif
 
-typedef struct libfshfs_thread_record libfshfs_thread_record_t;
+typedef struct libfshfs_catalog_btree_key libfshfs_catalog_btree_key_t;
 
-struct libfshfs_thread_record
+struct libfshfs_catalog_btree_key
 {
-	/* Dummy
+	/* Data size
 	 */
-	int dummy;
+	size_t data_size;
+
+	/* Parent identifier
+	 */
+	uint32_t parent_identifier;
 };
 
-int libfshfs_thread_record_initialize(
-     libfshfs_thread_record_t **thread_record,
+int libfshfs_catalog_btree_key_initialize(
+     libfshfs_catalog_btree_key_t **catalog_btree_key,
      libcerror_error_t **error );
 
-int libfshfs_thread_record_free(
-     libfshfs_thread_record_t **thread_record,
+int libfshfs_catalog_btree_key_free(
+     libfshfs_catalog_btree_key_t **catalog_btree_key,
      libcerror_error_t **error );
 
-int libfshfs_thread_record_read_data(
-     libfshfs_thread_record_t *thread_record,
+int libfshfs_catalog_btree_key_read_data(
+     libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error );
@@ -58,5 +62,5 @@ int libfshfs_thread_record_read_data(
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_THREAD_RECORD_H ) */
+#endif /* !defined( _LIBFSHFS_CATALOG_BTREE_KEY_H ) */
 

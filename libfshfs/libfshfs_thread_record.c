@@ -141,14 +141,14 @@ int libfshfs_thread_record_free(
 /* Reads a thread record
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_thread_record_read(
+int libfshfs_thread_record_read_data(
      libfshfs_thread_record_t *thread_record,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
 {
 	uint8_t *name_data               = NULL;
-	static char *function            = "libfshfs_thread_record_read";
+	static char *function            = "libfshfs_thread_record_read_data";
 	size_t record_size               = 0;
 	uint16_t name_size               = 0;
 	uint16_t record_type             = 0;

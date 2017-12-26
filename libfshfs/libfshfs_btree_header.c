@@ -220,12 +220,12 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->depth,
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: depth\t\t\t\t: %" PRIu16 "\n",
+		 "%s: depth\t\t\t\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
 		libcnotify_printf(
-		 "%s: root node number\t\t: %" PRIu16 "\n",
+		 "%s: root node number\t\t\t: %" PRIu16 "\n",
 		 function,
 		 btree_header->root_node_number );
 
@@ -233,22 +233,22 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->number_of_data_records,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: number of data records\t\t: %" PRIu32 "\n",
+		 "%s: number of data records\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
 		libcnotify_printf(
-		 "%s: first leaf node number\t\t: %" PRIu32 "\n",
+		 "%s: first leaf node number\t\t\t: %" PRIu32 "\n",
 		 function,
 		 btree_header->first_leaf_node_number );
 
 		libcnotify_printf(
-		 "%s: last leaf node number\t\t: %" PRIu32 "\n",
+		 "%s: last leaf node number\t\t\t: %" PRIu32 "\n",
 		 function,
 		 btree_header->last_leaf_node_number );
 
 		libcnotify_printf(
-		 "%s: node size\t\t\t: %" PRIu16 "\n",
+		 "%s: node size\t\t\t\t: %" PRIu16 "\n",
 		 function,
 		 btree_header->node_size );
 
@@ -256,7 +256,7 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->maximum_key_size,
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: maximum key size\t\t: %" PRIu16 "\n",
+		 "%s: maximum key size\t\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
@@ -272,7 +272,7 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->number_of_free_nodes,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: number of free nodes\t\t: %" PRIu32 "\n",
+		 "%s: number of free nodes\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -282,7 +282,7 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->unknown1,
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: unknown1\t\t\t: %" PRIu16 "\n",
+		 "%s: unknown1\t\t\t\t: %" PRIu16 "\n",
 		 function,
 		 value_16bit );
 
@@ -290,17 +290,17 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->clump_size,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: clump size\t\t\t: %" PRIu32 "\n",
+		 "%s: clump size\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
 		libcnotify_printf(
-		 "%s: file type\t\t\t: 0x%02" PRIx8 "\n",
+		 "%s: file type\t\t\t\t: 0x%02" PRIx8 "\n",
 		 function,
 		 ( (fshfs_btree_header_record_t *) data )->file_type );
 
 		libcnotify_printf(
-		 "%s: key compare type\t\t: 0x%02" PRIx8 "\n",
+		 "%s: key compare type\t\t\t: 0x%02" PRIx8 "\n",
 		 function,
 		 ( (fshfs_btree_header_record_t *) data )->key_compare_type );
 
@@ -308,7 +308,7 @@ int libfshfs_btree_header_read_data(
 		 ( (fshfs_btree_header_record_t *) data )->attributes,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: attributes\t\t\t: 0x%08" PRIx32 "\n",
+		 "%s: attributes\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
 
