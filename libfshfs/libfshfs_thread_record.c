@@ -283,7 +283,7 @@ int libfshfs_thread_record_read_data(
 		 || ( record_type == 0x0400 ) )
 		{
 			libcnotify_printf(
-			 "%s: unknown1\t\t\t\t\t: 0x%02" PRIx8 "\n",
+			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (fshfs_catalog_thread_record_hfs_t *) data )->unknown1 );
 		}
@@ -294,7 +294,7 @@ int libfshfs_thread_record_read_data(
 			 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->unknown1,
 			 value_16bit );
 			libcnotify_printf(
-			 "%s: unknown1\t\t\t\t\t: 0x%04" PRIx16 "\n",
+			 "%s: unknown1\t\t\t\t: 0x%04" PRIx16 "\n",
 			 function,
 			 value_16bit );
 		}
@@ -322,7 +322,7 @@ int libfshfs_thread_record_read_data(
 			 value_32bit );
 		}
 		libcnotify_printf(
-		 "%s: parent identifier\t\t\t\t: %" PRIu32 "\n",
+		 "%s: parent identifier\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 	}
@@ -331,7 +331,7 @@ int libfshfs_thread_record_read_data(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: name number of characters\t\t\t: %" PRIu16 "\n",
+		 "%s: name number of characters\t\t: %" PRIu16 "\n",
 		 function,
 		 name_size );
 	}

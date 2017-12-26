@@ -35,6 +35,11 @@
 
 #include "../libfshfs/libfshfs_thread_record.h"
 
+uint8_t fshfs_test_thread_record_data1[ 42 ] = {
+	0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x00, 0x10, 0x00, 0x6c, 0x00, 0x69, 0x00, 0x76,
+	0x00, 0x65, 0x00, 0x2e, 0x00, 0x30, 0x00, 0x2e, 0x00, 0x69, 0x00, 0x6e, 0x00, 0x64, 0x00, 0x65,
+	0x00, 0x78, 0x00, 0x48, 0x00, 0x65, 0x00, 0x61, 0x00, 0x64 };
+
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 /* Tests the libfshfs_thread_record_initialize function
@@ -270,6 +275,162 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfshfs_thread_record_read_data function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_thread_record_read_data(
+     void )
+{
+	libcerror_error_t *error                = NULL;
+	libfshfs_thread_record_t *thread_record = NULL;
+	int result                              = 0;
+
+	/* Initialize test
+	 */
+	result = libfshfs_thread_record_initialize(
+	          &thread_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "thread_record",
+	 thread_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libfshfs_thread_record_read_data(
+	          thread_record,
+	          fshfs_test_thread_record_data1,
+	          42,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_thread_record_read_data(
+	          NULL,
+	          fshfs_test_thread_record_data1,
+	          42,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_thread_record_read_data(
+	          thread_record,
+	          NULL,
+	          42,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_thread_record_read_data(
+	          thread_record,
+	          fshfs_test_thread_record_data1,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_thread_record_read_data(
+	          thread_record,
+	          fshfs_test_thread_record_data1,
+	          0,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = libfshfs_thread_record_free(
+	          &thread_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "thread_record",
+	 thread_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( thread_record != NULL )
+	{
+		libfshfs_thread_record_free(
+		 &thread_record,
+		 NULL );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 /* The main program
@@ -297,7 +458,9 @@ int main(
 	 "libfshfs_thread_record_free",
 	 fshfs_test_thread_record_free );
 
-	/* TODO: add tests for libfshfs_thread_record_read_data */
+	FSHFS_TEST_RUN(
+	 "libfshfs_thread_record_read_data",
+	 fshfs_test_thread_record_read_data );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

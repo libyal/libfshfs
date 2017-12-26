@@ -33,6 +33,18 @@
 extern "C" {
 #endif
 
+int libfshfs_catalog_btree_file_read_branch_node(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *branch_node,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_read_leaf_node(
+     libfshfs_btree_file_t *btree_file,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
 int libfshfs_catalog_btree_file_test(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,

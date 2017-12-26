@@ -45,8 +45,176 @@
 int libfshfs_catalog_btree_file_read_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *branch_node,
      libcerror_error_t **error )
 {
+	libfshfs_btree_node_t *sub_node        = NULL;
+	libfshfs_catalog_btree_key_t *node_key = NULL;
+	uint8_t *record_data                   = NULL;
+	static char *function                  = "libfshfs_catalog_btree_file_read_branch_node";
+	size_t record_data_size                = 0;
+	uint16_t record_index                  = 0;
+
+	if( btree_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree file.",
+		 function );
+
+		return( -1 );
+	}
+	if( branch_node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree branch node.",
+		 function );
+
+		return( -1 );
+	}
+	if( branch_node->descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree branch node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	for( record_index = 0;
+	     record_index < branch_node->descriptor->number_of_records;
+	     record_index++ )
+	{
+		if( libfshfs_btree_node_get_record_data_by_index(
+		     branch_node,
+		     record_index,
+		     &record_data,
+		     &record_data_size,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve node record: %" PRIu16 " data.",
+			 function,
+			 record_index );
+
+			return( -1 );
+		}
+		if( libfshfs_catalog_btree_key_initialize(
+		     &node_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create catalog B-Tree key.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_catalog_btree_key_read_data(
+		     node_key,
+		     record_data,
+		     record_data_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free catalog B-Tree key.",
+			 function );
+
+			goto on_error;
+		}
+		if( branch_node->descriptor->type == 0xff )
+		{
+			if( libfshfs_catalog_btree_file_read_leaf_node(
+			     btree_file,
+			     &( record_data[ node_key->data_size ] ),
+			     record_data_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read catalog B-Tree leaf node.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		else if( branch_node->descriptor->type == 0x00 )
+		{
+			if( libfshfs_btree_file_get_node_by_number(
+			     btree_file,
+			     file_io_handle,
+			     node_key->parent_identifier,
+			     &sub_node,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve B-tree branch node: %" PRIu32 ".",
+				 function,
+				 node_key->parent_identifier );
+
+				goto on_error;
+			}
+			if( libfshfs_catalog_btree_file_read_branch_node(
+			     btree_file,
+			     file_io_handle,
+			     sub_node,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read catalog B-Tree branch node: %" PRIu32 ".",
+				 function,
+				 node_key->parent_identifier );
+
+				goto on_error;
+			}
+		}
+		if( libfshfs_catalog_btree_key_free(
+		     &node_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free catalog B-Tree key.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( node_key != NULL )
+	{
+		libfshfs_catalog_btree_key_free(
+		 &node_key,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Reads a catalog B-tree leaf node
@@ -68,8 +236,8 @@ int libfshfs_catalog_btree_file_read_leaf_node(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid B-tree file.",
 		 function );
 
@@ -293,17 +461,8 @@ int libfshfs_catalog_btree_file_test(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	libfshfs_btree_node_t *root_node       = NULL;
-	libfshfs_catalog_btree_key_t *node_key = NULL;
-	uint8_t *record_data                   = NULL;
-	static char *function                  = "libfshfs_catalog_btree_file_test";
-	size_t record_data_size                = 0;
-	uint16_t record_index                  = 0;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	uint32_t value_32bit                   = 0;
-	int result                             = 0;
-#endif
+	libfshfs_btree_node_t *root_node = NULL;
+	static char *function            = "libfshfs_catalog_btree_file_test";
 
 	if( libfshfs_btree_file_get_root_node(
 	     btree_file,
@@ -320,117 +479,21 @@ int libfshfs_catalog_btree_file_test(
 
 		return( -1 );
 	}
-	if( root_node == NULL )
+	if( libfshfs_catalog_btree_file_read_branch_node(
+	     btree_file,
+	     file_io_handle,
+	     root_node,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid B-tree root node.",
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read catalog B-Tree root node.",
 		 function );
 
 		return( -1 );
 	}
-	for( record_index = 0;
-	     record_index < root_node->descriptor->number_of_records;
-	     record_index++ )
-	{
-		if( libfshfs_btree_node_get_record_data_by_index(
-		     root_node,
-		     record_index,
-		     &record_data,
-		     &record_data_size,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node record: %" PRIu16 " data.",
-			 function,
-			 record_index );
-
-			return( -1 );
-		}
-		if( record_data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node record: %" PRIu16 " data.",
-			 function,
-			 record_index );
-
-			return( -1 );
-		}
-/* TODO add HFS support */
-		if( libfshfs_catalog_btree_key_initialize(
-		     &node_key,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create catalog B-Tree key.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfshfs_catalog_btree_key_read_data(
-		     node_key,
-		     record_data,
-		     record_data_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free catalog B-Tree key.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfshfs_catalog_btree_file_read_leaf_node(
-		     btree_file,
-		     &( record_data[ node_key->data_size ] ),
-		     record_data_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read catalog B-Tree leaf node.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfshfs_catalog_btree_key_free(
-		     &node_key,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free catalog B-Tree key.",
-			 function );
-
-			goto on_error;
-		}
-	}
 	return( 1 );
-
-on_error:
-	if( node_key != NULL )
-	{
-		libfshfs_catalog_btree_key_free(
-		 &node_key,
-		 NULL );
-	}
-	return( -1 );
 }
 

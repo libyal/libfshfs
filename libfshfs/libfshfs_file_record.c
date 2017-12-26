@@ -284,7 +284,7 @@ int libfshfs_file_record_read_data(
 			value_16bit = ( (fshfs_catalog_file_record_hfs_t *) data )->record_type;
 		}
 		libcnotify_printf(
-		 "%s: record type\t\t\t\t\t: %" PRIu16 " (%s)\n",
+		 "%s: record type\t\t\t\t: %" PRIu16 " (%s)\n",
 		 function,
 		 value_16bit,
 		 libfshfs_debug_print_catalog_record_type(
@@ -293,7 +293,7 @@ int libfshfs_file_record_read_data(
 		if( record_type == 0x0200 )
 		{
 			libcnotify_printf(
-			 "%s: unknown1\t\t\t\t\t: 0x%02" PRIx8 "\n",
+			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (fshfs_catalog_file_record_hfs_t *) data )->unknown1 );
 		}
@@ -325,7 +325,7 @@ int libfshfs_file_record_read_data(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->unknown1,
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: unknown1\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: unknown1\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 value_32bit );
 		}
@@ -352,7 +352,7 @@ int libfshfs_file_record_read_data(
 			 value_32bit );
 		}
 		libcnotify_printf(
-		 "%s: identifier\t\t\t\t\t: %" PRIu32 "\n",
+		 "%s: identifier\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -412,7 +412,7 @@ int libfshfs_file_record_read_data(
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
-			          "modification time\t\t\t\t",
+			          "modification time\t\t\t",
 			          ( (fshfs_catalog_file_record_hfsplus_t *) data )->modification_time,
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
@@ -423,7 +423,7 @@ int libfshfs_file_record_read_data(
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
-			          "modification time\t\t\t\t",
+			          "modification time\t\t\t",
 			          ( (fshfs_catalog_file_record_hfs_t *) data )->modification_time,
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
@@ -463,7 +463,7 @@ int libfshfs_file_record_read_data(
 			}
 			if( libfshfs_debug_print_hfs_time_value(
 			     function,
-			     "access time\t\t\t\t\t",
+			     "access time\t\t\t\t",
 			     ( (fshfs_catalog_file_record_hfsplus_t *) data )->access_time,
 			     4,
 			     LIBFDATETIME_ENDIAN_BIG,
@@ -484,7 +484,7 @@ int libfshfs_file_record_read_data(
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
-			          "backup time\t\t\t\t\t",
+			          "backup time\t\t\t\t",
 			          ( (fshfs_catalog_file_record_hfsplus_t *) data )->backup_time,
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
@@ -495,7 +495,7 @@ int libfshfs_file_record_read_data(
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
-			          "backup time\t\t\t\t\t",
+			          "backup time\t\t\t\t",
 			          ( (fshfs_catalog_file_record_hfs_t *) data )->backup_time,
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
@@ -557,7 +557,7 @@ int libfshfs_file_record_read_data(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->text_encoding_hint,
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: text encoding hint\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: text encoding hint\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 value_32bit );
 
@@ -565,7 +565,7 @@ int libfshfs_file_record_read_data(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->unknown2,
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: unknown2\t\t\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: unknown2\t\t\t\t: 0x%08" PRIx32 "\n",
 			 function,
 			 value_32bit );
 
