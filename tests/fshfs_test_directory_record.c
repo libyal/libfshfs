@@ -35,6 +35,14 @@
 
 #include "../libfshfs/libfshfs_directory_record.h"
 
+uint8_t fshfs_test_directory_record_data1[ 88 ] = {
+	0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x02, 0xc9, 0xd3, 0xe5, 0x5b,
+	0xc9, 0xd3, 0xe8, 0xef, 0xc9, 0xd3, 0xe8, 0xef, 0xc9, 0xd3, 0xe8, 0xee, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x63, 0x00, 0x00, 0x00, 0x63, 0x00, 0x00, 0x41, 0xfd, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 /* Tests the libfshfs_directory_record_initialize function
@@ -270,6 +278,162 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfshfs_directory_record_read_data function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_read_data(
+     void )
+{
+	libcerror_error_t *error                      = NULL;
+	libfshfs_directory_record_t *directory_record = NULL;
+	int result                                    = 0;
+
+	/* Initialize test
+	 */
+	result = libfshfs_directory_record_initialize(
+	          &directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "directory_record",
+	 directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_read_data(
+	          directory_record,
+	          fshfs_test_directory_record_data1,
+	          88,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_read_data(
+	          NULL,
+	          fshfs_test_directory_record_data1,
+	          88,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_read_data(
+	          directory_record,
+	          NULL,
+	          88,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_read_data(
+	          directory_record,
+	          fshfs_test_directory_record_data1,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_read_data(
+	          directory_record,
+	          fshfs_test_directory_record_data1,
+	          0,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = libfshfs_directory_record_free(
+	          &directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "directory_record",
+	 directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( directory_record != NULL )
+	{
+		libfshfs_directory_record_free(
+		 &directory_record,
+		 NULL );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 /* The main program
@@ -297,7 +461,9 @@ int main(
 	 "libfshfs_directory_record_free",
 	 fshfs_test_directory_record_free );
 
-	/* TODO: add tests for libfshfs_directory_record_read_data */
+	FSHFS_TEST_RUN(
+	 "libfshfs_directory_record_read_data",
+	 fshfs_test_directory_record_read_data );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

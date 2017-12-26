@@ -145,10 +145,10 @@ int libfshfs_catalog_btree_key_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	uint8_t *key_name_data = NULL;
-	static char *function  = "libfshfs_catalog_btree_key_read_data";
-	uint16_t key_data_size = 0;
-	uint16_t key_name_size = 0;
+	const uint8_t *key_name_data = NULL;
+	static char *function        = "libfshfs_catalog_btree_key_read_data";
+	uint16_t key_data_size       = 0;
+	uint16_t key_name_size       = 0;
 
 	if( catalog_btree_key == NULL )
 	{

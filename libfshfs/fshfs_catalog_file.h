@@ -445,6 +445,41 @@ struct fshfs_catalog_thread_record_hfsplus
 	 */
 };
 
+typedef struct fshfs_catalog_permissions_hfsplus fshfs_catalog_permissions_hfsplus_t;
+
+struct fshfs_catalog_permissions_hfsplus
+{
+	/* The owner identifier
+	 * Consists of 4 bytes
+	 */
+	uint8_t owner_identifier[ 4 ];
+
+	/* The group identifier
+	 * Consists of 4 bytes
+	 */
+	uint8_t group_identifier[ 4 ];
+
+	/* The administration flags
+	 * Consists of 1 byte
+	 */
+	uint8_t administration_flags;
+
+	/* The owner flags
+	 * Consists of 1 byte
+	 */
+	uint8_t owner_flags;
+
+	/* The file mode
+	 * Consists of 2 bytes
+	 */
+	uint8_t file_mode[ 2 ];
+
+	/* Special
+	 * Consists of 4 bytes
+	 */
+	uint8_t special[ 4 ];
+};
+
 #if defined( __cplusplus )
 }
 #endif

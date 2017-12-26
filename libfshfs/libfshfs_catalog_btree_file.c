@@ -39,21 +39,32 @@
 
 #include "fshfs_catalog_file.h"
 
-/* Reads a catalog B-tree branch node
+/* Reads a catalog B-tree node
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_catalog_btree_file_read_branch_node(
+int libfshfs_catalog_btree_file_read_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
-     libfshfs_btree_node_t *branch_node,
+     libfshfs_btree_node_t *node,
      libcerror_error_t **error )
 {
+/* TODO improve handling of sub_node_numbers */
+	uint32_t sub_node_numbers[ 64 ];
+
 	libfshfs_btree_node_t *sub_node        = NULL;
 	libfshfs_catalog_btree_key_t *node_key = NULL;
 	uint8_t *record_data                   = NULL;
-	static char *function                  = "libfshfs_catalog_btree_file_read_branch_node";
+	static char *function                  = "libfshfs_catalog_btree_file_read_node";
+	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
+	uint32_t sub_node_number               = 0;
+	uint16_t number_of_records             = 0;
 	uint16_t record_index                  = 0;
+	uint8_t node_type                      = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( TODO )
+	size_t trailing_data_size              = 0;
+#endif
 
 	if( btree_file == NULL )
 	{
@@ -66,34 +77,37 @@ int libfshfs_catalog_btree_file_read_branch_node(
 
 		return( -1 );
 	}
-	if( branch_node == NULL )
+	if( node == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid B-tree branch node.",
+		 "%s: invalid B-tree node.",
 		 function );
 
 		return( -1 );
 	}
-	if( branch_node->descriptor == NULL )
+	if( node->descriptor == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid B-tree branch node - missing descriptor.",
+		 "%s: invalid B-tree node - missing descriptor.",
 		 function );
 
 		return( -1 );
 	}
+	number_of_records = node->descriptor->number_of_records;
+	node_type         = node->descriptor->type;
+
 	for( record_index = 0;
-	     record_index < branch_node->descriptor->number_of_records;
+	     record_index < number_of_records;
 	     record_index++ )
 	{
 		if( libfshfs_btree_node_get_record_data_by_index(
-		     branch_node,
+		     node,
 		     record_index,
 		     &record_data,
 		     &record_data_size,
@@ -137,11 +151,24 @@ int libfshfs_catalog_btree_file_read_branch_node(
 
 			goto on_error;
 		}
-		if( branch_node->descriptor->type == 0xff )
+		record_data_offset = node_key->data_size;
+
+		if( record_data_offset >= record_data_size )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record data offset value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( node_type == 0xff )
 		{
 			if( libfshfs_catalog_btree_file_read_leaf_node(
 			     btree_file,
-			     &( record_data[ node_key->data_size ] ),
+			     &( record_data[ record_data_offset ] ),
 			     record_data_size,
 			     error ) != 1 )
 			{
@@ -155,41 +182,58 @@ int libfshfs_catalog_btree_file_read_branch_node(
 				goto on_error;
 			}
 		}
-		else if( branch_node->descriptor->type == 0x00 )
+		else if( node_type == 0x00 )
 		{
-			if( libfshfs_btree_file_get_node_by_number(
-			     btree_file,
-			     file_io_handle,
-			     node_key->parent_identifier,
-			     &sub_node,
-			     error ) == -1 )
+			if( ( record_data_size < 4 )
+			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve B-tree branch node: %" PRIu32 ".",
-				 function,
-				 node_key->parent_identifier );
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid record data size value out of bounds.",
+				 function );
 
 				goto on_error;
 			}
-			if( libfshfs_catalog_btree_file_read_branch_node(
-			     btree_file,
-			     file_io_handle,
-			     sub_node,
-			     error ) != 1 )
+			byte_stream_copy_to_uint32_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 sub_node_number );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read catalog B-Tree branch node: %" PRIu32 ".",
+				libcnotify_printf(
+				 "%s: B-tree sub node number\t\t: %" PRIu32 "\n",
 				 function,
-				 node_key->parent_identifier );
+				 sub_node_number );
 
-				goto on_error;
+				libcnotify_printf(
+				 "\n" );
 			}
+#endif
+			record_data_offset += 4;
+
+			sub_node_numbers[ record_index ] = sub_node_number;
+
+/* TODO check for trailing data currently record_data_size is not the upper limit of an individual record */
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( TODO )
+			if( libcnotify_verbose != 0 )
+			{
+				trailing_data_size = record_data_size - record_data_offset;
+
+				if( trailing_data_size > 0 )
+				{
+					libcnotify_printf(
+					 "%s: trailing data:\n",
+					 function );
+					libcnotify_print_data(
+					 &( record_data[ record_data_offset ] ),
+					 trailing_data_size,
+					 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+				}
+			}
+#endif
 		}
 		if( libfshfs_catalog_btree_key_free(
 		     &node_key,
@@ -203,6 +247,52 @@ int libfshfs_catalog_btree_file_read_branch_node(
 			 function );
 
 			goto on_error;
+		}
+	}
+	/* Read the sub nodes after reading the data of the record
+	 * to prevent the node being cached out
+	 */
+	if( node_type == 0x00 )
+	{
+		for( record_index = 0;
+		     record_index < number_of_records;
+		     record_index++ )
+		{
+			sub_node_number = sub_node_numbers[ record_index ];
+
+			if( libfshfs_btree_file_get_node_by_number(
+			     btree_file,
+			     file_io_handle,
+			     sub_node_number,
+			     &sub_node,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve B-tree sub node: %" PRIu32 ".",
+				 function,
+				 sub_node_number );
+
+				goto on_error;
+			}
+			if( libfshfs_catalog_btree_file_read_node(
+			     btree_file,
+			     file_io_handle,
+			     sub_node,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read catalog B-Tree sub node: %" PRIu32 ".",
+				 function,
+				 sub_node_number );
+
+				goto on_error;
+			}
 		}
 	}
 	return( 1 );
@@ -479,7 +569,7 @@ int libfshfs_catalog_btree_file_test(
 
 		return( -1 );
 	}
-	if( libfshfs_catalog_btree_file_read_branch_node(
+	if( libfshfs_catalog_btree_file_read_node(
 	     btree_file,
 	     file_io_handle,
 	     root_node,
