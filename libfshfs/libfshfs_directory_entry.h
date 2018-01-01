@@ -64,6 +64,11 @@ int libfshfs_directory_entry_free(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
+int libfshfs_directory_entry_get_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *identifier,
+     libcerror_error_t **error );
+
 int libfshfs_directory_entry_get_utf8_name_size(
      libfshfs_directory_entry_t *directory_entry,
      size_t *utf8_string_size,

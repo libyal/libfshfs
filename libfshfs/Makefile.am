@@ -38,6 +38,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_directory_record.c libfshfs_directory_record.h \
 	libfshfs_error.c libfshfs_error.h \
 	libfshfs_extern.h \
+	libfshfs_file_entry.c libfshfs_file_entry.h \
 	libfshfs_file_record.c libfshfs_file_record.h \
 	libfshfs_fork_descriptor.c libfshfs_fork_descriptor.h \
 	libfshfs_io_handle.c libfshfs_io_handle.h \

@@ -30,10 +30,41 @@
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_thread_record.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
+
+int libfshfs_catalog_btree_file_get_thread_record(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_thread_record_t **thread_record,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_thread_record_from_node(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *node,
+     uint32_t identifier,
+     libfshfs_thread_record_t **thread_record,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_node(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *node,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
 
 int libfshfs_catalog_btree_file_get_directory_entries(
      libfshfs_btree_file_t *btree_file,

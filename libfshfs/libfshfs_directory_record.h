@@ -35,9 +35,9 @@ typedef struct libfshfs_directory_record libfshfs_directory_record_t;
 
 struct libfshfs_directory_record
 {
-	/* Dummy
+	/* The identifier
 	 */
-	int dummy;
+	uint32_t identifier;
 };
 
 int libfshfs_directory_record_initialize(

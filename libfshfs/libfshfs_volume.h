@@ -66,9 +66,9 @@ struct libfshfs_internal_volume
 	 */
 	libfshfs_btree_file_t *catalog_btree_file;
 
-	/* The catalog btree file
+	/* The root directory entry
 	 */
-	libfshfs_directory_entry_t *volume_name_directory_entry;
+	libfshfs_directory_entry_t *root_directory_entry;
 };
 
 LIBFSHFS_EXTERN \
@@ -145,6 +145,12 @@ int libfshfs_volume_get_utf16_name(
      libfshfs_volume_t *volume,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_root_directory(
+     libfshfs_volume_t *volume,
+     libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

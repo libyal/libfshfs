@@ -236,6 +236,18 @@ int libfshfs_directory_record_read_data(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
+	if( record_type == 0x0001 )
+	{
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->identifier,
+		 directory_record->identifier );
+	}
+	else
+	{
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfs_t *) data )->identifier,
+		 directory_record->identifier );
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -288,22 +300,10 @@ int libfshfs_directory_record_read_data(
 		 function,
 		 value_32bit );
 
-		if( record_type == 0x0001 )
-		{
-			byte_stream_copy_to_uint32_big_endian(
-			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->identifier,
-			 value_32bit );
-		}
-		else
-		{
-			byte_stream_copy_to_uint32_big_endian(
-			 ( (fshfs_catalog_directory_record_hfs_t *) data )->identifier,
-			 value_32bit );
-		}
 		libcnotify_printf(
 		 "%s: identifier\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 value_32bit );
+		 directory_record->identifier );
 
 		if( record_type == 0x0001 )
 		{

@@ -175,6 +175,62 @@ int libfshfs_directory_entry_free(
 	return( result );
 }
 
+/* Retrieves the identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_get_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_identifier";
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( directory_entry->catalog_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid directory entry - missing catalog record.",
+		 function );
+
+		return( -1 );
+	}
+	if( identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid identifier.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == 0x0001 )
+	 || ( directory_entry->record_type == 0x0100 ) )
+	{
+		*identifier = ( (libfshfs_directory_record_t *) directory_entry->catalog_record )->identifier;
+	}
+	else if( ( directory_entry->record_type == 0x0002 )
+	      || ( directory_entry->record_type == 0x0200 ) )
+	{
+		*identifier = ( (libfshfs_file_record_t *) directory_entry->catalog_record )->identifier;
+	}
+	return( 1 );
+}
+
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
  * Returns 1 if successful or -1 on error

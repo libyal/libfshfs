@@ -546,6 +546,287 @@ int info_handle_close_input(
 	return( 0 );
 }
 
+/* Prints file entry information as part of the file system hierarchy
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_file_system_hierarchy_fprint_file_entry(
+     info_handle_t *info_handle,
+     libfshfs_file_entry_t *file_entry,
+     int indentation_level,
+     libcerror_error_t **error )
+{
+	libfshfs_file_entry_t *sub_file_entry = NULL;
+	system_character_t *file_entry_name   = NULL;
+	static char *function                 = "info_handle_file_system_hierarchy_fprint_file_entry";
+	size_t file_entry_name_size           = 0;
+	int indentation_level_iterator        = 0;
+	int number_of_sub_file_entries        = 0;
+	int result                            = 0;
+	int sub_file_entry_index              = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_file_entry_get_number_of_sub_file_entries(
+	     file_entry,
+	     &number_of_sub_file_entries,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of sub file entries.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libfshfs_file_entry_get_utf16_name_size(
+	          file_entry,
+	          &file_entry_name_size,
+	          error );
+#else
+	result = libfshfs_file_entry_get_utf8_name_size(
+	          file_entry,
+	          &file_entry_name_size,
+	          error );
+#endif
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve file entry name string size.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( result == 1 )
+	 && ( file_entry_name_size > 0 ) )
+	{
+		file_entry_name = system_string_allocate(
+		                   file_entry_name_size );
+
+		if( file_entry_name == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create file entry name string.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfshfs_file_entry_get_utf16_name(
+		          file_entry,
+		          (uint16_t *) file_entry_name,
+		          file_entry_name_size,
+		          error );
+#else
+		result = libfshfs_file_entry_get_utf8_name(
+		          file_entry,
+		          (uint8_t *) file_entry_name,
+		          file_entry_name_size,
+		          error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve file entry name string.",
+			 function );
+
+			goto on_error;
+		}
+		/* Do not print the name of files that have an ADS but no default data stream.
+		 */
+		for( indentation_level_iterator = 0;
+		     indentation_level_iterator < indentation_level;
+		     indentation_level_iterator++ )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 " " );
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "%" PRIs_SYSTEM "\n",
+		 file_entry_name );
+
+		memory_free(
+		 file_entry_name );
+
+		file_entry_name = NULL;
+	}
+	for( sub_file_entry_index = 0;
+	     sub_file_entry_index < number_of_sub_file_entries;
+	     sub_file_entry_index++ )
+	{
+		if( libfshfs_file_entry_get_sub_file_entry_by_index(
+		     file_entry,
+		     sub_file_entry_index,
+		     &sub_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve sub file entry: %d.",
+			 function,
+			 sub_file_entry_index );
+
+			goto on_error;
+		}
+		if( info_handle_file_system_hierarchy_fprint_file_entry(
+		     info_handle,
+		     sub_file_entry,
+		     indentation_level + 1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print file entry: %d information.",
+			 function,
+			 sub_file_entry_index );
+
+			goto on_error;
+		}
+		if( libfshfs_file_entry_free(
+		     &sub_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free sub file entry: %d.",
+			 function,
+			 sub_file_entry_index );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( sub_file_entry != NULL )
+	{
+		libfshfs_file_entry_free(
+		 &sub_file_entry,
+		 NULL );
+	}
+	if( file_entry_name != NULL )
+	{
+		memory_free(
+		 file_entry_name );
+	}
+	return( -1 );
+}
+
+/* Prints the file system hierarchy entry information
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_file_system_hierarchy_fprint(
+     info_handle_t *info_handle,
+     libcerror_error_t **error )
+{
+	libfshfs_file_entry_t *file_entry = NULL;
+	static char *function             = "info_handle_file_system_hierarchy_fprint";
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "Hierarchical File System information:\n\n" );
+
+	fprintf(
+	 info_handle->notify_stream,
+	 "File system hierarchy:\n" );
+
+	if( libfshfs_volume_get_root_directory(
+	     info_handle->input_volume,
+	     &file_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve root directory file entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( info_handle_file_system_hierarchy_fprint_file_entry(
+	     info_handle,
+	     file_entry,
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+		 "%s: unable to print root directory file entry information.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_file_entry_free(
+	     &file_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free file entry.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
+
+	return( 1 );
+
+on_error:
+	if( file_entry != NULL )
+	{
+		libfshfs_file_entry_free(
+		 &file_entry,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Prints the volume information
  * Returns 1 if successful or -1 on error
  */

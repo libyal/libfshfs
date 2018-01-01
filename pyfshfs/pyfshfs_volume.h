@@ -90,7 +90,7 @@ PyObject *pyfshfs_volume_close(
            pyfshfs_volume_t *pyfshfs_volume,
            PyObject *arguments );
 
-PyObject *pyfshfs_volume_get_label(
+PyObject *pyfshfs_volume_get_name(
            pyfshfs_volume_t *pyfshfs_volume,
            PyObject *arguments );
 

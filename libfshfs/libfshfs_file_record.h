@@ -36,6 +36,10 @@ typedef struct libfshfs_file_record libfshfs_file_record_t;
 
 struct libfshfs_file_record
 {
+	/* The identifier
+	 */
+	uint32_t identifier;
+
 	/* The data fork descriptor
 	 */
 	libfshfs_fork_descriptor_t *data_fork_descriptor;

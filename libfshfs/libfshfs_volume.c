@@ -30,10 +30,12 @@
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
+#include "libfshfs_file_entry.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
+#include "libfshfs_thread_record.h"
 #include "libfshfs_volume.h"
 #include "libfshfs_volume_header.h"
 
@@ -773,17 +775,17 @@ int libfshfs_volume_close(
 			result = -1;
 		}
 	}
-	if( internal_volume->volume_name_directory_entry != NULL )
+	if( internal_volume->root_directory_entry != NULL )
 	{
 		if( libfshfs_directory_entry_free(
-		     &( internal_volume->volume_name_directory_entry ),
+		     &( internal_volume->root_directory_entry ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free volume name directory entry.",
+			 "%s: unable to free root directory entry.",
 			 function );
 
 			result = -1;
@@ -800,10 +802,9 @@ int libfshfs_volume_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	libcdata_array_t *directory_entries = NULL;
-	static char *function               = "libfshfs_volume_open_read";
-	off64_t file_offset                 = 1024;
-	int number_of_entries               = 0;
+	static char *function = "libfshfs_volume_open_read";
+	off64_t file_offset   = 1024;
+	int result            = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -811,7 +812,7 @@ int libfshfs_volume_open_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal volume.",
+		 "%s: invalid volume.",
 		 function );
 
 		return( -1 );
@@ -822,18 +823,18 @@ int libfshfs_volume_open_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal volume - missing IO handle.",
+		 "%s: invalid volume - missing IO handle.",
 		 function );
 
 		return( -1 );
 	}
-	if( internal_volume->volume_name_directory_entry != NULL )
+	if( internal_volume->root_directory_entry != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid internal volume - volume name directory entry already set.",
+		 "%s: invalid volume - root directory entry already set.",
 		 function );
 
 		return( -1 );
@@ -923,86 +924,20 @@ int libfshfs_volume_open_read(
 			 "Reading volume name directory entry:\n" );
 		}
 #endif
-		if( libcdata_array_initialize(
-		     &directory_entries,
-		     0,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create directory entries array.",
-			 function );
+		result = libfshfs_catalog_btree_file_get_directory_entry(
+		          internal_volume->catalog_btree_file,
+		          file_io_handle,
+		          1,
+		          &( internal_volume->root_directory_entry ),
+		          error );
 
-			goto on_error;
-		}
-		if( libfshfs_catalog_btree_file_get_directory_entries(
-		     internal_volume->catalog_btree_file,
-		     file_io_handle,
-		     1,
-		     directory_entries,
-		     error ) != 1 )
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve root directory entries from catalog B-tree file.",
-			 function );
-
-			goto on_error;
-		}
-		if( libcdata_array_get_number_of_entries(
-		     directory_entries,
-		     &number_of_entries,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve number of root directory entries.",
-			 function );
-
-			goto on_error;
-		}
-		if( number_of_entries != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-			 "%s: unsupported number of root directory entries.",
-			 function );
-
-			goto on_error;
-		}
-		if( libcdata_array_get_entry_by_index(
-		     directory_entries,
-		     0,
-		     (intptr_t **) &( internal_volume->volume_name_directory_entry ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve volume name directory entry.",
-			 function );
-
-			goto on_error;
-		}
-		if( libcdata_array_free(
-		     &directory_entries,
-		     NULL,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free directory entries array.",
+			 "%s: unable to retrieve root directory entry from catalog B-tree file.",
 			 function );
 
 			goto on_error;
@@ -1011,17 +946,10 @@ int libfshfs_volume_open_read(
 	return( 1 );
 
 on_error:
-	if( internal_volume->volume_name_directory_entry == NULL )
+	if( internal_volume->root_directory_entry == NULL )
 	{
 		libfshfs_directory_entry_free(
-		 &( internal_volume->volume_name_directory_entry ),
-		 NULL );
-	}
-	if( directory_entries != NULL )
-	{
-		libcdata_array_free(
-		 &directory_entries,
-		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_directory_entry_free,
+		 &( internal_volume->root_directory_entry ),
 		 NULL );
 	}
 	if( internal_volume->catalog_btree_file == NULL )
@@ -1065,7 +993,7 @@ int libfshfs_volume_get_utf8_name_size(
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
 	if( libfshfs_directory_entry_get_utf8_name_size(
-	     internal_volume->volume_name_directory_entry,
+	     internal_volume->root_directory_entry,
 	     utf8_string_size,
 	     error ) != 1 )
 	{
@@ -1108,7 +1036,7 @@ int libfshfs_volume_get_utf8_name(
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
 	if( libfshfs_directory_entry_get_utf8_name(
-	     internal_volume->volume_name_directory_entry,
+	     internal_volume->root_directory_entry,
 	     utf8_string,
 	     utf8_string_size,
 	     error ) != 1 )
@@ -1151,7 +1079,7 @@ int libfshfs_volume_get_utf16_name_size(
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
 	if( libfshfs_directory_entry_get_utf16_name_size(
-	     internal_volume->volume_name_directory_entry,
+	     internal_volume->root_directory_entry,
 	     utf16_string_size,
 	     error ) != 1 )
 	{
@@ -1194,7 +1122,7 @@ int libfshfs_volume_get_utf16_name(
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
 	if( libfshfs_directory_entry_get_utf16_name(
-	     internal_volume->volume_name_directory_entry,
+	     internal_volume->root_directory_entry,
 	     utf16_string,
 	     utf16_string_size,
 	     error ) != 1 )
@@ -1204,6 +1132,82 @@ int libfshfs_volume_get_utf16_name(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the root directory file entry
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_volume_get_root_directory(
+     libfshfs_volume_t *volume,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_volume_t *internal_volume = NULL;
+	static char *function                       = "libfshfs_volume_get_root_directory";
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfshfs_internal_volume_t *) volume;
+
+	if( internal_volume->root_directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid volume - missing root directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_file_entry_initialize(
+	     file_entry,
+	     internal_volume->root_directory_entry,
+	     internal_volume->file_io_handle,
+	     internal_volume->catalog_btree_file,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file entry.",
 		 function );
 
 		return( -1 );

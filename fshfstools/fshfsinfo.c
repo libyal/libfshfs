@@ -275,6 +275,19 @@ int main( int argc, char * const argv[] )
 	}
 	switch( option_mode )
 	{
+		case FSHFSINFO_MODE_FILE_SYSTEM_HIERARCHY:
+			if( info_handle_file_system_hierarchy_fprint(
+			     fshfsinfo_info_handle,
+			     &error ) != 1 )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to print file system hierarchy.\n" );
+
+				goto on_error;
+			}
+			break;
+
 		case FSHFSINFO_MODE_VOLUME:
 		default:
 			if( info_handle_volume_fprint(

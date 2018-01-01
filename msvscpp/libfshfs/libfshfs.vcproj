@@ -214,11 +214,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_directory_entry.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_directory_record.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_error.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_file_entry.c"
 				>
 			</File>
 			<File
@@ -320,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_directory_entry.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_directory_record.h"
 				>
 			</File>
@@ -329,6 +341,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_extern.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_file_entry.h"
 				>
 			</File>
 			<File

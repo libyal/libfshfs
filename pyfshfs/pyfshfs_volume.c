@@ -76,12 +76,12 @@ PyMethodDef pyfshfs_volume_object_methods[] = {
 	  "\n"
 	  "Closes a volume." },
 
-	{ "get_label",
-	  (PyCFunction) pyfshfs_volume_get_label,
+	{ "get_name",
+	  (PyCFunction) pyfshfs_volume_get_name,
 	  METH_NOARGS,
-	  "get_label() -> Unicode string or None\n"
+	  "get_name() -> Unicode string or None\n"
 	  "\n"
-	  "Retrieves the label." },
+	  "Retrieves the name." },
 
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
@@ -89,10 +89,10 @@ PyMethodDef pyfshfs_volume_object_methods[] = {
 
 PyGetSetDef pyfshfs_volume_object_get_set_definitions[] = {
 
-	{ "label",
-	  (getter) pyfshfs_volume_get_label,
+	{ "name",
+	  (getter) pyfshfs_volume_get_name,
 	  (setter) 0,
-	  "The label.",
+	  "The name.",
 	  NULL },
 
 	/* Sentinel */
@@ -829,17 +829,17 @@ PyObject *pyfshfs_volume_close(
 	return( Py_None );
 }
 
-/* Retrieves the label
+/* Retrieves the name
  * Returns a Python object if successful or NULL on error
  */
-PyObject *pyfshfs_volume_get_label(
+PyObject *pyfshfs_volume_get_name(
            pyfshfs_volume_t *pyfshfs_volume,
            PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
 {
 	PyObject *string_object  = NULL;
 	libcerror_error_t *error = NULL;
 	const char *errors       = NULL;
-	static char *function    = "pyfshfs_volume_get_label";
+	static char *function    = "pyfshfs_volume_get_name";
 	char *utf8_string        = NULL;
 	size_t utf8_string_size  = 0;
 	int result               = 0;
@@ -857,7 +857,7 @@ PyObject *pyfshfs_volume_get_label(
 	}
 	Py_BEGIN_ALLOW_THREADS
 
-	result = libfshfs_volume_get_utf8_label_size(
+	result = libfshfs_volume_get_utf8_name_size(
 	          pyfshfs_volume->volume,
 	          &utf8_string_size,
 	          &error );
@@ -869,7 +869,7 @@ PyObject *pyfshfs_volume_get_label(
 		pyfshfs_error_raise(
 		 error,
 		 PyExc_IOError,
-		 "%s: unable to determine size of label as UTF-8 string.",
+		 "%s: unable to determine size of name as UTF-8 string.",
 		 function );
 
 		libcerror_error_free(
@@ -899,7 +899,7 @@ PyObject *pyfshfs_volume_get_label(
 	}
 	Py_BEGIN_ALLOW_THREADS
 
-	result = libfshfs_volume_get_utf8_label(
+	result = libfshfs_volume_get_utf8_name(
 	          pyfshfs_volume->volume,
 	          (uint8_t *) utf8_string,
 	          utf8_string_size,
@@ -912,7 +912,7 @@ PyObject *pyfshfs_volume_get_label(
 		pyfshfs_error_raise(
 		 error,
 		 PyExc_IOError,
-		 "%s: unable to retrieve label as UTF-8 string.",
+		 "%s: unable to retrieve name as UTF-8 string.",
 		 function );
 
 		libcerror_error_free(
