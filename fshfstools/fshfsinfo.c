@@ -132,7 +132,6 @@ int main( int argc, char * const argv[] )
 	system_character_t *source               = NULL;
 	char *program                            = "fshfsinfo";
 	system_integer_t option                  = 0;
-	size_t string_length                     = 0;
 	int option_mode                          = FSHFSINFO_MODE_VOLUME;
 	int verbose                              = 0;
 

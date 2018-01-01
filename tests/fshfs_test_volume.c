@@ -1238,22 +1238,22 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfshfs_volume_get_utf8_label_size function
+/* Tests the libfshfs_volume_get_utf8_name_size function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_volume_get_utf8_label_size(
+int fshfs_test_volume_get_utf8_name_size(
      libfshfs_volume_t *volume )
 {
-	libcerror_error_t *error   = NULL;
-	size_t utf8_label_size     = 0;
-	int result                 = 0;
-	int utf8_label_size_is_set = 0;
+	libcerror_error_t *error  = NULL;
+	size_t utf8_name_size     = 0;
+	int result                = 0;
+	int utf8_name_size_is_set = 0;
 
 	/* Test regular cases
 	 */
-	result = libfshfs_volume_get_utf8_label_size(
+	result = libfshfs_volume_get_utf8_name_size(
 	          volume,
-	          &utf8_label_size,
+	          &utf8_name_size,
 	          &error );
 
 	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
@@ -1265,13 +1265,13 @@ int fshfs_test_volume_get_utf8_label_size(
 	 "error",
 	 error );
 
-	utf8_label_size_is_set = result;
+	utf8_name_size_is_set = result;
 
 	/* Test error cases
 	 */
-	result = libfshfs_volume_get_utf8_label_size(
+	result = libfshfs_volume_get_utf8_name_size(
 	          NULL,
-	          &utf8_label_size,
+	          &utf8_name_size,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -1286,9 +1286,9 @@ int fshfs_test_volume_get_utf8_label_size(
 	libcerror_error_free(
 	 &error );
 
-	if( utf8_label_size_is_set != 0 )
+	if( utf8_name_size_is_set != 0 )
 	{
-		result = libfshfs_volume_get_utf8_label_size(
+		result = libfshfs_volume_get_utf8_name_size(
 		          volume,
 		          NULL,
 		          &error );
@@ -1316,23 +1316,23 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfshfs_volume_get_utf8_label function
+/* Tests the libfshfs_volume_get_utf8_name function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_volume_get_utf8_label(
+int fshfs_test_volume_get_utf8_name(
      libfshfs_volume_t *volume )
 {
-	uint8_t utf8_label[ 512 ];
+	uint8_t utf8_name[ 512 ];
 
 	libcerror_error_t *error = NULL;
 	int result               = 0;
-	int utf8_label_is_set    = 0;
+	int utf8_name_is_set     = 0;
 
 	/* Test regular cases
 	 */
-	result = libfshfs_volume_get_utf8_label(
+	result = libfshfs_volume_get_utf8_name(
 	          volume,
-	          utf8_label,
+	          utf8_name,
 	          512,
 	          &error );
 
@@ -1345,13 +1345,13 @@ int fshfs_test_volume_get_utf8_label(
 	 "error",
 	 error );
 
-	utf8_label_is_set = result;
+	utf8_name_is_set = result;
 
 	/* Test error cases
 	 */
-	result = libfshfs_volume_get_utf8_label(
+	result = libfshfs_volume_get_utf8_name(
 	          NULL,
-	          utf8_label,
+	          utf8_name,
 	          512,
 	          &error );
 
@@ -1367,9 +1367,9 @@ int fshfs_test_volume_get_utf8_label(
 	libcerror_error_free(
 	 &error );
 
-	if( utf8_label_is_set != 0 )
+	if( utf8_name_is_set != 0 )
 	{
-		result = libfshfs_volume_get_utf8_label(
+		result = libfshfs_volume_get_utf8_name(
 		          volume,
 		          NULL,
 		          512,
@@ -1387,9 +1387,9 @@ int fshfs_test_volume_get_utf8_label(
 		libcerror_error_free(
 		 &error );
 
-		result = libfshfs_volume_get_utf8_label(
+		result = libfshfs_volume_get_utf8_name(
 		          volume,
-		          utf8_label,
+		          utf8_name,
 		          0,
 		          &error );
 
@@ -1405,9 +1405,9 @@ int fshfs_test_volume_get_utf8_label(
 		libcerror_error_free(
 		 &error );
 
-		result = libfshfs_volume_get_utf8_label(
+		result = libfshfs_volume_get_utf8_name(
 		          volume,
-		          utf8_label,
+		          utf8_name,
 		          (size_t) SSIZE_MAX + 1,
 		          &error );
 
@@ -1434,22 +1434,22 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfshfs_volume_get_utf16_label_size function
+/* Tests the libfshfs_volume_get_utf16_name_size function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_volume_get_utf16_label_size(
+int fshfs_test_volume_get_utf16_name_size(
      libfshfs_volume_t *volume )
 {
-	libcerror_error_t *error    = NULL;
-	size_t utf16_label_size     = 0;
-	int result                  = 0;
-	int utf16_label_size_is_set = 0;
+	libcerror_error_t *error   = NULL;
+	size_t utf16_name_size     = 0;
+	int result                 = 0;
+	int utf16_name_size_is_set = 0;
 
 	/* Test regular cases
 	 */
-	result = libfshfs_volume_get_utf16_label_size(
+	result = libfshfs_volume_get_utf16_name_size(
 	          volume,
-	          &utf16_label_size,
+	          &utf16_name_size,
 	          &error );
 
 	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
@@ -1461,13 +1461,13 @@ int fshfs_test_volume_get_utf16_label_size(
 	 "error",
 	 error );
 
-	utf16_label_size_is_set = result;
+	utf16_name_size_is_set = result;
 
 	/* Test error cases
 	 */
-	result = libfshfs_volume_get_utf16_label_size(
+	result = libfshfs_volume_get_utf16_name_size(
 	          NULL,
-	          &utf16_label_size,
+	          &utf16_name_size,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -1482,9 +1482,9 @@ int fshfs_test_volume_get_utf16_label_size(
 	libcerror_error_free(
 	 &error );
 
-	if( utf16_label_size_is_set != 0 )
+	if( utf16_name_size_is_set != 0 )
 	{
-		result = libfshfs_volume_get_utf16_label_size(
+		result = libfshfs_volume_get_utf16_name_size(
 		          volume,
 		          NULL,
 		          &error );
@@ -1512,23 +1512,23 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfshfs_volume_get_utf16_label function
+/* Tests the libfshfs_volume_get_utf16_name function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_volume_get_utf16_label(
+int fshfs_test_volume_get_utf16_name(
      libfshfs_volume_t *volume )
 {
-	uint16_t utf16_label[ 512 ];
+	uint16_t utf16_name[ 512 ];
 
 	libcerror_error_t *error = NULL;
 	int result               = 0;
-	int utf16_label_is_set   = 0;
+	int utf16_name_is_set    = 0;
 
 	/* Test regular cases
 	 */
-	result = libfshfs_volume_get_utf16_label(
+	result = libfshfs_volume_get_utf16_name(
 	          volume,
-	          utf16_label,
+	          utf16_name,
 	          512,
 	          &error );
 
@@ -1541,13 +1541,13 @@ int fshfs_test_volume_get_utf16_label(
 	 "error",
 	 error );
 
-	utf16_label_is_set = result;
+	utf16_name_is_set = result;
 
 	/* Test error cases
 	 */
-	result = libfshfs_volume_get_utf16_label(
+	result = libfshfs_volume_get_utf16_name(
 	          NULL,
-	          utf16_label,
+	          utf16_name,
 	          512,
 	          &error );
 
@@ -1563,9 +1563,9 @@ int fshfs_test_volume_get_utf16_label(
 	libcerror_error_free(
 	 &error );
 
-	if( utf16_label_is_set != 0 )
+	if( utf16_name_is_set != 0 )
 	{
-		result = libfshfs_volume_get_utf16_label(
+		result = libfshfs_volume_get_utf16_name(
 		          volume,
 		          NULL,
 		          512,
@@ -1583,9 +1583,9 @@ int fshfs_test_volume_get_utf16_label(
 		libcerror_error_free(
 		 &error );
 
-		result = libfshfs_volume_get_utf16_label(
+		result = libfshfs_volume_get_utf16_name(
 		          volume,
-		          utf16_label,
+		          utf16_name,
 		          0,
 		          &error );
 
@@ -1601,9 +1601,9 @@ int fshfs_test_volume_get_utf16_label(
 		libcerror_error_free(
 		 &error );
 
-		result = libfshfs_volume_get_utf16_label(
+		result = libfshfs_volume_get_utf16_name(
 		          volume,
-		          utf16_label,
+		          utf16_name,
 		          (size_t) SSIZE_MAX + 1,
 		          &error );
 
@@ -1853,23 +1853,23 @@ int main(
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 		FSHFS_TEST_RUN_WITH_ARGS(
-		 "libfshfs_volume_get_utf8_label_size",
-		 fshfs_test_volume_get_utf8_label_size,
+		 "libfshfs_volume_get_utf8_name_size",
+		 fshfs_test_volume_get_utf8_name_size,
 		 volume );
 
 		FSHFS_TEST_RUN_WITH_ARGS(
-		 "libfshfs_volume_get_utf8_label",
-		 fshfs_test_volume_get_utf8_label,
+		 "libfshfs_volume_get_utf8_name",
+		 fshfs_test_volume_get_utf8_name,
 		 volume );
 
 		FSHFS_TEST_RUN_WITH_ARGS(
-		 "libfshfs_volume_get_utf16_label_size",
-		 fshfs_test_volume_get_utf16_label_size,
+		 "libfshfs_volume_get_utf16_name_size",
+		 fshfs_test_volume_get_utf16_name_size,
 		 volume );
 
 		FSHFS_TEST_RUN_WITH_ARGS(
-		 "libfshfs_volume_get_utf16_label",
-		 fshfs_test_volume_get_utf16_label,
+		 "libfshfs_volume_get_utf16_name",
+		 fshfs_test_volume_get_utf16_name,
 		 volume );
 
 		/* Clean up

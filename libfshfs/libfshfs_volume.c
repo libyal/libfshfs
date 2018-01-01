@@ -29,7 +29,9 @@
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
+#include "libfshfs_directory_entry.h"
 #include "libfshfs_io_handle.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_volume.h"
@@ -755,6 +757,38 @@ int libfshfs_volume_close(
 
 		result = -1;
 	}
+	if( internal_volume->catalog_btree_file != NULL )
+	{
+		if( libfshfs_btree_file_free(
+		     &( internal_volume->catalog_btree_file ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free catalog btree file.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_volume->volume_name_directory_entry != NULL )
+	{
+		if( libfshfs_directory_entry_free(
+		     &( internal_volume->volume_name_directory_entry ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free volume name directory entry.",
+			 function );
+
+			result = -1;
+		}
+	}
 	return( result );
 }
 
@@ -766,9 +800,10 @@ int libfshfs_volume_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	libfshfs_btree_file_t *btree_file = NULL;
-	static char *function             = "libfshfs_volume_open_read";
-	off64_t file_offset               = 1024;
+	libcdata_array_t *directory_entries = NULL;
+	static char *function               = "libfshfs_volume_open_read";
+	off64_t file_offset                 = 1024;
+	int number_of_entries               = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -788,6 +823,17 @@ int libfshfs_volume_open_read(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid internal volume - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_volume->volume_name_directory_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid internal volume - volume name directory entry already set.",
 		 function );
 
 		return( -1 );
@@ -841,21 +887,21 @@ int libfshfs_volume_open_read(
 		}
 #endif
 		if( libfshfs_btree_file_initialize(
-		     &btree_file,
+		     &( internal_volume->catalog_btree_file ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create B-tree file.",
+			 "%s: unable to create catalog B-tree file.",
 			 function );
 
 			goto on_error;
 		}
 /* TODO what about extra extents? */
 		if( libfshfs_btree_file_read(
-		     btree_file,
+		     internal_volume->catalog_btree_file,
 		     internal_volume->io_handle,
 		     file_io_handle,
 		     internal_volume->volume_header->catalog_file_fork_descriptor,
@@ -870,30 +916,93 @@ int libfshfs_volume_open_read(
 
 			goto on_error;
 		}
-		if( libfshfs_catalog_btree_file_get_file_entry_records(
-		     btree_file,
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "Reading volume name directory entry:\n" );
+		}
+#endif
+		if( libcdata_array_initialize(
+		     &directory_entries,
+		     0,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create directory entries array.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_catalog_btree_file_get_directory_entries(
+		     internal_volume->catalog_btree_file,
 		     file_io_handle,
-		     2,
+		     1,
+		     directory_entries,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve root directory file entry records from catalog B-tree file.",
+			 "%s: unable to retrieve root directory entries from catalog B-tree file.",
 			 function );
 
 			goto on_error;
 		}
-		if( libfshfs_btree_file_free(
-		     &btree_file,
+		if( libcdata_array_get_number_of_entries(
+		     directory_entries,
+		     &number_of_entries,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of root directory entries.",
+			 function );
+
+			goto on_error;
+		}
+		if( number_of_entries != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported number of root directory entries.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcdata_array_get_entry_by_index(
+		     directory_entries,
+		     0,
+		     (intptr_t **) &( internal_volume->volume_name_directory_entry ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve volume name directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcdata_array_free(
+		     &directory_entries,
+		     NULL,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free B-tree file.",
+			 "%s: unable to free directory entries array.",
 			 function );
 
 			goto on_error;
@@ -902,10 +1011,23 @@ int libfshfs_volume_open_read(
 	return( 1 );
 
 on_error:
-	if( btree_file == NULL )
+	if( internal_volume->volume_name_directory_entry == NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &( internal_volume->volume_name_directory_entry ),
+		 NULL );
+	}
+	if( directory_entries != NULL )
+	{
+		libcdata_array_free(
+		 &directory_entries,
+		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_directory_entry_free,
+		 NULL );
+	}
+	if( internal_volume->catalog_btree_file == NULL )
 	{
 		libfshfs_btree_file_free(
-		 &btree_file,
+		 &( internal_volume->catalog_btree_file ),
 		 NULL );
 	}
 	if( internal_volume->volume_header == NULL )
@@ -917,17 +1039,17 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves the size of the UTF-8 encoded label
+/* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_volume_get_utf8_label_size(
+int libfshfs_volume_get_utf8_name_size(
      libfshfs_volume_t *volume,
      size_t *utf8_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
-	static char *function                       = "libfshfs_volume_get_utf8_label_size";
+	static char *function                       = "libfshfs_volume_get_utf8_name_size";
 
 	if( volume == NULL )
 	{
@@ -942,35 +1064,35 @@ int libfshfs_volume_get_utf8_label_size(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
-/* TODO */
-	if( utf8_string_size == NULL )
+	if( libfshfs_directory_entry_get_utf8_name_size(
+	     internal_volume->volume_name_directory_entry,
+	     utf8_string_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-8 string size.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
 		 function );
 
 		return( -1 );
 	}
-	*utf8_string_size = 0;
-/* TODO */
 	return( 1 );
 }
 
-/* Retrieves the UTF-8 encoded label
+/* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_volume_get_utf8_label(
+int libfshfs_volume_get_utf8_name(
      libfshfs_volume_t *volume,
-     uint8_t *utf8_label,
+     uint8_t *utf8_string,
      size_t utf8_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
-	static char *function                       = "libfshfs_volume_get_utf8_label";
+	static char *function                       = "libfshfs_volume_get_utf8_name";
 
 	if( volume == NULL )
 	{
@@ -985,21 +1107,35 @@ int libfshfs_volume_get_utf8_label(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
-/* TODO */
-	return( -1 );
+	if( libfshfs_directory_entry_get_utf8_name(
+	     internal_volume->volume_name_directory_entry,
+	     utf8_string,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 
-/* Retrieves the size of the UTF-16 encoded label
+/* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_volume_get_utf16_label_size(
+int libfshfs_volume_get_utf16_name_size(
      libfshfs_volume_t *volume,
      size_t *utf16_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
-	static char *function                       = "libfshfs_volume_get_utf16_label_size";
+	static char *function                       = "libfshfs_volume_get_utf16_name_size";
 
 	if( volume == NULL )
 	{
@@ -1014,22 +1150,35 @@ int libfshfs_volume_get_utf16_label_size(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
-/* TODO */
-	return( -1 );
+	if( libfshfs_directory_entry_get_utf16_name_size(
+	     internal_volume->volume_name_directory_entry,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 
-/* Retrieves the UTF-16 encoded label
+/* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_volume_get_utf16_label(
+int libfshfs_volume_get_utf16_name(
      libfshfs_volume_t *volume,
      uint16_t *utf16_string,
      size_t utf16_string_size,
      libcerror_error_t **error )
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
-	static char *function                       = "libfshfs_volume_get_utf16_label";
+	static char *function                       = "libfshfs_volume_get_utf16_name";
 
 	if( volume == NULL )
 	{
@@ -1044,7 +1193,21 @@ int libfshfs_volume_get_utf16_label(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
-/* TODO */
-	return( -1 );
+	if( libfshfs_directory_entry_get_utf16_name(
+	     internal_volume->volume_name_directory_entry,
+	     utf16_string,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 

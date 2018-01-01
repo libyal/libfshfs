@@ -260,43 +260,43 @@ int libfshfs_volume_close(
      libfshfs_volume_t *volume,
      libfshfs_error_t **error );
 
-/* Retrieves the size of the UTF-8 encoded label
+/* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
  * Returns 1 if successful or -1 on error
  */
 LIBFSHFS_EXTERN \
-int libfshfs_volume_get_utf8_label_size(
+int libfshfs_volume_get_utf8_name_size(
      libfshfs_volume_t *volume,
      size_t *utf8_string_size,
      libfshfs_error_t **error );
 
-/* Retrieves the UTF-8 encoded label
+/* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
  * Returns 1 if successful or -1 on error
  */
 LIBFSHFS_EXTERN \
-int libfshfs_volume_get_utf8_label(
+int libfshfs_volume_get_utf8_name(
      libfshfs_volume_t *volume,
      uint8_t *utf8_string,
      size_t utf8_string_size,
      libfshfs_error_t **error );
 
-/* Retrieves the size of the UTF-16 encoded label
+/* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
  * Returns 1 if successful or -1 on error
  */
 LIBFSHFS_EXTERN \
-int libfshfs_volume_get_utf16_label_size(
+int libfshfs_volume_get_utf16_name_size(
      libfshfs_volume_t *volume,
      size_t *utf16_string_size,
      libfshfs_error_t **error );
 
-/* Retrieves the UTF-16 encoded label
+/* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
  * Returns 1 if successful or -1 on error
  */
 LIBFSHFS_EXTERN \
-int libfshfs_volume_get_utf16_label(
+int libfshfs_volume_get_utf16_name(
      libfshfs_volume_t *volume,
      uint16_t *utf16_string,
      size_t utf16_string_size,

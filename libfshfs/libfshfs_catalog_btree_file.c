@@ -29,9 +29,11 @@
 
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_catalog_btree_key.h"
+#include "libfshfs_directory_entry.h"
 #include "libfshfs_directory_record.h"
 #include "libfshfs_file_record.h"
 #include "libfshfs_libbfio.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libuna.h"
@@ -39,30 +41,93 @@
 
 #include "fshfs_catalog_file.h"
 
-/* Retrieves file and directory (file entry) records for a specific parent identifier from the catalog B-tree node
+/* Retrieves directory entries for a specific parent identifier from the catalog B-tree file
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_catalog_btree_file_get_file_entry_records_from_node(
+int libfshfs_catalog_btree_file_get_directory_entries(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
+     libcerror_error_t **error )
+{
+	libfshfs_btree_node_t *root_node = NULL;
+	static char *function            = "libfshfs_catalog_btree_file_get_directory_entries";
+
+	if( libfshfs_btree_file_get_root_node(
+	     btree_file,
+	     file_io_handle,
+	     &root_node,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve B-tree root node.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_catalog_btree_file_get_directory_entries_from_node(
+	     btree_file,
+	     file_io_handle,
+	     root_node,
+	     parent_identifier,
+	     directory_entries,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entries from catalog B-Tree root node.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	libcdata_array_empty(
+	 directory_entries,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_directory_entry_free,
+	 NULL );
+
+	return( -1 );
+}
+
+/* Retrieves directory entries for a specific parent identifier from the catalog B-tree node
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_catalog_btree_file_get_directory_entries_from_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
      libcerror_error_t **error )
 {
 /* TODO improve handling of sub_node_numbers */
 	uint32_t sub_node_numbers[ 64 ];
 
-	libfshfs_btree_node_t *sub_node        = NULL;
-	libfshfs_catalog_btree_key_t *node_key = NULL;
-	uint8_t *record_data                   = NULL;
-	static char *function                  = "libfshfs_catalog_btree_file_get_file_entry_records_from_node";
-	size_t record_data_offset              = 0;
-	size_t record_data_size                = 0;
-	uint32_t sub_node_number               = 0;
-	uint16_t number_of_records             = 0;
-	uint16_t number_of_sub_nodes           = 0;
-	uint16_t record_index                  = 0;
-	uint8_t node_type                      = 0;
+	libfshfs_btree_node_t *sub_node               = NULL;
+	libfshfs_catalog_btree_key_t *node_key        = NULL;
+	libfshfs_directory_entry_t *directory_entry   = NULL;
+	libfshfs_directory_record_t *directory_record = NULL;
+	libfshfs_file_record_t *file_record           = NULL;
+	intptr_t *catalog_record                      = NULL;
+	uint8_t *record_data                          = NULL;
+	static char *function                         = "libfshfs_catalog_btree_file_get_directory_entries_from_node";
+	size_t record_data_offset                     = 0;
+	size_t record_data_size                       = 0;
+	uint32_t sub_node_number                      = 0;
+	uint16_t number_of_records                    = 0;
+	uint16_t number_of_sub_nodes                  = 0;
+	uint16_t record_index                         = 0;
+	uint16_t record_type                          = 0;
+	uint8_t node_type                             = 0;
+	int entry_index                               = 0;
 
 	if( btree_file == NULL )
 	{
@@ -119,7 +184,7 @@ int libfshfs_catalog_btree_file_get_file_entry_records_from_node(
 			 function,
 			 record_index );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( libfshfs_catalog_btree_key_initialize(
 		     &node_key,
@@ -203,20 +268,125 @@ int libfshfs_catalog_btree_file_get_file_entry_records_from_node(
 		{
 			if( node_key->parent_identifier == parent_identifier )
 			{
-				if( libfshfs_catalog_btree_file_read_leaf_node(
-				     btree_file,
-				     &( record_data[ record_data_offset ] ),
-				     record_data_size,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read catalog B-Tree leaf node.",
-					 function );
+				byte_stream_copy_to_uint16_big_endian(
+				 &( record_data[ record_data_offset ] ),
+				 record_type );
 
-					goto on_error;
+				switch( record_type )
+				{
+					case 0x0001:
+					case 0x0100:
+						if( libfshfs_directory_record_initialize(
+						     &directory_record,
+						     error ) != 1 )
+						{
+							libcerror_error_set(
+							 error,
+							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+							 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+							 "%s: unable to create directory record.",
+							 function );
+
+							goto on_error;
+						}
+						if( libfshfs_directory_record_read_data(
+						     directory_record,
+						     &( record_data[ record_data_offset ] ),
+						     record_data_size,
+						     error ) != 1 )
+						{
+							libcerror_error_set(
+							 error,
+							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+							 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+							 "%s: unable to free directory record.",
+							 function );
+
+							goto on_error;
+						}
+						catalog_record = (intptr_t *) directory_record;
+
+						break;
+
+					case 0x0002:
+					case 0x0200:
+						if( libfshfs_file_record_initialize(
+						     &file_record,
+						     error ) != 1 )
+						{
+							libcerror_error_set(
+							 error,
+							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+							 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+							 "%s: unable to create file record.",
+							 function );
+
+							goto on_error;
+						}
+						if( libfshfs_file_record_read_data(
+						     file_record,
+						     &( record_data[ record_data_offset ] ),
+						     record_data_size,
+						     error ) != 1 )
+						{
+							libcerror_error_set(
+							 error,
+							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+							 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+							 "%s: unable to free file record.",
+							 function );
+
+							goto on_error;
+						}
+						catalog_record = (intptr_t *) file_record;
+
+						break;
+
+					default:
+						break;
+				}
+				if( catalog_record != NULL )
+				{
+					if( libfshfs_directory_entry_initialize(
+					     &directory_entry,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+						 "%s: unable to create directory entry.",
+						 function );
+
+						goto on_error;
+					}
+					directory_entry->record_type       = record_type;
+					directory_entry->name              = node_key->name;
+					directory_entry->name_size         = node_key->name_size;
+					directory_entry->parent_identifier = node_key->parent_identifier;
+					directory_entry->catalog_record    = catalog_record;
+
+					node_key->name      = NULL;
+					node_key->name_size = 0;
+					directory_record    = NULL;
+					file_record         = NULL;
+
+					if( libcdata_array_append_entry(
+					     directory_entries,
+					     &entry_index,
+					     (intptr_t *) directory_entry,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+						 "%s: unable to append directory entry to array.",
+						 function );
+
+						goto on_error;
+					}
+					directory_entry = NULL;
 				}
 			}
 		}
@@ -262,18 +432,19 @@ int libfshfs_catalog_btree_file_get_file_entry_records_from_node(
 
 				goto on_error;
 			}
-			if( libfshfs_catalog_btree_file_get_file_entry_records_from_node(
+			if( libfshfs_catalog_btree_file_get_directory_entries_from_node(
 			     btree_file,
 			     file_io_handle,
 			     sub_node,
 			     parent_identifier,
+			     directory_entries,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve file entries from catalog B-Tree node: %" PRIu32 ".",
+				 "%s: unable to retrieve directory entries from catalog B-Tree node: %" PRIu32 ".",
 				 function,
 				 sub_node_number );
 
@@ -284,6 +455,24 @@ int libfshfs_catalog_btree_file_get_file_entry_records_from_node(
 	return( 1 );
 
 on_error:
+	if( file_record != NULL )
+	{
+		libfshfs_file_record_free(
+		 &file_record,
+		 NULL );
+	}
+	if( directory_record != NULL )
+	{
+		libfshfs_directory_record_free(
+		 &directory_record,
+		 NULL );
+	}
+	if( directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &directory_entry,
+		 NULL );
+	}
 	if( node_key != NULL )
 	{
 		libfshfs_catalog_btree_key_free(
@@ -302,11 +491,9 @@ int libfshfs_catalog_btree_file_read_leaf_node(
      size_t data_size,
      libcerror_error_t **error )
 {
-	libfshfs_directory_record_t *directory_record = NULL;
-	libfshfs_file_record_t *file_record           = NULL;
-	libfshfs_thread_record_t *thread_record       = NULL;
-	static char *function                         = "libfshfs_catalog_btree_file_read_leaf_node";
-	uint16_t record_type                          = 0;
+	libfshfs_thread_record_t *thread_record = NULL;
+	static char *function                   = "libfshfs_catalog_btree_file_read_leaf_node";
+	uint16_t record_type                    = 0;
 
 	if( btree_file == NULL )
 	{
@@ -348,96 +535,6 @@ int libfshfs_catalog_btree_file_read_leaf_node(
 
 	switch( record_type )
 	{
-		case 0x0001:
-		case 0x0100:
-			if( libfshfs_directory_record_initialize(
-			     &directory_record,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create directory record.",
-				 function );
-
-				goto on_error;
-			}
-			if( libfshfs_directory_record_read_data(
-			     directory_record,
-			     data,
-			     data_size,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free directory record.",
-				 function );
-
-				goto on_error;
-			}
-			if( libfshfs_directory_record_free(
-			     &directory_record,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free directory record.",
-				 function );
-
-				goto on_error;
-			}
-			break;
-
-		case 0x0002:
-		case 0x0200:
-			if( libfshfs_file_record_initialize(
-			     &file_record,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create file record.",
-				 function );
-
-				goto on_error;
-			}
-			if( libfshfs_file_record_read_data(
-			     file_record,
-			     data,
-			     data_size,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free file record.",
-				 function );
-
-				goto on_error;
-			}
-			if( libfshfs_file_record_free(
-			     &file_record,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free file record.",
-				 function );
-
-				goto on_error;
-			}
-			break;
-
 		case 0x0003:
 		case 0x0300:
 		case 0x0004:
@@ -517,64 +614,6 @@ on_error:
 		 &thread_record,
 		 NULL );
 	}
-	if( file_record != NULL )
-	{
-		libfshfs_file_record_free(
-		 &file_record,
-		 NULL );
-	}
-	if( directory_record != NULL )
-	{
-		libfshfs_directory_record_free(
-		 &directory_record,
-		 NULL );
-	}
 	return( -1 );
-}
-
-/* Retrieves file and directory (file entry) records for a specific parent identifier from the catalog B-tree file
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_catalog_btree_file_get_file_entry_records(
-     libfshfs_btree_file_t *btree_file,
-     libbfio_handle_t *file_io_handle,
-     uint32_t parent_identifier,
-     libcerror_error_t **error )
-{
-	libfshfs_btree_node_t *root_node = NULL;
-	static char *function            = "libfshfs_catalog_btree_file_get_file_entry_records";
-
-	if( libfshfs_btree_file_get_root_node(
-	     btree_file,
-	     file_io_handle,
-	     &root_node,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve B-tree root node.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_catalog_btree_file_get_file_entry_records_from_node(
-	     btree_file,
-	     file_io_handle,
-	     root_node,
-	     parent_identifier,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve file entries from catalog B-Tree root node.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
 }
 

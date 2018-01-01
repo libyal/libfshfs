@@ -26,30 +26,28 @@
 #include <types.h>
 
 #include "libfshfs_btree_file.h"
+#include "libfshfs_directory_entry.h"
 #include "libfshfs_libbfio.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-int libfshfs_catalog_btree_file_read_node(
+int libfshfs_catalog_btree_file_get_directory_entries(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entries_from_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
-     libcerror_error_t **error );
-
-int libfshfs_catalog_btree_file_read_leaf_node(
-     libfshfs_btree_file_t *btree_file,
-     const uint8_t *data,
-     size_t data_size,
-     libcerror_error_t **error );
-
-int libfshfs_catalog_btree_file_get_file_entry_records(
-     libfshfs_btree_file_t *btree_file,
-     libbfio_handle_t *file_io_handle,
-     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -34,6 +34,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_catalog_btree_key.c libfshfs_catalog_btree_key.h \
 	libfshfs_debug.c libfshfs_debug.h \
 	libfshfs_definitions.h \
+	libfshfs_directory_entry.c libfshfs_directory_entry.h \
 	libfshfs_directory_record.c libfshfs_directory_record.h \
 	libfshfs_error.c libfshfs_error.h \
 	libfshfs_extern.h \
