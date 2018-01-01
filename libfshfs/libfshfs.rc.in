@@ -24,7 +24,7 @@ BEGIN
       VALUE "FileDescription",		"Library to support the Hierarchical File System (HFS) format\0"
       VALUE "FileVersion",		"@VERSION@" "\0"
       VALUE "InternalName",		"libfshfs.dll\0"
-      VALUE "LegalCopyright",		"(C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>\0"
+      VALUE "LegalCopyright",		"(C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>\0"
       VALUE "OriginalFilename",		"libfshfs.dll\0"
       VALUE "ProductName",		"libfshfs\0"
       VALUE "ProductVersion",		"@VERSION@" "\0"

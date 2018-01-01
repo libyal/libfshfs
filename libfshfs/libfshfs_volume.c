@@ -1,7 +1,7 @@
 /*
  * Volume functions
  *
- * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -870,16 +870,17 @@ int libfshfs_volume_open_read(
 
 			goto on_error;
 		}
-		if( libfshfs_catalog_btree_file_test(
+		if( libfshfs_catalog_btree_file_get_file_entry_records(
 		     btree_file,
 		     file_io_handle,
+		     2,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to read catalog B-tree file.",
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve root directory file entry records from catalog B-tree file.",
 			 function );
 
 			goto on_error;
@@ -942,7 +943,20 @@ int libfshfs_volume_get_utf8_label_size(
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
 /* TODO */
-	return( -1 );
+	if( utf8_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+	*utf8_string_size = 0;
+/* TODO */
+	return( 1 );
 }
 
 /* Retrieves the UTF-8 encoded label

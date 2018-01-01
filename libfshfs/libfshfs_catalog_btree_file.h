@@ -1,7 +1,7 @@
 /*
  * The catalog B-tree file functions
  *
- * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -37,6 +37,7 @@ int libfshfs_catalog_btree_file_read_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
      libcerror_error_t **error );
 
 int libfshfs_catalog_btree_file_read_leaf_node(
@@ -45,9 +46,10 @@ int libfshfs_catalog_btree_file_read_leaf_node(
      size_t data_size,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_test(
+int libfshfs_catalog_btree_file_get_file_entry_records(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

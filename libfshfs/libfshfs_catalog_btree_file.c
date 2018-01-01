@@ -1,7 +1,7 @@
 /*
  * The catalog B-tree file functions
  *
- * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -39,13 +39,14 @@
 
 #include "fshfs_catalog_file.h"
 
-/* Reads a catalog B-tree node
+/* Retrieves file and directory (file entry) records for a specific parent identifier from the catalog B-tree node
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_catalog_btree_file_read_node(
+int libfshfs_catalog_btree_file_get_file_entry_records_from_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
      libcerror_error_t **error )
 {
 /* TODO improve handling of sub_node_numbers */
@@ -54,17 +55,14 @@ int libfshfs_catalog_btree_file_read_node(
 	libfshfs_btree_node_t *sub_node        = NULL;
 	libfshfs_catalog_btree_key_t *node_key = NULL;
 	uint8_t *record_data                   = NULL;
-	static char *function                  = "libfshfs_catalog_btree_file_read_node";
+	static char *function                  = "libfshfs_catalog_btree_file_get_file_entry_records_from_node";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint32_t sub_node_number               = 0;
 	uint16_t number_of_records             = 0;
+	uint16_t number_of_sub_nodes           = 0;
 	uint16_t record_index                  = 0;
 	uint8_t node_type                      = 0;
-
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( TODO )
-	size_t trailing_data_size              = 0;
-#endif
 
 	if( btree_file == NULL )
 	{
@@ -164,76 +162,63 @@ int libfshfs_catalog_btree_file_read_node(
 
 			goto on_error;
 		}
-		if( node_type == 0xff )
+		if( node_type == 0x00 )
 		{
-			if( libfshfs_catalog_btree_file_read_leaf_node(
-			     btree_file,
-			     &( record_data[ record_data_offset ] ),
-			     record_data_size,
-			     error ) != 1 )
+			if( node_key->parent_identifier <= parent_identifier )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read catalog B-Tree leaf node.",
-				 function );
+				if( ( record_data_size < 4 )
+				 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: invalid record data size value out of bounds.",
+					 function );
 
-				goto on_error;
-			}
-		}
-		else if( node_type == 0x00 )
-		{
-			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid record data size value out of bounds.",
-				 function );
-
-				goto on_error;
-			}
-			byte_stream_copy_to_uint32_big_endian(
-			 &( record_data[ record_data_offset ] ),
-			 sub_node_number );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: B-tree sub node number\t\t: %" PRIu32 "\n",
-				 function,
+					goto on_error;
+				}
+				byte_stream_copy_to_uint32_big_endian(
+				 &( record_data[ record_data_offset ] ),
 				 sub_node_number );
 
-				libcnotify_printf(
-				 "\n" );
-			}
-#endif
-			record_data_offset += 4;
-
-			sub_node_numbers[ record_index ] = sub_node_number;
-
-/* TODO check for trailing data currently record_data_size is not the upper limit of an individual record */
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( TODO )
-			if( libcnotify_verbose != 0 )
-			{
-				trailing_data_size = record_data_size - record_data_offset;
-
-				if( trailing_data_size > 0 )
+#if defined( HAVE_DEBUG_OUTPUT )
+				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: trailing data:\n",
+					 "%s: B-tree sub node number\t: %" PRIu32 "\n",
+					 function,
+					 sub_node_number );
+
+					libcnotify_printf(
+					 "\n" );
+				}
+#endif
+				record_data_offset += 4;
+
+				sub_node_numbers[ number_of_sub_nodes++ ] = sub_node_number;
+			}
+		}
+		else if( node_type == 0xff )
+		{
+			if( node_key->parent_identifier == parent_identifier )
+			{
+				if( libfshfs_catalog_btree_file_read_leaf_node(
+				     btree_file,
+				     &( record_data[ record_data_offset ] ),
+				     record_data_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read catalog B-Tree leaf node.",
 					 function );
-					libcnotify_print_data(
-					 &( record_data[ record_data_offset ] ),
-					 trailing_data_size,
-					 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+
+					goto on_error;
 				}
 			}
-#endif
 		}
 		if( libfshfs_catalog_btree_key_free(
 		     &node_key,
@@ -255,7 +240,7 @@ int libfshfs_catalog_btree_file_read_node(
 	if( node_type == 0x00 )
 	{
 		for( record_index = 0;
-		     record_index < number_of_records;
+		     record_index < number_of_sub_nodes;
 		     record_index++ )
 		{
 			sub_node_number = sub_node_numbers[ record_index ];
@@ -277,17 +262,18 @@ int libfshfs_catalog_btree_file_read_node(
 
 				goto on_error;
 			}
-			if( libfshfs_catalog_btree_file_read_node(
+			if( libfshfs_catalog_btree_file_get_file_entry_records_from_node(
 			     btree_file,
 			     file_io_handle,
 			     sub_node,
+			     parent_identifier,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read catalog B-Tree sub node: %" PRIu32 ".",
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve file entries from catalog B-Tree node: %" PRIu32 ".",
 				 function,
 				 sub_node_number );
 
@@ -546,13 +532,17 @@ on_error:
 	return( -1 );
 }
 
-int libfshfs_catalog_btree_file_test(
+/* Retrieves file and directory (file entry) records for a specific parent identifier from the catalog B-tree file
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_catalog_btree_file_get_file_entry_records(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
      libcerror_error_t **error )
 {
 	libfshfs_btree_node_t *root_node = NULL;
-	static char *function            = "libfshfs_catalog_btree_file_test";
+	static char *function            = "libfshfs_catalog_btree_file_get_file_entry_records";
 
 	if( libfshfs_btree_file_get_root_node(
 	     btree_file,
@@ -569,17 +559,18 @@ int libfshfs_catalog_btree_file_test(
 
 		return( -1 );
 	}
-	if( libfshfs_catalog_btree_file_read_node(
+	if( libfshfs_catalog_btree_file_get_file_entry_records_from_node(
 	     btree_file,
 	     file_io_handle,
 	     root_node,
+	     parent_identifier,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read catalog B-Tree root node.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve file entries from catalog B-Tree root node.",
 		 function );
 
 		return( -1 );

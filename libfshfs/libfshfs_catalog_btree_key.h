@@ -1,7 +1,7 @@
 /*
  * The catalog B-tree key functions
  *
- * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -42,6 +42,14 @@ struct libfshfs_catalog_btree_key
 	/* Parent identifier
 	 */
 	uint32_t parent_identifier;
+
+	/* Name size
+	 */
+	uint16_t name_size;
+
+	/* Name
+	 */
+	uint8_t *name;
 };
 
 int libfshfs_catalog_btree_key_initialize(
