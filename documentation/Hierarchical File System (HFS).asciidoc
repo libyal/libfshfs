@@ -7,13 +7,13 @@ Analysis of MFS, HFS, HFS+ and HFSX
 :numbered!:
 [abstract]
 == Summary
-The Hierarchical File System (HFS) is mainly used on the Apple Macintosh 
-platform. It has evolved from the Mactintosh File System (MFS). The current 
-variant of HFS is known as HFS+. This document is based on the Apple 
+The Hierarchical File System (HFS) is mainly used on the Apple Macintosh
+platform. It has evolved from the Mactintosh File System (MFS). The current
+variant of HFS is known as HFS+. This document is based on the Apple
 documentation of HFS `[APPLE96]` and HFS+ `[APPLE04]`.
 
-This document is intended as a working document for the HFS and HFS+ 
-specification. Which should allow existing Open Source forensic tooling to be 
+This document is intended as a working document for the HFS and HFS+
+specification. Which should allow existing Open Source forensic tooling to be
 able to process this file system type.
 
 [preface]
@@ -29,11 +29,11 @@ able to process this file system type.
 [preface]
 == License
 ....
-Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>.
-Permission is granted to copy, distribute and/or modify this document under the 
-terms of the GNU Free Documentation License, Version 1.3 or any later version 
-published by the Free Software Foundation; with no Invariant Sections, no 
-Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included 
+Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>.
+Permission is granted to copy, distribute and/or modify this document under the
+terms of the GNU Free Documentation License, Version 1.3 or any later version
+published by the Free Software Foundation; with no Invariant Sections, no
+Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included
 in the section entitled "GNU Free Documentation License".
 ....
 
@@ -50,11 +50,12 @@ Email change
 | 0.0.5 | J.B. Metz | February 2016 | Textual changes.
 | 0.0.6 | J.B. Metz | June 2016 | Textual changes.
 | 0.0.7 | J.B. Metz | December 2017 | Additional information about HFS+ volume attribute flags and textual changes.
+| 0.0.8 | J.B. Metz | January 2017 | Textual changes.
 |===
 
 :numbered:
 == Overview
-The Hierarchical File System (HFS) is mainly used on the Macintosh platform. 
+The Hierarchical File System (HFS) is mainly used on the Macintosh platform.
 The Mactintosh File System (MFS) is the predecessor of HFS.
 
 [cols="1,5",options="header"]
@@ -92,29 +93,29 @@ Unicode strings are stored in UTF-16 big-endian without the byte order mark (BOM
 |===
 
 === HFSX
-HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow 
-additional features that are incompatible with HFS+. An HFSX volume cannot be 
+HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow
+additional features that are incompatible with HFS+. An HFSX volume cannot be
 wrapped in an HFS volume.
 
-Currently the only such feature defined is case-sensitive filenames. An HFSX 
-volume may be either case-sensitive or case-insensitive. Case sensitivity (or 
-lack thereof) is global to the volume; the setting applies to all file and 
+Currently the only such feature defined is case-sensitive filenames. An HFSX
+volume may be either case-sensitive or case-insensitive. Case sensitivity (or
+lack thereof) is global to the volume; the setting applies to all file and
 directory names on the volume.
 
 The Apple iPhone OS (iOS) e.g. uses the HFSX.
 
 == [[hfs_timestamp]]HFS timestamp
-In HFS+ date and time values are stored in an unsigned 32-bit integer 
-containing the number of seconds since January 1, 1904 at 00:00:00 (midnight) 
-UTC (GMT). This is slightly different from HFS where the date and time value 
+In HFS+ date and time values are stored in an unsigned 32-bit integer
+containing the number of seconds since January 1, 1904 at 00:00:00 (midnight)
+UTC (GMT). This is slightly different from HFS where the date and time value
 are stored using the local time. This document will refer to both forms as
 HFS timestamp.
 
 The maximum representable date is February 6, 2040 at 06:28:15 UTC (GMT).
 
-The date values do not account for leap seconds. They do include a leap day in 
-every year that is evenly divisible by four. This is sufficient given that the 
-range of representable dates does not contain 1900 or 2100, neither of which 
+The date values do not account for leap seconds. They do include a leap day in
+every year that is evenly divisible by four. This is sufficient given that the
+range of representable dates does not contain 1900 or 2100, neither of which
 have leap days.
 
 == [[btree_file]]B-tree file
@@ -126,7 +127,7 @@ Both HFS and HFS+ use B-trees files. A B-tree file consists of fixed sized nodes
 * leaf nodes
 
 [NOTE]
-The node size is determined when the B-tree is created. In an HFS+ B-tree the 
+The node size is determined when the B-tree is created. In an HFS+ B-tree the
 node size is determined by the header node.
 
 [cols="1,1,1",options="header"]
@@ -165,8 +166,8 @@ of three main parts:
 * the node record offsets
 
 ==== The B-tree node descriptor
-The node descriptor (BTNodeDescriptor) contains information about the node, 
-like the forward and backward links to other nodes. 
+The node descriptor (BTNodeDescriptor) contains information about the node,
+like the forward and backward links to other nodes.
 
 The B-tree node descriptor is 14 bytes of size and consists of:
 
@@ -200,7 +201,7 @@ Should contain 0-byte values
 |===
 
 ==== The B-tree node record
-The B-tree node record contains either data or a reference to some other node 
+The B-tree node record contains either data or a reference to some other node
 in the tree.
 
 [yellow-background]*TODO: reword*
@@ -208,15 +209,15 @@ in the tree.
 * In an HFS B-tree the keys in an index node occupy a fixed amount of space: the maximum key size for that B-tree.
 * In an HFS+ B-tree the keys in an index node are variable in size.
 
-Each B-tree node record contains a key, which is used to search through the 
-B-tree to locate the information. This also referred to as the search key. The 
+Each B-tree node record contains a key, which is used to search through the
+B-tree to locate the information. This also referred to as the search key. The
 B-tree node record is variable of size and consists of:
 
 * key data
 * record data
 
 ==== The B-tree record offsets
-The B-tree record offsets are an array of 16-bit integers relative from the 
+The B-tree record offsets are an array of 16-bit integers relative from the
 start of the B-tree node record. The first record offset is found at node
 `size - 2`, e.g. `512 - 2 = 510`, the second 2 bytes before that, e.g. 508,
 etc. An additional record offset is added at the end to signify the start
@@ -226,7 +227,7 @@ of the free space.
 The record offsets are not necessarily stored in order.
 
 === The B-tree header node
-The B-tree header node is stored in the first node of the B-tree file and 
+The B-tree header node is stored in the first node of the B-tree file and
 contains 3 records:
 
 * the B-tree header record;
@@ -238,13 +239,13 @@ The records in the B-tree header node do not have keys.
 
 [yellow-background]*TODO: reword*
 ....
-For both the extents overflow and the catalog file the location of the header 
-node is stored in the first 2 bytes (first record) of the corresponding extent 
+For both the extents overflow and the catalog file the location of the header
+node is stored in the first 2 bytes (first record) of the corresponding extent
 data records of the MDB. The location is stored as the allocation block index.
 ....
 
 ==== The B-tree header record
-The B-tree header record (BTHeaderRec) contains information about the beginning 
+The B-tree header record (BTHeaderRec) contains information about the beginning
 of the tree, as well as the size of the tree.
 
 The B-tree header record is 106 bytes of size and consists of:
@@ -276,7 +277,7 @@ See section: <<btree_header_record_attributes,Attributes>>
 | 42 | ( 16 x 4 ) = 64 | | [yellow-background]*Unknown (Reserved)*
 |===
 
-The root node is the start of the B-tree structure; usually the root node is 
+The root node is the start of the B-tree structure; usually the root node is
 first index node, but it might be a leaf node if there are no index nodes.
 
 The first node in the file is referenced by node number 0.
@@ -324,105 +325,105 @@ This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Exten
 |===
 
 ==== The B-tree map record
-The B-tree map record contains of a bitmap that indicates which nodes in the 
-B-tree file are used and which are not. The bits are interpreted in exactly the 
-same way as the bits in the volume bitmap: if a bit in the map record is set, 
+The B-tree map record contains of a bitmap that indicates which nodes in the
+B-tree file are used and which are not. The bits are interpreted in exactly the
+same way as the bits in the volume bitmap: if a bit in the map record is set,
 then the corresponding node in the B-tree file is being used.
 
-The bitmap is 256 bytes of size and can therefore contain information about 
-2048 nodes at most. If more nodes are needed a map node is used to store 
+The bitmap is 256 bytes of size and can therefore contain information about
+2048 nodes at most. If more nodes are needed a map node is used to store
 additional mapping information.
 
 === The map node
-If a B-tree file contains more than 2048 nodes, which are enough for about 8000 
+If a B-tree file contains more than 2048 nodes, which are enough for about 8000
 files, a map node is used to store additional node-mapping information.
 
-The next tree node value in the B-tree node descriptor of the header node is 
+The next tree node value in the B-tree node descriptor of the header node is
 used to refer to the first map node.
 
-A map node consists of a B-tree node descriptor and one B-tree map record. The 
-map record is 494 bytes of size ( 512 - ( 14 + 2 ) ) and can therefore contain 
+A map node consists of a B-tree node descriptor and one B-tree map record. The
+map record is 494 bytes of size ( 512 - ( 14 + 2 ) ) and can therefore contain
 mapping information for 3952 nodes.
 
-If a B-tree contains more than 6000 nodes (enough for about 25000 files) a 
-second map node is needed. The next tree node value in the B-tree node 
-descriptor of the first map node is used to refer to the second. If more map 
-nodes are required, each additional map node is similarly linked to the 
+If a B-tree contains more than 6000 nodes (enough for about 25000 files) a
+second map node is needed. The next tree node value in the B-tree node
+descriptor of the first map node is used to refer to the second. If more map
+nodes are required, each additional map node is similarly linked to the
 previous one.
 
 === The index node
-The index node contains records that point to other nodes in the B-tree 
-hierarchy. These nodes are used to navigate through the tree structure. The 
-first index node in a B-tree is called the root node, of which the node number 
+The index node contains records that point to other nodes in the B-tree
+hierarchy. These nodes are used to navigate through the tree structure. The
+first index node in a B-tree is called the root node, of which the node number
 is found in the header node.
 
-The records stored in an index node are called pointer records. A pointer 
-record consists of a key followed by the node number of the corresponding node. 
+The records stored in an index node are called pointer records. A pointer
+record consists of a key followed by the node number of the corresponding node.
 The size of the key varies according to the type of B-tree file.
 
 * In a catalog file, the search key is a combination of the file or directory name and the parent identifier of that file or directory.
 * In an extents overflow file, the search key is a combination of that file's type, its file identifier and the index of the first allocation block in the extent.
 
-The immediate descendants of an index node are called the children of the index 
-node. An index node can have from 1 to 15 children, depending on the size of 
+The immediate descendants of an index node are called the children of the index
+node. An index node can have from 1 to 15 children, depending on the size of
 the pointer records that the index node contains.
 
 [yellow-background]*TODO size of the node number is 32-bit*
 
 === The leaf node
-The bottom level of a B-tree structure is occupied exclusively by leaf nodes. 
-The leaf nodes contain data records. The structure of the leaf node data 
+The bottom level of a B-tree structure is occupied exclusively by leaf nodes.
+The leaf nodes contain data records. The structure of the leaf node data
 records varies according to the type of B-tree.
 
 * In an extents overflow file, the leaf node data records consist of a key and an extent record.
 * In a catalog file, the leaf node data records can be any one of four kinds of records.
 
 == The HFS volume
-The information on all block-formatted volumes is organized in logical blocks. 
-These logical blocks are referred to as allocation blocks and contain a number 
+The information on all block-formatted volumes is organized in logical blocks.
+These logical blocks are referred to as allocation blocks and contain a number
 of bytes of standard information (512 bytes on Macintosh-initialized volumes).
 
-The allocation block size is a volume parameter whose value is set when the 
-volume is initialized. To promote file contiguity and avoid fragmentation, 
-space is allocated to files in groups of allocation blocks, or clumps. The 
-clump size is always a multiple of the allocation block size, and it's the 
+The allocation block size is a volume parameter whose value is set when the
+volume is initialized. To promote file contiguity and avoid fragmentation,
+space is allocated to files in groups of allocation blocks, or clumps. The
+clump size is always a multiple of the allocation block size, and it's the
 minimum number of bytes to allocate.
 
-Each HFS volume begins with two boot blocks. The boot blocks on the startup 
-volume are read at system startup time and contain booting instructions and 
-other important information such as the name of the System file and the Finder. 
+Each HFS volume begins with two boot blocks. The boot blocks on the startup
+volume are read at system startup time and contain booting instructions and
+other important information such as the name of the System file and the Finder.
 Following the boot blocks are two additional structures:
 
 * the master directory block, which contains information about the volume, such as the date and time of the volume's creation and the number of files on the volume;
 * the volume bitmap, which contains a record of which blocks in the volume are currently in use.
 
-All the areas on a volume are of fixed size and location, except for the 
-catalog file and the extents overflow file. These two files can appear anywhere 
-between the volume bitmap and the alternate master directory block (MDB). They 
-can appear in any order and are not necessarily contiguous. The catalog and 
+All the areas on a volume are of fixed size and location, except for the
+catalog file and the extents overflow file. These two files can appear anywhere
+between the volume bitmap and the alternate master directory block (MDB). They
+can appear in any order and are not necessarily contiguous. The catalog and
 extents overflow files are both organized as B-trees.
 
 The last block (512 bytes) were used during Apple's CPU manufacturing process.
 
 === Boot blocks
-The first two logical blocks on every Macintosh volume are boot blocks. These 
-blocks contain system startup information: instructions and information 
-necessary to start up (or "boot") a Macintosh computer. This information 
-consists of certain configurable system parameters (such as the capacity of the 
-event queue, the number of open files allowed, and so forth) and is contained 
-in a boot block header. The system startup information also includes actual 
-machine-language instructions that could be used to load and execute the System 
-file. Usually these instructions follow immediately after the boot block 
-header. Generally, however, the boot code stored on disk is ignored in favor of 
+The first two logical blocks on every Macintosh volume are boot blocks. These
+blocks contain system startup information: instructions and information
+necessary to start up (or "boot") a Macintosh computer. This information
+consists of certain configurable system parameters (such as the capacity of the
+event queue, the number of open files allowed, and so forth) and is contained
+in a boot block header. The system startup information also includes actual
+machine-language instructions that could be used to load and execute the System
+file. Usually these instructions follow immediately after the boot block
+header. Generally, however, the boot code stored on disk is ignored in favor of
 boot code stored in a resource in the System file.
 
-Note that there are two boot block header formats. The current format includes 
-two fields at the end that are not contained in the older format. These fields 
-allow the Operating System to size the System heap relative to the amount of 
-available physical RAM. A boot block header that conforms to the older format 
-sets the size of the System heap absolutely, using values specified in the 
-header itself. You can determine whether a boot block header uses the current 
-or the older format by inspecting a bit in the high-order byte of the version 
+Note that there are two boot block header formats. The current format includes
+two fields at the end that are not contained in the older format. These fields
+allow the Operating System to size the System heap relative to the amount of
+available physical RAM. A boot block header that conforms to the older format
+sets the size of the System heap absolutely, using values specified in the
+header itself. You can determine whether a boot block header uses the current
+or the older format by inspecting a bit in the high-order byte of the version
 value.
 
 The boot block header is 141 bytes of size and consists of:
@@ -452,11 +453,11 @@ ASCII string typically "Clipboard"
 | 115 | 2 | | The (initial) number of allocated file control blocks (FCBs)
 | 117 | 2 | | The maximum number of event queue elements +
 This number determines the maximum number of events that the Event Manager can store at any one time. +
-Usually this field contains the value 20. 
+Usually this field contains the value 20.
 | 119 | 4 | | The system heap size on 128K Mac +
-The size of the System heap on a Macintosh computer having 128 KiB of RAM. 
+The size of the System heap on a Macintosh computer having 128 KiB of RAM.
 | 123 | 4 | | The system heap size on 256K Mac +
-The size of the System heap on a Macintosh computer having 256 KiB of RAM. 
+The size of the System heap on a Macintosh computer having 256 KiB of RAM.
 | 127 | 4 | | The system heap size on all machines +
 The size of the System heap on a Macintosh computer having 512 KiB or more of RAM.
 | 131 | 2 | | Filler +
@@ -466,7 +467,7 @@ The size of the System heap on a Macintosh computer having 512 KiB or more of RA
 |===
 
 ==== Boot code entry point
-The boot code entry point contains machine-language instructions that translate 
+The boot code entry point contains machine-language instructions that translate
 to:
 ....
 BRA.S *+ 0x90
@@ -479,11 +480,11 @@ BRA.S *+ 0x88
 
 This instruction jumps to the main boot code following the boot block header.
 
-This field is ignored, however, if bit 6 is clear in the high-order byte of the 
+This field is ignored, however, if bit 6 is clear in the high-order byte of the
 boot block version number or if the low-order byte contains 0x0d.
 
 ==== Boot blocks version number
-The boot blocks version number consists of a flag byte (high order) and a 
+The boot blocks version number consists of a flag byte (high order) and a
 version byte (low order).
 
 [yellow-background]*TODO determine MSB and LSB*
@@ -499,8 +500,8 @@ The bits in the flag byte have the following meaning:
 | 7 | Newer boot block header used
 |===
 
-If bit 7 of the flag byte is clear, then bits 5 and 6 are ignored and the 
-version number is found in the version byte. 
+If bit 7 of the flag byte is clear, then bits 5 and 6 are ignored and the
+version number is found in the version byte.
 
 If the version byte is:
 
@@ -516,8 +517,8 @@ If bit 7 of the flag byte is set
 ** is set the System heap is extended by the value in the additional system heap space plus the fraction of available RAM for the system heap.
 
 === Master directory block (MDB)
-The master directory block (MDB), also known as the volume information block 
-(VIB), contains information about the data in the volume. This information is 
+The master directory block (MDB), also known as the volume information block
+(VIB), contains information about the data in the volume. This information is
 written into the MDB when the volume is initialized.
 
 The MDB is 161 bytes of size and consists of:
@@ -531,7 +532,7 @@ For Mactintosh File System (MFS) volumes the signature contains "\xd2\xd7".
 Contains an HFS timestamp
 | 6 | 4 | | Volume modification date and time +
 Contains an HFS timestamp +
-This is not necessarily the data and time when the volume was last flushed. 
+This is not necessarily the data and time when the volume was last flushed.
 | 10 | 2 | | Volume attributes
 | 12 | 2 | | Number of files in the root directory
 | 14 | 2 | | The volume bitmap first volume block index +
@@ -542,7 +543,7 @@ The ([yellow-background]*allocation or volume block*) index of the allocation bl
 Unsigned 16-bit integer. +
 A volume can contain at most 65535 allocation blocks.
 | 20 | 4 | | The byte size of the allocation blocks in the volume +
-This value must always be a multitude of 512 bytes. 
+This value must always be a multitude of 512 bytes.
 | 24 | 4 | | Default clump size
 | 28 | 2 | | Allocation block first volume block index
 | 30 | 4 | | The next unused catalog node identifier +
@@ -587,63 +588,63 @@ The volume attributes uses the following bit flags:
 |===
 
 ==== Alternate MDB
-A copy of the MDB is maintained in the Alternate MDB. This copy is updated when 
-the extents overflow or the catalog file grows larger. The Alternate MBD is 
+A copy of the MDB is maintained in the Alternate MDB. This copy is updated when
+the extents overflow or the catalog file grows larger. The Alternate MBD is
 intended for use solely by disk utilities.
 
 === Volume bitmaps
-The volume bitmap is used to keep track of block allocation. The bitmap 
-contains one bit for each allocation block in the volume. If a bit is set, the 
-corresponding allocation block is currently in use by some file. If a bit is 
-clear, the corresponding allocation block is not currently in use by any file 
+The volume bitmap is used to keep track of block allocation. The bitmap
+contains one bit for each allocation block in the volume. If a bit is set, the
+corresponding allocation block is currently in use by some file. If a bit is
+clear, the corresponding allocation block is not currently in use by any file
 and is available for allocation.
 
-The volume bitmap does not indicate which files occupy which blocks. The actual 
+The volume bitmap does not indicate which files occupy which blocks. The actual
 file-mapping information in maintained in two locations:
 
 * in each file's catalog entry;
 * in the extents overflow file.
 
-The size of the volume bitmap depends on the number of allocation blocks in the 
-volume. The number of allocation blocks depends both on the number of physical 
-blocks in the volume and the size of the volume's allocation blocks (the number 
-of physical blocks per allocation block). The size of the volume bitmap is 
-rounded up so that the volume bitmap occupies an integral number of physical 
+The size of the volume bitmap depends on the number of allocation blocks in the
+volume. The number of allocation blocks depends both on the number of physical
+blocks in the volume and the size of the volume's allocation blocks (the number
+of physical blocks per allocation block). The size of the volume bitmap is
+rounded up so that the volume bitmap occupies an integral number of physical
 blocks.
 
-A floppy disk that can hold 800 KiB of data and has an allocation block size of 
+A floppy disk that can hold 800 KiB of data and has an allocation block size of
 one physical block (512 bytes) has a volume bitmap size of:
 ....
 ( ( 800 x 1024 ) / ( 512 x 8 ) ) = 1600 bits (200 bytes).
 ....
 
-A volume containing 32 MiB of data and having an allocation block size of one 
+A volume containing 32 MiB of data and having an allocation block size of one
 physical block has a volume bitmap size of:
 ....
-( ( 32 x 1024 x 1024 ) / ( 512 x 8 ) ) = 65536 bits (8192 bytes). 
+( ( 32 x 1024 x 1024 ) / ( 512 x 8 ) ) = 65536 bits (8192 bytes).
 ....
 
-Because the number of allocation blocks in the volume in the MDB consists of a 
-16-bit value no more that 65535 allocation blocks can be addressed. The volume 
-bitmap is never larger than 8192 bytes (or 16 physical blocks). For volumes 
-containing more than 32 MB of space, the allocation block size must be 
+Because the number of allocation blocks in the volume in the MDB consists of a
+16-bit value no more that 65535 allocation blocks can be addressed. The volume
+bitmap is never larger than 8192 bytes (or 16 physical blocks). For volumes
+containing more than 32 MB of space, the allocation block size must be
 increased.
 
-A volume containing 40 MiB of space must have an allocation block size that is 
+A volume containing 40 MiB of space must have an allocation block size that is
 at least 2 physical blocks (2 x 512 bytes).
 
-A volume containing 80 MiB of space must have an allocation block size that is 
+A volume containing 80 MiB of space must have an allocation block size that is
 at least 3 physical blocks (3 x 512 bytes).
 
 == The HFS+/HFSX volume
-In HFS+ the boot blocks have been removed, therefore the first two blocks are 
+In HFS+ the boot blocks have been removed, therefore the first two blocks are
 reserved (unused).
 
 === Volume header
-The volume header (HFSPlusVolumeHeader) replaces the master directory block 
+The volume header (HFSPlusVolumeHeader) replaces the master directory block
 (MDB). The volume header starts at offset 1024 of the volume.
 
-The allocation block containing the first 1536 bytes (reserved space plus 
+The allocation block containing the first 1536 bytes (reserved space plus
 volume header) are marked as used in the allocation file.
 
 The volume header is 512 bytes of size and consists of:
@@ -722,12 +723,12 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 |===
 
 ==== Total number of allocation blocks
-For a disk whose size is an even multiple of the allocation block size, all 
-areas on the disk are included in an allocation block, including the volume 
-header and alternate volume header. For a disk whose size is not an even 
-multiple of the allocation block size, only the allocation blocks that will fit 
-entirely on the disk are counted here. The remaining space at the end of the 
-disk is not used by the volume format (except for storing the alternate volume 
+For a disk whose size is an even multiple of the allocation block size, all
+areas on the disk are included in an allocation block, including the volume
+header and alternate volume header. For a disk whose size is not an even
+multiple of the allocation block size, only the allocation blocks that will fit
+entirely on the disk are counted here. The remaining space at the end of the
+disk is not used by the volume format (except for storing the alternate volume
 header, as described above).
 
 ==== [[volume_attribute_flags]]Volume attribute flags
@@ -768,19 +769,19 @@ kHFSMDBAttributesMask = 0x8380
 ....
 
 ==== Alternate volume header
-A copy of the volume header, the alternate volume header, is stored starting 
-1024 bytes before the end of the volume. The alternate volume header is 
+A copy of the volume header, the alternate volume header, is stored starting
+1024 bytes before the end of the volume. The alternate volume header is
 intended for use solely by disk repair utilities.
 
-In order to accommodate the alternate volume header and the reserved space 
-following it, the last allocation block is also marked as used in the 
+In order to accommodate the alternate volume header and the reserved space
+following it, the last allocation block is also marked as used in the
 allocation file.
 
-The alternate volume header is always stored at offset 1024 bytes from the end 
-of the volume. If the disk size is not an even multiple of the allocation block 
-size, this area may lie beyond the last allocation block. However, the last 
-allocation block (or two allocation blocks for a volume formatted with 512-byte 
-allocation blocks) is still reserved even if the alternate volume header is not 
+The alternate volume header is always stored at offset 1024 bytes from the end
+of the volume. If the disk size is not an even multiple of the allocation block
+size, this area may lie beyond the last allocation block. However, the last
+allocation block (or two allocation blocks for a volume formatted with 512-byte
+allocation blocks) is still reserved even if the alternate volume header is not
 stored there.
 
 === Metadata zone
@@ -818,10 +819,10 @@ When performing normal file allocations, the allocator will skip over the metada
 ....
 
 === [[text_encoding]]Text encoding
-HFS+ includes features specifically designed to help Mac OS handle the 
+HFS+ includes features specifically designed to help Mac OS handle the
 conversion between Mac OS-encoded strings and Unicode.
 
-The first feature is the text encoding value of the file and folder catalog 
+The first feature is the text encoding value of the file and folder catalog
 records. The value refers to a specific encoding type.
 
 [cols="1,1,1",options="header"]
@@ -868,22 +869,22 @@ records. The value refers to a specific encoding type.
 | MacUkrainian | 152 | 48
 |===
 
-The second use of text encodings in HFS+ is the encodings bitmap value of the 
-volume header. For each encoding used by a catalog node on the volume, the 
+The second use of text encodings in HFS+ is the encodings bitmap value of the
+volume header. For each encoding used by a catalog node on the volume, the
 corresponding bit in the encodings bitmap field must be set.
 
-The text encoding value is used as the number of the bit to set in encodings 
-bitmap to indicate that the encoding is used on the volume. However, encodings 
-bitmap is only 64 bits long, and thus the text encoding values for MacFarsi and 
+The text encoding value is used as the number of the bit to set in encodings
+bitmap to indicate that the encoding is used on the volume. However, encodings
+bitmap is only 64 bits long, and thus the text encoding values for MacFarsi and
 MacUkrainian cannot be used as bit numbers. Instead, another bit number is used.
 
-It is acceptable for a bit in this bitmap to be set even though no names on the 
-volume use that encoding. This means that when an implementation deletes or 
-renames an object, it does not have to clear the encoding bit if that was the 
+It is acceptable for a bit in this bitmap to be set even though no names on the
+volume use that encoding. This means that when an implementation deletes or
+renames an object, it does not have to clear the encoding bit if that was the
 last name to use the given encoding.
 
 === [[permissions]]Permissions
-For each file and folder HFS+ maintains basic access permissions record for 
+For each file and folder HFS+ maintains basic access permissions record for
 each file and folder. These are similar to basic Unix file permissions.
 
 The permissions record is 16 bytes of size and consists of:
@@ -905,16 +906,16 @@ Consist of either: hard link inode number, hard link count, raw device number
 |===
 
 ==== Owner and group identifier
-The Mac OS X user ID of the owner of the file or folder. Mac OS X versions 
-prior to 10.3 treats user ID 99 as if it was the user ID of the user currently 
-logged in to the console. If no user is logged in to the console, user ID 99 is 
-treated as user ID 0 (root). Mac OS X version 10.3 treats user ID 99 as if it 
-was the user ID of the process making the call (in effect, making it owned by 
-everyone simultaneously). These substitutions happen at run-time. The actual 
+The Mac OS X user ID of the owner of the file or folder. Mac OS X versions
+prior to 10.3 treats user ID 99 as if it was the user ID of the user currently
+logged in to the console. If no user is logged in to the console, user ID 99 is
+treated as user ID 0 (root). Mac OS X version 10.3 treats user ID 99 as if it
+was the user ID of the process making the call (in effect, making it owned by
+everyone simultaneously). These substitutions happen at run-time. The actual
 user ID on disk is not changed.
 
-The Mac OS X group ID of the group associated with the file or folder. Mac OS X 
-typically maps group ID 99 to the group named "unknown." There is no run-time 
+The Mac OS X group ID of the group associated with the file or folder. Mac OS X
+typically maps group ID 99 to the group named "unknown." There is no run-time
 substitution of group IDs in Mac OS X.
 
 ==== [[administration_flags]]Administration flags
@@ -939,7 +940,7 @@ substitution of group IDs in Mac OS X.
 |===
 
 ==== File mode
-HFS+ uses the BSD file type and mode bits. Note that the constants from the 
+HFS+ uses the BSD file type and mode bits. Note that the constants from the
 header shown below are in octal (base eight), not hexadecimal.
 
 [cols="1,1,5",options="header"]
@@ -977,7 +978,7 @@ header shown below are in octal (base eight), not hexadecimal.
     #define S_IFSOCK 0140000    /* socket */
     #define S_IFWHT  0160000    /* whiteout */
 
-    In some versions of Unix, the sticky bit, S_ISTXT, is used to indicate that an executable file's code should remain in memory after the executable finishes; this can help performance if the same executable is used again soon. Mac OS X does not use this optimization. If the sticky bit is set for a directory, then Mac OS X restricts movement, deletion, and renaming of files in that directory. Files may be removed or renamed only if the user has write access to the directory; and is the owner of the file or the directory, or is the super-user. 
+    In some versions of Unix, the sticky bit, S_ISTXT, is used to indicate that an executable file's code should remain in memory after the executable finishes; this can help performance if the same executable is used again soon. Mac OS X does not use this optimization. If the sticky bit is set for a directory, then Mac OS X restricts movement, deletion, and renaming of files in that directory. Files may be removed or renamed only if the user has write access to the directory; and is the owner of the file or the directory, or is the super-user.
 special
     This field is used only for certain special kinds of files. For directories, and most files, this field is unused and reserved. When used, this field is used as one of the following:
 iNodeNum
@@ -1077,11 +1078,11 @@ The pathname stored in a symbolic link is assumed to be a POSIX pathname, as use
 == The HFS wrapper
 An HFS+ volume can be wrapped in an HFS volume.
 
-Mac OS does not use the startup file to boot from HFS+ disks. Instead, it uses 
+Mac OS does not use the startup file to boot from HFS+ disks. Instead, it uses
 the HFS wrapper, as described later in this document.
 
-When an HFS+ volume is embedded within an HFS wrapper the space used by the 
-HFS+ volume is marked as part of the bad block file within the HFS wrapper 
+When an HFS+ volume is embedded within an HFS wrapper the space used by the
+HFS+ volume is marked as part of the bad block file within the HFS wrapper
 itself.
 
 === Notes
@@ -1148,17 +1149,17 @@ In addition, the root folder is set as the blessed folder by placing its folder 
 ....
 
 == The catalog file
-The catalog file is a B-tree file used to maintain information about the 
+The catalog file is a B-tree file used to maintain information about the
 hierarchy of files and directories of a volume.
 
-The allocation block number of the first file extent of the catalog file (the 
-header node) is stored in the master directory block (HFS) or the volume header 
+The allocation block number of the first file extent of the catalog file (the
+header node) is stored in the master directory block (HFS) or the volume header
 (HFS+). The B-tree structure is described in section: <<btree_file,B-tree file>>.
 
-Each node in the catalog file is assigned a unique catalog node identifier 
-(CNID). The CNID is used for both directory and file identifiers. For any given 
-file or directory the parent identifier is the CNID of the parent directory. 
-The first 16 CNIDs are reserved for use by Apple and include the following 
+Each node in the catalog file is assigned a unique catalog node identifier
+(CNID). The CNID is used for both directory and file identifiers. For any given
+file or directory the parent identifier is the CNID of the parent directory.
+The first 16 CNIDs are reserved for use by Apple and include the following
 standard assignments:
 
 [cols="1,1,5",options="header"]
@@ -1173,7 +1174,7 @@ standard assignments:
 | 6 | kHFSAllocationFileID | The allocation file (HFS+)
 | 7 | kHFSStartupFileID | The startup file (HFS+)
 | 8 | kHFSAttributesFileID | The attributes file (HFS+)
-| | | 
+| | |
 | 14 | kHFSRepairCatalogFileID | Used temporarily by fsck_hfs when rebuilding the catalog file.
 | 15 | kHFSBogusExtentFileID | The bogus extent file +
 Used temporarily during exchange files operations.
@@ -1210,7 +1211,7 @@ A deleted record is indicated by a key data size of 0.
 
 [yellow-background]*Maximum name string length 32 characters?*
 
-The catalog key slightly differs when it is used in an index or leaf node. If 
+The catalog key slightly differs when it is used in an index or leaf node. If
 the key is used:
 
 * in a pointer record (an index node), the catalog node name always occupies the full 32 bytes and the key (byte) size always contains the value 37 (0x25).
@@ -1244,7 +1245,7 @@ A catalog leaf node can contain four different types of records:
 * a directory thread record, which provides a link between a directory and its parent directory.
 * a file thread record, which provides a link between a file and its parent directory.
 
-The thread records are used to find the name and directory identifier of the 
+The thread records are used to find the name and directory identifier of the
 parent of a given file or directory.
 
 Each catalog data record consists of:
@@ -1298,7 +1299,7 @@ See section: <<catalog_file_data_record_types,Record types>>
 
 ==== The catalog directory record
 ===== The HFS catalog directory record
-The HFS catalog directory record (kHFSFolderRecord) is 70 bytes of size and 
+The HFS catalog directory record (kHFSFolderRecord) is 70 bytes of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1325,7 +1326,7 @@ Array of 32-bit integer values
 |===
 
 ===== The HFS+ catalog directory record
-The HFS+ catalog directory record (HFSPlusCatalogFolder) is 88 bytes of size 
+The HFS+ catalog directory record (HFSPlusCatalogFolder) is 88 bytes of size
 and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1360,7 +1361,7 @@ See section: <<text_encoding,Text encoding>>
 
 ==== The catalog file record
 ===== The HFS catalog file record
-The HFS catalog file record (kHFSFileRecord) is 102 bytes of size and consists 
+The HFS catalog file record (kHFSFileRecord) is 102 bytes of size and consists
 of:
 
 [cols="1,1,1,5",options="header"]
@@ -1399,7 +1400,7 @@ See section: <<hfs_extent_data,The HFS extent data>>
 |===
 
 ===== The HFS+ catalog file record
-The HFS+ catalog file record (kHFSPlusFileRecord) is 248 bytes of size and 
+The HFS+ catalog file record (kHFSPlusFileRecord) is 248 bytes of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1448,11 +1449,11 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 |===
 
 ==== The catalog thread record
-The file thread record is similar to the directory thread record except that it 
+The file thread record is similar to the directory thread record except that it
 refers to a file, instead of a directory.
 
 ===== The HFS catalog file thread record
-The HFS catalog thread record (HFSCatalogThread) is variable of size and 
+The HFS catalog thread record (HFSCatalogThread) is variable of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1470,7 +1471,7 @@ Contains the name of the associated file or directory
 |===
 
 ===== The HFS+ catalog file thread record
-The HFS+ catalog thread record (HFSPlusCatalogThread) is variable of size and 
+The HFS+ catalog thread record (HFSPlusCatalogThread) is variable of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1491,7 +1492,7 @@ Contains the name of the associated file or directory
 [yellow-background]*Maximum name string length 255 characters?*
 
 === File system hierarchy
-File and directory (folder) records have a search key with a non-empty name 
+File and directory (folder) records have a search key with a non-empty name
 string. In thread records the name string in the search key is empty. E.g. to
 list the file entries in a directory:
 
@@ -1509,7 +1510,7 @@ named forks. These named forks are not stored in the catalog file but in
 the attributes file.
 
 ==== [[hfs_plus_fork_descriptor_structure]]HFS+ fork descriptor structure
-HFS+ maintains information about file contents using the HFS+ fork descriptor 
+HFS+ maintains information about file contents using the HFS+ fork descriptor
 structure (HFSPlusForkData).
 
 The fork descriptor structure is 80 bytes of size and consists of:
@@ -1534,26 +1535,26 @@ For fork descriptor structures:
 * in a catalog record, this value was intended to store a per-fork clump size to override the default clump size in the volume header. However, Apple implementations prior to Mac OS X version 10.3 ignored this field. As of Mac OS X version 10.3, this field is used to keep track of the number of blocks actually read from the fork.
 
 == The extents overflow file
-In HFS and HFS+ extents (contiguous ranges of allocation blocks) are used to 
-track which blocks belong to a file. The first three (HFS) and eight (HFS+) are 
-stored in the catelog file. Additional extents are stored in the extents 
+In HFS and HFS+ extents (contiguous ranges of allocation blocks) are used to
+track which blocks belong to a file. The first three (HFS) and eight (HFS+) are
+stored in the catalog file. Additional extents are stored in the extents
 overflow file.
 
-The structure of an extents overflow file is relatively simple compared to that 
-of a catalog file. The function of the extents overflow file is to store those 
-file extents that are not contained in the master directory block (MDB) or 
+The structure of an extents overflow file is relatively simple compared to that
+of a catalog file. The function of the extents overflow file is to store those
+file extents that are not contained in the master directory block (MDB) or
 volume header and the catalog file.
 
 === The extent key (record)
-[yellow-background]*Disks initialized using the enhanced Disk Initialization 
-Manager introduced in system software version might contain extent records for 
-some blocks that do not belong to any actual file in the file system. These 
-extent records have been marked as a bad block (CNID 5). See the chapter "Disk 
+[yellow-background]*Disks initialized using the enhanced Disk Initialization
+Manager introduced in system software version might contain extent records for
+some blocks that do not belong to any actual file in the file system. These
+extent records have been marked as a bad block (CNID 5). See the chapter "Disk
 Initialization Manager" in this book for details on bad block sparing.*
 
-The key has been selected so that the extent records for a particular fork are 
-grouped together in the B-tree, right next to all the extent records for the 
-other fork of the file. The fork offset of the preceding extent record is 
+The key has been selected so that the extent records for a particular fork are
+grouped together in the B-tree, right next to all the extent records for the
+other fork of the file. The fork offset of the preceding extent record is
 needed to determine the key of the next extent record.
 
 In an extents overflow the search key consists of:
@@ -1581,8 +1582,8 @@ Contains a CNID
 The first allocation block index described by the corresponding extent record
 |===
 
-[yellow-background]*The first three extents in a fork are held in its catalog 
-file record. So the number of extent records for a fork is ((number of extents 
+[yellow-background]*The first three extents in a fork are held in its catalog
+file record. So the number of extent records for a fork is ((number of extents
 - 3 + 2) / 4).*
 
 ==== The HFS+ extent key (record)
@@ -1605,21 +1606,21 @@ Contains a CNID
 The first allocation block index described by the corresponding extent record
 |===
 
-The first eight extents in a fork are held in its catalog file record. So the 
+The first eight extents in a fork are held in its catalog file record. So the
 number of extent records for a fork is:
 ....
 ((number of extents - 8 + 7) / 8)
 ....
 
 === The extent (data) record
-An extent is a contiguous range of allocation blocks that have been allocated 
-to some file. An extent is represented by an extent descriptor. 
+An extent is a contiguous range of allocation blocks that have been allocated
+to some file. An extent is represented by an extent descriptor.
 
-An unused extent descriptor in an extent record would have both the start block 
+An unused extent descriptor in an extent record would have both the start block
 and number of blocks set to zero.
 
 ==== [[hfs_extent_data]]The HFS extent data
-The HFS extent data consist of an array of three HFS extent descriptors. The 
+The HFS extent data consist of an array of three HFS extent descriptors. The
 size of the HFS extent data is:
 ....
 3 x 4 = 12
@@ -1635,13 +1636,13 @@ The HFS extent descriptor is 4 bytes of size and consists of:
 |===
 
 ==== [[hfs_plus_extents_array]]The HFS+ extents array
-The HFS+ extents array (HFSPlusExtentRecord) consist of an array of eight HFS+ 
+The HFS+ extents array (HFSPlusExtentRecord) consist of an array of eight HFS+
 extent descriptors. The size of the HFS+ extent data is:
 ....
 8 x 8 = 64
 ....
 
-The HFS+ extent descriptor (HFSPlusExtentDescriptor) is 8 bytes of size and 
+The HFS+ extent descriptor (HFSPlusExtentDescriptor) is 8 bytes of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1652,46 +1653,46 @@ consists of:
 |===
 
 === Bad Block File
-The extent overflow file is also used to hold information about the bad blocks; 
-refered to as the bad block file. The bad block file is used to mark areas on 
-the disk as bad, unable to be used for storing data; typically to map out bad 
+The extent overflow file is also used to hold information about the bad blocks;
+refered to as the bad block file. The bad block file is used to mark areas on
+the disk as bad, unable to be used for storing data; typically to map out bad
 sectors on the storage medium.
 
-Typically, allocation blocks are larger than sectors. If a single sector is 
-found to be bad, the entire allocation block is unusable. The bad block file is 
-sometimes used to mark blocks as unusable when they are not bad, e.g. in the 
+Typically, allocation blocks are larger than sectors. If a single sector is
+found to be bad, the entire allocation block is unusable. The bad block file is
+sometimes used to mark blocks as unusable when they are not bad, e.g. in the
 HFS wrapper.
 
-Bad block extent records are always assumed to reference the data fork (fork 
+Bad block extent records are always assumed to reference the data fork (fork
 type of 0).
 
 == The HFS+ allocation (bitmap) file
-HFS+ uses an allocation file to keep track of whether each allocation block in 
-a volume is currently allocated to some file system structure or not. The 
-contents of the allocation file is a bitmap. The bitmap contains one bit for 
+HFS+ uses an allocation file to keep track of whether each allocation block in
+a volume is currently allocated to some file system structure or not. The
+contents of the allocation file is a bitmap. The bitmap contains one bit for
 each allocation block in the volume.
 
 * If a bit is set, the corresponding allocation block is currently in use by some file system structure.
 * If a bit is clear, the corresponding allocation block is not currently in use, and is available for allocation.
 
-The size of the allocation file depends on the number of allocation blocks in 
-the volume, which in turn depends both on the size of the disk and on the size 
-of the volume's allocation blocks. For example, a volume on a 1 GB disk and 
-having an allocation block size of 4 KB needs an allocation file size of 256 
-Kbits (32 KB, or 8 allocation blocks). Since the allocation file itself is 
-allocated using allocation blocks, it always occupies an integral number of 
+The size of the allocation file depends on the number of allocation blocks in
+the volume, which in turn depends both on the size of the disk and on the size
+of the volume's allocation blocks. For example, a volume on a 1 GB disk and
+having an allocation block size of 4 KB needs an allocation file size of 256
+Kbits (32 KB, or 8 allocation blocks). Since the allocation file itself is
+allocated using allocation blocks, it always occupies an integral number of
 allocation blocks (its size may be rounded up).
 
-The allocation file may be larger than the minimum number of bits required for 
+The allocation file may be larger than the minimum number of bits required for
 the given volume size. Any unused bits in the bitmap must be set to zero.
 
-[yellow-background]*Each byte in the allocation file holds the state of eight 
-allocation blocks. The byte at offset X into the file contains the allocation 
-state of allocations blocks (X * 8) through (X * 8 + 7). Within each byte, the 
-most significant bit holds information about the allocation block with the 
-lowest number, the least significant bit holds information about the allocation 
-block with the highest number. Listing 1 shows how you would test whether an 
-allocation block is in use, assuming that you've read the entire allocation 
+[yellow-background]*Each byte in the allocation file holds the state of eight
+allocation blocks. The byte at offset X into the file contains the allocation
+state of allocations blocks (X * 8) through (X * 8 + 7). Within each byte, the
+most significant bit holds information about the allocation block with the
+lowest number, the least significant bit holds information about the allocation
+block with the highest number. Listing 1 shows how you would test whether an
+allocation block is in use, assuming that you've read the entire allocation
 file into memory.*
 
 ....
@@ -1708,26 +1709,26 @@ Listing 1 Determining whether an allocation block is in use.
 ....
 
 == The HFS+ attributes file
-The HFS+ attributes file is a B-tree file. The location of the attributes file 
-can be found in the volume header. The HFS+ attributes file is intended for 
+The HFS+ attributes file is a B-tree file. The location of the attributes file
+can be found in the volume header. The HFS+ attributes file is intended for
 named forks, but is also used to store extended attributes.
 
 === Attributes file index keys
-[yellow-background]*An attributes files has a variable length key. The 
-structure of the keys in the attribute B-tree has not been finalized and is 
+[yellow-background]*An attributes files has a variable length key. The
+structure of the keys in the attribute B-tree has not been finalized and is
 subject to change.*
 
 === The attributes file data
 The attributes file defines two types of attributes:
 
-1. Fork data attributes, which are used for attributes whose data is large. The 
-attribute's data is stored in extents on the volume and the attribute merely 
+1. Fork data attributes, which are used for attributes whose data is large. The
+attribute's data is stored in extents on the volume and the attribute merely
 contains a reference to those extents.
-2. Extension attributes, which are used to augment fork descriptor structure, 
+2. Extension attributes, which are used to augment fork descriptor structure,
 allowing a forks to have more than eight extents.
 
 ==== The HFS+ attributes file data record header
-Each attributes file record starts with a type value, which describes the type 
+Each attributes file record starts with a type value, which describes the type
 of attribute data record.
 
 The HFS+ attributes file data record header is 4 bytes of size and consists of:
@@ -1764,13 +1765,13 @@ See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
 
 == The HFS+ startup file
-The startup file is a special file intended to hold information needed when 
-booting a system that does not have built-in (ROM) support for HFS+. A boot 
-loader can find the startup file without full knowledge of the HFS+ volume 
-format using the first eight extents of the startup file located in the volume 
+The startup file is a special file intended to hold information needed when
+booting a system that does not have built-in (ROM) support for HFS+. A boot
+loader can find the startup file without full knowledge of the HFS+ volume
+format using the first eight extents of the startup file located in the volume
 header.
 
-Format wise it is valid for the startup file to contain more than eight 
+Format wise it is valid for the startup file to contain more than eight
 extents, but in doing so the purpose of the startup file is defeated.
 
 == The HFS+ Hot file
@@ -1891,12 +1892,12 @@ The clumpSize field of the fork descriptor structure is used to record the amoun
 ....
 
 == The HFS+ journal
-An HFS+ volume may have an optional journal to speed recovery when mounting a 
-volume that was not unmounted safely. The purpose of the journal is to ensure 
-that when a group of related changes are being made, that either all of those 
-changes are actually made, or none of them are made. The journal makes it quick 
-and easy to restore the volume structures to a consistent state, without having 
-to scan all of the structures. The journal is used only for the volume 
+An HFS+ volume may have an optional journal to speed recovery when mounting a
+volume that was not unmounted safely. The purpose of the journal is to ensure
+that when a group of related changes are being made, that either all of those
+changes are actually made, or none of them are made. The journal makes it quick
+and easy to restore the volume structures to a consistent state, without having
+to scan all of the structures. The journal is used only for the volume
 structures and metadata; it does not protect the contents of a fork.
 
 The volume header specifies if journalling is activated.
@@ -1907,20 +1908,20 @@ The journal data stuctures consist of:
 * a journal header, describes which part of the journal buffer is active and contains transactions waiting to be committed;
 * a journal buffer, a cyclic buffer to hold the file system meta data transactions.
 
-On HFS+ volumes, the journal information block is stored as a file. The name of 
-that file is ".journal_info_block" and it is stored in the volume's root 
+On HFS+ volumes, the journal information block is stored as a file. The name of
+that file is ".journal_info_block" and it is stored in the volume's root
 directory.
 
-The journal header and journal buffer are stored together in a different file 
-named ".journal", also in the volume's root directory. Each of these files are 
+The journal header and journal buffer are stored together in a different file
+named ".journal", also in the volume's root directory. Each of these files are
 contiguous on disk, they occupy exactly one extent.
 
-The volume header contains the extent of the journal information block file. 
+The volume header contains the extent of the journal information block file.
 The journal information block contains the location of the journal file.
 
 === The journal information block
-The journal information block describes where the journal header and journal 
-buffer are stored. The journal information block is stored at the start of the 
+The journal information block describes where the journal header and journal
+buffer are stored. The journal information block is stored at the start of the
 allocation block referred to by the volume header.
 
 The HFS+ journal information block is 44 bytes of size and consists of:
@@ -1957,8 +1958,8 @@ The journal header is invalid (there are no valid transactions in the journal) a
 |===
 
 === The journal header
-The journal begins with a journal header, whose main purpose is to describe the 
-location of transactions in the journal buffer. The journal header is stored 
+The journal begins with a journal header, whose main purpose is to describe the
+location of transactions in the journal buffer. The journal header is stored
 using the journal_header data type.
 
 The HFS+ journal header is 44 bytes of size and consists of:
@@ -1984,49 +1985,49 @@ Typically the size of one sector
 |===
 
 ==== First and next transaction offset
-The first transaction offset contains the offset in bytes from the start of the 
+The first transaction offset contains the offset in bytes from the start of the
 journal header to the start of the first (oldest) transaction.
 
-The next transaction offset contains the offset in bytes from the start of the 
-journal header to the end of the last (newest) transaction. Note that this 
-field may be less than the start field, indicating that the transactions wrap 
-around the end of the journal's circular buffer. If end equals start, then the 
+The next transaction offset contains the offset in bytes from the start of the
+journal header to the end of the last (newest) transaction. Note that this
+field may be less than the start field, indicating that the transactions wrap
+around the end of the journal's circular buffer. If end equals start, then the
 journal is empty, and there are no transactions that need to be replayed.
 
 === Journal transactions
-A single transaction is stored in the journal as several blocks. These blocks 
-include both the data to be written and the location where that data is to be 
-written. This is represented on storage medium by a block list header, which 
-describes the number and sizes of the blocks, immediately followed by the 
+A single transaction is stored in the journal as several blocks. These blocks
+include both the data to be written and the location where that data is to be
+written. This is represented on storage medium by a block list header, which
+describes the number and sizes of the blocks, immediately followed by the
 contents of those blocks.
 
-Since block list headers are of limited size, a single transaction may consist 
-of several block list headers and their associated block contents. If the next 
-value in the first block information structure is non-zero, then the next block 
+Since block list headers are of limited size, a single transaction may consist
+of several block list headers and their associated block contents. If the next
+value in the first block information structure is non-zero, then the next block
 list header is a continuation of the same transaction.
 
-The journal buffer is treated as a circular buffer. When reading or writing the 
-journal buffer, the I/O operation must stop at the end of the journal buffer 
-and resume (wrap around) immediately following the journal header. Block list 
-headers or the contents of blocks may wrap around in this way. Only a portion 
-of the journal buffer is active at any given time; this portion is indicated by 
-the start and end fields of the journal header. The part of the journal buffer 
+The journal buffer is treated as a circular buffer. When reading or writing the
+journal buffer, the I/O operation must stop at the end of the journal buffer
+and resume (wrap around) immediately following the journal header. Block list
+headers or the contents of blocks may wrap around in this way. Only a portion
+of the journal buffer is active at any given time; this portion is indicated by
+the start and end fields of the journal header. The part of the journal buffer
 that is not active contains no meaningful data, and must be ignored.
 
-To prevent ambiguity when start equals end, the journal is never allowed to be 
-perfectly full (all of the journal buffer used by block lists and blocks). If 
-the journal was perfectly full, and start was not equal to jhdr_size, then end 
-would be equal to start. You would then be unable to differentiate between an 
+To prevent ambiguity when start equals end, the journal is never allowed to be
+perfectly full (all of the journal buffer used by block lists and blocks). If
+the journal was perfectly full, and start was not equal to jhdr_size, then end
+would be equal to start. You would then be unable to differentiate between an
 empty and full journal.
 
-When the journal is not empty (contains transactions), it must be replayed to 
-be sure the volume is consistent. That is, the data from each of the 
+When the journal is not empty (contains transactions), it must be replayed to
+be sure the volume is consistent. That is, the data from each of the
 transactions must be written to the correct blocks on disk.
 
 === The journal block list header
-The block list header describes a list of blocks included in a transaction. A 
-transaction may include several block lists if it modifies more blocks than can 
-be represented in a single block list. The block list header is stored in a 
+The block list header describes a list of blocks included in a transaction. A
+transaction may include several block lists if it modifies more blocks than can
+be represented in a single block list. The block list header is stored in a
 structure of type block_list_header.
 
 The HFS+ journal block list header is 16 bytes of size and consists of:
@@ -2048,9 +2049,9 @@ used for alignment
 |===
 
 [NOTE]
-The number of journal blocks includes the first journal block, The first 
-journal block is reserved to be used when multiple blocks need to be chained, 
-therefore the number of journal blocks actually containing data is minus one (- 
+The number of journal blocks includes the first journal block, The first
+journal block is reserved to be used when multiple blocks need to be chained,
+therefore the number of journal blocks actually containing data is minus one (-
 1).
 
 === Journal block information
@@ -2071,9 +2072,9 @@ When stored a value of 0 indicates the end of the journal block list.
 |===
 
 === [[journal_checksums]]Journal checksums
-The journal header and block list header both contain checksum values. The 
-checksums are verified as part of a basic consistency check of these journal 
-data structures. To verify the checksum, temporarily set the checksum field to 
+The journal header and block list header both contain checksum values. The
+checksums are verified as part of a basic consistency check of these journal
+data structures. To verify the checksum, temporarily set the checksum field to
 zero and then call the hfs_plus_calculate_checksum routine as specified below.
 
 ....
@@ -2095,12 +2096,12 @@ uint32_t hfs_plus_calculate_checksum(
 ....
 
 == Application specific data structures
-Both HFS and HFS+ contain application specific data structures. These 
+Both HFS and HFS+ contain application specific data structures. These
 structures are defined in this chapter.
 
 === [[finder_information]]Finder information
-The finder information in the master directory block (MDB) and volume header 
-consists of an array of 32-bit value. This array contains information used by 
+The finder information in the master directory block (MDB) and volume header
+consists of an array of 32-bit value. This array contains information used by
 the Mac OS Finder and the system software boot process.
 
 [cols="1,5",options="header"]
@@ -2180,7 +2181,7 @@ If set to {0, 0}, the Finder will place the item automatically
 |===
 
 ==== [[hfs_plus_extended_file_information]]HFS+ extended file information
-The HFS+ extended file information (ExtendedFileInfo) is 16 bytes of size and 
+The HFS+ extended file information (ExtendedFileInfo) is 16 bytes of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2336,7 +2337,7 @@ struct Rect {
 };
 typedef struct Rect   Rect;
 
-/* OSType is a 32-bit value made by packing four 1-byte characters 
+/* OSType is a 32-bit value made by packing four 1-byte characters
    together. */
 typedef UInt32        FourCharCode;
 typedef FourCharCode  OSType;
@@ -2345,40 +2346,40 @@ typedef FourCharCode  OSType;
 == Notes
 === MDB and Volume header
 ==== Start of next allocation search
-The nextAllocation field is used by Mac OS as a hint for where to start 
-searching for free allocation blocks when allocating space for a file. It 
+The nextAllocation field is used by Mac OS as a hint for where to start
+searching for free allocation blocks when allocating space for a file. It
 contains the allocation block number where the search should begin.
 
-Traditional Mac OS implementations typically set it to the first allocation 
-block of the extent most recently allocated. It is not set to the allocation 
-block immediately following the most recently allocated extent because of the 
-likelihood of that extent being shortened when the file is closed. Since a 
+Traditional Mac OS implementations typically set it to the first allocation
+block of the extent most recently allocated. It is not set to the allocation
+block immediately following the most recently allocated extent because of the
+likelihood of that extent being shortened when the file is closed. Since a
 whole clump may have been allocated but not actually used.
 
 http://developer.apple.com/technotes/tn/tn1150.html#AllocationFile
 
 ==== The default clump size for resource/data forks
-The default clump size for resource/data forks, in bytes. This is a hint to the 
-implementation as to the size by which a growing file should be extended. All 
-Apple implementations to date ignore the rsrcClumpSize and use dataClumpSize 
+The default clump size for resource/data forks, in bytes. This is a hint to the
+implementation as to the size by which a growing file should be extended. All
+Apple implementations to date ignore the rsrcClumpSize and use dataClumpSize
 for both data and resource forks.
 
 === File Manager
 ==== Volume Control Blocks
-Thereafter, whenever the volume is mounted, the File Manager reads the 
-information in the MDB and copies some of that information into a volume 
-control block (VCB). A VCB is a private data structure maintained in memory by 
-the File Manager (in the VCB queue). The structure of a VCB is described in 
+Thereafter, whenever the volume is mounted, the File Manager reads the
+information in the MDB and copies some of that information into a volume
+control block (VCB). A VCB is a private data structure maintained in memory by
+the File Manager (in the VCB queue). The structure of a VCB is described in
 "Volume Control Blocks," later in this chapter.
 
 ==== B-tree record key search
-When the File Manager needs to find a data record, it begins searching at the 
-root node (which is an index node, unless the tree has only one level), moving 
-from one record to the next until it finds the record with the highest key that 
-is less than or equal to the search key. The pointer of that record leads to 
-another node, one level down in the tree. This process continues until the File 
-Manager reaches a leaf node; then the records of that leaf node are examined 
-until the desired key is found. At that point, the desired data has also been 
+When the File Manager needs to find a data record, it begins searching at the
+root node (which is an index node, unless the tree has only one level), moving
+from one record to the next until it finds the record with the highest key that
+is less than or equal to the search key. The pointer of that record leads to
+another node, one level down in the tree. This process continues until the File
+Manager reaches a leaf node; then the records of that leaf node are examined
+until the desired key is found. At that point, the desired data has also been
 found.
 
 === Finder
@@ -2418,377 +2419,377 @@ http://sourceforge.net/projects/linux-hfsplus
 [appendix]
 == GNU Free Documentation License
 Version 1.3, 3 November 2008
-Copyright © 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc. 
+Copyright © 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
 <http://fsf.org/>
 
-Everyone is permitted to copy and distribute verbatim copies of this license 
+Everyone is permitted to copy and distribute verbatim copies of this license
 document, but changing it is not allowed.
 
 === 0. PREAMBLE
-The purpose of this License is to make a manual, textbook, or other functional 
-and useful document "free" in the sense of freedom: to assure everyone the 
-effective freedom to copy and redistribute it, with or without modifying it, 
-either commercially or noncommercially. Secondarily, this License preserves for 
-the author and publisher a way to get credit for their work, while not being 
+The purpose of this License is to make a manual, textbook, or other functional
+and useful document "free" in the sense of freedom: to assure everyone the
+effective freedom to copy and redistribute it, with or without modifying it,
+either commercially or noncommercially. Secondarily, this License preserves for
+the author and publisher a way to get credit for their work, while not being
 considered responsible for modifications made by others.
 
-This License is a kind of "copyleft", which means that derivative works of the 
-document must themselves be free in the same sense. It complements the GNU 
+This License is a kind of "copyleft", which means that derivative works of the
+document must themselves be free in the same sense. It complements the GNU
 General Public License, which is a copyleft license designed for free software.
 
-We have designed this License in order to use it for manuals for free software, 
-because free software needs free documentation: a free program should come with 
-manuals providing the same freedoms that the software does. But this License is 
-not limited to software manuals; it can be used for any textual work, 
-regardless of subject matter or whether it is published as a printed book. We 
-recommend this License principally for works whose purpose is instruction or 
+We have designed this License in order to use it for manuals for free software,
+because free software needs free documentation: a free program should come with
+manuals providing the same freedoms that the software does. But this License is
+not limited to software manuals; it can be used for any textual work,
+regardless of subject matter or whether it is published as a printed book. We
+recommend this License principally for works whose purpose is instruction or
 reference.
 
 === 1. APPLICABILITY AND DEFINITIONS
-This License applies to any manual or other work, in any medium, that contains 
-a notice placed by the copyright holder saying it can be distributed under the 
-terms of this License. Such a notice grants a world-wide, royalty-free license, 
-unlimited in duration, to use that work under the conditions stated herein. The 
-"Document", below, refers to any such manual or work. Any member of the public 
-is a licensee, and is addressed as "you". You accept the license if you copy, 
+This License applies to any manual or other work, in any medium, that contains
+a notice placed by the copyright holder saying it can be distributed under the
+terms of this License. Such a notice grants a world-wide, royalty-free license,
+unlimited in duration, to use that work under the conditions stated herein. The
+"Document", below, refers to any such manual or work. Any member of the public
+is a licensee, and is addressed as "you". You accept the license if you copy,
 modify or distribute the work in a way requiring permission under copyright law.
 
-A "Modified Version" of the Document means any work containing the Document or 
-a portion of it, either copied verbatim, or with modifications and/or 
+A "Modified Version" of the Document means any work containing the Document or
+a portion of it, either copied verbatim, or with modifications and/or
 translated into another language.
 
-A "Secondary Section" is a named appendix or a front-matter section of the 
-Document that deals exclusively with the relationship of the publishers or 
-authors of the Document to the Document's overall subject (or to related 
-matters) and contains nothing that could fall directly within that overall 
-subject. (Thus, if the Document is in part a textbook of mathematics, a 
-Secondary Section may not explain any mathematics.) The relationship could be a 
-matter of historical connection with the subject or with related matters, or of 
+A "Secondary Section" is a named appendix or a front-matter section of the
+Document that deals exclusively with the relationship of the publishers or
+authors of the Document to the Document's overall subject (or to related
+matters) and contains nothing that could fall directly within that overall
+subject. (Thus, if the Document is in part a textbook of mathematics, a
+Secondary Section may not explain any mathematics.) The relationship could be a
+matter of historical connection with the subject or with related matters, or of
 legal, commercial, philosophical, ethical or political position regarding them.
 
-The "Invariant Sections" are certain Secondary Sections whose titles are 
-designated, as being those of Invariant Sections, in the notice that says that 
-the Document is released under this License. If a section does not fit the 
-above definition of Secondary then it is not allowed to be designated as 
-Invariant. The Document may contain zero Invariant Sections. If the Document 
+The "Invariant Sections" are certain Secondary Sections whose titles are
+designated, as being those of Invariant Sections, in the notice that says that
+the Document is released under this License. If a section does not fit the
+above definition of Secondary then it is not allowed to be designated as
+Invariant. The Document may contain zero Invariant Sections. If the Document
 does not identify any Invariant Sections then there are none.
 
-The "Cover Texts" are certain short passages of text that are listed, as 
-Front-Cover Texts or Back-Cover Texts, in the notice that says that the 
-Document is released under this License. A Front-Cover Text may be at most 5 
+The "Cover Texts" are certain short passages of text that are listed, as
+Front-Cover Texts or Back-Cover Texts, in the notice that says that the
+Document is released under this License. A Front-Cover Text may be at most 5
 words, and a Back-Cover Text may be at most 25 words.
 
-A "Transparent" copy of the Document means a machine-readable copy, represented 
-in a format whose specification is available to the general public, that is 
-suitable for revising the document straightforwardly with generic text editors 
-or (for images composed of pixels) generic paint programs or (for drawings) 
-some widely available drawing editor, and that is suitable for input to text 
-formatters or for automatic translation to a variety of formats suitable for 
-input to text formatters. A copy made in an otherwise Transparent file format 
-whose markup, or absence of markup, has been arranged to thwart or discourage 
-subsequent modification by readers is not Transparent. An image format is not 
-Transparent if used for any substantial amount of text. A copy that is not 
+A "Transparent" copy of the Document means a machine-readable copy, represented
+in a format whose specification is available to the general public, that is
+suitable for revising the document straightforwardly with generic text editors
+or (for images composed of pixels) generic paint programs or (for drawings)
+some widely available drawing editor, and that is suitable for input to text
+formatters or for automatic translation to a variety of formats suitable for
+input to text formatters. A copy made in an otherwise Transparent file format
+whose markup, or absence of markup, has been arranged to thwart or discourage
+subsequent modification by readers is not Transparent. An image format is not
+Transparent if used for any substantial amount of text. A copy that is not
 "Transparent" is called "Opaque".
 
-Examples of suitable formats for Transparent copies include plain ASCII without 
-markup, Texinfo input format, LaTeX input format, SGML or XML using a publicly 
-available DTD, and standard-conforming simple HTML, PostScript or PDF designed 
-for human modification. Examples of transparent image formats include PNG, XCF 
-and JPG. Opaque formats include proprietary formats that can be read and edited 
-only by proprietary word processors, SGML or XML for which the DTD and/or 
-processing tools are not generally available, and the machine-generated HTML, 
+Examples of suitable formats for Transparent copies include plain ASCII without
+markup, Texinfo input format, LaTeX input format, SGML or XML using a publicly
+available DTD, and standard-conforming simple HTML, PostScript or PDF designed
+for human modification. Examples of transparent image formats include PNG, XCF
+and JPG. Opaque formats include proprietary formats that can be read and edited
+only by proprietary word processors, SGML or XML for which the DTD and/or
+processing tools are not generally available, and the machine-generated HTML,
 PostScript or PDF produced by some word processors for output purposes only.
 
-The "Title Page" means, for a printed book, the title page itself, plus such 
-following pages as are needed to hold, legibly, the material this License 
-requires to appear in the title page. For works in formats which do not have 
-any title page as such, "Title Page" means the text near the most prominent 
+The "Title Page" means, for a printed book, the title page itself, plus such
+following pages as are needed to hold, legibly, the material this License
+requires to appear in the title page. For works in formats which do not have
+any title page as such, "Title Page" means the text near the most prominent
 appearance of the work's title, preceding the beginning of the body of the text.
 
-The "publisher" means any person or entity that distributes copies of the 
+The "publisher" means any person or entity that distributes copies of the
 Document to the public.
 
-A section "Entitled XYZ" means a named subunit of the Document whose title 
-either is precisely XYZ or contains XYZ in parentheses following text that 
-translates XYZ in another language. (Here XYZ stands for a specific section 
-name mentioned below, such as "Acknowledgements", "Dedications", 
-"Endorsements", or "History".) To "Preserve the Title" of such a section when 
-you modify the Document means that it remains a section "Entitled XYZ" 
+A section "Entitled XYZ" means a named subunit of the Document whose title
+either is precisely XYZ or contains XYZ in parentheses following text that
+translates XYZ in another language. (Here XYZ stands for a specific section
+name mentioned below, such as "Acknowledgements", "Dedications",
+"Endorsements", or "History".) To "Preserve the Title" of such a section when
+you modify the Document means that it remains a section "Entitled XYZ"
 according to this definition.
 
-The Document may include Warranty Disclaimers next to the notice which states 
-that this License applies to the Document. These Warranty Disclaimers are 
-considered to be included by reference in this License, but only as regards 
-disclaiming warranties: any other implication that these Warranty Disclaimers 
+The Document may include Warranty Disclaimers next to the notice which states
+that this License applies to the Document. These Warranty Disclaimers are
+considered to be included by reference in this License, but only as regards
+disclaiming warranties: any other implication that these Warranty Disclaimers
 may have is void and has no effect on the meaning of this License.
 
 === 2. VERBATIM COPYING
-You may copy and distribute the Document in any medium, either commercially or 
-noncommercially, provided that this License, the copyright notices, and the 
-license notice saying this License applies to the Document are reproduced in 
-all copies, and that you add no other conditions whatsoever to those of this 
-License. You may not use technical measures to obstruct or control the reading 
-or further copying of the copies you make or distribute. However, you may 
-accept compensation in exchange for copies. If you distribute a large enough 
+You may copy and distribute the Document in any medium, either commercially or
+noncommercially, provided that this License, the copyright notices, and the
+license notice saying this License applies to the Document are reproduced in
+all copies, and that you add no other conditions whatsoever to those of this
+License. You may not use technical measures to obstruct or control the reading
+or further copying of the copies you make or distribute. However, you may
+accept compensation in exchange for copies. If you distribute a large enough
 number of copies you must also follow the conditions in section 3.
 
-You may also lend copies, under the same conditions stated above, and you may 
+You may also lend copies, under the same conditions stated above, and you may
 publicly display copies.
 
 === 3. COPYING IN QUANTITY
-If you publish printed copies (or copies in media that commonly have printed 
-covers) of the Document, numbering more than 100, and the Document's license 
-notice requires Cover Texts, you must enclose the copies in covers that carry, 
-clearly and legibly, all these Cover Texts: Front-Cover Texts on the front 
-cover, and Back-Cover Texts on the back cover. Both covers must also clearly 
-and legibly identify you as the publisher of these copies. The front cover must 
-present the full title with all words of the title equally prominent and 
-visible. You may add other material on the covers in addition. Copying with 
-changes limited to the covers, as long as they preserve the title of the 
-Document and satisfy these conditions, can be treated as verbatim copying in 
+If you publish printed copies (or copies in media that commonly have printed
+covers) of the Document, numbering more than 100, and the Document's license
+notice requires Cover Texts, you must enclose the copies in covers that carry,
+clearly and legibly, all these Cover Texts: Front-Cover Texts on the front
+cover, and Back-Cover Texts on the back cover. Both covers must also clearly
+and legibly identify you as the publisher of these copies. The front cover must
+present the full title with all words of the title equally prominent and
+visible. You may add other material on the covers in addition. Copying with
+changes limited to the covers, as long as they preserve the title of the
+Document and satisfy these conditions, can be treated as verbatim copying in
 other respects.
 
-If the required texts for either cover are too voluminous to fit legibly, you 
-should put the first ones listed (as many as fit reasonably) on the actual 
+If the required texts for either cover are too voluminous to fit legibly, you
+should put the first ones listed (as many as fit reasonably) on the actual
 cover, and continue the rest onto adjacent pages.
 
-If you publish or distribute Opaque copies of the Document numbering more than 
-100, you must either include a machine-readable Transparent copy along with 
-each Opaque copy, or state in or with each Opaque copy a computer-network 
-location from which the general network-using public has access to download 
-using public-standard network protocols a complete Transparent copy of the 
-Document, free of added material. If you use the latter option, you must take 
-reasonably prudent steps, when you begin distribution of Opaque copies in 
-quantity, to ensure that this Transparent copy will remain thus accessible at 
-the stated location until at least one year after the last time you distribute 
-an Opaque copy (directly or through your agents or retailers) of that edition 
+If you publish or distribute Opaque copies of the Document numbering more than
+100, you must either include a machine-readable Transparent copy along with
+each Opaque copy, or state in or with each Opaque copy a computer-network
+location from which the general network-using public has access to download
+using public-standard network protocols a complete Transparent copy of the
+Document, free of added material. If you use the latter option, you must take
+reasonably prudent steps, when you begin distribution of Opaque copies in
+quantity, to ensure that this Transparent copy will remain thus accessible at
+the stated location until at least one year after the last time you distribute
+an Opaque copy (directly or through your agents or retailers) of that edition
 to the public.
 
-It is requested, but not required, that you contact the authors of the Document 
-well before redistributing any large number of copies, to give them a chance to 
+It is requested, but not required, that you contact the authors of the Document
+well before redistributing any large number of copies, to give them a chance to
 provide you with an updated version of the Document.
 
 === 4. MODIFICATIONS
-You may copy and distribute a Modified Version of the Document under the 
-conditions of sections 2 and 3 above, provided that you release the Modified 
-Version under precisely this License, with the Modified Version filling the 
-role of the Document, thus licensing distribution and modification of the 
-Modified Version to whoever possesses a copy of it. In addition, you must do 
+You may copy and distribute a Modified Version of the Document under the
+conditions of sections 2 and 3 above, provided that you release the Modified
+Version under precisely this License, with the Modified Version filling the
+role of the Document, thus licensing distribution and modification of the
+Modified Version to whoever possesses a copy of it. In addition, you must do
 these things in the Modified Version:
 
-A. Use in the Title Page (and on the covers, if any) a title distinct from that 
-of the Document, and from those of previous versions (which should, if there 
-were any, be listed in the History section of the Document). You may use the 
-same title as a previous version if the original publisher of that version 
-gives permission. 
+A. Use in the Title Page (and on the covers, if any) a title distinct from that
+of the Document, and from those of previous versions (which should, if there
+were any, be listed in the History section of the Document). You may use the
+same title as a previous version if the original publisher of that version
+gives permission.
 
-B. List on the Title Page, as authors, one or more persons or entities 
-responsible for authorship of the modifications in the Modified Version, 
-together with at least five of the principal authors of the Document (all of 
-its principal authors, if it has fewer than five), unless they release you from 
-this requirement. 
+B. List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified Version,
+together with at least five of the principal authors of the Document (all of
+its principal authors, if it has fewer than five), unless they release you from
+this requirement.
 
-C. State on the Title page the name of the publisher of the Modified Version, 
-as the publisher. 
+C. State on the Title page the name of the publisher of the Modified Version,
+as the publisher.
 
-D. Preserve all the copyright notices of the Document. 
+D. Preserve all the copyright notices of the Document.
 
-E. Add an appropriate copyright notice for your modifications adjacent to the 
-other copyright notices. 
+E. Add an appropriate copyright notice for your modifications adjacent to the
+other copyright notices.
 
-F. Include, immediately after the copyright notices, a license notice giving 
-the public permission to use the Modified Version under the terms of this 
-License, in the form shown in the Addendum below. 
+F. Include, immediately after the copyright notices, a license notice giving
+the public permission to use the Modified Version under the terms of this
+License, in the form shown in the Addendum below.
 
-G. Preserve in that license notice the full lists of Invariant Sections and 
-required Cover Texts given in the Document's license notice. 
+G. Preserve in that license notice the full lists of Invariant Sections and
+required Cover Texts given in the Document's license notice.
 
-H. Include an unaltered copy of this License. 
+H. Include an unaltered copy of this License.
 
-I. Preserve the section Entitled "History", Preserve its Title, and add to it 
-an item stating at least the title, year, new authors, and publisher of the 
-Modified Version as given on the Title Page. If there is no section Entitled 
-"History" in the Document, create one stating the title, year, authors, and 
-publisher of the Document as given on its Title Page, then add an item 
-describing the Modified Version as stated in the previous sentence. 
+I. Preserve the section Entitled "History", Preserve its Title, and add to it
+an item stating at least the title, year, new authors, and publisher of the
+Modified Version as given on the Title Page. If there is no section Entitled
+"History" in the Document, create one stating the title, year, authors, and
+publisher of the Document as given on its Title Page, then add an item
+describing the Modified Version as stated in the previous sentence.
 
-J. Preserve the network location, if any, given in the Document for public 
-access to a Transparent copy of the Document, and likewise the network 
-locations given in the Document for previous versions it was based on. These 
-may be placed in the "History" section. You may omit a network location for a 
-work that was published at least four years before the Document itself, or if 
-the original publisher of the version it refers to gives permission. 
+J. Preserve the network location, if any, given in the Document for public
+access to a Transparent copy of the Document, and likewise the network
+locations given in the Document for previous versions it was based on. These
+may be placed in the "History" section. You may omit a network location for a
+work that was published at least four years before the Document itself, or if
+the original publisher of the version it refers to gives permission.
 
-K. For any section Entitled "Acknowledgements" or "Dedications", Preserve the 
-Title of the section, and preserve in the section all the substance and tone of 
-each of the contributor acknowledgements and/or dedications given therein. 
+K. For any section Entitled "Acknowledgements" or "Dedications", Preserve the
+Title of the section, and preserve in the section all the substance and tone of
+each of the contributor acknowledgements and/or dedications given therein.
 
-L. Preserve all the Invariant Sections of the Document, unaltered in their text 
-and in their titles. Section numbers or the equivalent are not considered part 
-of the section titles. 
+L. Preserve all the Invariant Sections of the Document, unaltered in their text
+and in their titles. Section numbers or the equivalent are not considered part
+of the section titles.
 
-M. Delete any section Entitled "Endorsements". Such a section may not be 
-included in the Modified Version. 
+M. Delete any section Entitled "Endorsements". Such a section may not be
+included in the Modified Version.
 
-N. Do not retitle any existing section to be Entitled "Endorsements" or to 
-conflict in title with any Invariant Section. 
+N. Do not retitle any existing section to be Entitled "Endorsements" or to
+conflict in title with any Invariant Section.
 
-O. Preserve any Warranty Disclaimers. 
+O. Preserve any Warranty Disclaimers.
 
-If the Modified Version includes new front-matter sections or appendices that 
-qualify as Secondary Sections and contain no material copied from the Document, 
-you may at your option designate some or all of these sections as invariant. To 
-do this, add their titles to the list of Invariant Sections in the Modified 
-Version's license notice. These titles must be distinct from any other section 
+If the Modified Version includes new front-matter sections or appendices that
+qualify as Secondary Sections and contain no material copied from the Document,
+you may at your option designate some or all of these sections as invariant. To
+do this, add their titles to the list of Invariant Sections in the Modified
+Version's license notice. These titles must be distinct from any other section
 titles.
 
-You may add a section Entitled "Endorsements", provided it contains nothing but 
-endorsements of your Modified Version by various parties—for example, 
-statements of peer review or that the text has been approved by an organization 
+You may add a section Entitled "Endorsements", provided it contains nothing but
+endorsements of your Modified Version by various parties—for example,
+statements of peer review or that the text has been approved by an organization
 as the authoritative definition of a standard.
 
-You may add a passage of up to five words as a Front-Cover Text, and a passage 
-of up to 25 words as a Back-Cover Text, to the end of the list of Cover Texts 
-in the Modified Version. Only one passage of Front-Cover Text and one of 
-Back-Cover Text may be added by (or through arrangements made by) any one 
-entity. If the Document already includes a cover text for the same cover, 
-previously added by you or by arrangement made by the same entity you are 
-acting on behalf of, you may not add another; but you may replace the old one, 
+You may add a passage of up to five words as a Front-Cover Text, and a passage
+of up to 25 words as a Back-Cover Text, to the end of the list of Cover Texts
+in the Modified Version. Only one passage of Front-Cover Text and one of
+Back-Cover Text may be added by (or through arrangements made by) any one
+entity. If the Document already includes a cover text for the same cover,
+previously added by you or by arrangement made by the same entity you are
+acting on behalf of, you may not add another; but you may replace the old one,
 on explicit permission from the previous publisher that added the old one.
 
-The author(s) and publisher(s) of the Document do not by this License give 
-permission to use their names for publicity for or to assert or imply 
+The author(s) and publisher(s) of the Document do not by this License give
+permission to use their names for publicity for or to assert or imply
 endorsement of any Modified Version.
 
 === 5. COMBINING DOCUMENTS
-You may combine the Document with other documents released under this License, 
-under the terms defined in section 4 above for modified versions, provided that 
-you include in the combination all of the Invariant Sections of all of the 
-original documents, unmodified, and list them all as Invariant Sections of your 
-combined work in its license notice, and that you preserve all their Warranty 
+You may combine the Document with other documents released under this License,
+under the terms defined in section 4 above for modified versions, provided that
+you include in the combination all of the Invariant Sections of all of the
+original documents, unmodified, and list them all as Invariant Sections of your
+combined work in its license notice, and that you preserve all their Warranty
 Disclaimers.
 
-The combined work need only contain one copy of this License, and multiple 
-identical Invariant Sections may be replaced with a single copy. If there are 
-multiple Invariant Sections with the same name but different contents, make the 
-title of each such section unique by adding at the end of it, in parentheses, 
-the name of the original author or publisher of that section if known, or else 
-a unique number. Make the same adjustment to the section titles in the list of 
+The combined work need only contain one copy of this License, and multiple
+identical Invariant Sections may be replaced with a single copy. If there are
+multiple Invariant Sections with the same name but different contents, make the
+title of each such section unique by adding at the end of it, in parentheses,
+the name of the original author or publisher of that section if known, or else
+a unique number. Make the same adjustment to the section titles in the list of
 Invariant Sections in the license notice of the combined work.
 
-In the combination, you must combine any sections Entitled "History" in the 
-various original documents, forming one section Entitled "History"; likewise 
-combine any sections Entitled "Acknowledgements", and any sections Entitled 
+In the combination, you must combine any sections Entitled "History" in the
+various original documents, forming one section Entitled "History"; likewise
+combine any sections Entitled "Acknowledgements", and any sections Entitled
 "Dedications". You must delete all sections Entitled "Endorsements".
 
 === 6. COLLECTIONS OF DOCUMENTS
-You may make a collection consisting of the Document and other documents 
-released under this License, and replace the individual copies of this License 
-in the various documents with a single copy that is included in the collection, 
-provided that you follow the rules of this License for verbatim copying of each 
+You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this License
+in the various documents with a single copy that is included in the collection,
+provided that you follow the rules of this License for verbatim copying of each
 of the documents in all other respects.
 
-You may extract a single document from such a collection, and distribute it 
-individually under this License, provided you insert a copy of this License 
-into the extracted document, and follow this License in all other respects 
+You may extract a single document from such a collection, and distribute it
+individually under this License, provided you insert a copy of this License
+into the extracted document, and follow this License in all other respects
 regarding verbatim copying of that document.
 
 === 7. AGGREGATION WITH INDEPENDENT WORKS
-A compilation of the Document or its derivatives with other separate and 
-independent documents or works, in or on a volume of a storage or distribution 
-medium, is called an "aggregate" if the copyright resulting from the 
-compilation is not used to limit the legal rights of the compilation's users 
-beyond what the individual works permit. When the Document is included in an 
-aggregate, this License does not apply to the other works in the aggregate 
+A compilation of the Document or its derivatives with other separate and
+independent documents or works, in or on a volume of a storage or distribution
+medium, is called an "aggregate" if the copyright resulting from the
+compilation is not used to limit the legal rights of the compilation's users
+beyond what the individual works permit. When the Document is included in an
+aggregate, this License does not apply to the other works in the aggregate
 which are not themselves derivative works of the Document.
 
-If the Cover Text requirement of section 3 is applicable to these copies of the 
-Document, then if the Document is less than one half of the entire aggregate, 
-the Document's Cover Texts may be placed on covers that bracket the Document 
-within the aggregate, or the electronic equivalent of covers if the Document is 
-in electronic form. Otherwise they must appear on printed covers that bracket 
+If the Cover Text requirement of section 3 is applicable to these copies of the
+Document, then if the Document is less than one half of the entire aggregate,
+the Document's Cover Texts may be placed on covers that bracket the Document
+within the aggregate, or the electronic equivalent of covers if the Document is
+in electronic form. Otherwise they must appear on printed covers that bracket
 the whole aggregate.
 
 === 8. TRANSLATION
-Translation is considered a kind of modification, so you may distribute 
-translations of the Document under the terms of section 4. Replacing Invariant 
-Sections with translations requires special permission from their copyright 
-holders, but you may include translations of some or all Invariant Sections in 
-addition to the original versions of these Invariant Sections. You may include 
-a translation of this License, and all the license notices in the Document, and 
-any Warranty Disclaimers, provided that you also include the original English 
-version of this License and the original versions of those notices and 
-disclaimers. In case of a disagreement between the translation and the original 
-version of this License or a notice or disclaimer, the original version will 
+Translation is considered a kind of modification, so you may distribute
+translations of the Document under the terms of section 4. Replacing Invariant
+Sections with translations requires special permission from their copyright
+holders, but you may include translations of some or all Invariant Sections in
+addition to the original versions of these Invariant Sections. You may include
+a translation of this License, and all the license notices in the Document, and
+any Warranty Disclaimers, provided that you also include the original English
+version of this License and the original versions of those notices and
+disclaimers. In case of a disagreement between the translation and the original
+version of this License or a notice or disclaimer, the original version will
 prevail.
 
-If a section in the Document is Entitled "Acknowledgements", "Dedications", or 
-"History", the requirement (section 4) to Preserve its Title (section 1) will 
+If a section in the Document is Entitled "Acknowledgements", "Dedications", or
+"History", the requirement (section 4) to Preserve its Title (section 1) will
 typically require changing the actual title.
 
 === 9. TERMINATION
-You may not copy, modify, sublicense, or distribute the Document except as 
-expressly provided under this License. Any attempt otherwise to copy, modify, 
-sublicense, or distribute it is void, and will automatically terminate your 
+You may not copy, modify, sublicense, or distribute the Document except as
+expressly provided under this License. Any attempt otherwise to copy, modify,
+sublicense, or distribute it is void, and will automatically terminate your
 rights under this License.
 
-However, if you cease all violation of this License, then your license from a 
-particular copyright holder is reinstated (a) provisionally, unless and until 
-the copyright holder explicitly and finally terminates your license, and (b) 
-permanently, if the copyright holder fails to notify you of the violation by 
+However, if you cease all violation of this License, then your license from a
+particular copyright holder is reinstated (a) provisionally, unless and until
+the copyright holder explicitly and finally terminates your license, and (b)
+permanently, if the copyright holder fails to notify you of the violation by
 some reasonable means prior to 60 days after the cessation.
 
-Moreover, your license from a particular copyright holder is reinstated 
-permanently if the copyright holder notifies you of the violation by some 
-reasonable means, this is the first time you have received notice of violation 
-of this License (for any work) from that copyright holder, and you cure the 
+Moreover, your license from a particular copyright holder is reinstated
+permanently if the copyright holder notifies you of the violation by some
+reasonable means, this is the first time you have received notice of violation
+of this License (for any work) from that copyright holder, and you cure the
 violation prior to 30 days after your receipt of the notice.
 
-Termination of your rights under this section does not terminate the licenses 
-of parties who have received copies or rights from you under this License. If 
-your rights have been terminated and not permanently reinstated, receipt of a 
+Termination of your rights under this section does not terminate the licenses
+of parties who have received copies or rights from you under this License. If
+your rights have been terminated and not permanently reinstated, receipt of a
 copy of some or all of the same material does not give you any rights to use it.
 
 === 10. FUTURE REVISIONS OF THIS LICENSE
-The Free Software Foundation may publish new, revised versions of the GNU Free 
-Documentation License from time to time. Such new versions will be similar in 
-spirit to the present version, but may differ in detail to address new problems 
+The Free Software Foundation may publish new, revised versions of the GNU Free
+Documentation License from time to time. Such new versions will be similar in
+spirit to the present version, but may differ in detail to address new problems
 or concerns. See http://www.gnu.org/copyleft/.
 
-Each version of the License is given a distinguishing version number. If the 
-Document specifies that a particular numbered version of this License "or any 
-later version" applies to it, you have the option of following the terms and 
-conditions either of that specified version or of any later version that has 
-been published (not as a draft) by the Free Software Foundation. If the 
-Document does not specify a version number of this License, you may choose any 
-version ever published (not as a draft) by the Free Software Foundation. If the 
-Document specifies that a proxy can decide which future versions of this 
-License can be used, that proxy's public statement of acceptance of a version 
+Each version of the License is given a distinguishing version number. If the
+Document specifies that a particular numbered version of this License "or any
+later version" applies to it, you have the option of following the terms and
+conditions either of that specified version or of any later version that has
+been published (not as a draft) by the Free Software Foundation. If the
+Document does not specify a version number of this License, you may choose any
+version ever published (not as a draft) by the Free Software Foundation. If the
+Document specifies that a proxy can decide which future versions of this
+License can be used, that proxy's public statement of acceptance of a version
 permanently authorizes you to choose that version for the Document.
 
 === 11. RELICENSING
-"Massive Multiauthor Collaboration Site" (or "MMC Site") means any World Wide 
-Web server that publishes copyrightable works and also provides prominent 
-facilities for anybody to edit those works. A public wiki that anybody can edit 
-is an example of such a server. A "Massive Multiauthor Collaboration" (or 
-"MMC") contained in the site means any set of copyrightable works thus 
+"Massive Multiauthor Collaboration Site" (or "MMC Site") means any World Wide
+Web server that publishes copyrightable works and also provides prominent
+facilities for anybody to edit those works. A public wiki that anybody can edit
+is an example of such a server. A "Massive Multiauthor Collaboration" (or
+"MMC") contained in the site means any set of copyrightable works thus
 published on the MMC site.
 
-"CC-BY-SA" means the Creative Commons Attribution-Share Alike 3.0 license 
-published by Creative Commons Corporation, a not-for-profit corporation with a 
-principal place of business in San Francisco, California, as well as future 
+"CC-BY-SA" means the Creative Commons Attribution-Share Alike 3.0 license
+published by Creative Commons Corporation, a not-for-profit corporation with a
+principal place of business in San Francisco, California, as well as future
 copyleft versions of that license published by that same organization.
 
-"Incorporate" means to publish or republish a Document, in whole or in part, as 
+"Incorporate" means to publish or republish a Document, in whole or in part, as
 part of another Document.
 
-An MMC is "eligible for relicensing" if it is licensed under this License, and 
-if all works that were first published under this License somewhere other than 
-this MMC, and subsequently incorporated in whole or in part into the MMC, (1) 
-had no cover texts or invariant sections, and (2) were thus incorporated prior 
+An MMC is "eligible for relicensing" if it is licensed under this License, and
+if all works that were first published under this License somewhere other than
+this MMC, and subsequently incorporated in whole or in part into the MMC, (1)
+had no cover texts or invariant sections, and (2) were thus incorporated prior
 to November 1, 2008.
 
-The operator of an MMC Site may republish an MMC contained in the site under 
-CC-BY-SA on the same site at any time before August 1, 2009, provided the MMC 
+The operator of an MMC Site may republish an MMC contained in the site under
+CC-BY-SA on the same site at any time before August 1, 2009, provided the MMC
 is eligible for relicensing.
 

@@ -1,5 +1,5 @@
 /*
- * Library allocation_block type test program
+ * Library directory_entry type test program
  *
  * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -33,31 +33,30 @@
 #include "fshfs_test_memory.h"
 #include "fshfs_test_unused.h"
 
-#include "../libfshfs/libfshfs_allocation_block.h"
+#include "../libfshfs/libfshfs_directory_entry.h"
 
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
-/* Tests the libfshfs_allocation_block_initialize function
+/* Tests the libfshfs_directory_entry_initialize function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_allocation_block_initialize(
+int fshfs_test_directory_entry_initialize(
      void )
 {
-	libcerror_error_t *error                      = NULL;
-	libfshfs_allocation_block_t *allocation_block = NULL;
-	int result                                    = 0;
+	libcerror_error_t *error                    = NULL;
+	libfshfs_directory_entry_t *directory_entry = NULL;
+	int result                                  = 0;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
-	int number_of_malloc_fail_tests               = 1;
-	int number_of_memset_fail_tests               = 1;
-	int test_number                               = 0;
+	int number_of_malloc_fail_tests             = 1;
+	int number_of_memset_fail_tests             = 1;
+	int test_number                             = 0;
 #endif
 
 	/* Test regular cases
 	 */
-	result = libfshfs_allocation_block_initialize(
-	          &allocation_block,
-	          4096,
+	result = libfshfs_directory_entry_initialize(
+	          &directory_entry,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -66,15 +65,15 @@ int fshfs_test_allocation_block_initialize(
 	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "allocation_block",
-	 allocation_block );
+	 "directory_entry",
+	 directory_entry );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	result = libfshfs_allocation_block_free(
-	          &allocation_block,
+	result = libfshfs_directory_entry_free(
+	          &directory_entry,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -83,8 +82,8 @@ int fshfs_test_allocation_block_initialize(
 	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
-	 "allocation_block",
-	 allocation_block );
+	 "directory_entry",
+	 directory_entry );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -92,9 +91,8 @@ int fshfs_test_allocation_block_initialize(
 
 	/* Test error cases
 	 */
-	result = libfshfs_allocation_block_initialize(
+	result = libfshfs_directory_entry_initialize(
 	          NULL,
-	          4096,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -109,11 +107,10 @@ int fshfs_test_allocation_block_initialize(
 	libcerror_error_free(
 	 &error );
 
-	allocation_block = (libfshfs_allocation_block_t *) 0x12345678UL;
+	directory_entry = (libfshfs_directory_entry_t *) 0x12345678UL;
 
-	result = libfshfs_allocation_block_initialize(
-	          &allocation_block,
-	          4096,
+	result = libfshfs_directory_entry_initialize(
+	          &directory_entry,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -128,24 +125,7 @@ int fshfs_test_allocation_block_initialize(
 	libcerror_error_free(
 	 &error );
 
-	allocation_block = NULL;
-
-	result = libfshfs_allocation_block_initialize(
-	          &allocation_block,
-	          (size_t) SSIZE_MAX + 1,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
+	directory_entry = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
@@ -153,23 +133,22 @@ int fshfs_test_allocation_block_initialize(
 	     test_number < number_of_malloc_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfshfs_allocation_block_initialize with malloc failing
+		/* Test libfshfs_directory_entry_initialize with malloc failing
 		 */
 		fshfs_test_malloc_attempts_before_fail = test_number;
 
-		result = libfshfs_allocation_block_initialize(
-		          &allocation_block,
-		          4096,
+		result = libfshfs_directory_entry_initialize(
+		          &directory_entry,
 		          &error );
 
 		if( fshfs_test_malloc_attempts_before_fail != -1 )
 		{
 			fshfs_test_malloc_attempts_before_fail = -1;
 
-			if( allocation_block != NULL )
+			if( directory_entry != NULL )
 			{
-				libfshfs_allocation_block_free(
-				 &allocation_block,
+				libfshfs_directory_entry_free(
+				 &directory_entry,
 				 NULL );
 			}
 		}
@@ -181,8 +160,8 @@ int fshfs_test_allocation_block_initialize(
 			 -1 );
 
 			FSHFS_TEST_ASSERT_IS_NULL(
-			 "allocation_block",
-			 allocation_block );
+			 "directory_entry",
+			 directory_entry );
 
 			FSHFS_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -196,23 +175,22 @@ int fshfs_test_allocation_block_initialize(
 	     test_number < number_of_memset_fail_tests;
 	     test_number++ )
 	{
-		/* Test libfshfs_allocation_block_initialize with memset failing
+		/* Test libfshfs_directory_entry_initialize with memset failing
 		 */
 		fshfs_test_memset_attempts_before_fail = test_number;
 
-		result = libfshfs_allocation_block_initialize(
-		          &allocation_block,
-		          4096,
+		result = libfshfs_directory_entry_initialize(
+		          &directory_entry,
 		          &error );
 
 		if( fshfs_test_memset_attempts_before_fail != -1 )
 		{
 			fshfs_test_memset_attempts_before_fail = -1;
 
-			if( allocation_block != NULL )
+			if( directory_entry != NULL )
 			{
-				libfshfs_allocation_block_free(
-				 &allocation_block,
+				libfshfs_directory_entry_free(
+				 &directory_entry,
 				 NULL );
 			}
 		}
@@ -224,8 +202,8 @@ int fshfs_test_allocation_block_initialize(
 			 -1 );
 
 			FSHFS_TEST_ASSERT_IS_NULL(
-			 "allocation_block",
-			 allocation_block );
+			 "directory_entry",
+			 directory_entry );
 
 			FSHFS_TEST_ASSERT_IS_NOT_NULL(
 			 "error",
@@ -245,19 +223,19 @@ on_error:
 		libcerror_error_free(
 		 &error );
 	}
-	if( allocation_block != NULL )
+	if( directory_entry != NULL )
 	{
-		libfshfs_allocation_block_free(
-		 &allocation_block,
+		libfshfs_directory_entry_free(
+		 &directory_entry,
 		 NULL );
 	}
 	return( 0 );
 }
 
-/* Tests the libfshfs_allocation_block_free function
+/* Tests the libfshfs_directory_entry_free function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_allocation_block_free(
+int fshfs_test_directory_entry_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -265,55 +243,8 @@ int fshfs_test_allocation_block_free(
 
 	/* Test error cases
 	 */
-	result = libfshfs_allocation_block_free(
+	result = libfshfs_directory_entry_free(
 	          NULL,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	return( 0 );
-}
-
-/* Tests the libfshfs_allocation_block_read_element_data function
- * Returns 1 if successful or 0 if not
- */
-int fshfs_test_allocation_block_read_element_data(
-     void )
-{
-	libcerror_error_t *error = NULL;
-	int result               = 0;
-
-	/* Test error cases
-	 */
-	result = libfshfs_allocation_block_read_element_data(
-	          NULL,
-	          NULL,
-	          NULL,
-	          NULL,
-	          0,
-	          0,
-	          0,
-	          0,
-	          0,
-	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -359,16 +290,22 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 	FSHFS_TEST_RUN(
-	 "libfshfs_allocation_block_initialize",
-	 fshfs_test_allocation_block_initialize );
+	 "libfshfs_directory_entry_initialize",
+	 fshfs_test_directory_entry_initialize );
 
 	FSHFS_TEST_RUN(
-	 "libfshfs_allocation_block_free",
-	 fshfs_test_allocation_block_free );
+	 "libfshfs_directory_entry_free",
+	 fshfs_test_directory_entry_free );
 
-	FSHFS_TEST_RUN(
-	 "libfshfs_allocation_block_read_element_data",
-	 fshfs_test_allocation_block_read_element_data );
+	/* TODO: add tests for libfshfs_directory_entry_get_identifier */
+
+	/* TODO: add tests for libfshfs_directory_entry_get_utf8_name_size */
+
+	/* TODO: add tests for libfshfs_directory_entry_get_utf8_name */
+
+	/* TODO: add tests for libfshfs_directory_entry_get_utf16_name_size */
+
+	/* TODO: add tests for libfshfs_directory_entry_get_utf16_name */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

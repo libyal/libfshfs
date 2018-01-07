@@ -37,6 +37,223 @@
 
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
+/* Tests the libfshfs_btree_node_initialize function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_btree_node_initialize(
+     void )
+{
+	libcerror_error_t *error          = NULL;
+	libfshfs_btree_node_t *btree_node = NULL;
+	int result                        = 0;
+
+#if defined( HAVE_FSHFS_TEST_MEMORY )
+	int number_of_malloc_fail_tests   = 1;
+	int number_of_memset_fail_tests   = 1;
+	int test_number                   = 0;
+#endif
+
+	/* Test regular cases
+	 */
+	result = libfshfs_btree_node_initialize(
+	          &btree_node,
+	          128,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "btree_node",
+	 btree_node );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_btree_node_free(
+	          &btree_node,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "btree_node",
+	 btree_node );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_btree_node_initialize(
+	          NULL,
+	          128,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	btree_node = (libfshfs_btree_node_t *) 0x12345678UL;
+
+	result = libfshfs_btree_node_initialize(
+	          &btree_node,
+	          128,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	btree_node = NULL;
+
+	result = libfshfs_btree_node_initialize(
+	          &btree_node,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_FSHFS_TEST_MEMORY )
+
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
+	{
+		/* Test libfshfs_btree_node_initialize with malloc failing
+		 */
+		fshfs_test_malloc_attempts_before_fail = test_number;
+
+		result = libfshfs_btree_node_initialize(
+		          &btree_node,
+		          128,
+		          &error );
+
+		if( fshfs_test_malloc_attempts_before_fail != -1 )
+		{
+			fshfs_test_malloc_attempts_before_fail = -1;
+
+			if( btree_node != NULL )
+			{
+				libfshfs_btree_node_free(
+				 &btree_node,
+				 NULL );
+			}
+		}
+		else
+		{
+			FSHFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSHFS_TEST_ASSERT_IS_NULL(
+			 "btree_node",
+			 btree_node );
+
+			FSHFS_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+	for( test_number = 0;
+	     test_number < number_of_memset_fail_tests;
+	     test_number++ )
+	{
+		/* Test libfshfs_btree_node_initialize with memset failing
+		 */
+		fshfs_test_memset_attempts_before_fail = test_number;
+
+		result = libfshfs_btree_node_initialize(
+		          &btree_node,
+		          128,
+		          &error );
+
+		if( fshfs_test_memset_attempts_before_fail != -1 )
+		{
+			fshfs_test_memset_attempts_before_fail = -1;
+
+			if( btree_node != NULL )
+			{
+				libfshfs_btree_node_free(
+				 &btree_node,
+				 NULL );
+			}
+		}
+		else
+		{
+			FSHFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSHFS_TEST_ASSERT_IS_NULL(
+			 "btree_node",
+			 btree_node );
+
+			FSHFS_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#endif /* defined( HAVE_FSHFS_TEST_MEMORY ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( btree_node != NULL )
+	{
+		libfshfs_btree_node_free(
+		 &btree_node,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* Tests the libfshfs_btree_node_free function
  * Returns 1 if successful or 0 if not
  */
@@ -94,7 +311,9 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
-	/* TODO: add tests for libfshfs_btree_node_initialize */
+	FSHFS_TEST_RUN(
+	 "libfshfs_btree_node_initialize",
+	 fshfs_test_btree_node_initialize );
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_btree_node_free",

@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="allocation_block btree_file btree_header btree_node btree_node_descriptor catalog_btree_key directory_record error file_record fork_descriptor io_handle notify thread_record volume_header";
+LIBRARY_TESTS="allocation_block btree_file btree_header btree_node btree_node_descriptor catalog_btree_key directory_entry directory_record error file_entry file_record fork_descriptor io_handle notify thread_record volume_header";
 LIBRARY_TESTS_WITH_INPUT="support volume";
 OPTION_SETS="offset";
 

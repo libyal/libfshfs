@@ -5,8 +5,10 @@ MSVSCPP_FILES = \
 	fshfs_test_btree_node/fshfs_test_btree_node.vcproj \
 	fshfs_test_btree_node_descriptor/fshfs_test_btree_node_descriptor.vcproj \
 	fshfs_test_catalog_btree_key/fshfs_test_catalog_btree_key.vcproj \
+	fshfs_test_directory_entry/fshfs_test_directory_entry.vcproj \
 	fshfs_test_directory_record/fshfs_test_directory_record.vcproj \
 	fshfs_test_error/fshfs_test_error.vcproj \
+	fshfs_test_file_entry/fshfs_test_file_entry.vcproj \
 	fshfs_test_file_record/fshfs_test_file_record.vcproj \
 	fshfs_test_fork_descriptor/fshfs_test_fork_descriptor.vcproj \
 	fshfs_test_io_handle/fshfs_test_io_handle.vcproj \

@@ -44,8 +44,10 @@ check_PROGRAMS = \
 	fshfs_test_btree_node \
 	fshfs_test_btree_node_descriptor \
 	fshfs_test_catalog_btree_key \
+	fshfs_test_directory_entry \
 	fshfs_test_directory_record \
 	fshfs_test_error \
+	fshfs_test_file_entry \
 	fshfs_test_file_record \
 	fshfs_test_fork_descriptor \
 	fshfs_test_io_handle \
@@ -127,6 +129,18 @@ fshfs_test_catalog_btree_key_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 
+fshfs_test_directory_entry_SOURCES = \
+	fshfs_test_directory_entry.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_directory_entry_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
 fshfs_test_directory_record_SOURCES = \
 	fshfs_test_directory_record.c \
 	fshfs_test_libcerror.h \
@@ -147,6 +161,18 @@ fshfs_test_error_SOURCES = \
 
 fshfs_test_error_LDADD = \
 	../libfshfs/libfshfs.la
+
+fshfs_test_file_entry_SOURCES = \
+	fshfs_test_file_entry.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_file_entry_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
 
 fshfs_test_file_record_SOURCES = \
 	fshfs_test_file_record.c \

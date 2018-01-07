@@ -1,5 +1,5 @@
 /*
- * Cluster block functions
+ * Allocation block functions
  *
  * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
