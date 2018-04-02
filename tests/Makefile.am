@@ -211,13 +211,15 @@ fshfs_test_io_handle_LDADD = \
 	@LIBCERROR_LIBADD@
 
 fshfs_test_notify_SOURCES = \
+	fshfs_test_libcerror.h \
 	fshfs_test_libfshfs.h \
 	fshfs_test_macros.h \
 	fshfs_test_notify.c \
 	fshfs_test_unused.h
 
 fshfs_test_notify_LDADD = \
-	../libfshfs/libfshfs.la
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
 
 fshfs_test_support_SOURCES = \
 	fshfs_test_functions.c fshfs_test_functions.h \
@@ -229,6 +231,7 @@ fshfs_test_support_SOURCES = \
 	fshfs_test_libfshfs.h \
 	fshfs_test_libuna.h \
 	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
 	fshfs_test_support.c \
 	fshfs_test_unused.h
 
