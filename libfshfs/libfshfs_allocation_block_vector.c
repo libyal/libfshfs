@@ -1,5 +1,5 @@
 /*
- * The allocation block vector functions
+ * Allocation block vector functions
  *
  * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *

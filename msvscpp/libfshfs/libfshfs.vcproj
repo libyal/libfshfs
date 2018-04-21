@@ -178,6 +178,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block_stream.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_allocation_block_vector.c"
 				>
 			</File>
@@ -285,6 +289,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_allocation_block.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block_stream.h"
 				>
 			</File>
 			<File

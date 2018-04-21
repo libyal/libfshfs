@@ -24,6 +24,7 @@ libfshfs_la_SOURCES = \
 	fshfs_volume.h \
 	libfshfs.c \
 	libfshfs_allocation_block.c libfshfs_allocation_block.h \
+	libfshfs_allocation_block_stream.c libfshfs_allocation_block_stream.h \
 	libfshfs_allocation_block_vector.c libfshfs_allocation_block_vector.h \
 	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_btree_header.c libfshfs_btree_header.h \
