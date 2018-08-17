@@ -28,17 +28,13 @@
  */
 #if !defined( HAVE_LOCAL_LIBFSHFS )
 
-/* If libtool DLL support is enabled set LIBFSHFS_DLL_EXPORT
- * before including libfshfs/extern.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBFSHFS_DLL_EXPORT
-#endif
-
 #include <libfshfs/extern.h>
 
+#define LIBFSHFS_EXTERN_VARIABLE	LIBFSHFS_EXTERN
+
 #else
-#define LIBFSHFS_EXTERN	/* extern */
+#define LIBFSHFS_EXTERN		/* extern */
+#define LIBFSHFS_EXTERN_VARIABLE	extern
 
 #endif /* !defined( HAVE_LOCAL_LIBFSHFS ) */
 

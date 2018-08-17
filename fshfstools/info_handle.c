@@ -740,7 +740,7 @@ on_error:
 	return( -1 );
 }
 
-/* Prints the file system hierarchy entry information
+/* Prints the file system hierarchy information
  * Returns 1 if successful or -1 on error
  */
 int info_handle_file_system_hierarchy_fprint(

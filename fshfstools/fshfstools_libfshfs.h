@@ -1,5 +1,5 @@
 /*
- * The internal libfshfs header
+ * The libfshfs header wrapper
  *
  * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -23,13 +23,6 @@
 #define _FSHFSTOOLS_LIBFSHFS_H
 
 #include <common.h>
-
-/* If Cygwin libtool DLL support is enabled set LIBFSHFS_DLL_IMPORT
- * before including libfshfs.h
- */
-#if defined( _WIN32 ) && defined( DLL_IMPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
-#define LIBFSHFS_DLL_IMPORT
-#endif
 
 #include <libfshfs.h>
 

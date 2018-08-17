@@ -24,14 +24,7 @@
 
 #include <common.h>
 
-/* If Cygwin libtool DLL support is enabled set LIBFSHFS_DLL_IMPORT
- * before including libfshfs.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBFSHFS_DLL_IMPORT
-#endif
-
 #include <libfshfs.h>
 
-#endif
+#endif /* !defined( _PYFSHFS_LIBFSHFS_H ) */
 

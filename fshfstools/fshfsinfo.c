@@ -75,7 +75,7 @@ void usage_fprint(
 	fprintf( stream, "\tsource: the source file or device\n\n" );
 
 	fprintf( stream, "\t-h:     shows this help\n" );
-	fprintf( stream, "\t-H:     shows the file system hierarcy\n" );
+	fprintf( stream, "\t-H:     shows the file system hierarchy\n" );
 	fprintf( stream, "\t-o:     specify the volume offset\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
 	fprintf( stream, "\t-V:     print version\n" );
