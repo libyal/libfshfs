@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfshfs],
- [20180817],
+ [20180910],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -160,9 +160,6 @@ AS_IF(
  [AC_SUBST(
   [libfshfs_spec_requires],
   [Requires:])
- AC_SUBST(
-  [libfshfs_spec_build_requires],
-  [BuildRequires:])
  ])
 
 dnl Set the date for the dpkg files

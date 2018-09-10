@@ -10,11 +10,11 @@ Analysis of MFS, HFS, HFS+ and HFSX
 The Hierarchical File System (HFS) is mainly used on the Apple Macintosh
 platform. It has evolved from the Mactintosh File System (MFS). The current
 variant of HFS is known as HFS+. This document is based on the Apple
-documentation of HFS `[APPLE96]` and HFS+ `[APPLE04]`.
+documentation of HFS `[APPLE96]` and HFS+ `[APPLE04]` and was enhanced by
+analyzing test data.
 
 This document is intended as a working document for the HFS and HFS+
-specification. Which should allow existing Open Source forensic tooling to be
-able to process this file system type.
+specification.
 
 [preface]
 == Document information
