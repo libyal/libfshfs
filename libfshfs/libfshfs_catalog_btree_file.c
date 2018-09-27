@@ -84,7 +84,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve thread record: %" PRIu32 " from catalog B-Tree root node.",
+		 "%s: unable to retrieve thread record: %" PRIu32 " from catalog B-tree root node.",
 		 function,
 		 identifier );
 
@@ -208,7 +208,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create catalog B-Tree key.",
+			 "%s: unable to create catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -223,7 +223,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read catalog B-Tree key.",
+			 "%s: unable to read catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -337,7 +337,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free catalog B-Tree key.",
+			 "%s: unable to free catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -390,7 +390,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve thread record from catalog B-Tree node: %" PRIu32 ".",
+				 "%s: unable to retrieve thread record from catalog B-tree node: %" PRIu32 ".",
 				 function,
 				 sub_node_number );
 
@@ -459,7 +459,7 @@ int libfshfs_catalog_btree_file_get_directory_entry(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve directory entry: %" PRIu32 " from catalog B-Tree root node.",
+		 "%s: unable to retrieve directory entry: %" PRIu32 " from catalog B-tree root node.",
 		 function,
 		 identifier );
 
@@ -586,7 +586,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create catalog B-Tree key.",
+			 "%s: unable to create catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -601,7 +601,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read catalog B-Tree key.",
+			 "%s: unable to read catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -775,7 +775,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free catalog B-Tree key.",
+			 "%s: unable to free catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -828,7 +828,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve directory entry from catalog B-Tree node: %" PRIu32 ".",
+				 "%s: unable to retrieve directory entry from catalog B-tree node: %" PRIu32 ".",
 				 function,
 				 sub_node_number );
 
@@ -906,7 +906,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve directory entries from catalog B-Tree root node.",
+		 "%s: unable to retrieve directory entries from catalog B-tree root node.",
 		 function );
 
 		goto on_error;
@@ -1019,7 +1019,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create catalog B-Tree key.",
+			 "%s: unable to create catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -1034,7 +1034,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to free catalog B-Tree key.",
+			 "%s: unable to free catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -1223,7 +1223,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free catalog B-Tree key.",
+			 "%s: unable to free catalog B-tree key.",
 			 function );
 
 			goto on_error;
@@ -1269,7 +1269,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve directory entries from catalog B-Tree node: %" PRIu32 ".",
+				 "%s: unable to retrieve directory entries from catalog B-tree node: %" PRIu32 ".",
 				 function,
 				 sub_node_number );
 

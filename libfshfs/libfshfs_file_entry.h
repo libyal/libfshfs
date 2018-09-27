@@ -29,6 +29,7 @@
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libcthreads.h"
 #include "libfshfs_extern.h"
 
 #if defined( __cplusplus )
@@ -54,6 +55,12 @@ struct libfshfs_internal_file_entry
 	/* The catalog btree file
 	 */
 	libfshfs_btree_file_t *catalog_btree_file;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
+	 */
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 int libfshfs_file_entry_initialize(

@@ -2,6 +2,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
 	@LIBCERROR_CPPFLAGS@ \
+	@LIBCTHREADS_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
 	@LIBCNOTIFY_CPPFLAGS@ \
@@ -14,6 +15,7 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_EXPORT@
 
 lib_LTLIBRARIES = libfshfs.la
@@ -49,6 +51,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_libcerror.h \
 	libfshfs_libclocale.h \
 	libfshfs_libcnotify.h \
+	libfshfs_libcthreads.h \
 	libfshfs_libfcache.h \
 	libfshfs_libfdata.h \
 	libfshfs_libfdatetime.h \
@@ -64,6 +67,7 @@ libfshfs_la_SOURCES = \
 
 libfshfs_la_LIBADD = \
 	@LIBCERROR_LIBADD@ \
+	@LIBCTHREADS_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
@@ -75,7 +79,8 @@ libfshfs_la_LIBADD = \
 	@LIBFCACHE_LIBADD@ \
 	@LIBFDATA_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
-	@LIBFGUID_LIBADD@
+	@LIBFGUID_LIBADD@ \
+	@PTHREAD_LIBADD@
 
 libfshfs_la_LDFLAGS = -no-undefined -version-info 1:0:0
 

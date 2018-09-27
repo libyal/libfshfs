@@ -35,6 +35,7 @@
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
+#include "libfshfs_libcthreads.h"
 #include "libfshfs_thread_record.h"
 #include "libfshfs_volume.h"
 #include "libfshfs_volume_header.h"
@@ -113,6 +114,21 @@ int libfshfs_volume_initialize(
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_initialize(
+	     &( internal_volume->read_write_lock ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to intialize read/write lock.",
+		 function );
+
+		goto on_error;
+	}
+#endif
 	*volume = (libfshfs_volume_t *) internal_volume;
 
 	return( 1 );
@@ -170,6 +186,21 @@ int libfshfs_volume_free(
 		}
 		*volume = NULL;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_free(
+		     &( internal_volume->read_write_lock ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free read/write lock.",
+			 function );
+
+			result = -1;
+		}
+#endif
 		if( libfshfs_io_handle_free(
 		     &( internal_volume->io_handle ),
 		     error ) != 1 )
@@ -349,8 +380,38 @@ int libfshfs_volume_open(
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	internal_volume->file_io_handle_created_in_library = 1;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
 
 on_error:
@@ -486,8 +547,38 @@ int libfshfs_volume_open_wide(
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	internal_volume->file_io_handle_created_in_library = 1;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
 
 on_error:
@@ -612,9 +703,10 @@ int libfshfs_volume_open_file_io_handle(
 		}
 		file_io_handle_opened_in_library = 1;
 	}
-	if( libfshfs_volume_open_read(
+	if( libfshfs_internal_volume_open_read(
 	     internal_volume,
 	     file_io_handle,
+	     1024,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -626,9 +718,39 @@ int libfshfs_volume_open_file_io_handle(
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	internal_volume->file_io_handle                   = file_io_handle;
 	internal_volume->file_io_handle_opened_in_library = file_io_handle_opened_in_library;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
 
 on_error:
@@ -676,6 +798,21 @@ int libfshfs_volume_close(
 
 		return( -1 );
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -791,19 +928,34 @@ int libfshfs_volume_close(
 			result = -1;
 		}
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( result );
 }
 
 /* Opens a volume for reading
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_volume_open_read(
+int libfshfs_internal_volume_open_read(
      libfshfs_internal_volume_t *internal_volume,
      libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_volume_open_read";
-	off64_t file_offset   = 1024;
+	static char *function = "libfshfs_internal_volume_open_read";
 	int result            = 0;
 
 	if( internal_volume == NULL )
@@ -978,6 +1130,7 @@ int libfshfs_volume_get_utf8_name_size(
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_get_utf8_name_size";
+	int result                                  = 1;
 
 	if( volume == NULL )
 	{
@@ -992,6 +1145,21 @@ int libfshfs_volume_get_utf8_name_size(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libfshfs_directory_entry_get_utf8_name_size(
 	     internal_volume->root_directory_entry,
 	     utf8_string_size,
@@ -1004,9 +1172,24 @@ int libfshfs_volume_get_utf8_name_size(
 		 "%s: unable to retrieve UTF-8 string size.",
 		 function );
 
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
 		return( -1 );
 	}
-	return( 1 );
+#endif
+	return( result );
 }
 
 /* Retrieves the UTF-8 encoded name
@@ -1021,6 +1204,7 @@ int libfshfs_volume_get_utf8_name(
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_get_utf8_name";
+	int result                                  = 1;
 
 	if( volume == NULL )
 	{
@@ -1035,6 +1219,21 @@ int libfshfs_volume_get_utf8_name(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libfshfs_directory_entry_get_utf8_name(
 	     internal_volume->root_directory_entry,
 	     utf8_string,
@@ -1048,9 +1247,24 @@ int libfshfs_volume_get_utf8_name(
 		 "%s: unable to retrieve UTF-8 string.",
 		 function );
 
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
 		return( -1 );
 	}
-	return( 1 );
+#endif
+	return( result );
 }
 
 /* Retrieves the size of the UTF-16 encoded name
@@ -1064,6 +1278,7 @@ int libfshfs_volume_get_utf16_name_size(
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_get_utf16_name_size";
+	int result                                  = 1;
 
 	if( volume == NULL )
 	{
@@ -1078,6 +1293,21 @@ int libfshfs_volume_get_utf16_name_size(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libfshfs_directory_entry_get_utf16_name_size(
 	     internal_volume->root_directory_entry,
 	     utf16_string_size,
@@ -1090,9 +1320,24 @@ int libfshfs_volume_get_utf16_name_size(
 		 "%s: unable to retrieve UTF-16 string size.",
 		 function );
 
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
 		return( -1 );
 	}
-	return( 1 );
+#endif
+	return( result );
 }
 
 /* Retrieves the UTF-16 encoded name
@@ -1107,6 +1352,7 @@ int libfshfs_volume_get_utf16_name(
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_get_utf16_name";
+	int result                                  = 1;
 
 	if( volume == NULL )
 	{
@@ -1121,6 +1367,21 @@ int libfshfs_volume_get_utf16_name(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libfshfs_directory_entry_get_utf16_name(
 	     internal_volume->root_directory_entry,
 	     utf16_string,
@@ -1134,9 +1395,24 @@ int libfshfs_volume_get_utf16_name(
 		 "%s: unable to retrieve UTF-16 string.",
 		 function );
 
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
 		return( -1 );
 	}
-	return( 1 );
+#endif
+	return( result );
 }
 
 /* Retrieves the root directory file entry
@@ -1149,6 +1425,7 @@ int libfshfs_volume_get_root_directory(
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_get_root_directory";
+	int result                                  = 1;
 
 	if( volume == NULL )
 	{
@@ -1196,6 +1473,21 @@ int libfshfs_volume_get_root_directory(
 
 		return( -1 );
 	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libfshfs_file_entry_initialize(
 	     file_entry,
 	     internal_volume->root_directory_entry,
@@ -1210,8 +1502,23 @@ int libfshfs_volume_get_root_directory(
 		 "%s: unable to create file entry.",
 		 function );
 
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
 		return( -1 );
 	}
-	return( 1 );
+#endif
+	return( result );
 }
 

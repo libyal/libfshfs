@@ -1149,6 +1149,7 @@ In addition, the root folder is set as the blessed folder by placing its folder 
 ....
 
 == The catalog file
+
 The catalog file is a B-tree file used to maintain information about the
 hierarchy of files and directories of a volume.
 

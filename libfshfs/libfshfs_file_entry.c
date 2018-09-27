@@ -27,6 +27,7 @@
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_file_entry.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libcthreads.h"
 
 /* Creates a file_entry
  * Make sure the value file_entry is referencing, is set to NULL
@@ -92,7 +93,7 @@ int libfshfs_file_entry_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid catalog B-Tree file.",
+		 "%s: invalid catalog B-tree file.",
 		 function );
 
 		return( -1 );
@@ -130,6 +131,21 @@ int libfshfs_file_entry_initialize(
 	internal_file_entry->file_io_handle     = file_io_handle;
 	internal_file_entry->catalog_btree_file = catalog_btree_file;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_initialize(
+	     &( internal_file_entry->read_write_lock ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to intialize read/write lock.",
+		 function );
+
+		goto on_error;
+	}
+#endif
 	*file_entry = (libfshfs_file_entry_t *) internal_file_entry;
 
 	return( 1 );
@@ -170,6 +186,21 @@ int libfshfs_file_entry_free(
 		internal_file_entry = (libfshfs_internal_file_entry_t *) *file_entry;
 		*file_entry         = NULL;
 
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_free(
+		     &( internal_file_entry->read_write_lock ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free read/write lock.",
+			 function );
+
+			result = -1;
+		}
+#endif
 		/* The directory_entry, file_io_handle and catalog_btree_file references are freed elsewhere
 		 */
 #ifdef TODO

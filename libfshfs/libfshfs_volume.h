@@ -31,6 +31,7 @@
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libcthreads.h"
 #include "libfshfs_types.h"
 #include "libfshfs_volume_header.h"
 
@@ -69,6 +70,12 @@ struct libfshfs_internal_volume
 	/* The root directory entry
 	 */
 	libfshfs_directory_entry_t *root_directory_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
+	 */
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 LIBFSHFS_EXTERN \
@@ -116,9 +123,10 @@ int libfshfs_volume_close(
      libfshfs_volume_t *volume,
      libcerror_error_t **error );
 
-int libfshfs_volume_open_read(
+int libfshfs_internal_volume_open_read(
      libfshfs_internal_volume_t *internal_volume,
      libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
