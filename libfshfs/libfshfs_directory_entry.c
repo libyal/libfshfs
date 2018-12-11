@@ -62,7 +62,7 @@ int libfshfs_directory_entry_initialize(
 		return( -1 );
 	}
 	*directory_entry = memory_allocate_structure(
-	                     libfshfs_directory_entry_t );
+	                    libfshfs_directory_entry_t );
 
 	if( *directory_entry == NULL )
 	{

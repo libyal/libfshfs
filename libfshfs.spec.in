@@ -10,41 +10,43 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 @libfshfs_spec_requires@ @ax_libbfio_spec_requires@ @ax_libcdata_spec_requires@ @ax_libcerror_spec_requires@ @ax_libcfile_spec_requires@ @ax_libclocale_spec_requires@ @ax_libcnotify_spec_requires@ @ax_libcpath_spec_requires@ @ax_libcsplit_spec_requires@ @ax_libcthreads_spec_requires@ @ax_libfcache_spec_requires@ @ax_libfdata_spec_requires@ @ax_libfdatetime_spec_requires@ @ax_libfguid_spec_requires@ @ax_libuna_spec_requires@
 BuildRequires: gcc @ax_libbfio_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcthreads_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfdatetime_spec_build_requires@ @ax_libfguid_spec_build_requires@ @ax_libuna_spec_build_requires@
 
-%description
+%description -n libfshfs
 Library to support the Hierarchical File System (HFS) format
 
-%package devel
+%package -n libfshfs-devel
 Summary: Header files and libraries for developing applications for libfshfs
 Group: Development/Libraries
 Requires: libfshfs = %{version}-%{release}
 
-%description devel
+%description -n libfshfs-devel
 Header files and libraries for developing applications for libfshfs.
 
-%package python
+%package -n libfshfs-python2
+Obsoletes: libfshfs-python < %{version}
+Provides: libfshfs-python = %{version}
 Summary: Python 2 bindings for libfshfs
 Group: System Environment/Libraries
-Requires: libfshfs = %{version}-%{release} python
-BuildRequires: python-devel
+Requires: libfshfs = %{version}-%{release} python2
+BuildRequires: python2-devel
 
-%description python
+%description -n libfshfs-python2
 Python 2 bindings for libfshfs
 
-%package python3
+%package -n libfshfs-python3
 Summary: Python 3 bindings for libfshfs
 Group: System Environment/Libraries
 Requires: libfshfs = %{version}-%{release} python3
 BuildRequires: python3-devel
 
-%description python3
+%description -n libfshfs-python3
 Python 3 bindings for libfshfs
 
-%package tools
+%package -n libfshfs-tools
 Summary: Several tools for reading Hierarchical File System (HFS) volumes
 Group: Applications/System
 Requires: libfshfs = %{version}-%{release}
 
-%description tools
+%description -n libfshfs-tools
 Several tools for reading Hierarchical File System (HFS) volumes
 
 %prep
@@ -65,13 +67,13 @@ rm -rf %{buildroot}
 
 %postun -p /sbin/ldconfig
 
-%files
+%files -n libfshfs
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
 %attr(755,root,root) %{_libdir}/*.so.*
 
-%files devel
+%files -n libfshfs-devel
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README ChangeLog
@@ -82,7 +84,7 @@ rm -rf %{buildroot}
 %{_includedir}/*
 %{_mandir}/man3/*
 
-%files python
+%files -n libfshfs-python2
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
@@ -90,7 +92,7 @@ rm -rf %{buildroot}
 %{_libdir}/python2*/site-packages/*.la
 %{_libdir}/python2*/site-packages/*.so
 
-%files python3
+%files -n libfshfs-python3
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
@@ -98,7 +100,7 @@ rm -rf %{buildroot}
 %{_libdir}/python3*/site-packages/*.la
 %{_libdir}/python3*/site-packages/*.so
 
-%files tools
+%files -n libfshfs-tools
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README

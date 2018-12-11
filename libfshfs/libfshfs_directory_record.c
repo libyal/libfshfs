@@ -521,7 +521,8 @@ int libfshfs_directory_record_read_data(
 			 0 );
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	return( 1 );
 }
 

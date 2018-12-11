@@ -449,12 +449,12 @@ typedef struct fshfs_catalog_permissions_hfsplus fshfs_catalog_permissions_hfspl
 
 struct fshfs_catalog_permissions_hfsplus
 {
-	/* The owner identifier
+	/* The owner user identifier (UID)
 	 * Consists of 4 bytes
 	 */
 	uint8_t owner_identifier[ 4 ];
 
-	/* The group identifier
+	/* The group identifier (GID)
 	 * Consists of 4 bytes
 	 */
 	uint8_t group_identifier[ 4 ];
