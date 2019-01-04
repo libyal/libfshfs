@@ -9,6 +9,8 @@ Homepage: https://github.com/libyal/libfshfs
 Package: libfshfs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libfshfs1
+Replaces: libfshfs1
 Suggests: libfshfs-dbg
 Description: Library to support the Hierarchical File System (HFS) format
  libfshfs is a library to support the Hierarchical File System (HFS) format.
@@ -31,6 +33,8 @@ Package: libfshfs-tools
 Section: utils
 Architecture: any
 Depends: libfshfs (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libfshfs-utils
+Replaces: libfshfs-utils
 Description: Several tools for reading Hierarchical File System (HFS) volumes
  Several tools for reading Hierarchical File System (HFS) volumes.
 
@@ -45,6 +49,8 @@ Package: libfshfs-python
 Section: python
 Architecture: any
 Depends: libfshfs (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python-libfshfs
+Replaces: python-libfshfs
 Suggests: libfshfs-python-dbg
 Description: Python 2 bindings for libfshfs
  Python 2 bindings for libfshfs.
@@ -60,6 +66,8 @@ Package: libfshfs-python3
 Section: python
 Architecture: any
 Depends: libfshfs (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python3-libfshfs
+Replaces: python3-libfshfs
 Suggests: libfshfs-python3-dbg
 Description: Python 3 bindings for libfshfs
  Python 3 bindings for libfshfs.
