@@ -1,7 +1,7 @@
 Name: libfshfs
 Version: @VERSION@
 Release: 1
-Summary: Library to support the Hierarchical File System (HFS) format
+Summary: Library to access the Mac OS Hierarchical File System (HFS) format
 Group: System Environment/Libraries
 License: LGPL
 Source: %{name}-%{version}.tar.gz
@@ -11,7 +11,15 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: gcc @ax_libbfio_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcthreads_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfdatetime_spec_build_requires@ @ax_libfguid_spec_build_requires@ @ax_libuna_spec_build_requires@
 
 %description -n libfshfs
-Library to support the Hierarchical File System (HFS) format
+Library to access the Mac OS Hierarchical File System (HFS) format
+
+%package -n libfshfs-static
+Summary: Library to access the Mac OS Hierarchical File System (HFS) format
+Group: Development/Libraries
+Requires: libfshfs = %{version}-%{release}
+
+%description -n libfshfs-static
+Static library version of libfshfs.
 
 %package -n libfshfs-devel
 Summary: Header files and libraries for developing applications for libfshfs
@@ -42,12 +50,12 @@ BuildRequires: python3-devel
 Python 3 bindings for libfshfs
 
 %package -n libfshfs-tools
-Summary: Several tools for reading Hierarchical File System (HFS) volumes
+Summary: Several tools for reading Mac OS Hierarchical File System (HFS) volumes
 Group: Applications/System
 Requires: libfshfs = %{version}-%{release}
 
 %description -n libfshfs-tools
-Several tools for reading Hierarchical File System (HFS) volumes
+Several tools for reading Mac OS Hierarchical File System (HFS) volumes
 
 %prep
 %setup -q
@@ -73,11 +81,16 @@ rm -rf %{buildroot}
 %doc AUTHORS README
 %attr(755,root,root) %{_libdir}/*.so.*
 
+%files -n libfshfs-static
+%defattr(644,root,root,755)
+%license COPYING
+%doc AUTHORS README
+%attr(755,root,root) %{_libdir}/*.a
+
 %files -n libfshfs-devel
 %defattr(644,root,root,755)
 %license COPYING
 %doc AUTHORS README
-%{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/libfshfs.pc

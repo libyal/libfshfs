@@ -12,8 +12,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Conflicts: libfshfs1
 Replaces: libfshfs1
 Suggests: libfshfs-dbg
-Description: Library to support the Hierarchical File System (HFS) format
- libfshfs is a library to support the Hierarchical File System (HFS) format.
+Description: Library to access the Mac OS Hierarchical File System (HFS) format
+ libfshfs is a library to access the Mac OS Hierarchical File System (HFS) format.
 
 Package: libfshfs-dbg
 Architecture: any
@@ -35,8 +35,8 @@ Architecture: any
 Depends: libfshfs (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Conflicts: libfshfs-utils
 Replaces: libfshfs-utils
-Description: Several tools for reading Hierarchical File System (HFS) volumes
- Several tools for reading Hierarchical File System (HFS) volumes.
+Description: Several tools for reading Mac OS Hierarchical File System (HFS) volumes
+ Several tools for reading Mac OS Hierarchical File System (HFS) volumes.
 
 Package: libfshfs-tools-dbg
 Section: debug

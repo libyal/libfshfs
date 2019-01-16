@@ -36,14 +36,14 @@ int fshfstools_output_initialize(
      int stdio_mode,
      libcerror_error_t **error );
 
-void fshfsoutput_copyright_fprint(
+void fshfstools_output_copyright_fprint(
       FILE *stream );
 
-void fshfsoutput_version_fprint(
+void fshfstools_output_version_fprint(
       FILE *stream,
       const char *program );
 
-void fshfsoutput_version_detailed_fprint(
+void fshfstools_output_version_detailed_fprint(
       FILE *stream,
       const char *program );
 

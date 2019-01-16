@@ -97,7 +97,7 @@ int fshfstools_output_initialize(
 
 /* Prints the copyright information
  */
-void fshfsoutput_copyright_fprint(
+void fshfstools_output_copyright_fprint(
       FILE *stream )
 {
 	if( stream == NULL )
@@ -129,7 +129,7 @@ void fshfsoutput_copyright_fprint(
 
 /* Prints the version information
  */
-void fshfsoutput_version_fprint(
+void fshfstools_output_version_fprint(
       FILE *stream,
       const char *program )
 {
@@ -150,7 +150,7 @@ void fshfsoutput_version_fprint(
 
 /* Prints the detailed version information
  */
-void fshfsoutput_version_detailed_fprint(
+void fshfstools_output_version_detailed_fprint(
       FILE *stream,
       const char *program )
 {

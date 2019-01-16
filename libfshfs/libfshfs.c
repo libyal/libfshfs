@@ -1,5 +1,5 @@
 /*
- * Library to support the Hierarchical File System (HFS) format
+ * Library to access the Mac OS Hierarchical File System (HFS) format
  *
  * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *

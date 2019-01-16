@@ -1,9 +1,9 @@
-.Dd January  1, 2018
+.Dd January 16, 2019
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
 .Nm libfshfs.h
-.Nd Library to support the Hierarchical File System (HFS) format
+.Nd Library to access the Mac OS Hierarchical File System (HFS) format
 .Sh LIBRARY
 .Lb libfshfs
 .Sh SYNOPSIS
@@ -70,6 +70,8 @@ Volume functions
 .Fn libfshfs_volume_get_utf16_name_size "libfshfs_volume_t *volume, size_t *utf16_string_size, libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_volume_get_utf16_name "libfshfs_volume_t *volume, uint16_t *utf16_string, size_t utf16_string_size, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_volume_get_root_directory "libfshfs_volume_t *volume, libfshfs_file_entry_t **file_entry, libfshfs_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
@@ -78,6 +80,22 @@ Available when compiled with wide character string support:
 Available when compiled with libbfio support:
 .Ft int
 .Fn libfshfs_volume_open_file_io_handle "libfshfs_volume_t *volume, libbfio_handle_t *file_io_handle, int access_flags, libfshfs_error_t **error"
+.Pp
+File entry functions
+.Ft int
+.Fn libfshfs_file_entry_free "libfshfs_file_entry_t **file_entry, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_utf8_name_size "libfshfs_file_entry_t *file_entry, size_t *utf8_name_size, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_utf8_name "libfshfs_file_entry_t *file_entry, uint8_t *utf8_name, size_t utf8_name_size, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_utf16_name_size "libfshfs_file_entry_t *file_entry, size_t *utf16_name_size, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_utf16_name "libfshfs_file_entry_t *file_entry, uint16_t *utf16_name, size_t utf16_name_size, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_number_of_sub_file_entries "libfshfs_file_entry_t *file_entry, int *number_of_sub_file_entries, libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_sub_file_entry_by_index "libfshfs_file_entry_t *file_entry, int sub_file_entry_index, libfshfs_file_entry_t **sub_file_entry, libfshfs_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version
