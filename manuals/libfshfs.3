@@ -1,11 +1,9 @@
-.Dd January 16, 2019
+.Dd March  2, 2019
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
 .Nm libfshfs.h
 .Nd Library to access the Mac OS Hierarchical File System (HFS) format
-.Sh LIBRARY
-.Lb libfshfs
 .Sh SYNOPSIS
 .In libfshfs.h
 .Pp
@@ -15,27 +13,27 @@ Support functions
 .Ft int
 .Fn libfshfs_get_access_flags_read "void"
 .Ft int
-.Fn libfshfs_get_codepage "int *codepage, libfshfs_error_t **error"
+.Fn libfshfs_get_codepage "int *codepage" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_set_codepage "int codepage, libfshfs_error_t **error"
+.Fn libfshfs_set_codepage "int codepage" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_check_volume_signature "const char *filename, libfshfs_error_t **error"
+.Fn libfshfs_check_volume_signature "const char *filename" "libfshfs_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libfshfs_check_volume_signature_wide "const wchar_t *filename, libfshfs_error_t **error"
+.Fn libfshfs_check_volume_signature_wide "const wchar_t *filename" "libfshfs_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libfshfs_check_volume_signature_file_io_handle "libbfio_handle_t *file_io_handle, libfshfs_error_t **error"
+.Fn libfshfs_check_volume_signature_file_io_handle "libbfio_handle_t *file_io_handle" "libfshfs_error_t **error"
 .Pp
 Notify functions
 .Ft void
 .Fn libfshfs_notify_set_verbose "int verbose"
 .Ft int
-.Fn libfshfs_notify_set_stream "FILE *stream, libfshfs_error_t **error"
+.Fn libfshfs_notify_set_stream "FILE *stream" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_notify_stream_open "const char *filename, libfshfs_error_t **error"
+.Fn libfshfs_notify_stream_open "const char *filename" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_notify_stream_close "libfshfs_error_t **error"
 .Pp
@@ -43,59 +41,59 @@ Error functions
 .Ft void
 .Fn libfshfs_error_free "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_error_fprint "libfshfs_error_t *error, FILE *stream"
+.Fn libfshfs_error_fprint "libfshfs_error_t *error" "FILE *stream"
 .Ft int
-.Fn libfshfs_error_sprint "libfshfs_error_t *error, char *string, size_t size"
+.Fn libfshfs_error_sprint "libfshfs_error_t *error" "char *string" "size_t size"
 .Ft int
-.Fn libfshfs_error_backtrace_fprint "libfshfs_error_t *error, FILE *stream"
+.Fn libfshfs_error_backtrace_fprint "libfshfs_error_t *error" "FILE *stream"
 .Ft int
-.Fn libfshfs_error_backtrace_sprint "libfshfs_error_t *error, char *string, size_t size"
+.Fn libfshfs_error_backtrace_sprint "libfshfs_error_t *error" "char *string" "size_t size"
 .Pp
 Volume functions
 .Ft int
-.Fn libfshfs_volume_initialize "libfshfs_volume_t **volume, libfshfs_error_t **error"
+.Fn libfshfs_volume_initialize "libfshfs_volume_t **volume" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_free "libfshfs_volume_t **volume, libfshfs_error_t **error"
+.Fn libfshfs_volume_free "libfshfs_volume_t **volume" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_signal_abort "libfshfs_volume_t *volume, libfshfs_error_t **error"
+.Fn libfshfs_volume_signal_abort "libfshfs_volume_t *volume" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_open "libfshfs_volume_t *volume, const char *filename, int access_flags, libfshfs_error_t **error"
+.Fn libfshfs_volume_open "libfshfs_volume_t *volume" "const char *filename" "int access_flags" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_close "libfshfs_volume_t *volume, libfshfs_error_t **error"
+.Fn libfshfs_volume_close "libfshfs_volume_t *volume" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_get_utf8_name_size "libfshfs_volume_t *volume, size_t *utf8_string_size, libfshfs_error_t **error"
+.Fn libfshfs_volume_get_utf8_name_size "libfshfs_volume_t *volume" "size_t *utf8_string_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_get_utf8_name "libfshfs_volume_t *volume, uint8_t *utf8_string, size_t utf8_string_size, libfshfs_error_t **error"
+.Fn libfshfs_volume_get_utf8_name "libfshfs_volume_t *volume" "uint8_t *utf8_string" "size_t utf8_string_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_get_utf16_name_size "libfshfs_volume_t *volume, size_t *utf16_string_size, libfshfs_error_t **error"
+.Fn libfshfs_volume_get_utf16_name_size "libfshfs_volume_t *volume" "size_t *utf16_string_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_get_utf16_name "libfshfs_volume_t *volume, uint16_t *utf16_string, size_t utf16_string_size, libfshfs_error_t **error"
+.Fn libfshfs_volume_get_utf16_name "libfshfs_volume_t *volume" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_volume_get_root_directory "libfshfs_volume_t *volume, libfshfs_file_entry_t **file_entry, libfshfs_error_t **error"
+.Fn libfshfs_volume_get_root_directory "libfshfs_volume_t *volume" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libfshfs_volume_open_wide "libfshfs_volume_t *volume, const wchar_t *filename, int access_flags, libfshfs_error_t **error"
+.Fn libfshfs_volume_open_wide "libfshfs_volume_t *volume" "const wchar_t *filename" "int access_flags" "libfshfs_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libfshfs_volume_open_file_io_handle "libfshfs_volume_t *volume, libbfio_handle_t *file_io_handle, int access_flags, libfshfs_error_t **error"
+.Fn libfshfs_volume_open_file_io_handle "libfshfs_volume_t *volume" "libbfio_handle_t *file_io_handle" "int access_flags" "libfshfs_error_t **error"
 .Pp
 File entry functions
 .Ft int
-.Fn libfshfs_file_entry_free "libfshfs_file_entry_t **file_entry, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_free "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_utf8_name_size "libfshfs_file_entry_t *file_entry, size_t *utf8_name_size, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_utf8_name_size "libfshfs_file_entry_t *file_entry" "size_t *utf8_name_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_utf8_name "libfshfs_file_entry_t *file_entry, uint8_t *utf8_name, size_t utf8_name_size, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_utf8_name "libfshfs_file_entry_t *file_entry" "uint8_t *utf8_name" "size_t utf8_name_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_utf16_name_size "libfshfs_file_entry_t *file_entry, size_t *utf16_name_size, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_utf16_name_size "libfshfs_file_entry_t *file_entry" "size_t *utf16_name_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_utf16_name "libfshfs_file_entry_t *file_entry, uint16_t *utf16_name, size_t utf16_name_size, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_utf16_name "libfshfs_file_entry_t *file_entry" "uint16_t *utf16_name" "size_t utf16_name_size" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_number_of_sub_file_entries "libfshfs_file_entry_t *file_entry, int *number_of_sub_file_entries, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_number_of_sub_file_entries "libfshfs_file_entry_t *file_entry" "int *number_of_sub_file_entries" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_sub_file_entry_by_index "libfshfs_file_entry_t *file_entry, int sub_file_entry_index, libfshfs_file_entry_t **sub_file_entry, libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_sub_file_entry_by_index "libfshfs_file_entry_t *file_entry" "int sub_file_entry_index" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version
@@ -108,8 +106,8 @@ None
 .Sh FILES
 None
 .Sh NOTES
-libfshfs allows to be compiled with wide character support (wchar_t).
-
+libfshfs can be compiled with wide character support (wchar_t).
+.sp
 To compile libfshfs with wide character support use:
 .Ar ./configure --enable-wide-character-type=yes
  or define:
@@ -117,7 +115,7 @@ To compile libfshfs with wide character support use:
  or
 .Ar UNICODE
  during compilation.
-
+.sp
 .Ar LIBFSHFS_WIDE_CHARACTER_TYPE
  in libfshfs/features.h can be used to determine if libfshfs was compiled with wide character support.
 .Sh BUGS
@@ -126,7 +124,7 @@ Please report bugs of any kind on the project issue tracker: https://github.com/
 These man pages are generated from "libfshfs.h".
 .Sh COPYRIGHT
 Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>.
-
+.sp
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .Sh SEE ALSO
