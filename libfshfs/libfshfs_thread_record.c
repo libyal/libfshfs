@@ -147,7 +147,7 @@ int libfshfs_thread_record_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	uint8_t *name_data               = NULL;
+	const uint8_t *name_data         = NULL;
 	static char *function            = "libfshfs_thread_record_read_data";
 	size_t record_size               = 0;
 	uint16_t name_size               = 0;
@@ -340,7 +340,7 @@ int libfshfs_thread_record_read_data(
 
 	if( name_size > 0 )
 	{
-		name_data  = &( data[ sizeof( fshfs_catalog_thread_record_hfsplus_t ) ] );
+		name_data = &( data[ sizeof( fshfs_catalog_thread_record_hfsplus_t ) ] );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )

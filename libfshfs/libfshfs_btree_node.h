@@ -43,7 +43,7 @@ struct libfshfs_btree_node_record
 {
 	/* The reference to the node record data
 	 */
-	uint8_t *data;
+	const uint8_t *data;
 
 	/* The offset of the node record
 	 */
@@ -91,7 +91,7 @@ int libfshfs_btree_node_free(
 int libfshfs_btree_node_get_record_data_by_index(
      libfshfs_btree_node_t *node,
      uint16_t record_index,
-     uint8_t **record_data,
+     const uint8_t **record_data,
      size_t *record_data_size,
      libcerror_error_t **error );
 

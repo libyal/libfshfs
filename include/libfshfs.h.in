@@ -331,7 +331,7 @@ int libfshfs_file_entry_free(
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_utf8_name_size(
      libfshfs_file_entry_t *file_entry,
-     size_t *utf8_name_size,
+     size_t *utf8_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the UTF-8 encoded name
@@ -342,8 +342,8 @@ int libfshfs_file_entry_get_utf8_name_size(
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_utf8_name(
      libfshfs_file_entry_t *file_entry,
-     uint8_t *utf8_name,
-     size_t utf8_name_size,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the size of the UTF-16 encoded name
@@ -354,7 +354,7 @@ int libfshfs_file_entry_get_utf8_name(
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_utf16_name_size(
      libfshfs_file_entry_t *file_entry,
-     size_t *utf16_name_size,
+     size_t *utf16_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the UTF-16 encoded name
@@ -365,8 +365,8 @@ int libfshfs_file_entry_get_utf16_name_size(
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_utf16_name(
      libfshfs_file_entry_t *file_entry,
-     uint16_t *utf16_name,
-     size_t utf16_name_size,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libfshfs_error_t **error );
 
 /* Retrieves the number of sub file entries
