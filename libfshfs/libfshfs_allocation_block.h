@@ -28,7 +28,6 @@
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfcache.h"
 #include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
@@ -61,7 +60,7 @@ int libfshfs_allocation_block_read_element_data(
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfdata_vector_t *vector,
-     libfcache_cache_t *cache,
+     libfdata_cache_t *cache,
      int element_index,
      int element_data_file_index,
      off64_t allocation_block_offset,
