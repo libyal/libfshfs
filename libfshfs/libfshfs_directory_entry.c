@@ -29,6 +29,11 @@
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libuna.h"
 
+uint8_t hfsplus_private_data[ 42 ] = {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 'H', 0x00, 'F', 0x00, 'S', 0x00, '+',
+	0x00, ' ', 0x00, 'P', 0x00, 'r', 0x00, 'i', 0x00, 'v', 0x00, 'a', 0x00, 't', 0x00, 'e',
+	0x00, ' ', 0x00, 'D', 0x00, 'a', 0x00, 't', 0x00, 'a' };
+
 /* Creates a directory entry
  * Make sure the value directory_entry is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
@@ -240,7 +245,9 @@ int libfshfs_directory_entry_get_utf8_name_size(
      size_t *utf8_string_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_directory_entry_get_utf8_name_size";
+	static char *function        = "libfshfs_directory_entry_get_utf8_name_size";
+	size_t name_index            = 0;
+	size_t safe_utf8_string_size = 0;
 
 	if( directory_entry == NULL )
 	{
@@ -253,11 +260,42 @@ int libfshfs_directory_entry_get_utf8_name_size(
 
 		return( -1 );
 	}
+	if( directory_entry->name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid directory entry - missing name.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf8_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO detect special names on read */
+	if( ( directory_entry->name_size == 42 )
+	 && ( memory_compare(
+	       directory_entry->name,
+	       hfsplus_private_data,
+	       42 ) == 0 ) )
+	{
+		name_index = 8;
+	}
 	if( libuna_utf8_string_size_from_utf16_stream(
-	     directory_entry->name,
-	     (size_t) directory_entry->name_size,
+	     &( directory_entry->name[ name_index ] ),
+	     (size_t) directory_entry->name_size - name_index,
 	     LIBUNA_ENDIAN_BIG,
-	     utf8_string_size,
+	     &safe_utf8_string_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -269,6 +307,8 @@ int libfshfs_directory_entry_get_utf8_name_size(
 
 		return( -1 );
 	}
+	*utf8_string_size = safe_utf8_string_size + ( name_index / 2 );
+
 	return( 1 );
 }
 
@@ -282,7 +322,9 @@ int libfshfs_directory_entry_get_utf8_name(
      size_t utf8_string_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_directory_entry_get_utf8_name";
+	static char *function    = "libfshfs_directory_entry_get_utf8_name";
+	size_t name_index        = 0;
+	size_t utf8_string_index = 0;
 
 	if( directory_entry == NULL )
 	{
@@ -295,11 +337,57 @@ int libfshfs_directory_entry_get_utf8_name(
 
 		return( -1 );
 	}
+	if( directory_entry->name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid directory entry - missing name.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf8_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->name_size == 42 )
+	 && ( memory_compare(
+	       directory_entry->name,
+	       hfsplus_private_data,
+	       42 ) == 0 ) )
+	{
+		if( utf8_string_size < 4 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid UTF-8 string size too small.",
+			 function );
+
+			return( -1 );
+		}
+		name_index = 8;
+
+		utf8_string[ utf8_string_index++ ] = 0;
+		utf8_string[ utf8_string_index++ ] = 0;
+		utf8_string[ utf8_string_index++ ] = 0;
+		utf8_string[ utf8_string_index++ ] = 0;
+	}
 	if( libuna_utf8_string_copy_from_utf16_stream(
-	     utf8_string,
-	     utf8_string_size,
-	     directory_entry->name,
-	     (size_t) directory_entry->name_size,
+	     &( utf8_string[ utf8_string_index ] ),
+	     utf8_string_size - utf8_string_index,
+	     &( directory_entry->name[ name_index ] ),
+	     (size_t) directory_entry->name_size - name_index,
 	     LIBUNA_ENDIAN_BIG,
 	     error ) != 1 )
 	{

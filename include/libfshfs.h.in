@@ -323,6 +323,15 @@ int libfshfs_file_entry_free(
      libfshfs_file_entry_t **file_entry,
      libfshfs_error_t **error );
 
+/* Retrieves the identifier (or catalog node identifier (CNID) or inode number)
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *identifier,
+     libfshfs_error_t **error );
+
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
  * This value is retrieved from the catalog node key of the directory record

@@ -247,7 +247,7 @@ int libfshfs_btree_file_get_node_by_number(
 	if( libfdata_vector_get_element_value_by_index(
 	     btree_file->nodes_vector,
 	     (intptr_t *) file_io_handle,
-	     btree_file->nodes_cache,
+	     (libfdata_cache_t *) btree_file->nodes_cache,
 	     node_number,
 	     (intptr_t **) node,
 	     0,
@@ -313,7 +313,7 @@ int libfshfs_btree_file_get_root_node(
 	if( libfdata_vector_get_element_value_by_index(
 	     btree_file->nodes_vector,
 	     (intptr_t *) file_io_handle,
-	     btree_file->nodes_cache,
+	     (libfdata_cache_t *) btree_file->nodes_cache,
 	     (int) btree_file->header->root_node_number,
 	     (intptr_t **) root_node,
 	     0,

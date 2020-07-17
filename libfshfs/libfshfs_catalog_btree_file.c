@@ -109,7 +109,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 
 	libfshfs_btree_node_t *sub_node        = NULL;
 	libfshfs_catalog_btree_key_t *node_key = NULL;
-	uint8_t *record_data                   = NULL;
+	const uint8_t *record_data             = NULL;
 	static char *function                  = "libfshfs_catalog_btree_file_get_thread_record_from_node";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
@@ -486,7 +486,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 	libfshfs_catalog_btree_key_t *node_key        = NULL;
 	libfshfs_directory_record_t *directory_record = NULL;
 	libfshfs_file_record_t *file_record           = NULL;
-	uint8_t *record_data                          = NULL;
+	const uint8_t *record_data                    = NULL;
 	intptr_t *catalog_record                      = NULL;
 	static char *function                         = "libfshfs_catalog_btree_file_get_directory_entry_from_node";
 	size_t record_data_offset                     = 0;
@@ -941,8 +941,8 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 	libfshfs_directory_entry_t *directory_entry   = NULL;
 	libfshfs_directory_record_t *directory_record = NULL;
 	libfshfs_file_record_t *file_record           = NULL;
+	const uint8_t *record_data                    = NULL;
 	intptr_t *catalog_record                      = NULL;
-	uint8_t *record_data                          = NULL;
 	static char *function                         = "libfshfs_catalog_btree_file_get_directory_entries_from_node";
 	size_t record_data_offset                     = 0;
 	size_t record_data_size                       = 0;

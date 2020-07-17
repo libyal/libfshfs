@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #endif
 
-#include "fshfs_test_libcerror.h"
 #include "fshfs_test_libfshfs.h"
 #include "fshfs_test_macros.h"
 #include "fshfs_test_unused.h"

@@ -1,5 +1,5 @@
 /*
- * Python bindings for libfshfs (pyfshfs)
+ * Python bindings module for libfshfs (pyfshfs)
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -41,6 +41,16 @@ PyObject *pyfshfs_check_volume_signature(
            PyObject *keywords );
 
 PyObject *pyfshfs_check_volume_signature_file_object(
+           PyObject *self,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfshfs_open_new_volume(
+           PyObject *self,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfshfs_open_new_volume_with_file_object(
            PyObject *self,
            PyObject *arguments,
            PyObject *keywords );

@@ -24,6 +24,8 @@ am_pyfshfs_la_rpath = -rpath $(pyexecdir3)
 BUILT_SOURCES = \
 	pyfshfs.c pyfshfs.h \
 	pyfshfs_error.c pyfshfs_error.h \
+	pyfshfs_file_entry.c pyfshfs_file_entry.h \
+	pyfshfs_file_entries.c pyfshfs_file_entries.h \
 	pyfshfs_file_object_io_handle.c pyfshfs_file_object_io_handle.h \
 	pyfshfs_integer.c pyfshfs_integer.h \
 	pyfshfs_libbfio.h \

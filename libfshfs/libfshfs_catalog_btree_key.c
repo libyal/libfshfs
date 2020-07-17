@@ -292,7 +292,7 @@ int libfshfs_catalog_btree_key_read_data(
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
-				if( libfshfs_debug_print_utf16_string_value(
+				if( libfshfs_debug_print_utf16_name_value(
 				     function,
 				     "name\t\t\t\t",
 				     &( data[ sizeof( fshfs_catalog_index_key_hfsplus_t ) ] ),
@@ -304,7 +304,7 @@ int libfshfs_catalog_btree_key_read_data(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
-					 "%s: unable to print UTF-16 string value.",
+					 "%s: unable to print UTF-16 name value.",
 					 function );
 
 					goto on_error;

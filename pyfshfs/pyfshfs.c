@@ -29,7 +29,10 @@
 
 #include "pyfshfs.h"
 #include "pyfshfs_error.h"
+#include "pyfshfs_file_entries.h"
+#include "pyfshfs_file_entry.h"
 #include "pyfshfs_file_object_io_handle.h"
+#include "pyfshfs_libbfio.h"
 #include "pyfshfs_libcerror.h"
 #include "pyfshfs_libfshfs.h"
 #include "pyfshfs_python.h"
@@ -60,34 +63,31 @@ PyMethodDef pyfshfs_module_methods[] = {
 	  METH_VARARGS | METH_KEYWORDS,
 	  "check_volume_signature(filename) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a NTFS volume signature." },
+	  "Checks if a volume has a Hierarchical File System (HFS) volume signature." },
 
 	{ "check_volume_signature_file_object",
 	  (PyCFunction) pyfshfs_check_volume_signature_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "check_volume_signature(file_object) -> Boolean\n"
+	  "check_volume_signature_file_object(file_object) -> Boolean\n"
 	  "\n"
-	  "Checks if a volume has a NTFS volume signature using a file-like object." },
+	  "Checks if a volume has a Hierarchical File System (HFS) volume signature using a file-like object." },
 
 	{ "open",
-	  (PyCFunction) pyfshfs_volume_new_open,
+	  (PyCFunction) pyfshfs_open_new_volume,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open(filename, mode='r') -> Object\n"
 	  "\n"
 	  "Opens a volume." },
 
 	{ "open_file_object",
-	  (PyCFunction) pyfshfs_volume_new_open_file_object,
+	  (PyCFunction) pyfshfs_open_new_volume_with_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open_file_object(file_object, mode='r') -> Object\n"
 	  "\n"
 	  "Opens a volume using a file-like object." },
 
 	/* Sentinel */
-	{ NULL,
-	  NULL,
-	  0,
-	  NULL}
+	{ NULL, NULL, 0, NULL }
 };
 
 /* Retrieves the pyfshfs/libfshfs version
@@ -123,7 +123,7 @@ PyObject *pyfshfs_get_version(
 	         errors ) );
 }
 
-/* Checks if the volume has a NTFS volume signature
+/* Checks if a volume has a Hierarchical File System (HFS) volume signature
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfshfs_check_volume_signature(
@@ -131,12 +131,12 @@ PyObject *pyfshfs_check_volume_signature(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *string_object      = NULL;
-	libcerror_error_t *error     = NULL;
-	static char *function        = "pyfshfs_check_volume_signature";
-	static char *keyword_list[]  = { "filename", NULL };
-	const char *filename_narrow  = NULL;
-	int result                   = 0;
+	PyObject *string_object     = NULL;
+	libcerror_error_t *error    = NULL;
+	const char *filename_narrow = NULL;
+	static char *function       = "pyfshfs_check_volume_signature";
+	static char *keyword_list[] = { "filename", NULL };
+	int result                  = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	const wchar_t *filename_wide = NULL;
@@ -154,7 +154,7 @@ PyObject *pyfshfs_check_volume_signature(
 	if( PyArg_ParseTupleAndKeywords(
 	     arguments,
 	     keywords,
-	     "|O",
+	     "O|",
 	     keyword_list,
 	     &string_object ) == 0 )
 	{
@@ -169,8 +169,8 @@ PyObject *pyfshfs_check_volume_signature(
 	if( result == -1 )
 	{
 		pyfshfs_error_fetch_and_raise(
-	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -195,19 +195,19 @@ PyObject *pyfshfs_check_volume_signature(
 
 		if( utf8_string_object == NULL )
 		{
-			PyErr_Format(
+			pyfshfs_error_fetch_and_raise(
 			 PyExc_RuntimeError,
-			 "%s: unable to convert unicode string to UTF-8.",
+			 "%s: unable to convert Unicode string to UTF-8.",
 			 function );
 
 			return( NULL );
 		}
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -219,7 +219,9 @@ PyObject *pyfshfs_check_volume_signature(
 
 		Py_DecRef(
 		 utf8_string_object );
-#endif
+
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
+
 		if( result == -1 )
 		{
 			pyfshfs_error_raise(
@@ -249,17 +251,17 @@ PyObject *pyfshfs_check_volume_signature(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
 		pyfshfs_error_fetch_and_raise(
-	         PyExc_RuntimeError,
+		 PyExc_RuntimeError,
 		 "%s: unable to determine if string object is of type string.",
 		 function );
 
@@ -271,10 +273,10 @@ PyObject *pyfshfs_check_volume_signature(
 
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   string_object );
+		                   string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   string_object );
+		                   string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -317,7 +319,7 @@ PyObject *pyfshfs_check_volume_signature(
 	return( NULL );
 }
 
-/* Checks if the volume has a NTFS volume signature using a file-like object
+/* Checks if a volume has a Hierarchical File System (HFS) volume signature using a file-like object
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyfshfs_check_volume_signature_file_object(
@@ -325,9 +327,9 @@ PyObject *pyfshfs_check_volume_signature_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	libcerror_error_t *error         = NULL;
-	libbfio_handle_t *file_io_handle = NULL;
 	PyObject *file_object            = NULL;
+	libbfio_handle_t *file_io_handle = NULL;
+	libcerror_error_t *error         = NULL;
 	static char *function            = "pyfshfs_check_volume_signature_file_object";
 	static char *keyword_list[]      = { "file_object", NULL };
 	int result                       = 0;
@@ -417,6 +419,108 @@ on_error:
 	return( NULL );
 }
 
+/* Creates a new volume object and opens it
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_open_new_volume(
+           PyObject *self PYFSHFS_ATTRIBUTE_UNUSED,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	pyfshfs_volume_t *pyfshfs_volume = NULL;
+	static char *function            = "pyfshfs_open_new_volume";
+
+	PYFSHFS_UNREFERENCED_PARAMETER( self )
+
+	/* PyObject_New does not invoke tp_init
+	 */
+	pyfshfs_volume = PyObject_New(
+	                  struct pyfshfs_volume,
+	                  &pyfshfs_volume_type_object );
+
+	if( pyfshfs_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create volume.",
+		 function );
+
+		goto on_error;
+	}
+	if( pyfshfs_volume_init(
+	     pyfshfs_volume ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pyfshfs_volume_open(
+	     pyfshfs_volume,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pyfshfs_volume );
+
+on_error:
+	if( pyfshfs_volume != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyfshfs_volume );
+	}
+	return( NULL );
+}
+
+/* Creates a new volume object and opens it using a file-like object
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_open_new_volume_with_file_object(
+           PyObject *self PYFSHFS_ATTRIBUTE_UNUSED,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	pyfshfs_volume_t *pyfshfs_volume = NULL;
+	static char *function            = "pyfshfs_open_new_volume_with_file_object";
+
+	PYFSHFS_UNREFERENCED_PARAMETER( self )
+
+	/* PyObject_New does not invoke tp_init
+	 */
+	pyfshfs_volume = PyObject_New(
+	                  struct pyfshfs_volume,
+	                  &pyfshfs_volume_type_object );
+
+	if( pyfshfs_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create volume.",
+		 function );
+
+		goto on_error;
+	}
+	if( pyfshfs_volume_init(
+	     pyfshfs_volume ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pyfshfs_volume_open_file_object(
+	     pyfshfs_volume,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pyfshfs_volume );
+
+on_error:
+	if( pyfshfs_volume != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyfshfs_volume );
+	}
+	return( NULL );
+}
+
 #if PY_MAJOR_VERSION >= 3
 
 /* The pyfshfs module definition
@@ -454,9 +558,8 @@ PyMODINIT_FUNC initpyfshfs(
                 void )
 #endif
 {
-	PyObject *module                 = NULL;
-	PyTypeObject *volume_type_object = NULL;
-	PyGILState_STATE gil_state       = 0;
+	PyObject *module           = NULL;
+	PyGILState_STATE gil_state = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	libfshfs_notify_set_stream(
@@ -491,6 +594,40 @@ PyMODINIT_FUNC initpyfshfs(
 
 	gil_state = PyGILState_Ensure();
 
+	/* Setup the file_entries type object
+	 */
+	pyfshfs_file_entries_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfshfs_file_entries_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfshfs_file_entries_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "file_entries",
+	 (PyObject *) &pyfshfs_file_entries_type_object );
+
+	/* Setup the file_entry type object
+	 */
+	pyfshfs_file_entry_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfshfs_file_entry_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfshfs_file_entry_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "file_entry",
+	 (PyObject *) &pyfshfs_file_entry_type_object );
+
 	/* Setup the volume type object
 	 */
 	pyfshfs_volume_type_object.tp_new = PyType_GenericNew;
@@ -503,12 +640,10 @@ PyMODINIT_FUNC initpyfshfs(
 	Py_IncRef(
 	 (PyObject *) &pyfshfs_volume_type_object );
 
-	volume_type_object = &pyfshfs_volume_type_object;
-
 	PyModule_AddObject(
 	 module,
 	 "volume",
-	 (PyObject *) volume_type_object );
+	 (PyObject *) &pyfshfs_volume_type_object );
 
 	PyGILState_Release(
 	 gil_state );

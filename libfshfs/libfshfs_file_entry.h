@@ -76,6 +76,12 @@ int libfshfs_file_entry_free(
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *identifier,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_utf8_name_size(
      libfshfs_file_entry_t *file_entry,
      size_t *utf8_string_size,
@@ -99,6 +105,10 @@ int libfshfs_file_entry_get_utf16_name(
      libfshfs_file_entry_t *file_entry,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_sub_directory_entries(
+     libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

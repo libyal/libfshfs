@@ -53,19 +53,6 @@ struct pyfshfs_volume
 extern PyMethodDef pyfshfs_volume_object_methods[];
 extern PyTypeObject pyfshfs_volume_type_object;
 
-PyObject *pyfshfs_volume_new(
-           void );
-
-PyObject *pyfshfs_volume_new_open(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyfshfs_volume_new_open_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
 int pyfshfs_volume_init(
      pyfshfs_volume_t *pyfshfs_volume );
 
@@ -91,6 +78,10 @@ PyObject *pyfshfs_volume_close(
            PyObject *arguments );
 
 PyObject *pyfshfs_volume_get_name(
+           pyfshfs_volume_t *pyfshfs_volume,
+           PyObject *arguments );
+
+PyObject *pyfshfs_volume_get_root_directory(
            pyfshfs_volume_t *pyfshfs_volume,
            PyObject *arguments );
 

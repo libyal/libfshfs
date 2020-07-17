@@ -1,4 +1,4 @@
-.Dd September  2, 2019
+.Dd July 17, 2020
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -82,6 +82,8 @@ Available when compiled with libbfio support:
 File entry functions
 .Ft int
 .Fn libfshfs_file_entry_free "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *identifier" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_utf8_name_size "libfshfs_file_entry_t *file_entry" "size_t *utf8_string_size" "libfshfs_error_t **error"
 .Ft int

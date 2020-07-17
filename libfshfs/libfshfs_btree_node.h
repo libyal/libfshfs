@@ -105,7 +105,7 @@ int libfshfs_btree_node_read_element_data(
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfdata_vector_t *vector,
-     libfcache_cache_t *cache,
+     libfdata_cache_t *cache,
      int element_index,
      int element_data_file_index,
      off64_t btree_node_offset,

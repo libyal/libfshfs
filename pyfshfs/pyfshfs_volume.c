@@ -27,6 +27,7 @@
 #endif
 
 #include "pyfshfs_error.h"
+#include "pyfshfs_file_entry.h"
 #include "pyfshfs_file_object_io_handle.h"
 #include "pyfshfs_libbfio.h"
 #include "pyfshfs_libcerror.h"
@@ -79,9 +80,16 @@ PyMethodDef pyfshfs_volume_object_methods[] = {
 	{ "get_name",
 	  (PyCFunction) pyfshfs_volume_get_name,
 	  METH_NOARGS,
-	  "get_name() -> Unicode string or None\n"
+	  "get_name() -> Unicode string\n"
 	  "\n"
 	  "Retrieves the name." },
+
+	{ "get_root_directory",
+	  (PyCFunction) pyfshfs_volume_get_root_directory,
+	  METH_NOARGS,
+	  "get_root_directory() -> Object\n"
+	  "\n"
+	  "Retrieves the root directory file entry." },
 
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
@@ -93,6 +101,12 @@ PyGetSetDef pyfshfs_volume_object_get_set_definitions[] = {
 	  (getter) pyfshfs_volume_get_name,
 	  (setter) 0,
 	  "The name.",
+	  NULL },
+
+	{ "root_directory",
+	  (getter) pyfshfs_volume_get_root_directory,
+	  (setter) 0,
+	  "The root directory file entry.",
 	  NULL },
 
 	/* Sentinel */
@@ -194,93 +208,6 @@ PyTypeObject pyfshfs_volume_type_object = {
 	0
 };
 
-/* Creates a new volume object
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyfshfs_volume_new(
-           void )
-{
-	pyfshfs_volume_t *pyfshfs_volume = NULL;
-	static char *function            = "pyfshfs_volume_new";
-
-	pyfshfs_volume = PyObject_New(
-	                  struct pyfshfs_volume,
-	                  &pyfshfs_volume_type_object );
-
-	if( pyfshfs_volume == NULL )
-	{
-		PyErr_Format(
-		 PyExc_MemoryError,
-		 "%s: unable to initialize volume.",
-		 function );
-
-		goto on_error;
-	}
-	if( pyfshfs_volume_init(
-	     pyfshfs_volume ) != 0 )
-	{
-		PyErr_Format(
-		 PyExc_MemoryError,
-		 "%s: unable to initialize volume.",
-		 function );
-
-		goto on_error;
-	}
-	return( (PyObject *) pyfshfs_volume );
-
-on_error:
-	if( pyfshfs_volume != NULL )
-	{
-		Py_DecRef(
-		 (PyObject *) pyfshfs_volume );
-	}
-	return( NULL );
-}
-
-/* Creates a new volume object and opens it
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyfshfs_volume_new_open(
-           PyObject *self PYFSHFS_ATTRIBUTE_UNUSED,
-           PyObject *arguments,
-           PyObject *keywords )
-{
-	PyObject *pyfshfs_volume = NULL;
-
-	PYFSHFS_UNREFERENCED_PARAMETER( self )
-
-	pyfshfs_volume = pyfshfs_volume_new();
-
-	pyfshfs_volume_open(
-	 (pyfshfs_volume_t *) pyfshfs_volume,
-	 arguments,
-	 keywords );
-
-	return( pyfshfs_volume );
-}
-
-/* Creates a new volume object and opens it using a file-like object
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyfshfs_volume_new_open_file_object(
-           PyObject *self PYFSHFS_ATTRIBUTE_UNUSED,
-           PyObject *arguments,
-           PyObject *keywords )
-{
-	PyObject *pyfshfs_volume = NULL;
-
-	PYFSHFS_UNREFERENCED_PARAMETER( self )
-
-	pyfshfs_volume = pyfshfs_volume_new();
-
-	pyfshfs_volume_open_file_object(
-	 (pyfshfs_volume_t *) pyfshfs_volume,
-	 arguments,
-	 keywords );
-
-	return( pyfshfs_volume );
-}
-
 /* Intializes a volume object
  * Returns 0 if successful or -1 on error
  */
@@ -299,6 +226,8 @@ int pyfshfs_volume_init(
 
 		return( -1 );
 	}
+	/* Make sure libfshfs volume is set to NULL
+	 */
 	pyfshfs_volume->volume         = NULL;
 	pyfshfs_volume->file_io_handle = NULL;
 
@@ -339,15 +268,6 @@ void pyfshfs_volume_free(
 
 		return;
 	}
-	if( pyfshfs_volume->volume == NULL )
-	{
-		PyErr_Format(
-		 PyExc_ValueError,
-		 "%s: invalid volume - missing libfshfs volume.",
-		 function );
-
-		return;
-	}
 	ob_type = Py_TYPE(
 	           pyfshfs_volume );
 
@@ -369,24 +289,27 @@ void pyfshfs_volume_free(
 
 		return;
 	}
-	Py_BEGIN_ALLOW_THREADS
-
-	result = libfshfs_volume_free(
-	          &( pyfshfs_volume->volume ),
-	          &error );
-
-	Py_END_ALLOW_THREADS
-
-	if( result != 1 )
+	if( pyfshfs_volume->volume != NULL )
 	{
-		pyfshfs_error_raise(
-		 error,
-		 PyExc_MemoryError,
-		 "%s: unable to free libfshfs volume.",
-		 function );
+		Py_BEGIN_ALLOW_THREADS
 
-		libcerror_error_free(
-		 &error );
+		result = libfshfs_volume_free(
+		          &( pyfshfs_volume->volume ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyfshfs_error_raise(
+			 error,
+			 PyExc_MemoryError,
+			 "%s: unable to free libfshfs volume.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+		}
 	}
 	ob_type->tp_free(
 	 (PyObject*) pyfshfs_volume );
@@ -449,13 +372,13 @@ PyObject *pyfshfs_volume_open(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *string_object      = NULL;
-	libcerror_error_t *error     = NULL;
-	const char *filename_narrow  = NULL;
-	static char *function        = "pyfshfs_volume_open";
-	static char *keyword_list[]  = { "filename", "mode", NULL };
-	char *mode                   = NULL;
-	int result                   = 0;
+	PyObject *string_object     = NULL;
+	libcerror_error_t *error    = NULL;
+	const char *filename_narrow = NULL;
+	static char *function       = "pyfshfs_volume_open";
+	static char *keyword_list[] = { "filename", "mode", NULL };
+	char *mode                  = NULL;
+	int result                  = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	const wchar_t *filename_wide = NULL;
@@ -508,7 +431,7 @@ PyObject *pyfshfs_volume_open(
 	{
 		pyfshfs_error_fetch_and_raise(
 		 PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -537,7 +460,7 @@ PyObject *pyfshfs_volume_open(
 		{
 			pyfshfs_error_fetch_and_raise(
 			 PyExc_RuntimeError,
-			 "%s: unable to convert unicode string to UTF-8.",
+			 "%s: unable to convert Unicode string to UTF-8.",
 			 function );
 
 			return( NULL );
@@ -692,6 +615,36 @@ PyObject *pyfshfs_volume_open_file_object(
 
 		return( NULL );
 	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "read" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing read attribute.",
+		 function );
+
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "seek" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing seek attribute.",
+		 function );
+
+		return( NULL );
+	}
 	if( pyfshfs_volume->file_io_handle != NULL )
 	{
 		pyfshfs_error_raise(
@@ -700,7 +653,7 @@ PyObject *pyfshfs_volume_open_file_object(
 		 "%s: invalid volume - file IO handle already set.",
 		 function );
 
-		goto on_error;
+		return( NULL );
 	}
 	if( pyfshfs_file_object_initialize(
 	     &( pyfshfs_volume->file_io_handle ),
@@ -813,7 +766,7 @@ PyObject *pyfshfs_volume_close(
 		{
 			pyfshfs_error_raise(
 			 error,
-			 PyExc_IOError,
+			 PyExc_MemoryError,
 			 "%s: unable to free libbfio file IO handle.",
 			 function );
 
@@ -921,7 +874,7 @@ PyObject *pyfshfs_volume_get_name(
 		goto on_error;
 	}
 	/* Pass the string length to PyUnicode_DecodeUTF8 otherwise it makes
-	 * the end of string character is part of the string
+	 * the end of string character is part of the string.
 	 */
 	string_object = PyUnicode_DecodeUTF8(
 	                 utf8_string,
@@ -947,6 +900,84 @@ on_error:
 	{
 		PyMem_Free(
 		 utf8_string );
+	}
+	return( NULL );
+}
+
+/* Retrieves the root root directory file entry
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_volume_get_root_directory(
+           pyfshfs_volume_t *pyfshfs_volume,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *directory_object            = NULL;
+	libcerror_error_t *error              = NULL;
+	libfshfs_file_entry_t *root_directory = NULL;
+	static char *function                 = "pyfshfs_volume_get_root_directory";
+	int result                            = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_volume == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid volume.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_volume_get_root_directory(
+	          pyfshfs_volume->volume,
+	          &root_directory,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve root root directory file entry.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	directory_object = pyfshfs_file_entry_new(
+	                    root_directory,
+	                    (PyObject *) pyfshfs_volume );
+
+	if( directory_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create root directory file entry object.",
+		 function );
+
+		goto on_error;
+	}
+	return( directory_object );
+
+on_error:
+	if( root_directory != NULL )
+	{
+		libfshfs_file_entry_free(
+		 &root_directory,
+		 NULL );
 	}
 	return( NULL );
 }

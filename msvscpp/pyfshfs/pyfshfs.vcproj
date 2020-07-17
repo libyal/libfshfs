@@ -178,6 +178,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\pyfshfs\pyfshfs_file_entries.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfshfs\pyfshfs_file_entry.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\pyfshfs\pyfshfs_file_object_io_handle.c"
 				>
 			</File>
@@ -201,6 +209,14 @@
 			</File>
 			<File
 				RelativePath="..\..\pyfshfs\pyfshfs_error.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfshfs\pyfshfs_file_entries.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfshfs\pyfshfs_file_entry.h"
 				>
 			</File>
 			<File

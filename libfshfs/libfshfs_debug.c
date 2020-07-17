@@ -371,6 +371,154 @@ on_error:
 	return( -1 );
 }
 
+/* Prints an UTF-16 name value
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_debug_print_utf16_name_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int byte_order,
+     libcerror_error_t **error )
+{
+	system_character_t *string = NULL;
+	static char *function      = "libfshfs_debug_print_utf16_name_value";
+	size_t byte_stream_index   = 0;
+	size_t string_size         = 0;
+	int result                 = 0;
+
+	if( ( byte_stream == NULL )
+	 || ( byte_stream_size == 0 ) )
+	{
+		libcnotify_printf(
+		 "%s: %s: \n",
+		 function_name,
+		 value_name );
+
+		return( 1 );
+	}
+	libcnotify_printf(
+	 "%s: %s: ",
+	 function_name,
+	 value_name );
+
+	/* Handle leading 0-byte values
+	 */
+	libcnotify_printf(
+	 "(%zd) ",
+	 byte_stream_size );
+
+	for( byte_stream_index = 0;
+	     byte_stream_index < byte_stream_size;
+	     byte_stream_index += 2 )
+	{
+		if( ( byte_stream[ byte_stream_index ] != 0 )
+		 || ( byte_stream[ byte_stream_index + 1 ] != 0 ) )
+		{
+			break;
+		}
+		libcnotify_printf(
+		 "\\x00" );
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libuna_utf16_string_size_from_utf16_stream(
+		  &( byte_stream[ byte_stream_index ] ),
+		  byte_stream_size - byte_stream_index,
+		  byte_order,
+		  &string_size,
+		  error );
+#else
+	result = libuna_utf8_string_size_from_utf16_stream(
+		  &( byte_stream[ byte_stream_index ] ),
+		  byte_stream_size - byte_stream_index,
+		  byte_order,
+		  &string_size,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine size of string.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( string_size > (size_t) SSIZE_MAX )
+	 || ( ( sizeof( system_character_t ) * string_size ) > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid string size value exceeds maximum.",
+		 function );
+
+		goto on_error;
+	}
+	string = system_string_allocate(
+	          string_size );
+
+	if( string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create string.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libuna_utf16_string_copy_from_utf16_stream(
+		  (libuna_utf16_character_t *) string,
+		  string_size,
+		  &( byte_stream[ byte_stream_index ] ),
+		  byte_stream_size - byte_stream_index,
+		  byte_order,
+		  error );
+#else
+	result = libuna_utf8_string_copy_from_utf16_stream(
+		  (libuna_utf8_character_t *) string,
+		  string_size,
+		  &( byte_stream[ byte_stream_index ] ),
+		  byte_stream_size - byte_stream_index,
+		  byte_order,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set string.",
+		 function );
+
+		goto on_error;
+	}
+	libcnotify_printf(
+	 "%s\n",
+	 string );
+
+	memory_free(
+	 string );
+
+	return( 1 );
+
+on_error:
+	if( string != NULL )
+	{
+		memory_free(
+		 string );
+	}
+	return( -1 );
+}
+
 /* Prints the read offsets
  * Returns 1 if successful or -1 on error
  */

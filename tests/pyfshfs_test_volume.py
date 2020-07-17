@@ -6,18 +6,18 @@
 #
 # Refer to AUTHORS for acknowledgements.
 #
-# This software is free software: you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# This software is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with this software.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
 import os
@@ -41,7 +41,7 @@ class DataRangeFileObject(object):
     """
     super(DataRangeFileObject, self).__init__()
     self._current_offset = 0
-    self._file_object = open(unittest.source, "rb")
+    self._file_object = open(path, "rb")
     self._range_offset = range_offset
     self._range_size = range_size
 
@@ -93,16 +93,16 @@ class DataRangeFileObject(object):
     """
     if (self._range_offset < 0 or
         (self._range_size is not None and self._range_size < 0)):
-      raise IOError('Invalid data range.')
+      raise IOError("Invalid data range.")
 
     if self._current_offset < 0:
       raise IOError(
-          'Invalid current offset: {0:d} value less than zero.'.format(
+          "Invalid current offset: {0:d} value less than zero.".format(
               self._current_offset))
 
     if (self._range_size is not None and
         self._current_offset >= self._range_size):
-      return b''
+      return b""
 
     if size is None:
       size = self._range_size
@@ -131,7 +131,7 @@ class DataRangeFileObject(object):
     """
     if self._current_offset < 0:
       raise IOError(
-          'Invalid current offset: {0:d} value less than zero.'.format(
+          "Invalid current offset: {0:d} value less than zero.".format(
               self._current_offset))
 
     if whence == os.SEEK_CUR:
@@ -139,9 +139,9 @@ class DataRangeFileObject(object):
     elif whence == os.SEEK_END:
       offset += self._range_size
     elif whence != os.SEEK_SET:
-      raise IOError('Unsupported whence.')
+      raise IOError("Unsupported whence.")
     if offset < 0:
-      raise IOError('Invalid offset value less than zero.')
+      raise IOError("Invalid offset value less than zero.")
 
     self._current_offset = offset
 
@@ -158,10 +158,10 @@ class VolumeTypeTests(unittest.TestCase):
   def test_open(self):
     """Tests the open function."""
     if not unittest.source:
-      raise unittest.SkipTest('missing source')
+      raise unittest.SkipTest("missing source")
 
     if unittest.offset:
-      raise unittest.SkipTest('source defines offset')
+      raise unittest.SkipTest("source defines offset")
 
     fshfs_volume = pyfshfs.volume()
 
@@ -181,13 +181,15 @@ class VolumeTypeTests(unittest.TestCase):
   def test_open_file_object(self):
     """Tests the open_file_object function."""
     if not unittest.source:
-      raise unittest.SkipTest('missing source')
+      raise unittest.SkipTest("missing source")
+
+    if not os.path.isfile(unittest.source):
+      raise unittest.SkipTest("source not a regular file")
 
     with DataRangeFileObject(
         unittest.source, unittest.offset or 0, None) as file_object:
 
       fshfs_volume = pyfshfs.volume()
-
       fshfs_volume.open_file_object(file_object)
 
       with self.assertRaises(IOError):
@@ -195,17 +197,16 @@ class VolumeTypeTests(unittest.TestCase):
 
       fshfs_volume.close()
 
-    # TODO: change IOError into TypeError
-    with self.assertRaises(IOError):
-      fshfs_volume.open_file_object(None)
+      with self.assertRaises(TypeError):
+        fshfs_volume.open_file_object(None)
 
-    with self.assertRaises(ValueError):
-      fshfs_volume.open_file_object(file_object, mode="w")
+      with self.assertRaises(ValueError):
+        fshfs_volume.open_file_object(file_object, mode="w")
 
   def test_close(self):
     """Tests the close function."""
     if not unittest.source:
-      raise unittest.SkipTest('missing source')
+      raise unittest.SkipTest("missing source")
 
     fshfs_volume = pyfshfs.volume()
 
@@ -215,10 +216,10 @@ class VolumeTypeTests(unittest.TestCase):
   def test_open_close(self):
     """Tests the open and close functions."""
     if not unittest.source:
-      raise unittest.SkipTest('missing source')
+      return
 
     if unittest.offset:
-      raise unittest.SkipTest('source defines offset')
+      raise unittest.SkipTest("source defines offset")
 
     fshfs_volume = pyfshfs.volume()
 
@@ -230,20 +231,55 @@ class VolumeTypeTests(unittest.TestCase):
     fshfs_volume.open(unittest.source)
     fshfs_volume.close()
 
-    file_object = open(unittest.source, "rb")
+    if os.path.isfile(unittest.source):
+      with open(unittest.source, "rb") as file_object:
 
-    # Test open_file_object and close.
-    fshfs_volume.open_file_object(file_object)
-    fshfs_volume.close()
+        # Test open_file_object and close.
+        fshfs_volume.open_file_object(file_object)
+        fshfs_volume.close()
 
-    # Test open_file_object and close a second time to validate clean up on close.
-    fshfs_volume.open_file_object(file_object)
-    fshfs_volume.close()
+        # Test open_file_object and close a second time to validate clean up on close.
+        fshfs_volume.open_file_object(file_object)
+        fshfs_volume.close()
 
-    # Test open_file_object and close and dereferencing file_object.
-    fshfs_volume.open_file_object(file_object)
-    del file_object
-    fshfs_volume.close()
+        # Test open_file_object and close and dereferencing file_object.
+        fshfs_volume.open_file_object(file_object)
+        del file_object
+        fshfs_volume.close()
+
+  def test_get_name(self):
+    """Tests the get_name function and name property."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    with DataRangeFileObject(
+        unittest.source, unittest.offset or 0, None) as file_object:
+
+      fshfs_volume = pyfshfs.volume()
+      fshfs_volume.open_file_object(file_object)
+
+      name = fshfs_volume.get_name()
+      self.assertIsNotNone(name)
+
+      self.assertIsNotNone(fshfs_volume.name)
+
+      fshfs_volume.close()
+
+  def test_get_root_directory(self):
+    """Tests the get_root_directory function."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    with DataRangeFileObject(
+        unittest.source, unittest.offset or 0, None) as file_object:
+
+      fshfs_volume = pyfshfs.volume()
+      fshfs_volume.open_file_object(file_object)
+
+      root_directory = fshfs_volume.get_root_directory()
+      self.assertIsNotNone(root_directory)
+
+      fshfs_volume.close()
 
 
 if __name__ == "__main__":
