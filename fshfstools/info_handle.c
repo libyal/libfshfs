@@ -844,6 +844,17 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 
 		return( -1 );
 	}
+	if( path_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path length value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
 	if( libfshfs_file_entry_get_identifier(
 	     file_entry,
 	     &identifier,

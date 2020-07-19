@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfshfs],
- [20200717],
+ [20200719],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -21,6 +21,7 @@ AC_LIBTOOL_WIN32_DLL
 dnl Checks for programs
 AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL
+AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
@@ -135,6 +136,7 @@ AX_LIBFSHFS_CHECK_DLL_SUPPORT
 
 dnl Check if tests required headers and functions are available
 AX_TESTS_CHECK_LOCAL
+AX_TESTS_CHECK_OSSFUZZ
 
 dnl Set additional compiler flags
 CFLAGS="$CFLAGS -Wall";
@@ -184,6 +186,7 @@ AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([ossfuzz/Makefile])
 AC_CONFIG_FILES([msvscpp/Makefile])
 dnl Generate header files
 AC_CONFIG_FILES([include/libfshfs.h])
