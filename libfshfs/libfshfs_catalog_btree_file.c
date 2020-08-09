@@ -29,6 +29,7 @@
 
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_catalog_btree_key.h"
+#include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_directory_record.h"
 #include "libfshfs_file_record.h"
@@ -76,6 +77,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 	          root_node,
 	          identifier,
 	          thread_record,
+	          0,
 	          error );
 
 	if( result == -1 )
@@ -102,6 +104,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      libfshfs_thread_record_t **thread_record,
+     int recursion_depth,
      libcerror_error_t **error )
 {
 /* TODO improve handling of sub_node_numbers */
@@ -172,6 +175,18 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid thread record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( recursion_depth < 0 )
+	 || ( recursion_depth > LIBFSHFS_MAXIMUM_BTREE_NODE_RECURSION_DEPTH ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid recursion depth value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -275,6 +290,18 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 #endif
 				record_data_offset += 4;
 
+/* TODO improve handling of sub_node_numbers */
+				if( number_of_sub_nodes >= 64 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: invalid number of sub nodes value out of bounds.",
+					 function );
+
+					goto on_error;
+				}
 				sub_node_numbers[ number_of_sub_nodes++ ] = sub_node_number;
 			}
 		}
@@ -382,6 +409,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 			          sub_node,
 			          identifier,
 			          thread_record,
+			          recursion_depth + 1,
 			          error );
 
 			if( result == -1 )
@@ -451,6 +479,7 @@ int libfshfs_catalog_btree_file_get_directory_entry(
 	          root_node,
 	          identifier,
 	          directory_entry,
+	          0,
 	          error );
 
 	if( result == -1 )
@@ -477,6 +506,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      libfshfs_directory_entry_t **directory_entry,
+     int recursion_depth,
      libcerror_error_t **error )
 {
 /* TODO improve handling of sub_node_numbers */
@@ -550,6 +580,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid directory entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( recursion_depth < 0 )
+	 || ( recursion_depth > LIBFSHFS_MAXIMUM_BTREE_NODE_RECURSION_DEPTH ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid recursion depth value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -653,6 +695,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 #endif
 				record_data_offset += 4;
 
+/* TODO improve handling of sub_node_numbers */
+				if( number_of_sub_nodes >= 64 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: invalid number of sub nodes value out of bounds.",
+					 function );
+
+					goto on_error;
+				}
 				sub_node_numbers[ number_of_sub_nodes++ ] = sub_node_number;
 			}
 		}
@@ -820,6 +874,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 			          sub_node,
 			          identifier,
 			          directory_entry,
+			          recursion_depth + 1,
 			          error );
 
 			if( result == -1 )
@@ -900,6 +955,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 	     root_node,
 	     parent_identifier,
 	     directory_entries,
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -931,6 +987,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
      libcdata_array_t *directory_entries,
+     int recursion_depth,
      libcerror_error_t **error )
 {
 /* TODO improve handling of sub_node_numbers */
@@ -983,6 +1040,18 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid B-tree node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( recursion_depth < 0 )
+	 || ( recursion_depth > LIBFSHFS_MAXIMUM_BTREE_NODE_RECURSION_DEPTH ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid recursion depth value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -1086,6 +1155,18 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 #endif
 				record_data_offset += 4;
 
+/* TODO improve handling of sub_node_numbers */
+				if( number_of_sub_nodes >= 64 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: invalid number of sub nodes value out of bounds.",
+					 function );
+
+					goto on_error;
+				}
 				sub_node_numbers[ number_of_sub_nodes++ ] = sub_node_number;
 			}
 		}
@@ -1263,6 +1344,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 			     sub_node,
 			     parent_identifier,
 			     directory_entries,
+			     recursion_depth + 1,
 			     error ) != 1 )
 			{
 				libcerror_error_set(

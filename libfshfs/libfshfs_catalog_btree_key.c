@@ -256,10 +256,31 @@ int libfshfs_catalog_btree_key_read_data(
 #endif
 		if( catalog_btree_key->name_size > 0 )
 		{
+			if( (uint32_t) catalog_btree_key->name_size > ( (uint32_t) MEMORY_MAXIMUM_ALLOCATION_SIZE / 2 ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid catalog B-tree key - name size value out of bounds.",
+				 function );
+
+				goto on_error;
+			}
 			catalog_btree_key->name_size *= 2;
 
-/* TODO bounds check */
+			if( ( data_size < sizeof( fshfs_catalog_index_key_hfsplus_t ) )
+			 || ( catalog_btree_key->name_size > ( data_size - sizeof( fshfs_catalog_index_key_hfsplus_t ) ) ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid catalog B-tree key - name size value out of bounds.",
+				 function );
 
+				goto on_error;
+			}
 /* TODO handle name with leading 0 bytes such as "\x00\x00\x00\x00HFS+ Private Data" */
 			catalog_btree_key->name = (uint8_t *) memory_allocate(
 			                                       sizeof( uint8_t ) * catalog_btree_key->name_size );

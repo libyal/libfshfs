@@ -7,6 +7,7 @@ Analysis of MFS, HFS, HFS+ and HFSX
 :numbered!:
 [abstract]
 == Summary
+
 The Hierarchical File System (HFS) is mainly used on the Apple Macintosh
 platform. It has evolved from the Mactintosh File System (MFS). The current
 variant of HFS is known as HFS+. This document is based on the Apple
@@ -18,6 +19,7 @@ specification.
 
 [preface]
 == Document information
+
 [cols="1,5"]
 |===
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
@@ -28,8 +30,9 @@ specification.
 
 [preface]
 == License
+
 ....
-Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
 published by the Free Software Foundation; with no Invariant Sections, no
@@ -39,6 +42,7 @@ in the section entitled "GNU Free Documentation License".
 
 [preface]
 == Revision history
+
 [cols="1,1,1,5",options="header"]
 |===
 | Version | Author | Date | Comments
@@ -51,10 +55,12 @@ Email change
 | 0.0.6 | J.B. Metz | June 2016 | Textual changes.
 | 0.0.7 | J.B. Metz | December 2017 | Additional information about HFS+ volume attribute flags and textual changes.
 | 0.0.8 | J.B. Metz | January 2017 | Textual changes.
+| 0.0.9 | J.B. Metz | August 2020 | Changes to formatting.
 |===
 
 :numbered:
 == Overview
+
 The Hierarchical File System (HFS) is mainly used on the Macintosh platform.
 The Mactintosh File System (MFS) is the predecessor of HFS.
 
@@ -93,6 +99,7 @@ Unicode strings are stored in UTF-16 big-endian without the byte order mark (BOM
 |===
 
 === HFSX
+
 HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow
 additional features that are incompatible with HFS+. An HFSX volume cannot be
 wrapped in an HFS volume.
@@ -105,6 +112,7 @@ directory names on the volume.
 The Apple iPhone OS (iOS) e.g. uses the HFSX.
 
 == [[hfs_timestamp]]HFS timestamp
+
 In HFS+ date and time values are stored in an unsigned 32-bit integer
 containing the number of seconds since January 1, 1904 at 00:00:00 (midnight)
 UTC (GMT). This is slightly different from HFS where the date and time value
@@ -119,6 +127,7 @@ range of representable dates does not contain 1900 or 2100, neither of which
 have leap days.
 
 == [[btree_file]]B-tree file
+
 Both HFS and HFS+ use B-trees files. A B-tree file consists of fixed sized nodes:
 
 * header node
@@ -158,6 +167,7 @@ size = number of nodes x node size
 The data fork of the B-tree is used. The resource fork of a B-tree file is unused.
 
 === The B-tree (file) node
+
 A B-tree file consists of nodes. Each node has the same structure and consists
 of three main parts:
 
@@ -166,6 +176,7 @@ of three main parts:
 * the node record offsets
 
 ==== The B-tree node descriptor
+
 The node descriptor (BTNodeDescriptor) contains information about the node,
 like the forward and backward links to other nodes.
 
@@ -201,6 +212,7 @@ Should contain 0-byte values
 |===
 
 ==== The B-tree node record
+
 The B-tree node record contains either data or a reference to some other node
 in the tree.
 
@@ -217,6 +229,7 @@ B-tree node record is variable of size and consists of:
 * record data
 
 ==== The B-tree record offsets
+
 The B-tree record offsets are an array of 16-bit integers relative from the
 start of the B-tree node record. The first record offset is found at node
 `size - 2`, e.g. `512 - 2 = 510`, the second 2 bytes before that, e.g. 508,
@@ -227,6 +240,7 @@ of the free space.
 The record offsets are not necessarily stored in order.
 
 === The B-tree header node
+
 The B-tree header node is stored in the first node of the B-tree file and
 contains 3 records:
 
@@ -245,6 +259,7 @@ data records of the MDB. The location is stored as the allocation block index.
 ....
 
 ==== The B-tree header record
+
 The B-tree header record (BTHeaderRec) contains information about the beginning
 of the tree, as well as the size of the tree.
 
@@ -308,6 +323,7 @@ node offset = node number x node size
 |===
 
 ===== [[btree_header_record_attributes]]Attributes
+
 The bits in the attributes value have the following meaning:
 
 [cols="1,1,5",options="header"]
@@ -325,6 +341,7 @@ This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Exten
 |===
 
 ==== The B-tree map record
+
 The B-tree map record contains of a bitmap that indicates which nodes in the
 B-tree file are used and which are not. The bits are interpreted in exactly the
 same way as the bits in the volume bitmap: if a bit in the map record is set,
@@ -335,6 +352,7 @@ The bitmap is 256 bytes of size and can therefore contain information about
 additional mapping information.
 
 === The map node
+
 If a B-tree file contains more than 2048 nodes, which are enough for about 8000
 files, a map node is used to store additional node-mapping information.
 
@@ -352,6 +370,7 @@ nodes are required, each additional map node is similarly linked to the
 previous one.
 
 === The index node
+
 The index node contains records that point to other nodes in the B-tree
 hierarchy. These nodes are used to navigate through the tree structure. The
 first index node in a B-tree is called the root node, of which the node number
@@ -371,6 +390,7 @@ the pointer records that the index node contains.
 [yellow-background]*TODO size of the node number is 32-bit*
 
 === The leaf node
+
 The bottom level of a B-tree structure is occupied exclusively by leaf nodes.
 The leaf nodes contain data records. The structure of the leaf node data
 records varies according to the type of B-tree.
@@ -379,6 +399,7 @@ records varies according to the type of B-tree.
 * In a catalog file, the leaf node data records can be any one of four kinds of records.
 
 == The HFS volume
+
 The information on all block-formatted volumes is organized in logical blocks.
 These logical blocks are referred to as allocation blocks and contain a number
 of bytes of standard information (512 bytes on Macintosh-initialized volumes).
@@ -406,6 +427,7 @@ extents overflow files are both organized as B-trees.
 The last block (512 bytes) were used during Apple's CPU manufacturing process.
 
 === Boot blocks
+
 The first two logical blocks on every Macintosh volume are boot blocks. These
 blocks contain system startup information: instructions and information
 necessary to start up (or "boot") a Macintosh computer. This information
@@ -467,6 +489,7 @@ The size of the System heap on a Macintosh computer having 512 KiB or more of RA
 |===
 
 ==== Boot code entry point
+
 The boot code entry point contains machine-language instructions that translate
 to:
 ....
@@ -484,6 +507,7 @@ This field is ignored, however, if bit 6 is clear in the high-order byte of the
 boot block version number or if the low-order byte contains 0x0d.
 
 ==== Boot blocks version number
+
 The boot blocks version number consists of a flag byte (high order) and a
 version byte (low order).
 
@@ -517,6 +541,7 @@ If bit 7 of the flag byte is set
 ** is set the System heap is extended by the value in the additional system heap space plus the fraction of available RAM for the system heap.
 
 === Master directory block (MDB)
+
 The master directory block (MDB), also known as the volume information block
 (VIB), contains information about the data in the volume. This information is
 written into the MDB when the volume is initialized.
@@ -576,6 +601,7 @@ See section: <<hfs_extent_data,The HFS extent data>>
 |===
 
 ==== Volume attributes
+
 The volume attributes uses the following bit flags:
 
 [cols="1,5",options="header"]
@@ -588,11 +614,13 @@ The volume attributes uses the following bit flags:
 |===
 
 ==== Alternate MDB
+
 A copy of the MDB is maintained in the Alternate MDB. This copy is updated when
 the extents overflow or the catalog file grows larger. The Alternate MBD is
 intended for use solely by disk utilities.
 
 === Volume bitmaps
+
 The volume bitmap is used to keep track of block allocation. The bitmap
 contains one bit for each allocation block in the volume. If a bit is set, the
 corresponding allocation block is currently in use by some file. If a bit is
@@ -637,10 +665,12 @@ A volume containing 80 MiB of space must have an allocation block size that is
 at least 3 physical blocks (3 x 512 bytes).
 
 == The HFS+/HFSX volume
+
 In HFS+ the boot blocks have been removed, therefore the first two blocks are
 reserved (unused).
 
 === Volume header
+
 The volume header (HFSPlusVolumeHeader) replaces the master directory block
 (MDB). The volume header starts at offset 1024 of the volume.
 
@@ -723,6 +753,7 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 |===
 
 ==== Total number of allocation blocks
+
 For a disk whose size is an even multiple of the allocation block size, all
 areas on the disk are included in an allocation block, including the volume
 header and alternate volume header. For a disk whose size is not an even
@@ -732,6 +763,7 @@ disk is not used by the volume format (except for storing the alternate volume
 header, as described above).
 
 ==== [[volume_attribute_flags]]Volume attribute flags
+
 The value attributes flags are specified as following.
 
 [yellow-background]*TODO: determine MSB and LSB*
@@ -769,6 +801,7 @@ kHFSMDBAttributesMask = 0x8380
 ....
 
 ==== Alternate volume header
+
 A copy of the volume header, the alternate volume header, is stored starting
 1024 bytes before the end of the volume. The alternate volume header is
 intended for use solely by disk repair utilities.
@@ -785,7 +818,9 @@ allocation blocks) is still reserved even if the alternate volume header is not
 stored there.
 
 === Metadata zone
+
 ==== Notes
+
 ....
 Mac OS X version 10.3 introduced a new policy for determining where to allocate space for files, which improves performance for most users. This policy places the volume metadata and frequently used small files ("hot files") near each other on disk, which reduces the seek time for typical accesses. This area on disk is known as the metadata zone.
 
@@ -819,6 +854,7 @@ When performing normal file allocations, the allocator will skip over the metada
 ....
 
 === [[text_encoding]]Text encoding
+
 HFS+ includes features specifically designed to help Mac OS handle the
 conversion between Mac OS-encoded strings and Unicode.
 
@@ -884,6 +920,7 @@ renames an object, it does not have to clear the encoding bit if that was the
 last name to use the given encoding.
 
 === [[permissions]]Permissions
+
 For each file and folder HFS+ maintains basic access permissions record for
 each file and folder. These are similar to basic Unix file permissions.
 
@@ -906,6 +943,7 @@ Consist of either: hard link inode number, hard link count, raw device number
 |===
 
 ==== Owner and group identifier
+
 The Mac OS X user ID of the owner of the file or folder. Mac OS X versions
 prior to 10.3 treats user ID 99 as if it was the user ID of the user currently
 logged in to the console. If no user is logged in to the console, user ID 99 is
@@ -940,6 +978,7 @@ substitution of group IDs in Mac OS X.
 |===
 
 ==== File mode
+
 HFS+ uses the BSD file type and mode bits. Note that the constants from the
 header shown below are in octal (base eight), not hexadecimal.
 
@@ -967,6 +1006,7 @@ header shown below are in octal (base eight), not hexadecimal.
 |===
 
 ===== Notes
+
 ....
     #define S_IFMT   0170000    /* type of file mask */
     #define S_IFIFO  0010000    /* named pipe (fifo) */
@@ -1001,10 +1041,13 @@ This means that files created by Mac OS 8 and 9, or any other implementation tha
 ....
 
 === Links
+
 [yellow-background]*TODO: add text*
 
 ==== Hard Links
+
 ===== Notes
+
 ....
 Hard links are a feature that allows multiple directory entries to refer to a single file's content. They are a way to give a single file multiple names, possibly in multiple directories. This section describes how Mac OS X implements hard links on HFS+ volumes.
 
@@ -1060,7 +1103,9 @@ A hard link with a link reference equal to 0 is invalid. Such a hard link may be
 ....
 
 ==== Symbolic Links
+
 ===== Notes
+
 ....
 Similar to a hard link, a symbolic link is a special kind of file that refers to another file or directory. A symbolic link stores the path name of the file or directory it refers to.
 
@@ -1076,6 +1121,7 @@ The pathname stored in a symbolic link is assumed to be a POSIX pathname, as use
 ....
 
 == The HFS wrapper
+
 An HFS+ volume can be wrapped in an HFS volume.
 
 Mac OS does not use the startup file to boot from HFS+ disks. Instead, it uses
@@ -1086,6 +1132,7 @@ HFS+ volume is marked as part of the bad block file within the HFS wrapper
 itself.
 
 === Notes
+
 ....
 An HFS+ volume may be contained within an HFS volume in a way that makes the volume look like an HFS volume to systems without HFS+ support. This has a two important advantages:
 
@@ -1183,6 +1230,7 @@ Used temporarily during exchange files operations.
 |===
 
 === Catalog file index keys
+
 In a catalog file the search key consists of:
 
 * parent directory identifier
@@ -1191,6 +1239,7 @@ In a catalog file the search key consists of:
 The volume reference number is not included in the search key.
 
 ==== HFS catalog index key
+
 The HFS catalog index key is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1219,6 +1268,7 @@ the key is used:
 * in a data record (a leaf node), then the catalog node name varies in length; it only uses the number of bytes required to hold the file or directory name. The key is padded with null characters so that the data following it begins on a word boundary. The key (byte) size may contain values from 7 to 37.
 
 ==== HFS+ catalog index key
+
 The HFS+ catalog index key is variable in size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1239,6 +1289,7 @@ Contains the name of the file or directory
 [yellow-background]*Maximum name string length 255 characters?*
 
 === The catalog data
+
 A catalog leaf node can contain four different types of records:
 
 * a directory record, which contains information about a single directory.
@@ -1255,7 +1306,9 @@ Each catalog data record consists of:
 * the catalog data record data.
 
 ==== The catalog data record header
+
 ===== The HFS catalog data record header
+
 The HFS catalog data record header is 2 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1273,6 +1326,7 @@ To distinguish between HFS and HFS+ record types, record type should be treated
 as a 16-bit big-endian value.
 
 ===== The HFS+ catalog data record header
+
 The HFS+ catalog data record header is 2 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1299,7 +1353,9 @@ See section: <<catalog_file_data_record_types,Record types>>
 |===
 
 ==== The catalog directory record
+
 ===== The HFS catalog directory record
+
 The HFS catalog directory record (kHFSFolderRecord) is 70 bytes of size and
 consists of:
 
@@ -1327,6 +1383,7 @@ Array of 32-bit integer values
 |===
 
 ===== The HFS+ catalog directory record
+
 The HFS+ catalog directory record (HFSPlusCatalogFolder) is 88 bytes of size
 and consists of:
 
@@ -1361,7 +1418,9 @@ See section: <<text_encoding,Text encoding>>
 |===
 
 ==== The catalog file record
+
 ===== The HFS catalog file record
+
 The HFS catalog file record (kHFSFileRecord) is 102 bytes of size and consists
 of:
 
@@ -1401,6 +1460,7 @@ See section: <<hfs_extent_data,The HFS extent data>>
 |===
 
 ===== The HFS+ catalog file record
+
 The HFS+ catalog file record (kHFSPlusFileRecord) is 248 bytes of size and
 consists of:
 
@@ -1450,10 +1510,12 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 |===
 
 ==== The catalog thread record
+
 The file thread record is similar to the directory thread record except that it
 refers to a file, instead of a directory.
 
 ===== The HFS catalog file thread record
+
 The HFS catalog thread record (HFSCatalogThread) is variable of size and
 consists of:
 
@@ -1472,6 +1534,7 @@ Contains the name of the associated file or directory
 |===
 
 ===== The HFS+ catalog file thread record
+
 The HFS+ catalog thread record (HFSPlusCatalogThread) is variable of size and
 consists of:
 
@@ -1493,6 +1556,7 @@ Contains the name of the associated file or directory
 [yellow-background]*Maximum name string length 255 characters?*
 
 === File system hierarchy
+
 File and directory (folder) records have a search key with a non-empty name
 string. In thread records the name string in the search key is empty. E.g. to
 list the file entries in a directory:
@@ -1505,12 +1569,14 @@ Finding a file or directory by its CNID is a two-step process:
 2. use the thread record to look up the file or directory record
 
 === File forks
+
 Forks in HFS and HFS+ can be compared to data streams in NTFS. In HFS+ the fork
 values are grouped in a separate fork descriptor structure. HFS+ also defines
 named forks. These named forks are not stored in the catalog file but in
 the attributes file.
 
 ==== [[hfs_plus_fork_descriptor_structure]]HFS+ fork descriptor structure
+
 HFS+ maintains information about file contents using the HFS+ fork descriptor
 structure (HFSPlusForkData).
 
@@ -1530,12 +1596,14 @@ See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
 
 ===== Clump size
+
 For fork descriptor structures:
 
 * in the volume header this is the fork's clump size, which is used in preference to the default clump size in the volume header.
 * in a catalog record, this value was intended to store a per-fork clump size to override the default clump size in the volume header. However, Apple implementations prior to Mac OS X version 10.3 ignored this field. As of Mac OS X version 10.3, this field is used to keep track of the number of blocks actually read from the fork.
 
 == The extents overflow file
+
 In HFS and HFS+ extents (contiguous ranges of allocation blocks) are used to
 track which blocks belong to a file. The first three (HFS) and eight (HFS+) are
 stored in the catalog file. Additional extents are stored in the extents
@@ -1547,6 +1615,7 @@ file extents that are not contained in the master directory block (MDB) or
 volume header and the catalog file.
 
 === The extent key (record)
+
 [yellow-background]*Disks initialized using the enhanced Disk Initialization
 Manager introduced in system software version might contain extent records for
 some blocks that do not belong to any actual file in the file system. These
@@ -1565,6 +1634,7 @@ In an extents overflow the search key consists of:
 * first allocation block in the extent
 
 ==== The HFS extent key (record)
+
 The HFS extent key (record) is 8 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1588,6 +1658,7 @@ file record. So the number of extent records for a fork is ((number of extents
 - 3 + 2) / 4).*
 
 ==== The HFS+ extent key (record)
+
 The HFS+ extent key (record) is 12 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1614,6 +1685,7 @@ number of extent records for a fork is:
 ....
 
 === The extent (data) record
+
 An extent is a contiguous range of allocation blocks that have been allocated
 to some file. An extent is represented by an extent descriptor.
 
@@ -1621,6 +1693,7 @@ An unused extent descriptor in an extent record would have both the start block
 and number of blocks set to zero.
 
 ==== [[hfs_extent_data]]The HFS extent data
+
 The HFS extent data consist of an array of three HFS extent descriptors. The
 size of the HFS extent data is:
 ....
@@ -1637,6 +1710,7 @@ The HFS extent descriptor is 4 bytes of size and consists of:
 |===
 
 ==== [[hfs_plus_extents_array]]The HFS+ extents array
+
 The HFS+ extents array (HFSPlusExtentRecord) consist of an array of eight HFS+
 extent descriptors. The size of the HFS+ extent data is:
 ....
@@ -1654,6 +1728,7 @@ consists of:
 |===
 
 === Bad Block File
+
 The extent overflow file is also used to hold information about the bad blocks;
 refered to as the bad block file. The bad block file is used to mark areas on
 the disk as bad, unable to be used for storing data; typically to map out bad
@@ -1668,6 +1743,7 @@ Bad block extent records are always assumed to reference the data fork (fork
 type of 0).
 
 == The HFS+ allocation (bitmap) file
+
 HFS+ uses an allocation file to keep track of whether each allocation block in
 a volume is currently allocated to some file system structure or not. The
 contents of the allocation file is a bitmap. The bitmap contains one bit for
@@ -1710,16 +1786,19 @@ Listing 1 Determining whether an allocation block is in use.
 ....
 
 == The HFS+ attributes file
+
 The HFS+ attributes file is a B-tree file. The location of the attributes file
 can be found in the volume header. The HFS+ attributes file is intended for
 named forks, but is also used to store extended attributes.
 
 === Attributes file index keys
+
 [yellow-background]*An attributes files has a variable length key. The
 structure of the keys in the attribute B-tree has not been finalized and is
 subject to change.*
 
 === The attributes file data
+
 The attributes file defines two types of attributes:
 
 1. Fork data attributes, which are used for attributes whose data is large. The
@@ -1729,6 +1808,7 @@ contains a reference to those extents.
 allowing a forks to have more than eight extents.
 
 ==== The HFS+ attributes file data record header
+
 Each attributes file record starts with a type value, which describes the type
 of attribute data record.
 
@@ -1744,6 +1824,7 @@ The HFS+ attributes file data record header is 4 bytes of size and consists of:
 |===
 
 ==== The fork data attribute
+
 The HFS+ attributes file fork data attribute is 84 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1755,6 +1836,7 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 |===
 
 ==== The extension attribute
+
 The HFS+ attributes file extension attribute is 68 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1766,6 +1848,7 @@ See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
 
 == The HFS+ startup file
+
 The startup file is a special file intended to hold information needed when
 booting a system that does not have built-in (ROM) support for HFS+. A boot
 loader can find the startup file without full knowledge of the HFS+ volume
@@ -1776,7 +1859,9 @@ Format wise it is valid for the startup file to contain more than eight
 extents, but in doing so the purpose of the startup file is defeated.
 
 == The HFS+ Hot file
+
 === Notes
+
 ....
 Hot Files
 
@@ -1893,6 +1978,7 @@ The clumpSize field of the fork descriptor structure is used to record the amoun
 ....
 
 == The HFS+ journal
+
 An HFS+ volume may have an optional journal to speed recovery when mounting a
 volume that was not unmounted safely. The purpose of the journal is to ensure
 that when a group of related changes are being made, that either all of those
@@ -1921,6 +2007,7 @@ The volume header contains the extent of the journal information block file.
 The journal information block contains the location of the journal file.
 
 === The journal information block
+
 The journal information block describes where the journal header and journal
 buffer are stored. The journal information block is stored at the start of the
 allocation block referred to by the volume header.
@@ -1941,6 +2028,7 @@ This includes the journal header and the journal buffer and not the journal info
 |===
 
 ==== Journal flags
+
 The journal flags consist of the following values:
 
 [cols="1,5",options="header"]
@@ -1959,6 +2047,7 @@ The journal header is invalid (there are no valid transactions in the journal) a
 |===
 
 === The journal header
+
 The journal begins with a journal header, whose main purpose is to describe the
 location of transactions in the journal buffer. The journal header is stored
 using the journal_header data type.
@@ -1986,6 +2075,7 @@ Typically the size of one sector
 |===
 
 ==== First and next transaction offset
+
 The first transaction offset contains the offset in bytes from the start of the
 journal header to the start of the first (oldest) transaction.
 
@@ -1996,6 +2086,7 @@ around the end of the journal's circular buffer. If end equals start, then the
 journal is empty, and there are no transactions that need to be replayed.
 
 === Journal transactions
+
 A single transaction is stored in the journal as several blocks. These blocks
 include both the data to be written and the location where that data is to be
 written. This is represented on storage medium by a block list header, which
@@ -2026,6 +2117,7 @@ be sure the volume is consistent. That is, the data from each of the
 transactions must be written to the correct blocks on disk.
 
 === The journal block list header
+
 The block list header describes a list of blocks included in a transaction. A
 transaction may include several block lists if it modifies more blocks than can
 be represented in a single block list. The block list header is stored in a
@@ -2056,6 +2148,7 @@ therefore the number of journal blocks actually containing data is minus one (-
 1).
 
 === Journal block information
+
 The HFS+ journal block information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2073,6 +2166,7 @@ When stored a value of 0 indicates the end of the journal block list.
 |===
 
 === [[journal_checksums]]Journal checksums
+
 The journal header and block list header both contain checksum values. The
 checksums are verified as part of a basic consistency check of these journal
 data structures. To verify the checksum, temporarily set the checksum field to
@@ -2097,10 +2191,12 @@ uint32_t hfs_plus_calculate_checksum(
 ....
 
 == Application specific data structures
+
 Both HFS and HFS+ contain application specific data structures. These
 structures are defined in this chapter.
 
 === [[finder_information]]Finder information
+
 The finder information in the master directory block (MDB) and volume header
 consists of an array of 32-bit value. This array contains information used by
 the Mac OS Finder and the system software boot process.
@@ -2123,7 +2219,9 @@ These elements may be zero if no such identifier has been created for the volume
 |===
 
 === File information
+
 ==== [[hfs_file_information]]HFS file information
+
 The HFS file information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2143,6 +2241,7 @@ The window in which the file's icon appears.
 |===
 
 ==== [[hfs_extended_file_information]]HFS extended file information
+
 The HFS extended file information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2164,6 +2263,7 @@ If the high-bit is clear, an identifier, assigned by the Finder, for the comment
 |===
 
 ==== [[hfs_plus_file_information]]HFS+ file information
+
 The HFS+ file information (FileInfo) is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2182,6 +2282,7 @@ If set to {0, 0}, the Finder will place the item automatically
 |===
 
 ==== [[hfs_plus_extended_file_information]]HFS+ extended file information
+
 The HFS+ extended file information (ExtendedFileInfo) is 16 bytes of size and
 consists of:
 
@@ -2199,7 +2300,9 @@ Signed 16-bit integers
 |===
 
 === Folder information
+
 ==== [[hfs_folder_information]]HFS folder information
+
 The HFS folder information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2218,6 +2321,7 @@ The manner in which folders are displayed.
 |===
 
 ==== [[hfs_extended_folder_information]]HFS extended folder information
+
 The HFS extended folder information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2241,6 +2345,7 @@ If the high-bit is clear, an identifier, assigned by the Finder, for the comment
 |===
 
 ==== [[hfs_plus_folder_information]]HFS+ folder information
+
 The HFS+ folder information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2258,6 +2363,7 @@ If set to {0, 0}, the Finder will place the item automatically
 |===
 
 ==== [[hfs_plus_extended_folder_information]]HFS+ extended folder information
+
 The HFS+ extended folder information is 16 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2277,6 +2383,7 @@ Signed 16-bit integer
 |===
 
 === [[finder_flags]]Finder flags
+
 The finder flags consists of the following values:
 
 [cols="1,5",options="header"]
@@ -2309,6 +2416,7 @@ Clear if the file contains desktop database resources that have not been added y
 |===
 
 === [[extended_finder_flags]]Extended finder flags
+
 The extended finder flags consists of the following values:
 
 [cols="1,5",options="header"]
@@ -2323,6 +2431,7 @@ If set the other extended flags should be ignored
 |===
 
 ==== Notes
+
 ....
 struct Point {
   SInt16              v;
@@ -2345,8 +2454,11 @@ typedef FourCharCode  OSType;
 ....
 
 == Notes
+
 === MDB and Volume header
+
 ==== Start of next allocation search
+
 The nextAllocation field is used by Mac OS as a hint for where to start
 searching for free allocation blocks when allocating space for a file. It
 contains the allocation block number where the search should begin.
@@ -2360,13 +2472,16 @@ whole clump may have been allocated but not actually used.
 http://developer.apple.com/technotes/tn/tn1150.html#AllocationFile
 
 ==== The default clump size for resource/data forks
+
 The default clump size for resource/data forks, in bytes. This is a hint to the
 implementation as to the size by which a growing file should be extended. All
 Apple implementations to date ignore the rsrcClumpSize and use dataClumpSize
 for both data and resource forks.
 
 === File Manager
+
 ==== Volume Control Blocks
+
 Thereafter, whenever the volume is mounted, the File Manager reads the
 information in the MDB and copies some of that information into a volume
 control block (VCB). A VCB is a private data structure maintained in memory by
@@ -2374,6 +2489,7 @@ the File Manager (in the VCB queue). The structure of a VCB is described in
 "Volume Control Blocks," later in this chapter.
 
 ==== B-tree record key search
+
 When the File Manager needs to find a data record, it begins searching at the
 root node (which is an index node, unless the tree has only one level), moving
 from one record to the next until it finds the record with the highest key that
@@ -2384,13 +2500,16 @@ until the desired key is found. At that point, the desired data has also been
 found.
 
 === Finder
+
 Finder information in MDB
 http://developer.apple.com/documentation/mac/Toolbox/Toolbox-2.html
 
 === Determining the Amount of Free Space on a Volume
+
 http://developer.apple.com/documentation/mac/Files/Files-96.html#MARKER-9-379
 
 === Other
+
 CPT/libhfs
 http://libhfs.sourceforge.net/dl.php
 
@@ -2419,6 +2538,7 @@ http://sourceforge.net/projects/linux-hfsplus
 
 [appendix]
 == GNU Free Documentation License
+
 Version 1.3, 3 November 2008
 Copyright © 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
 <http://fsf.org/>
@@ -2427,6 +2547,7 @@ Everyone is permitted to copy and distribute verbatim copies of this license
 document, but changing it is not allowed.
 
 === 0. PREAMBLE
+
 The purpose of this License is to make a manual, textbook, or other functional
 and useful document "free" in the sense of freedom: to assure everyone the
 effective freedom to copy and redistribute it, with or without modifying it,
@@ -2447,6 +2568,7 @@ recommend this License principally for works whose purpose is instruction or
 reference.
 
 === 1. APPLICABILITY AND DEFINITIONS
+
 This License applies to any manual or other work, in any medium, that contains
 a notice placed by the copyright holder saying it can be distributed under the
 terms of this License. Such a notice grants a world-wide, royalty-free license,
@@ -2525,6 +2647,7 @@ disclaiming warranties: any other implication that these Warranty Disclaimers
 may have is void and has no effect on the meaning of this License.
 
 === 2. VERBATIM COPYING
+
 You may copy and distribute the Document in any medium, either commercially or
 noncommercially, provided that this License, the copyright notices, and the
 license notice saying this License applies to the Document are reproduced in
@@ -2538,6 +2661,7 @@ You may also lend copies, under the same conditions stated above, and you may
 publicly display copies.
 
 === 3. COPYING IN QUANTITY
+
 If you publish printed copies (or copies in media that commonly have printed
 covers) of the Document, numbering more than 100, and the Document's license
 notice requires Cover Texts, you must enclose the copies in covers that carry,
@@ -2571,6 +2695,7 @@ well before redistributing any large number of copies, to give them a chance to
 provide you with an updated version of the Document.
 
 === 4. MODIFICATIONS
+
 You may copy and distribute a Modified Version of the Document under the
 conditions of sections 2 and 3 above, provided that you release the Modified
 Version under precisely this License, with the Modified Version filling the
@@ -2663,6 +2788,7 @@ permission to use their names for publicity for or to assert or imply
 endorsement of any Modified Version.
 
 === 5. COMBINING DOCUMENTS
+
 You may combine the Document with other documents released under this License,
 under the terms defined in section 4 above for modified versions, provided that
 you include in the combination all of the Invariant Sections of all of the
@@ -2684,6 +2810,7 @@ combine any sections Entitled "Acknowledgements", and any sections Entitled
 "Dedications". You must delete all sections Entitled "Endorsements".
 
 === 6. COLLECTIONS OF DOCUMENTS
+
 You may make a collection consisting of the Document and other documents
 released under this License, and replace the individual copies of this License
 in the various documents with a single copy that is included in the collection,
@@ -2696,6 +2823,7 @@ into the extracted document, and follow this License in all other respects
 regarding verbatim copying of that document.
 
 === 7. AGGREGATION WITH INDEPENDENT WORKS
+
 A compilation of the Document or its derivatives with other separate and
 independent documents or works, in or on a volume of a storage or distribution
 medium, is called an "aggregate" if the copyright resulting from the
@@ -2712,6 +2840,7 @@ in electronic form. Otherwise they must appear on printed covers that bracket
 the whole aggregate.
 
 === 8. TRANSLATION
+
 Translation is considered a kind of modification, so you may distribute
 translations of the Document under the terms of section 4. Replacing Invariant
 Sections with translations requires special permission from their copyright
@@ -2729,6 +2858,7 @@ If a section in the Document is Entitled "Acknowledgements", "Dedications", or
 typically require changing the actual title.
 
 === 9. TERMINATION
+
 You may not copy, modify, sublicense, or distribute the Document except as
 expressly provided under this License. Any attempt otherwise to copy, modify,
 sublicense, or distribute it is void, and will automatically terminate your
@@ -2752,6 +2882,7 @@ your rights have been terminated and not permanently reinstated, receipt of a
 copy of some or all of the same material does not give you any rights to use it.
 
 === 10. FUTURE REVISIONS OF THIS LICENSE
+
 The Free Software Foundation may publish new, revised versions of the GNU Free
 Documentation License from time to time. Such new versions will be similar in
 spirit to the present version, but may differ in detail to address new problems
@@ -2769,6 +2900,7 @@ License can be used, that proxy's public statement of acceptance of a version
 permanently authorizes you to choose that version for the Document.
 
 === 11. RELICENSING
+
 "Massive Multiauthor Collaboration Site" (or "MMC Site") means any World Wide
 Web server that publishes copyrightable works and also provides prominent
 facilities for anybody to edit those works. A public wiki that anybody can edit

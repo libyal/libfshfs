@@ -24,7 +24,7 @@
 
 /* Note that some of the OSS-Fuzz engines use C++
  */
-hfsern "C" {
+extern "C" {
 
 #include "ossfuzz_libbfio.h"
 #include "ossfuzz_libfshfs.h"
@@ -34,7 +34,7 @@ hfsern "C" {
 /* Opens a volume using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
-LIBFSHFS_HFSERN \
+LIBFSHFS_EXTERN \
 int libfshfs_volume_open_file_io_handle(
      libfshfs_volume_t *volume,
      libbfio_handle_t *file_io_handle,
@@ -95,5 +95,5 @@ on_error_libbfio:
 	return( 0 );
 }
 
-} /* hfsern "C" */
+} /* extern "C" */
 

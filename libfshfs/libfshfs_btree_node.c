@@ -501,10 +501,19 @@ int libfshfs_btree_node_read(
 
 		goto on_error;
 	}
-	records_data_size = ( node->descriptor->number_of_records + 1 ) * 2;
+	records_data_size = ( (size_t) node->descriptor->number_of_records + 1 ) * 2;
 
-/* TODO add bounds checks records_data_size */
+	if( records_data_size > data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid records data size value out of bounds.",
+		 function );
 
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{

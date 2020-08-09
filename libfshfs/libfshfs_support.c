@@ -377,7 +377,7 @@ int libfshfs_check_volume_signature_file_io_handle(
 	}
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
-	     1080,
+	     1024,
 	     SEEK_SET,
 	     error ) == -1 )
 	{
@@ -385,7 +385,7 @@ int libfshfs_check_volume_signature_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek file header offset: 1080.",
+		 "%s: unable to seek file header offset: 1024.",
 		 function );
 
 		if( file_io_handle_is_open == 0 )

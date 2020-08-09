@@ -980,13 +980,35 @@ int libfshfs_internal_volume_open_read(
 
 		return( -1 );
 	}
+	if( internal_volume->volume_header != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - volume header value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_volume->catalog_btree_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - catalog btree file value already set.",
+		 function );
+
+		return( -1 );
+	}
 	if( internal_volume->root_directory_entry != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - root directory entry already set.",
+		 "%s: invalid volume - root directory entry value already set.",
 		 function );
 
 		return( -1 );
@@ -1098,19 +1120,19 @@ int libfshfs_internal_volume_open_read(
 	return( 1 );
 
 on_error:
-	if( internal_volume->root_directory_entry == NULL )
+	if( internal_volume->root_directory_entry != NULL )
 	{
 		libfshfs_directory_entry_free(
 		 &( internal_volume->root_directory_entry ),
 		 NULL );
 	}
-	if( internal_volume->catalog_btree_file == NULL )
+	if( internal_volume->catalog_btree_file != NULL )
 	{
 		libfshfs_btree_file_free(
 		 &( internal_volume->catalog_btree_file ),
 		 NULL );
 	}
-	if( internal_volume->volume_header == NULL )
+	if( internal_volume->volume_header != NULL )
 	{
 		libfshfs_volume_header_free(
 		 &( internal_volume->volume_header ),
