@@ -256,7 +256,7 @@ int libfshfs_catalog_btree_key_read_data(
 #endif
 		if( catalog_btree_key->name_size > 0 )
 		{
-			if( (uint32_t) catalog_btree_key->name_size > ( (uint32_t) MEMORY_MAXIMUM_ALLOCATION_SIZE / 2 ) )
+			if( (uint32_t) catalog_btree_key->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
 			{
 				libcerror_error_set(
 				 error,

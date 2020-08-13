@@ -60,7 +60,7 @@ int libfshfs_fork_descriptor_free(
      libfshfs_fork_descriptor_t **fork_descriptor,
      libcerror_error_t **error );
 
-int libfshfs_fork_descriptor_read(
+int libfshfs_fork_descriptor_read_data(
      libfshfs_fork_descriptor_t *fork_descriptor,
      const uint8_t *data,
      size_t data_size,

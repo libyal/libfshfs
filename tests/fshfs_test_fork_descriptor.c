@@ -297,7 +297,7 @@ int main(
 	 "libfshfs_fork_descriptor_free",
 	 fshfs_test_fork_descriptor_free );
 
-	/* TODO: add tests for libfshfs_fork_descriptor_read */
+	/* TODO: add tests for libfshfs_fork_descriptor_read_data */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

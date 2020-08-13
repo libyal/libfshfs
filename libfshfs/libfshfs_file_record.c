@@ -583,7 +583,13 @@ int libfshfs_file_record_read_data(
 			 value_16bit );
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+/* TODO add HFS support */
+	if( record_size < sizeof( fshfs_catalog_file_record_hfsplus_t ) )
+	{
+		return( 1 );
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -605,8 +611,7 @@ int libfshfs_file_record_read_data(
 
 		goto on_error;
 	}
-/* TODO add HFS support */
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     file_record->data_fork_descriptor,
 	     ( (fshfs_catalog_file_record_hfsplus_t *) data )->data_fork_descriptor,
 	     80,
@@ -642,8 +647,7 @@ int libfshfs_file_record_read_data(
 
 		goto on_error;
 	}
-/* TODO add HFS support */
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     file_record->resource_fork_descriptor,
 	     ( (fshfs_catalog_file_record_hfsplus_t *) data )->resource_fork_descriptor,
 	     80,

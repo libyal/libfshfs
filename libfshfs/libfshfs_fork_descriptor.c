@@ -136,13 +136,13 @@ int libfshfs_fork_descriptor_free(
 /* Reads the fork descriptor
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_fork_descriptor_read(
+int libfshfs_fork_descriptor_read_data(
      libfshfs_fork_descriptor_t *fork_descriptor,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function     = "libfshfs_fork_descriptor_read";
+	static char *function     = "libfshfs_fork_descriptor_read_data";
 	size_t extent_data_offset = 0;
 	int extent_index          = 0;
 
@@ -219,7 +219,7 @@ int libfshfs_fork_descriptor_read(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: logical size\t\t\t\t: %" PRIu64 "\n",
+		 "%s: logical size\t\t\t: %" PRIu64 "\n",
 		 function,
 		 fork_descriptor->size );
 
@@ -229,7 +229,7 @@ int libfshfs_fork_descriptor_read(
 		 fork_descriptor->clump_size );
 
 		libcnotify_printf(
-		 "%s: number of blocks\t\t\t\t: %" PRIu32 "\n",
+		 "%s: number of blocks\t\t\t: %" PRIu32 "\n",
 		 function,
 		 fork_descriptor->number_of_blocks );
 	}
@@ -252,7 +252,7 @@ int libfshfs_fork_descriptor_read(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: extent: %d start block number\t\t: %" PRIu32 "\n",
+			 "%s: extent: %d start block number\t: %" PRIu32 "\n",
 			 function,
 			 extent_index,
 			 fork_descriptor->extents[ extent_index ][ 0 ] );

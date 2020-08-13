@@ -64,7 +64,8 @@ int libfshfs_allocation_block_initialize(
 
 		return( -1 );
 	}
-	if( data_size > (size_t) SSIZE_MAX )
+	if( ( data_size == 0 )
+	 || ( data_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -108,24 +109,22 @@ int libfshfs_allocation_block_initialize(
 
 		return( -1 );
 	}
-	if( data_size > 0 )
+	( *allocation_block )->data = (uint8_t *) memory_allocate(
+	                                           sizeof( uint8_t ) * data_size );
+
+	if( ( *allocation_block )->data == NULL )
 	{
-		( *allocation_block )->data = (uint8_t *) memory_allocate(
-		                                           sizeof( uint8_t ) * data_size );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create data.",
+		 function );
 
-		if( ( *allocation_block )->data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create data.",
-			 function );
-
-			goto on_error;
-		}
-		( *allocation_block )->data_size = data_size;
+		goto on_error;
 	}
+	( *allocation_block )->data_size = data_size;
+
 	return( 1 );
 
 on_error:

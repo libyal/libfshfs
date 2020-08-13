@@ -688,7 +688,7 @@ int libfshfs_volume_header_read_data(
 		 function );
 	}
 #endif
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     volume_header->allocation_file_fork_descriptor,
 	     ( (fshfs_volume_header_t *) data )->allocation_file_fork_descriptor,
 	     80,
@@ -711,7 +711,7 @@ int libfshfs_volume_header_read_data(
 		 function );
 	}
 #endif
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     volume_header->extents_file_fork_descriptor,
 	     ( (fshfs_volume_header_t *) data )->extents_file_fork_descriptor,
 	     80,
@@ -734,7 +734,7 @@ int libfshfs_volume_header_read_data(
 		 function );
 	}
 #endif
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     volume_header->catalog_file_fork_descriptor,
 	     ( (fshfs_volume_header_t *) data )->catalog_file_fork_descriptor,
 	     80,
@@ -757,7 +757,7 @@ int libfshfs_volume_header_read_data(
 		 function );
 	}
 #endif
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     volume_header->attributes_file_fork_descriptor,
 	     ( (fshfs_volume_header_t *) data )->attributes_file_fork_descriptor,
 	     80,
@@ -780,7 +780,7 @@ int libfshfs_volume_header_read_data(
 		 function );
 	}
 #endif
-	if( libfshfs_fork_descriptor_read(
+	if( libfshfs_fork_descriptor_read_data(
 	     volume_header->startup_file_fork_descriptor,
 	     ( (fshfs_volume_header_t *) data )->startup_file_fork_descriptor,
 	     80,
