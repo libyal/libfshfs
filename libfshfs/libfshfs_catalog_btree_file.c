@@ -335,7 +335,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
 						if( libfshfs_thread_record_read_data(
 						     *thread_record,
 						     &( record_data[ record_data_offset ] ),
-						     record_data_size,
+						     record_data_size - record_data_offset,
 						     error ) != 1 )
 						{
 							libcerror_error_set(
@@ -714,6 +714,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 		{
 			if( node_key->parent_identifier == identifier )
 			{
+				if( ( record_data_size < 2 )
+				 || ( record_data_offset >= ( record_data_size - 2 ) ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: invalid record data size value out of bounds.",
+					 function );
+
+					goto on_error;
+				}
 				byte_stream_copy_to_uint16_big_endian(
 				 &( record_data[ record_data_offset ] ),
 				 record_type );
@@ -738,7 +750,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 						if( libfshfs_directory_record_read_data(
 						     directory_record,
 						     &( record_data[ record_data_offset ] ),
-						     record_data_size,
+						     record_data_size - record_data_offset,
 						     error ) != 1 )
 						{
 							libcerror_error_set(
@@ -772,7 +784,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_node(
 						if( libfshfs_file_record_read_data(
 						     file_record,
 						     &( record_data[ record_data_offset ] ),
-						     record_data_size,
+						     record_data_size - record_data_offset,
 						     error ) != 1 )
 						{
 							libcerror_error_set(
@@ -1198,7 +1210,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 						if( libfshfs_directory_record_read_data(
 						     directory_record,
 						     &( record_data[ record_data_offset ] ),
-						     record_data_size,
+						     record_data_size - record_data_offset,
 						     error ) != 1 )
 						{
 							libcerror_error_set(
@@ -1232,7 +1244,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_node(
 						if( libfshfs_file_record_read_data(
 						     file_record,
 						     &( record_data[ record_data_offset ] ),
-						     record_data_size,
+						     record_data_size - record_data_offset,
 						     error ) != 1 )
 						{
 							libcerror_error_set(

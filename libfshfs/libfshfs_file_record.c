@@ -247,7 +247,7 @@ int libfshfs_file_record_read_data(
 
 		goto on_error;
 	}
-	if( data_size < record_size )
+	if( record_size > data_size )
 	{
 		libcerror_error_set(
 		 error,
