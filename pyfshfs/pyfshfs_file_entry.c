@@ -246,7 +246,7 @@ on_error:
 	return( NULL );
 }
 
-/* Intializes a file entry object
+/* Initializes a file entry object
  * Returns 0 if successful or -1 on error
  */
 int pyfshfs_file_entry_init(
