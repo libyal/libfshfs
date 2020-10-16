@@ -271,6 +271,7 @@ int libfshfs_volume_open(
 	libbfio_handle_t *file_io_handle            = NULL;
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_open";
+	size_t string_length                        = 0;
 
 	if( volume == NULL )
 	{
@@ -348,11 +349,13 @@ int libfshfs_volume_open(
 		goto on_error;
 	}
 #endif
+	string_length = narrow_string_length(
+	                 filename );
+
 	if( libbfio_file_set_name(
 	     file_io_handle,
 	     filename,
-	     narrow_string_length(
-	      filename ) + 1,
+	     string_length + 1,
 	     error ) != 1 )
 	{
                 libcerror_error_set(
@@ -438,6 +441,7 @@ int libfshfs_volume_open_wide(
 	libbfio_handle_t *file_io_handle            = NULL;
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_open_wide";
+	size_t string_length                        = 0;
 
 	if( volume == NULL )
 	{
@@ -515,11 +519,13 @@ int libfshfs_volume_open_wide(
 		goto on_error;
 	}
 #endif
+	string_length = wide_string_length(
+	                 filename );
+
 	if( libbfio_file_set_name_wide(
 	     file_io_handle,
 	     filename,
-	     wide_string_length(
-	      filename ) + 1,
+	     string_length + 1,
 	     error ) != 1 )
 	{
                 libcerror_error_set(
@@ -1075,7 +1081,7 @@ int libfshfs_internal_volume_open_read(
 			goto on_error;
 		}
 /* TODO what about extra extents? */
-		if( libfshfs_btree_file_read(
+		if( libfshfs_btree_file_read_file_io_handle(
 		     internal_volume->catalog_btree_file,
 		     internal_volume->io_handle,
 		     file_io_handle,
@@ -1098,10 +1104,10 @@ int libfshfs_internal_volume_open_read(
 			 "Reading volume name directory entry:\n" );
 		}
 #endif
-		result = libfshfs_catalog_btree_file_get_directory_entry(
+		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		          internal_volume->catalog_btree_file,
 		          file_io_handle,
-		          1,
+		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
 		          &( internal_volume->root_directory_entry ),
 		          error );
 
@@ -1437,6 +1443,132 @@ int libfshfs_volume_get_utf16_name(
 	return( result );
 }
 
+/* Retrieves a specific file entry
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_volume_get_file_entry_by_identifier(
+     libfshfs_volume_t *volume,
+     uint32_t identifier,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry = NULL;
+	libfshfs_internal_volume_t *internal_volume = NULL;
+	static char *function                       = "libfshfs_volume_get_file_entry_by_identifier";
+	int result                                  = 0;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfshfs_internal_volume_t *) volume;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSAPFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
+	          internal_volume->catalog_btree_file,
+	          internal_volume->file_io_handle,
+	          identifier,
+	          &directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry: %" PRIu32 ".",
+		 function,
+		 identifier );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     file_entry,
+		     directory_entry,
+		     internal_volume->file_io_handle,
+		     internal_volume->catalog_btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &directory_entry,
+			 NULL );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSAPFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Retrieves the root directory file entry
  * Returns 1 if successful or -1 on error
  */
@@ -1537,6 +1669,137 @@ int libfshfs_volume_get_root_directory(
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to release read/write lock for reading.",
 		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the file entry for an UTF-8 encoded path
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_volume_get_file_entry_by_utf8_path(
+     libfshfs_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry = NULL;
+	libfshfs_internal_volume_t *internal_volume = NULL;
+	static char *function                       = "libfshfs_volume_get_file_entry_by_utf8_path";
+	int result                                  = 0;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfshfs_internal_volume_t *) volume;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
+	          internal_volume->catalog_btree_file,
+	          internal_volume->file_io_handle,
+	          utf8_string,
+	          utf8_string_length,
+	          &directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     file_entry,
+		     directory_entry,
+		     internal_volume->file_io_handle,
+		     internal_volume->catalog_btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &directory_entry,
+			 NULL );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		libfshfs_file_entry_free(
+		 file_entry,
+		 NULL );
 
 		return( -1 );
 	}

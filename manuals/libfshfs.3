@@ -1,4 +1,4 @@
-.Dd August  9, 2020
+.Dd October 15, 2020
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -70,6 +70,10 @@ Volume functions
 .Fn libfshfs_volume_get_utf16_name "libfshfs_volume_t *volume" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_volume_get_root_directory "libfshfs_volume_t *volume" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_volume_get_file_entry_by_utf8_path "libfshfs_volume_t *volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_volume_get_file_entry_by_utf16_path "libfshfs_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
@@ -96,6 +100,10 @@ File entry functions
 .Fn libfshfs_file_entry_get_number_of_sub_file_entries "libfshfs_file_entry_t *file_entry" "int *number_of_sub_file_entries" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_sub_file_entry_by_index "libfshfs_file_entry_t *file_entry" "int sub_file_entry_index" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_sub_file_entry_by_utf8_name "libfshfs_file_entry_t *file_entry" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_sub_file_entry_by_utf16_name "libfshfs_file_entry_t *file_entry" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version

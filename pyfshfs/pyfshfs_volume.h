@@ -81,9 +81,19 @@ PyObject *pyfshfs_volume_get_name(
            pyfshfs_volume_t *pyfshfs_volume,
            PyObject *arguments );
 
+PyObject *pyfshfs_volume_get_file_entry_by_identifier(
+           pyfshfs_volume_t *pyfshfs_volume,
+           PyObject *arguments,
+           PyObject *keywords );
+
 PyObject *pyfshfs_volume_get_root_directory(
            pyfshfs_volume_t *pyfshfs_volume,
            PyObject *arguments );
+
+PyObject *pyfshfs_volume_get_file_entry_by_path(
+           pyfshfs_volume_t *pyfshfs_volume,
+           PyObject *arguments,
+           PyObject *keywords );
 
 #if defined( __cplusplus )
 }

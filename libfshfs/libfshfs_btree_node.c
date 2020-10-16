@@ -351,97 +351,17 @@ int libfshfs_btree_node_free(
 	return( result );
 }
 
-/* Retrieves the data of a specific record
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_btree_node_get_record_data_by_index(
-     libfshfs_btree_node_t *node,
-     uint16_t record_index,
-     const uint8_t **record_data,
-     size_t *record_data_size,
-     libcerror_error_t **error )
-{
-	libfshfs_btree_node_record_t *node_record = NULL;
-	static char *function                     = "libfshfs_btree_node_get_record_data_by_index";
-
-	if( node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid B-tree node.",
-		 function );
-
-		return( -1 );
-	}
-	if( record_data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid record data.",
-		 function );
-
-		return( -1 );
-	}
-	if( record_data_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid record data size.",
-		 function );
-
-		return( -1 );
-	}
-	if( libcdata_array_get_entry_by_index(
-	     node->records_array,
-	     record_index,
-	     (intptr_t **) &node_record,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to retrieve node record: %" PRIu16 ".",
-		 function,
-		 record_index );
-
-		return( -1 );
-	}
-	if( node_record == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid node record: %" PRIu16 ".",
-		 function,
-		 record_index );
-
-		return( -1 );
-	}
-	*record_data      = node_record->data;
-	*record_data_size = node->data_size - node_record->offset;
-
-	return( 1 );
-}
-
 /* Reads a B-tree node
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_btree_node_read(
+int libfshfs_btree_node_read_data(
      libfshfs_btree_node_t *node,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
 {
 	libfshfs_btree_node_record_t *node_record = NULL;
-	static char *function                     = "libfshfs_btree_node_read";
+	static char *function                     = "libfshfs_btree_node_read_data";
 	size_t records_data_offset                = 0;
 	size_t records_data_size                  = 0;
 	uint16_t next_record_offset               = 0;
@@ -652,6 +572,162 @@ on_error:
 	return( -1 );
 }
 
+/* Determines if the node is a branch node
+ * Returns 1 if the node is a branch node, 0 if not or -1 on error
+ */
+int libfshfs_btree_node_is_branch_node(
+     libfshfs_btree_node_t *node,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_node_is_branch_node";
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	if( node->descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( node->descriptor->type == 0x00 )
+	{
+		return( 1 );
+	}
+	return( 0 );
+}
+
+/* Determines if the node is a leaf node
+ * Returns 1 if the node is a leaf node, 0 if not or -1 on error
+ */
+int libfshfs_btree_node_is_leaf_node(
+     libfshfs_btree_node_t *node,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_node_is_leaf_node";
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	if( node->descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( node->descriptor->type == 0xff )
+	{
+		return( 1 );
+	}
+	return( 0 );
+}
+
+/* Retrieves the data of a specific record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_node_get_record_data_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     const uint8_t **record_data,
+     size_t *record_data_size,
+     libcerror_error_t **error )
+{
+	libfshfs_btree_node_record_t *node_record = NULL;
+	static char *function                     = "libfshfs_btree_node_get_record_data_by_index";
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	if( record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid record data.",
+		 function );
+
+		return( -1 );
+	}
+	if( record_data_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid record data size.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     node->records_array,
+	     record_index,
+	     (intptr_t **) &node_record,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to retrieve node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		return( -1 );
+	}
+	if( node_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		return( -1 );
+	}
+	*record_data      = node_record->data;
+	*record_data_size = node->data_size - node_record->offset;
+
+	return( 1 );
+}
+
 /* Reads a B-tree node
  * Callback function for the B-tree node vector
  * Returns 1 if successful or -1 on error
@@ -800,7 +876,7 @@ int libfshfs_btree_node_read_element_data(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
-	if( libfshfs_btree_node_read(
+	if( libfshfs_btree_node_read_data(
 	     node,
 	     node->data,
 	     node->data_size,
@@ -810,7 +886,7 @@ int libfshfs_btree_node_read_element_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree node descriptor.",
+		 "%s: unable to read B-tree node.",
 		 function );
 
 		goto on_error;

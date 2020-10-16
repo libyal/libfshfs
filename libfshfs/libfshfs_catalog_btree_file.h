@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_btree_file.h"
+#include "libfshfs_catalog_btree_key.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
@@ -36,14 +37,14 @@
 extern "C" {
 #endif
 
-int libfshfs_catalog_btree_file_get_thread_record(
+int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
-     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *node,
      uint32_t identifier,
      libfshfs_thread_record_t **thread_record,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_get_thread_record_from_node(
+int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
@@ -52,19 +53,131 @@ int libfshfs_catalog_btree_file_get_thread_record_from_node(
      int recursion_depth,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_get_directory_entry(
+int libfshfs_catalog_btree_file_get_thread_record(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_thread_record_t **thread_record,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_catalog_btree_key_t *node_key,
+     const uint8_t *record_data,
+     size_t record_data_size,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_btree_node_t *node,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifier(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *node,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     int recursion_depth,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_get_directory_entry_from_node(
+int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
-     uint32_t identifier,
+     uint32_t parent_identifier,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
      libfshfs_directory_entry_t **directory_entry,
+     int recursion_depth,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     int recursion_depth,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
+     libfshfs_btree_file_t *btree_file,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_t *node,
+     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
      int recursion_depth,
      libcerror_error_t **error );
 
@@ -73,15 +186,6 @@ int libfshfs_catalog_btree_file_get_directory_entries(
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      libcdata_array_t *directory_entries,
-     libcerror_error_t **error );
-
-int libfshfs_catalog_btree_file_get_directory_entries_from_node(
-     libfshfs_btree_file_t *btree_file,
-     libbfio_handle_t *file_io_handle,
-     libfshfs_btree_node_t *node,
-     uint32_t parent_identifier,
-     libcdata_array_t *directory_entries,
-     int recursion_depth,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

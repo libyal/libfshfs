@@ -356,3 +356,93 @@ on_error:
 	return( -1 );
 }
 
+/* Compares an UTF-8 string with the catalog B-tree key name
+ * Returns LIBUNA_COMPARE_LESS, LIBUNA_COMPARE_EQUAL, LIBUNA_COMPARE_GREATER if successful or -1 on error
+ */
+int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
+     libfshfs_catalog_btree_key_t *catalog_btree_key,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_catalog_btree_key_compare_name_with_utf8_string";
+	int result            = 0;
+
+	if( catalog_btree_key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	result = libuna_utf8_string_compare_with_utf16_stream(
+	          utf8_string,
+	          utf8_string_length,
+	          catalog_btree_key->name,
+	          catalog_btree_key->name_size,
+	          LIBUNA_ENDIAN_BIG,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 "%s: unable to compare UTF-8 string with name.",
+		 function );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Compares an UTF-16 string with the catalog B-tree key name
+ * Returns LIBUNA_COMPARE_LESS, LIBUNA_COMPARE_EQUAL, LIBUNA_COMPARE_GREATER if successful or -1 on error
+ */
+int libfshfs_catalog_btree_key_compare_name_with_utf16_string(
+     libfshfs_catalog_btree_key_t *catalog_btree_key,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_catalog_btree_key_compare_name_with_utf16_string";
+	int result            = 0;
+
+	if( catalog_btree_key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	result = libuna_utf16_string_compare_with_utf16_stream(
+	          utf16_string,
+	          utf16_string_length,
+	          catalog_btree_key->name,
+	          catalog_btree_key->name_size,
+	          LIBUNA_ENDIAN_BIG,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 "%s: unable to compare UTF-16 string with name.",
+		 function );
+
+		return( -1 );
+	}
+	return( result );
+}
+

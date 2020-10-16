@@ -124,6 +124,22 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
      libfshfs_file_entry_t **sub_file_entry,
      libcerror_error_t **error );
 
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **sub_file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_file_entry_t **sub_file_entry,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

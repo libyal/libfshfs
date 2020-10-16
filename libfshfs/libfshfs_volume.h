@@ -156,8 +156,45 @@ int libfshfs_volume_get_utf16_name(
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
+int libfshfs_volume_get_file_entry_by_identifier(
+     libfshfs_volume_t *volume,
+     uint32_t identifier,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
 int libfshfs_volume_get_root_directory(
      libfshfs_volume_t *volume,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_volume_get_file_entry_by_utf8_path(
+     libfshfs_internal_volume_t *internal_volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_file_entry_by_utf8_path(
+     libfshfs_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_volume_get_file_entry_by_utf16_path(
+     libfshfs_internal_volume_t *internal_volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_file_entry_by_utf16_path(
+     libfshfs_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 

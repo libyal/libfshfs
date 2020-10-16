@@ -92,7 +92,9 @@ enum LIBFSHFS_BTREE_NODE_TYPES
         LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE				= 0xff
 };
 
-/* The maximum number of cache entries defintions
+#define LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER				1
+
+/* The maximum number of cache entries definitions
  */
 #define LIBFSHFS_MAXIMUM_CACHE_ENTRIES_BTREE_FILE_ALLOCATION_BLOCKS	4
 

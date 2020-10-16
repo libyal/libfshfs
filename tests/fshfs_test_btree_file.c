@@ -270,10 +270,10 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libfshfs_btree_file_read function
+/* Tests the libfshfs_btree_file_read_file_io_handle function
  * Returns 1 if successful or 0 if not
  */
-int fshfs_test_btree_file_read(
+int fshfs_test_btree_file_read_file_io_handle(
      void )
 {
 	libcerror_error_t *error          = NULL;
@@ -301,7 +301,7 @@ int fshfs_test_btree_file_read(
 
 	/* Test error cases
 	 */
-	result = libfshfs_btree_file_read(
+	result = libfshfs_btree_file_read_file_io_handle(
 	          NULL,
 	          NULL,
 	          NULL,
@@ -320,7 +320,7 @@ int fshfs_test_btree_file_read(
 	libcerror_error_free(
 	 &error );
 
-	result = libfshfs_btree_file_read(
+	result = libfshfs_btree_file_read_file_io_handle(
 	          btree_file,
 	          NULL,
 	          NULL,
@@ -407,8 +407,8 @@ int main(
 	/* TODO: add tests for libfshfs_btree_file_get_root_node */
 
 	FSHFS_TEST_RUN(
-	 "libfshfs_btree_file_read",
-	 fshfs_test_btree_file_read );
+	 "libfshfs_btree_file_read_file_io_handle",
+	 fshfs_test_btree_file_read_file_io_handle );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

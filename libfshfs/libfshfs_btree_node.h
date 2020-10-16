@@ -88,17 +88,25 @@ int libfshfs_btree_node_free(
      libfshfs_btree_node_t **node,
      libcerror_error_t **error );
 
+int libfshfs_btree_node_read_data(
+     libfshfs_btree_node_t *node,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_btree_node_is_branch_node(
+     libfshfs_btree_node_t *node,
+     libcerror_error_t **error );
+
+int libfshfs_btree_node_is_leaf_node(
+     libfshfs_btree_node_t *node,
+     libcerror_error_t **error );
+
 int libfshfs_btree_node_get_record_data_by_index(
      libfshfs_btree_node_t *node,
      uint16_t record_index,
      const uint8_t **record_data,
      size_t *record_data_size,
-     libcerror_error_t **error );
-
-int libfshfs_btree_node_read(
-     libfshfs_btree_node_t *node,
-     const uint8_t *data,
-     size_t data_size,
      libcerror_error_t **error );
 
 int libfshfs_btree_node_read_element_data(

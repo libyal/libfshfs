@@ -654,52 +654,60 @@ int libfshfs_internal_file_entry_get_sub_directory_entries(
 
 		return( -1 );
 	}
-	if( internal_file_entry->sub_directory_entries == NULL )
+	if( internal_file_entry->sub_directory_entries != NULL )
 	{
-		if( libfshfs_directory_entry_get_identifier(
-		     internal_file_entry->directory_entry,
-		     &identifier,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve identifier.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - sub directory entries value already set.",
+		 function );
 
-			goto on_error;
-		}
-		if( libcdata_array_initialize(
-		     &( internal_file_entry->sub_directory_entries ),
-		     0,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create sub directory entries array.",
-			 function );
+		return( -1 );
+	}
+	if( libfshfs_directory_entry_get_identifier(
+	     internal_file_entry->directory_entry,
+	     &identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve identifier.",
+		 function );
 
-			goto on_error;
-		}
-		if( libfshfs_catalog_btree_file_get_directory_entries(
-		     internal_file_entry->catalog_btree_file,
-		     internal_file_entry->file_io_handle,
-		     identifier,
-		     internal_file_entry->sub_directory_entries,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
-			 function );
+		goto on_error;
+	}
+	if( libcdata_array_initialize(
+	     &( internal_file_entry->sub_directory_entries ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create sub directory entries array.",
+		 function );
 
-			goto on_error;
-		}
+		goto on_error;
+	}
+	if( libfshfs_catalog_btree_file_get_directory_entries(
+	     internal_file_entry->catalog_btree_file,
+	     internal_file_entry->file_io_handle,
+	     identifier,
+	     internal_file_entry->sub_directory_entries,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
+		 function );
+
+		goto on_error;
 	}
 	return( 1 );
 
@@ -754,20 +762,23 @@ int libfshfs_file_entry_get_number_of_sub_file_entries(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_internal_file_entry_get_sub_directory_entries(
-	     internal_file_entry,
-	     error ) != 1 )
+	if( internal_file_entry->sub_directory_entries == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
-		 function );
+		if( libfshfs_internal_file_entry_get_sub_directory_entries(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
 	}
-	else
+	if( internal_file_entry->sub_directory_entries != NULL )
 	{
 		if( libcdata_array_get_number_of_entries(
 		     internal_file_entry->sub_directory_entries,
@@ -866,20 +877,23 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_internal_file_entry_get_sub_directory_entries(
-	     internal_file_entry,
-	     error ) != 1 )
+	if( internal_file_entry->sub_directory_entries == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
-		 function );
+		if( libfshfs_internal_file_entry_get_sub_directory_entries(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
 	}
-	else
+	if( internal_file_entry->sub_directory_entries != NULL )
 	{
 		if( libcdata_array_get_entry_by_index(
 		     internal_file_entry->sub_directory_entries,
@@ -897,6 +911,8 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 
 			result = -1;
 		}
+		/* libfshfs_file_entry_initialize takes over management of sub_directory_entry
+		 */
 		else if( libfshfs_file_entry_initialize(
 		          sub_file_entry,
 		          sub_directory_entry,
@@ -936,23 +952,259 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 	return( result );
 }
 
-#ifdef TODO
-	libfshfs_thread_record_t *thread_record = NULL;
+/* Retrieves the sub file entry for an UTF-8 encoded name
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **sub_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *sub_directory_entry     = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_sub_file_entry_by_utf8_name";
+	int result                                          = 1;
 
-	if( libfshfs_catalog_btree_file_get_thread_record(
-	     internal_volume->catalog_btree_file,
-	     internal_volume->file_io_handle,
-	     2,
-	     &thread_record,
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( sub_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid sub file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *sub_file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid sub file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve root directory thread record from catalog B-tree file.",
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
 		 function );
 
 		return( -1 );
 	}
 #endif
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
+	          internal_file_entry->catalog_btree_file,
+	          internal_file_entry->file_io_handle,
+	          internal_file_entry->directory_entry->parent_identifier,
+	          utf8_string,
+	          utf8_string_length,
+	          &sub_directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		/* libfshfs_file_entry_initialize takes over management of sub_directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     sub_file_entry,
+		     sub_directory_entry,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->catalog_btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &sub_directory_entry,
+			 NULL );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the sub file entry for an UTF-16 encoded name
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_file_entry_t **sub_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *sub_directory_entry     = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_sub_file_entry_by_utf16_name";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( sub_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid sub file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *sub_file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid sub file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
+	          internal_file_entry->catalog_btree_file,
+	          internal_file_entry->file_io_handle,
+	          internal_file_entry->directory_entry->parent_identifier,
+	          utf16_string,
+	          utf16_string_length,
+	          &sub_directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		/* libfshfs_file_entry_initialize takes over management of sub_directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     sub_file_entry,
+		     sub_directory_entry,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->catalog_btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &sub_directory_entry,
+			 NULL );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+

@@ -63,9 +63,17 @@ int libfshfs_btree_file_free(
      libfshfs_btree_file_t **btree_file,
      libcerror_error_t **error );
 
+int libfshfs_btree_file_read_file_io_handle(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcerror_error_t **error );
+
 int libfshfs_btree_file_get_node_by_number(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfcache_cache_t *nodes_cache,
      int node_number,
      libfshfs_btree_node_t **node,
      libcerror_error_t **error );
@@ -74,13 +82,6 @@ int libfshfs_btree_file_get_root_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t **root_node,
-     libcerror_error_t **error );
-
-int libfshfs_btree_file_read(
-     libfshfs_btree_file_t *btree_file,
-     libfshfs_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

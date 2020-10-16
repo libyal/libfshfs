@@ -311,6 +311,28 @@ int libfshfs_volume_get_root_directory(
      libfshfs_file_entry_t **file_entry,
      libfshfs_error_t **error );
 
+/* Retrieves the file entry for an UTF-8 encoded path
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_file_entry_by_utf8_path(
+     libfshfs_volume_t *volume,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libfshfs_error_t **error );
+
+/* Retrieves the file entry for an UTF-16 encoded path
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_file_entry_by_utf16_path(
+     libfshfs_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libfshfs_error_t **error );
+
 /* -------------------------------------------------------------------------
  * File entry functions
  * ------------------------------------------------------------------------- */
@@ -394,6 +416,28 @@ LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_sub_file_entry_by_index(
      libfshfs_file_entry_t *file_entry,
      int sub_file_entry_index,
+     libfshfs_file_entry_t **sub_file_entry,
+     libfshfs_error_t **error );
+
+/* Retrieves the sub file entry for an UTF-8 encoded name
+ * Returns 1 if successful, 0 if the file entry does not contain such value or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_file_entry_t **sub_file_entry,
+     libfshfs_error_t **error );
+
+/* Retrieves the sub file entry for an UTF-16 encoded name
+ * Returns 1 if successful, 0 if the file entry does not contain such value or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
      libfshfs_file_entry_t **sub_file_entry,
      libfshfs_error_t **error );
 
