@@ -28,6 +28,7 @@
 #include <wide_string.h>
 
 #include "libfshfs_debug.h"
+#include "libfshfs_definitions.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libuna.h"
@@ -41,6 +42,7 @@
  */
 int libfshfs_thread_record_initialize(
      libfshfs_thread_record_t **thread_record,
+     uint32_t identifier,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_thread_record_initialize";
@@ -95,6 +97,8 @@ int libfshfs_thread_record_initialize(
 
 		goto on_error;
 	}
+	( *thread_record )->identifier = identifier;
+
 	return( 1 );
 
 on_error:
@@ -130,6 +134,11 @@ int libfshfs_thread_record_free(
 	}
 	if( *thread_record != NULL )
 	{
+		if( ( *thread_record )->name != NULL )
+		{
+			memory_free(
+			 ( *thread_record )->name );
+		}
 		memory_free(
 		 *thread_record );
 
@@ -147,18 +156,13 @@ int libfshfs_thread_record_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	const uint8_t *name_data         = NULL;
-	static char *function            = "libfshfs_thread_record_read_data";
-	size_t record_size               = 0;
-	uint16_t name_size               = 0;
-	uint16_t record_type             = 0;
+	static char *function = "libfshfs_thread_record_read_data";
+	size_t header_size    = 0;
+	uint16_t name_size    = 0;
+	uint16_t record_type  = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	system_character_t *value_string = NULL;
-	size_t value_string_size         = 0;
-	uint32_t value_32bit             = 0;
-	uint16_t value_16bit             = 0;
-	int result                       = 0;
+	uint16_t value_16bit  = 0;
 #endif
 
 	if( thread_record == NULL )
@@ -199,15 +203,15 @@ int libfshfs_thread_record_read_data(
 	 data,
 	 record_type );
 
-	if( ( record_type == 0x0003 )
-	 || ( record_type == 0x0004 ) )
+	if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+	 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 	{
-		record_size = sizeof( fshfs_catalog_thread_record_hfsplus_t );
+		header_size = sizeof( fshfs_catalog_thread_record_hfsplus_t );
 	}
-	else if( ( record_type == 0x0300 )
-	      || ( record_type == 0x0400 ) )
+	else if( ( record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_THREAD_RECORD )
+	      || ( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_THREAD_RECORD ) )
 	{
-		record_size = sizeof( fshfs_catalog_thread_record_hfs_t );
+		header_size = sizeof( fshfs_catalog_thread_record_hfs_t );
 	}
 	else
 	{
@@ -221,7 +225,7 @@ int libfshfs_thread_record_read_data(
 
 		goto on_error;
 	}
-	if( data_size < record_size )
+	if( data_size < header_size )
 	{
 		libcerror_error_set(
 		 error,
@@ -232,8 +236,8 @@ int libfshfs_thread_record_read_data(
 
 		goto on_error;
 	}
-	if( ( record_type == 0x0003 )
-	 || ( record_type == 0x0004 ) )
+	if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+	 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 	{
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->name_size,
@@ -243,26 +247,38 @@ int libfshfs_thread_record_read_data(
 	{
 /* TODO add HFS support */
 	}
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		record_size += name_size * 2;
-
 		libcnotify_printf(
 		 "%s: thread record data:\n",
 		 function );
 		libcnotify_print_data(
 		 data,
-		 record_size,
+		 header_size + ( name_size * 2 ),
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
+	if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+	 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
+	{
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->parent_identifier,
+		 thread_record->parent_identifier );
+	}
+	else
+	{
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_thread_record_hfs_t *) data )->parent_identifier,
+		 thread_record->parent_identifier );
+	}
+	thread_record->name_size = name_size;
+
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		if( ( record_type == 0x0003 )
-		 || ( record_type == 0x0004 ) )
+		if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+		 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 		{
 			byte_stream_copy_to_uint16_big_endian(
 			 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->record_type,
@@ -279,16 +295,16 @@ int libfshfs_thread_record_read_data(
 		 libfshfs_debug_print_catalog_record_type(
 		  record_type ) );
 
-		if( ( record_type == 0x0300 )
-		 || ( record_type == 0x0400 ) )
+		if( ( record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_THREAD_RECORD )
+		 || ( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_THREAD_RECORD ) )
 		{
 			libcnotify_printf(
 			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (fshfs_catalog_thread_record_hfs_t *) data )->unknown1 );
 		}
-		if( ( record_type == 0x0003 )
-		 || ( record_type == 0x0004 ) )
+		if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+		 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 		{
 			byte_stream_copy_to_uint16_big_endian(
 			 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->unknown1,
@@ -308,136 +324,105 @@ int libfshfs_thread_record_read_data(
 			 8,
 			 0 );
 		}
-		if( ( record_type == 0x0003 )
-		 || ( record_type == 0x0004 ) )
-		{
-			byte_stream_copy_to_uint32_big_endian(
-			 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->parent_identifier,
-			 value_32bit );
-		}
-		else
-		{
-			byte_stream_copy_to_uint32_big_endian(
-			 ( (fshfs_catalog_thread_record_hfs_t *) data )->parent_identifier,
-			 value_32bit );
-		}
 		libcnotify_printf(
 		 "%s: parent identifier\t\t\t: %" PRIu32 "\n",
 		 function,
-		 value_32bit );
+		 thread_record->parent_identifier );
+
+		libcnotify_printf(
+		 "%s: name number of characters\t\t: %" PRIu16 "\n",
+		 function,
+		 thread_record->name_size );
 	}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+	if( thread_record->name_size > 0 )
+	{
+		if( (uint32_t) thread_record->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid thread record - name size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		thread_record->name_size *= 2;
+
+		if( thread_record->name_size > ( data_size - header_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid thread record - name size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		thread_record->name = (uint8_t *) memory_allocate(
+		                                   sizeof( uint8_t ) * thread_record->name_size );
+
+		if( thread_record->name == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create name.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_copy(
+		     thread_record->name,
+		     &( data[ header_size ] ),
+		     thread_record->name_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy name.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			if( libfshfs_debug_print_utf16_name_value(
+			     function,
+			     "name\t\t\t\t\t",
+			     &( data[ header_size ] ),
+			     (size_t) thread_record->name_size,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print UTF-16 name value.",
+				 function );
+
+				goto on_error;
+			}
+		}
 #endif
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: name number of characters\t\t: %" PRIu16 "\n",
-		 function,
-		 name_size );
+		 "\n" );
 	}
 #endif
-	name_size *= 2;
-
-	if( name_size > 0 )
-	{
-		name_data = &( data[ sizeof( fshfs_catalog_thread_record_hfsplus_t ) ] );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libuna_utf16_string_size_from_utf16_stream(
-				  name_data,
-				  (size_t) name_size,
-				  LIBUNA_ENDIAN_BIG,
-				  &value_string_size,
-				  error );
-#else
-			result = libuna_utf8_string_size_from_utf16_stream(
-				  name_data,
-				  (size_t) name_size,
-				  LIBUNA_ENDIAN_BIG,
-				  &value_string_size,
-				  error );
-#endif
-			if( result != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine size of name string.",
-				 function );
-
-				goto on_error;
-			}
-			value_string = system_string_allocate(
-					value_string_size );
-
-			if( value_string == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-				 "%s: unable to create name string.",
-				 function );
-
-				goto on_error;
-			}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libuna_utf16_string_copy_from_utf16_stream(
-				  (libuna_utf16_character_t *) value_string,
-				  value_string_size,
-				  name_data,
-				  (size_t) name_size,
-				  LIBUNA_ENDIAN_BIG,
-				  error );
-#else
-			result = libuna_utf8_string_copy_from_utf16_stream(
-				  (libuna_utf8_character_t *) value_string,
-				  value_string_size,
-				  name_data,
-				  (size_t) name_size,
-				  LIBUNA_ENDIAN_BIG,
-				  error );
-#endif
-			if( result != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set name string.",
-				 function );
-
-				goto on_error;
-			}
-			libcnotify_printf(
-			 "%s: name\t\t\t\t\t: %" PRIs_SYSTEM "\n",
-			 function,
-			 value_string );
-
-			memory_free(
-			 value_string );
-
-			value_string = NULL;
-
-			libcnotify_printf(
-			 "\n" );
-		}
-#endif
-	}
 	return( 1 );
 
 on_error:
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( value_string != NULL )
-	{
-		memory_free(
-		 value_string );
-	}
-#endif
 	return( -1 );
 }
 

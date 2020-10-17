@@ -27,10 +27,13 @@
 
 #include "libfshfs_btree_file.h"
 #include "libfshfs_directory_entry.h"
+#include "libfshfs_extern.h"
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
-#include "libfshfs_extern.h"
+#include "libfshfs_libcdata.h"
+#include "libfshfs_types.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -40,6 +43,14 @@ typedef struct libfshfs_internal_file_entry libfshfs_internal_file_entry_t;
 
 struct libfshfs_internal_file_entry
 {
+	/* The IO handle
+	 */
+	libfshfs_io_handle_t *io_handle;
+
+	/* The file IO handle
+	 */
+	libbfio_handle_t *file_io_handle;
+
 	/* Directory entry
 	 */
 	libfshfs_directory_entry_t *directory_entry;
@@ -48,13 +59,17 @@ struct libfshfs_internal_file_entry
 	 */
 	libcdata_array_t *sub_directory_entries;
 
-	/* The file IO handle
-	 */
-	libbfio_handle_t *file_io_handle;
-
 	/* The catalog btree file
 	 */
 	libfshfs_btree_file_t *catalog_btree_file;
+
+	/* The data block stream
+	 */
+	libfdata_stream_t *data_block_stream;
+
+	/* The data size
+	 */
+	size64_t data_size;
 
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
@@ -65,8 +80,9 @@ struct libfshfs_internal_file_entry
 
 int libfshfs_file_entry_initialize(
      libfshfs_file_entry_t **file_entry,
-     libfshfs_directory_entry_t *directory_entry,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
+     libfshfs_directory_entry_t *directory_entry,
      libfshfs_btree_file_t *catalog_btree_file,
      libcerror_error_t **error );
 
@@ -79,6 +95,42 @@ LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_identifier(
      libfshfs_file_entry_t *file_entry,
      uint32_t *identifier,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_creation_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_modification_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_backup_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_file_mode(
+     libfshfs_file_entry_t *file_entry,
+     uint16_t *file_mode,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_owner_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *owner_identifier,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_group_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *group_identifier,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
@@ -138,6 +190,40 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
      const uint16_t *utf16_string,
      size_t utf16_string_length,
      libfshfs_file_entry_t **sub_file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_file_entry_read_buffer(
+         libfshfs_file_entry_t *file_entry,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_file_entry_read_buffer_at_offset(
+         libfshfs_file_entry_t *file_entry,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+off64_t libfshfs_file_entry_seek_offset(
+         libfshfs_file_entry_t *file_entry,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_offset(
+     libfshfs_file_entry_t *file_entry,
+     off64_t *offset,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_size(
+     libfshfs_file_entry_t *file_entry,
+     size64_t *size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

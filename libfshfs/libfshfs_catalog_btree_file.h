@@ -68,18 +68,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier(
+int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
-     uint32_t identifier,
+     libfshfs_thread_record_t *thread_record,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifier(
+int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
-     uint32_t identifier,
+     libfshfs_thread_record_t *thread_record,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error );

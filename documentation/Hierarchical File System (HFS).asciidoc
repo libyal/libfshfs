@@ -275,9 +275,9 @@ The B-tree header record is 106 bytes of size and consists of:
 | 10 | 4 | | First leaf node number
 | 14 | 4 | | Last leaf node number
 | 18 | 2 | | The node size +
-Contains the number of bytes
+Contains number of bytes
 | 20 | 2 | | Maximum key size +
-Contains the number of bytes
+Contains number of bytes
 | 22 | 4 | | Number of nodes
 | 26 | 4 | | Number of free nodes
 4+| _Introduced in HFS+_
@@ -407,7 +407,7 @@ of bytes of standard information (512 bytes on Macintosh-initialized volumes).
 The allocation block size is a volume parameter whose value is set when the
 volume is initialized. To promote file contiguity and avoid fragmentation,
 space is allocated to files in groups of allocation blocks, or clumps. The
-clump size is always a multiple of the allocation block size, and it's the
+clump size is always a multiple of the allocation block size, and it is the
 minimum number of bytes to allocate.
 
 Each HFS volume begins with two boot blocks. The boot blocks on the startup
@@ -715,17 +715,17 @@ It should equal the number of file records found in the catalog file.
 The value does not include the root folder. +
 It should equal the number of folder records in the catalog file minus one.
 | 40 | 4 | | The (allocation) block size +
-Contains the number of bytes
+Contains number of bytes
 | 44 | 4 | | Total number of (allocation) blocks
 | 48 | 4 | | Number of unused (allocation) blocks
 | 52 | 4 | | Next available (allocation) block number +
 The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
 | 56 | 4 | | Default resource clump size +
 The default clump size for resource forks. +
-Contains the number of bytes
+Contains number of bytes
 | 60 | 4 | | Default data clump size +
 The default clump size for data forks. +
-Contains the number of bytes
+Contains number of bytes
 | 64 | 4 | | Next available catalog node identifier +
 Can be a directory or file identifier.
 | 68 | 4 | | Volume write count +
@@ -1247,7 +1247,7 @@ The HFS catalog index key is variable in size and consists of:
 | Offset | Size | Value | Description
 | 0 | 1 | | The key data size +
 Signed 8-bit integer +
-Contains the number of bytes
+Contains number of bytes
 4+| _If key data size > 0_
 | 1 | 1 | | [yellow-background]*Unknown (Reserved)*
 | 2 | 4 | | The parent identifier +
@@ -1275,7 +1275,7 @@ The HFS+ catalog index key is variable in size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 2 | | The key data size +
-Contains the number of bytes
+Contains number of bytes
 4+| _If key data size > 0_
 | 2 | 4 | | The parent identifier +
 Contains a CNID
@@ -1586,9 +1586,9 @@ The fork descriptor structure is 80 bytes of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 8 | | Logical size +
-Contains the number of bytes
+Contains number of bytes
 | 8 | 4 | | Clump size +
-Contains the number of bytes
+Contains number of bytes
 | 12 | 4 | | Number of (allocation) blocks +
 The total number of allocation blocks used by all the extents in this fork.
 | 16 | ( 8 x ( 4 + 4 ) ) = 64 | | The extent (data) record +

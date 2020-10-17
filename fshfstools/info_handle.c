@@ -809,18 +809,16 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
      size_t path_length,
      libcerror_error_t **error )
 {
-	libfshfs_file_entry_t *sub_file_entry     = NULL;
-	system_character_t *file_entry_name       = NULL;
-	system_character_t *sub_path              = NULL;
-	static char *function                     = "info_handle_file_system_hierarchy_fprint_file_entry";
-	libuna_unicode_character_t name_character = 0;
-	size_t file_entry_name_index              = 0;
-	size_t file_entry_name_size               = 0;
-	size_t sub_path_size                      = 0;
-	uint32_t identifier                       = 0;
-	int number_of_sub_file_entries            = 0;
-	int result                                = 0;
-	int sub_file_entry_index                  = 0;
+	libfshfs_file_entry_t *sub_file_entry = NULL;
+	system_character_t *file_entry_name   = NULL;
+	system_character_t *sub_path          = NULL;
+	static char *function                 = "info_handle_file_system_hierarchy_fprint_file_entry";
+	size_t file_entry_name_size           = 0;
+	size_t sub_path_size                  = 0;
+	uint32_t identifier                   = 0;
+	int number_of_sub_file_entries        = 0;
+	int result                            = 0;
+	int sub_file_entry_index              = 0;
 
 	if( info_handle == NULL )
 	{

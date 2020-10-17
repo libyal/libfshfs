@@ -40,7 +40,6 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
-	fshfs_test_allocation_block \
 	fshfs_test_btree_file \
 	fshfs_test_btree_header \
 	fshfs_test_btree_node \
@@ -58,18 +57,6 @@ check_PROGRAMS = \
 	fshfs_test_thread_record \
 	fshfs_test_volume \
 	fshfs_test_volume_header
-
-fshfs_test_allocation_block_SOURCES = \
-	fshfs_test_allocation_block.c \
-	fshfs_test_libcerror.h \
-	fshfs_test_libfshfs.h \
-	fshfs_test_macros.h \
-	fshfs_test_memory.c fshfs_test_memory.h \
-	fshfs_test_unused.h
-
-fshfs_test_allocation_block_LDADD = \
-	../libfshfs/libfshfs.la \
-	@LIBCERROR_LIBADD@
 
 fshfs_test_btree_file_SOURCES = \
 	fshfs_test_btree_file.c \

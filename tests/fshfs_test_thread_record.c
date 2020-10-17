@@ -62,6 +62,7 @@ int fshfs_test_thread_record_initialize(
 	 */
 	result = libfshfs_thread_record_initialize(
 	          &thread_record,
+	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -98,6 +99,7 @@ int fshfs_test_thread_record_initialize(
 	 */
 	result = libfshfs_thread_record_initialize(
 	          NULL,
+	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -116,6 +118,7 @@ int fshfs_test_thread_record_initialize(
 
 	result = libfshfs_thread_record_initialize(
 	          &thread_record,
+	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -144,6 +147,7 @@ int fshfs_test_thread_record_initialize(
 
 		result = libfshfs_thread_record_initialize(
 		          &thread_record,
+		          0,
 		          &error );
 
 		if( fshfs_test_malloc_attempts_before_fail != -1 )
@@ -186,6 +190,7 @@ int fshfs_test_thread_record_initialize(
 
 		result = libfshfs_thread_record_initialize(
 		          &thread_record,
+		          0,
 		          &error );
 
 		if( fshfs_test_memset_attempts_before_fail != -1 )
@@ -289,6 +294,7 @@ int fshfs_test_thread_record_read_data(
 	 */
 	result = libfshfs_thread_record_initialize(
 	          &thread_record,
+	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(

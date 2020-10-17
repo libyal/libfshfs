@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_debug.h"
+#include "libfshfs_definitions.h"
 #include "libfshfs_file_record.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
@@ -170,6 +171,127 @@ int libfshfs_file_record_free(
 	return( result );
 }
 
+/* Clones a file record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_clone(
+     libfshfs_file_record_t **destination_file_record,
+     libfshfs_file_record_t *source_file_record,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_clone";
+
+	if( destination_file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid destination file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( *destination_file_record != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid destination file record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( source_file_record == NULL )
+	{
+		*destination_file_record = NULL;
+
+		return( 1 );
+	}
+	*destination_file_record = memory_allocate_structure(
+	                            libfshfs_file_record_t );
+
+	if( *destination_file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create destination file record.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     *destination_file_record,
+	     source_file_record,
+	     sizeof( libfshfs_file_record_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy source to destination file record.",
+		 function );
+
+		memory_free(
+		 *destination_file_record );
+
+		*destination_file_record = NULL;
+
+		return( -1 );
+	}
+	( *destination_file_record )->data_fork_descriptor     = NULL;
+	( *destination_file_record )->resource_fork_descriptor = NULL;
+
+	if( libfshfs_fork_descriptor_clone(
+	     &( ( *destination_file_record )->data_fork_descriptor ),
+	     source_file_record->data_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create destination data fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_clone(
+	     &( ( *destination_file_record )->resource_fork_descriptor ),
+	     source_file_record->resource_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create destination resource fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( *destination_file_record != NULL )
+	{
+		if( ( *destination_file_record )->data_fork_descriptor != NULL )
+		{
+			libfshfs_fork_descriptor_free(
+			 &( ( *destination_file_record )->data_fork_descriptor ),
+			 NULL );
+		}
+		memory_free(
+		 *destination_file_record );
+
+		*destination_file_record = NULL;
+	}
+	return( -1 );
+}
+
 /* Reads a file record
  * Returns 1 if successful or -1 on error
  */
@@ -227,11 +349,11 @@ int libfshfs_file_record_read_data(
 	 data,
 	 record_type );
 
-	if( record_type == 0x0002 )
+	if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 	{
 		record_size = sizeof( fshfs_catalog_file_record_hfsplus_t );
 	}
-	else if( record_type == 0x0200 )
+	else if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 	{
 		record_size = sizeof( fshfs_catalog_file_record_hfs_t );
 	}
@@ -270,22 +392,54 @@ int libfshfs_file_record_read_data(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
-	if( record_type == 0x0002 )
+	if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->identifier,
 		 file_record->identifier );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->creation_time,
+		 file_record->creation_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->modification_time,
+		 file_record->modification_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->entry_modification_time,
+		 file_record->entry_modification_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->access_time,
+		 file_record->access_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->backup_time,
+		 file_record->backup_time );
 	}
 	else
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_file_record_hfs_t *) data )->identifier,
 		 file_record->identifier );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfs_t *) data )->creation_time,
+		 file_record->creation_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfs_t *) data )->modification_time,
+		 file_record->modification_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfs_t *) data )->backup_time,
+		 file_record->backup_time );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			byte_stream_copy_to_uint16_big_endian(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->record_type,
@@ -302,14 +456,14 @@ int libfshfs_file_record_read_data(
 		 libfshfs_debug_print_catalog_record_type(
 		  record_type ) );
 
-		if( record_type == 0x0200 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 		{
 			libcnotify_printf(
 			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (fshfs_catalog_file_record_hfs_t *) data )->unknown1 );
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			byte_stream_copy_to_uint16_big_endian(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->flags,
@@ -324,14 +478,14 @@ int libfshfs_file_record_read_data(
 		 function,
 		 value_16bit );
 
-		if( record_type == 0x0200 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 		{
 			libcnotify_printf(
 			 "%s: file type\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (fshfs_catalog_file_record_hfs_t *) data )->file_type );
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->unknown1,
@@ -356,7 +510,7 @@ int libfshfs_file_record_read_data(
 		 function,
 		 file_record->identifier );
 
-		if( record_type == 0x0200 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 		{
 /* TODO refactor */
 			libcnotify_printf(
@@ -375,7 +529,7 @@ int libfshfs_file_record_read_data(
 			 10,
 			 0 );
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
@@ -408,7 +562,7 @@ int libfshfs_file_record_read_data(
 
 			goto on_error;
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
@@ -441,7 +595,7 @@ int libfshfs_file_record_read_data(
 
 			goto on_error;
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			if( libfshfs_debug_print_hfs_time_value(
 			     function,
@@ -480,7 +634,7 @@ int libfshfs_file_record_read_data(
 				goto on_error;
 			}
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
@@ -513,7 +667,7 @@ int libfshfs_file_record_read_data(
 
 			goto on_error;
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			libcnotify_printf(
 			 "%s: permissions:\n",
@@ -523,7 +677,7 @@ int libfshfs_file_record_read_data(
 			 16,
 			 0 );
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			libcnotify_printf(
 			 "%s: file information:\n",
@@ -537,7 +691,7 @@ int libfshfs_file_record_read_data(
 		 "%s: extended file information:\n",
 		 function );
 
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			libcnotify_print_data(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->extended_file_information,
@@ -551,7 +705,7 @@ int libfshfs_file_record_read_data(
 			 16,
 			 0 );
 		}
-		if( record_type == 0x0002 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->text_encoding_hint,
@@ -678,5 +832,306 @@ on_error:
 		 NULL );
 	}
 	return( -1 );
+}
+
+/* Retrieves the identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_identifier(
+     libfshfs_file_record_t *file_record,
+     uint32_t *identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_identifier";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid identifier.",
+		 function );
+
+		return( -1 );
+	}
+	*identifier = file_record->identifier;
+
+	return( 1 );
+}
+
+/* Retrieves the creation date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_creation_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_creation_time";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = file_record->creation_time;
+
+	return( 1 );
+}
+
+/* Retrieves the modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_modification_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_modification_time";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = file_record->modification_time;
+
+	return( 1 );
+}
+
+/* Retrieves the entry modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_entry_modification_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_entry_modification_time";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = file_record->entry_modification_time;
+
+	return( 1 );
+}
+
+/* Retrieves the access date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_access_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_access_time";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = file_record->access_time;
+
+	return( 1 );
+}
+
+/* Retrieves the backup date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_backup_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_backup_time";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = file_record->backup_time;
+
+	return( 1 );
+}
+
+/* Retrieves the data fork descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_data_fork_descriptor(
+     libfshfs_file_record_t *file_record,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_data_fork_descriptor";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	*fork_descriptor = file_record->data_fork_descriptor;
+
+	return( 1 );
+}
+
+/* Retrieves the resource fork descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_resource_fork_descriptor(
+     libfshfs_file_record_t *file_record,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_resource_fork_descriptor";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	*fork_descriptor = file_record->resource_fork_descriptor;
+
+	return( 1 );
 }
 

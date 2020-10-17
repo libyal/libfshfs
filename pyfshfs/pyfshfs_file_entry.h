@@ -66,6 +66,42 @@ PyObject *pyfshfs_file_entry_get_identifier(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 
+PyObject *pyfshfs_file_entry_get_creation_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_creation_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_modification_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_modification_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_backup_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_backup_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_file_mode(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_owner_identifier(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_group_identifier(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
 PyObject *pyfshfs_file_entry_get_name(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
@@ -84,6 +120,34 @@ PyObject *pyfshfs_file_entry_get_sub_file_entry(
            PyObject *keywords );
 
 PyObject *pyfshfs_file_entry_get_sub_file_entries(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_sub_file_entry_by_name(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfshfs_file_entry_read_buffer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfshfs_file_entry_read_buffer_at_offset(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfshfs_file_entry_seek_offset(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyfshfs_file_entry_get_offset(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_size(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 

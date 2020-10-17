@@ -461,7 +461,7 @@ int libfshfs_btree_node_read_data(
 			records_data_offset -= 2;
 
 			libcnotify_printf(
-			 "%s: record offset: %d\t\t\t\t: 0x%04" PRIx16 "\n",
+			 "%s: record offset: % 2d\t\t\t: 0x%04" PRIx16 "\n",
 			 function,
 			 record_index,
 			 value_16bit );
@@ -470,7 +470,7 @@ int libfshfs_btree_node_read_data(
 		 &( data[ records_data_offset ] ),
 		 value_16bit );
 		libcnotify_printf(
-		 "%s: free space offset\t\t\t\t: 0x%04" PRIx16 "\n",
+		 "%s: free space offset\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
 		 value_16bit );
 

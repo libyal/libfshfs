@@ -26,14 +26,13 @@ libfshfs_la_SOURCES = \
 	fshfs_fork.h \
 	fshfs_volume.h \
 	libfshfs.c \
-	libfshfs_allocation_block.c libfshfs_allocation_block.h \
-	libfshfs_allocation_block_stream.c libfshfs_allocation_block_stream.h \
-	libfshfs_allocation_block_vector.c libfshfs_allocation_block_vector.h \
 	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_btree_header.c libfshfs_btree_header.h \
 	libfshfs_btree_node.c libfshfs_btree_node.h \
 	libfshfs_btree_node_descriptor.c libfshfs_btree_node_descriptor.h \
 	libfshfs_btree_node_vector.c libfshfs_btree_node_vector.h \
+	libfshfs_block_data_handle.c libfshfs_block_data_handle.h \
+	libfshfs_block_stream.c libfshfs_block_stream.h \
 	libfshfs_catalog_btree_file.c libfshfs_catalog_btree_file.h \
 	libfshfs_catalog_btree_key.c libfshfs_catalog_btree_key.h \
 	libfshfs_debug.c libfshfs_debug.h \

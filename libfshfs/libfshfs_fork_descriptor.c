@@ -133,6 +133,85 @@ int libfshfs_fork_descriptor_free(
 	return( 1 );
 }
 
+/* Clones a fork descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_fork_descriptor_clone(
+     libfshfs_fork_descriptor_t **destination_fork_descriptor,
+     libfshfs_fork_descriptor_t *source_fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_fork_descriptor_clone";
+
+	if( destination_fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid destination fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( *destination_fork_descriptor != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid destination fork descriptor value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( source_fork_descriptor == NULL )
+	{
+		*destination_fork_descriptor = NULL;
+
+		return( 1 );
+	}
+	*destination_fork_descriptor = memory_allocate_structure(
+	                                libfshfs_fork_descriptor_t );
+
+	if( *destination_fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create destination fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     *destination_fork_descriptor,
+	     source_fork_descriptor,
+	     sizeof( libfshfs_fork_descriptor_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy source to destination fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( *destination_fork_descriptor != NULL )
+	{
+		memory_free(
+		 *destination_fork_descriptor );
+
+		*destination_fork_descriptor = NULL;
+	}
+	return( -1 );
+}
+
 /* Reads the fork descriptor
  * Returns 1 if successful or -1 on error
  */
@@ -145,6 +224,10 @@ int libfshfs_fork_descriptor_read_data(
 	static char *function     = "libfshfs_fork_descriptor_read_data";
 	size_t extent_data_offset = 0;
 	int extent_index          = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint32_t value_32bit      = 0;
+#endif
 
 	if( fork_descriptor == NULL )
 	{
@@ -208,10 +291,6 @@ int libfshfs_fork_descriptor_read_data(
 	 fork_descriptor->size );
 
 	byte_stream_copy_to_uint32_big_endian(
-	 ( (fshfs_fork_descriptor_t *) data )->clump_size,
-	 fork_descriptor->clump_size );
-
-	byte_stream_copy_to_uint32_big_endian(
 	 ( (fshfs_fork_descriptor_t *) data )->number_of_blocks,
 	 fork_descriptor->number_of_blocks );
 
@@ -223,17 +302,21 @@ int libfshfs_fork_descriptor_read_data(
 		 function,
 		 fork_descriptor->size );
 
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_fork_descriptor_t *) data )->clump_size,
+		 value_32bit );
 		libcnotify_printf(
 		 "%s: clump size\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 fork_descriptor->clump_size );
+		 value_32bit );
 
 		libcnotify_printf(
 		 "%s: number of blocks\t\t\t: %" PRIu32 "\n",
 		 function,
 		 fork_descriptor->number_of_blocks );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	while( extent_data_offset < 64 )
 	{
 		byte_stream_copy_to_uint32_big_endian(
@@ -263,7 +346,8 @@ int libfshfs_fork_descriptor_read_data(
 			 extent_index,
 			 fork_descriptor->extents[ extent_index ][ 1 ] );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		extent_index++;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )

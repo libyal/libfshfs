@@ -302,6 +302,16 @@ int libfshfs_volume_get_utf16_name(
      size_t utf16_string_size,
      libfshfs_error_t **error );
 
+/* Retrieves a specific file entry
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_file_entry_by_identifier(
+     libfshfs_volume_t *volume,
+     uint32_t identifier,
+     libfshfs_file_entry_t **file_entry,
+     libfshfs_error_t **error );
+
 /* Retrieves the root directory file entry
  * Returns 1 if successful or -1 on error
  */
@@ -345,13 +355,90 @@ int libfshfs_file_entry_free(
      libfshfs_file_entry_t **file_entry,
      libfshfs_error_t **error );
 
-/* Retrieves the identifier (or catalog node identifier (CNID) or inode number)
+/* Retrieves the identifier (or catalog node identifier (CNID))
  * Returns 1 if successful or -1 on error
  */
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_identifier(
      libfshfs_file_entry_t *file_entry,
      uint32_t *identifier,
+     libfshfs_error_t **error );
+
+/* Retrieves the creation date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_creation_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libfshfs_error_t **error );
+
+/* Retrieves the modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_modification_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libfshfs_error_t **error );
+
+/* Retrieves the entry modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_entry_modification_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libfshfs_error_t **error );
+
+/* Retrieves the access date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_access_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libfshfs_error_t **error );
+
+/* Retrieves the backup date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_backup_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libfshfs_error_t **error );
+
+/* Retrieves the file mode
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_file_mode(
+     libfshfs_file_entry_t *file_entry,
+     uint16_t *file_mode,
+     libfshfs_error_t **error );
+
+/* Retrieves the owner identifier
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_owner_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *owner_identifier,
+     libfshfs_error_t **error );
+
+/* Retrieves the group identifier
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_group_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *group_identifier,
      libfshfs_error_t **error );
 
 /* Retrieves the size of the UTF-8 encoded name
@@ -439,6 +526,55 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
      const uint16_t *utf16_string,
      size_t utf16_string_length,
      libfshfs_file_entry_t **sub_file_entry,
+     libfshfs_error_t **error );
+
+/* Reads data at the current offset
+ * Returns the number of bytes read or -1 on error
+ */
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_file_entry_read_buffer(
+         libfshfs_file_entry_t *file_entry,
+         void *buffer,
+         size_t buffer_size,
+         libfshfs_error_t **error );
+
+/* Reads data at a specific offset
+ * Returns the number of bytes read or -1 on error
+ */
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_file_entry_read_buffer_at_offset(
+         libfshfs_file_entry_t *file_entry,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libfshfs_error_t **error );
+
+/* Seeks a certain offset
+ * Returns the offset if seek is successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+off64_t libfshfs_file_entry_seek_offset(
+         libfshfs_file_entry_t *file_entry,
+         off64_t offset,
+         int whence,
+         libfshfs_error_t **error );
+
+/* Retrieves the current offset
+ * Returns the offset if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_offset(
+     libfshfs_file_entry_t *file_entry,
+     off64_t *offset,
+     libfshfs_error_t **error );
+
+/* Retrieves the size of the data
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_size(
+     libfshfs_file_entry_t *file_entry,
+     size64_t *size,
      libfshfs_error_t **error );
 
 #if defined( __cplusplus )

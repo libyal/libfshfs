@@ -13,12 +13,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfguid", "libfguid\libfgu
 		{58EF72D6-030A-4742-A353-21B461635A96} = {58EF72D6-030A-4742-A353-21B461635A96}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fshfs_test_allocation_block", "fshfs_test_allocation_block\fshfs_test_allocation_block.vcproj", "{84D89FC6-A881-4745-AF85-A2B59E7FA5CA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{13D05959-377F-408F-9A28-53DA9FA0DDEE} = {13D05959-377F-408F-9A28-53DA9FA0DDEE}
-		{58EF72D6-030A-4742-A353-21B461635A96} = {58EF72D6-030A-4742-A353-21B461635A96}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fshfs_test_btree_file", "fshfs_test_btree_file\fshfs_test_btree_file.vcproj", "{4DE46E73-4576-4E5B-A242-98257EED11F5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{13D05959-377F-408F-9A28-53DA9FA0DDEE} = {13D05959-377F-408F-9A28-53DA9FA0DDEE}
@@ -274,10 +268,6 @@ Global
 		{CC1CBD55-D2C2-4F21-BA88-98026B6EF025}.Release|Win32.Build.0 = Release|Win32
 		{CC1CBD55-D2C2-4F21-BA88-98026B6EF025}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
 		{CC1CBD55-D2C2-4F21-BA88-98026B6EF025}.VSDebug|Win32.Build.0 = VSDebug|Win32
-		{84D89FC6-A881-4745-AF85-A2B59E7FA5CA}.Release|Win32.ActiveCfg = Release|Win32
-		{84D89FC6-A881-4745-AF85-A2B59E7FA5CA}.Release|Win32.Build.0 = Release|Win32
-		{84D89FC6-A881-4745-AF85-A2B59E7FA5CA}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
-		{84D89FC6-A881-4745-AF85-A2B59E7FA5CA}.VSDebug|Win32.Build.0 = VSDebug|Win32
 		{4DE46E73-4576-4E5B-A242-98257EED11F5}.Release|Win32.ActiveCfg = Release|Win32
 		{4DE46E73-4576-4E5B-A242-98257EED11F5}.Release|Win32.Build.0 = Release|Win32
 		{4DE46E73-4576-4E5B-A242-98257EED11F5}.VSDebug|Win32.ActiveCfg = VSDebug|Win32

@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_debug.h"
+#include "libfshfs_definitions.h"
 #include "libfshfs_directory_record.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
@@ -136,6 +137,85 @@ int libfshfs_directory_record_free(
 	return( 1 );
 }
 
+/* Clones a directory record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_clone(
+     libfshfs_directory_record_t **destination_directory_record,
+     libfshfs_directory_record_t *source_directory_record,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_clone";
+
+	if( destination_directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid destination directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( *destination_directory_record != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid destination directory record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( source_directory_record == NULL )
+	{
+		*destination_directory_record = NULL;
+
+		return( 1 );
+	}
+	*destination_directory_record = memory_allocate_structure(
+	                                 libfshfs_directory_record_t );
+
+	if( *destination_directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create destination directory record.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     *destination_directory_record,
+	     source_directory_record,
+	     sizeof( libfshfs_directory_record_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy source to destination directory record.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( *destination_directory_record != NULL )
+	{
+		memory_free(
+		 *destination_directory_record );
+
+		*destination_directory_record = NULL;
+	}
+	return( -1 );
+}
+
 /* Reads a directory record
  * Returns 1 if successful or -1 on error
  */
@@ -193,11 +273,11 @@ int libfshfs_directory_record_read_data(
 	 data,
 	 record_type );
 
-	if( record_type == 0x0001 )
+	if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 	{
 		record_size = sizeof( fshfs_catalog_directory_record_hfsplus_t );
 	}
-	else if( record_type == 0x0100 )
+	else if( record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
 	{
 		record_size = sizeof( fshfs_catalog_directory_record_hfs_t );
 	}
@@ -236,22 +316,58 @@ int libfshfs_directory_record_read_data(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
-	if( record_type == 0x0001 )
+	if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->identifier,
 		 directory_record->identifier );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->creation_time,
+		 directory_record->creation_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->modification_time,
+		 directory_record->modification_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->entry_modification_time,
+		 directory_record->entry_modification_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->access_time,
+		 directory_record->access_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->backup_time,
+		 directory_record->backup_time );
 	}
 	else
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_directory_record_hfs_t *) data )->identifier,
 		 directory_record->identifier );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfs_t *) data )->creation_time,
+		 directory_record->creation_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfs_t *) data )->modification_time,
+		 directory_record->modification_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfs_t *) data )->backup_time,
+		 directory_record->backup_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfs_t *) data )->backup_time,
+		 directory_record->backup_time );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			byte_stream_copy_to_uint16_big_endian(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->record_type,
@@ -268,7 +384,7 @@ int libfshfs_directory_record_read_data(
 		 libfshfs_debug_print_catalog_record_type(
 		  record_type ) );
 
-		if( record_type == 0x0100 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
 		{
 			libcnotify_printf(
 			 "%s: unknown1\t\t\t: 0x%02" PRIx8 "\n",
@@ -283,7 +399,7 @@ int libfshfs_directory_record_read_data(
 		 function,
 		 value_16bit );
 
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->number_of_entries,
@@ -305,7 +421,7 @@ int libfshfs_directory_record_read_data(
 		 function,
 		 directory_record->identifier );
 
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
@@ -338,7 +454,7 @@ int libfshfs_directory_record_read_data(
 
 			return( -1 );
 		}
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
@@ -371,7 +487,7 @@ int libfshfs_directory_record_read_data(
 
 			return( -1 );
 		}
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			if( libfshfs_debug_print_hfs_time_value(
 			     function,
@@ -410,7 +526,7 @@ int libfshfs_directory_record_read_data(
 				return( -1 );
 			}
 		}
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			result = libfshfs_debug_print_hfs_time_value(
 			          function,
@@ -443,7 +559,7 @@ int libfshfs_directory_record_read_data(
 
 			return( -1 );
 		}
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			libcnotify_printf(
 			 "%s: permissions:\n",
@@ -457,7 +573,7 @@ int libfshfs_directory_record_read_data(
 		 "%s: folder information:\n",
 		 function );
 
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			libcnotify_print_data(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->folder_information,
@@ -475,7 +591,7 @@ int libfshfs_directory_record_read_data(
 		 "%s: extended folder information:\n",
 		 function );
 
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			libcnotify_print_data(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->extended_folder_information,
@@ -489,7 +605,7 @@ int libfshfs_directory_record_read_data(
 			 16,
 			 0 );
 		}
-		if( record_type == 0x0001 )
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->text_encoding_hint,
@@ -522,6 +638,233 @@ int libfshfs_directory_record_read_data(
 		}
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+	return( 1 );
+}
+
+/* Retrieves the identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_identifier(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_identifier";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid identifier.",
+		 function );
+
+		return( -1 );
+	}
+	*identifier = directory_record->identifier;
+
+	return( 1 );
+}
+
+/* Retrieves the creation date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_creation_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_creation_time";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = directory_record->creation_time;
+
+	return( 1 );
+}
+
+/* Retrieves the modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_modification_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_modification_time";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = directory_record->modification_time;
+
+	return( 1 );
+}
+
+/* Retrieves the entry modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_entry_modification_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_entry_modification_time";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = directory_record->entry_modification_time;
+
+	return( 1 );
+}
+
+/* Retrieves the access date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_access_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_access_time";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = directory_record->access_time;
+
+	return( 1 );
+}
+
+/* Retrieves the backup date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_backup_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_backup_time";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( hfs_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid HFS time.",
+		 function );
+
+		return( -1 );
+	}
+	*hfs_time = directory_record->backup_time;
 
 	return( 1 );
 }

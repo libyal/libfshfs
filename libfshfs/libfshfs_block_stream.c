@@ -1,5 +1,5 @@
 /*
- * Allocation block vector functions
+ * Block stream functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -22,39 +22,36 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_definitions.h"
-#include "libfshfs_allocation_block.h"
-#include "libfshfs_allocation_block_vector.h"
+#include "libfshfs_block_data_handle.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libfdata.h"
-#include "libfshfs_unused.h"
 
-/* Creates an allocation block vector
- * Make sure the value allocation_block_vector is referencing, is set to NULL
+/* Creates a block stream
+ * Make sure the value block_stream is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_allocation_block_vector_initialize(
-     libfdata_vector_t **allocation_block_vector,
+int libfshfs_block_stream_initialize(
+     libfdata_stream_t **block_stream,
      libfshfs_io_handle_t *io_handle,
-     uint32_t block_size,
      libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
-	static char *function  = "libfshfs_allocation_block_vector_initialize";
-	off64_t segment_offset = 0;
-	size64_t segment_size  = 0;
-	int extent_index       = 0;
-	int segment_index      = 0;
+	libfdata_stream_t *safe_data_stream = NULL;
+	static char *function               = "libfshfs_block_stream_initialize";
+	size64_t segment_size               = 0;
+	off64_t segment_offset              = 0;
+	int extent_index                    = 0;
+	int segment_index                   = 0;
 
-	if( allocation_block_vector == NULL )
+	if( block_stream == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid allocation block vector.",
+		 "%s: invalid data stream.",
 		 function );
 
 		return( -1 );
@@ -70,33 +67,34 @@ int libfshfs_allocation_block_vector_initialize(
 
 		return( -1 );
 	}
-	if( fork_descriptor == NULL )
+	if( io_handle->block_size == 0 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid fork descriptor.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid IO handle - block size value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
-	if( libfdata_vector_initialize(
-	     allocation_block_vector,
-	     (size64_t) block_size,
-	     (intptr_t *) io_handle,
+	if( libfdata_stream_initialize(
+	     &safe_data_stream,
 	     NULL,
 	     NULL,
-	     (int (*)(intptr_t *, intptr_t *, libfdata_vector_t *, libfdata_cache_t *, int, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libfshfs_allocation_block_read_element_data,
 	     NULL,
-	     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
+	     NULL,
+	     (ssize_t (*)(intptr_t *, intptr_t *, int, int, uint8_t *, size_t, uint32_t, uint8_t, libcerror_error_t **)) &libfshfs_block_data_handle_read_segment_data,
+	     NULL,
+	     (off64_t (*)(intptr_t *, intptr_t *, int, int, off64_t, libcerror_error_t **)) &libfshfs_block_data_handle_seek_segment_offset,
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create allocation block vector.",
+		 "%s: unable to create data stream.",
 		 function );
 
 		goto on_error;
@@ -105,11 +103,16 @@ int libfshfs_allocation_block_vector_initialize(
 	     extent_index < 8;
 	     extent_index++ )
 	{
-		segment_offset = fork_descriptor->extents[ extent_index ][ 0 ] * io_handle->allocation_block_size;
-		segment_size   = fork_descriptor->extents[ extent_index ][ 1 ] * io_handle->allocation_block_size;
+		segment_offset = (off64_t) fork_descriptor->extents[ extent_index ][ 0 ] * io_handle->block_size;
+		segment_size   = (size64_t) fork_descriptor->extents[ extent_index ][ 1 ] * io_handle->block_size;
 
-		if( libfdata_vector_append_segment(
-		     *allocation_block_vector,
+		if( ( segment_offset == 0 )
+		 || ( segment_size == 0 ) )
+		{
+			break;
+		}
+		if( libfdata_stream_append_segment(
+		     safe_data_stream,
 		     &segment_index,
 		     0,
 		     segment_offset,
@@ -121,21 +124,38 @@ int libfshfs_allocation_block_vector_initialize(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append extent: %d vector segment.",
+			 "%s: unable to append extent: %d data stream segment.",
 			 function,
 			 extent_index );
 
 			goto on_error;
 		}
 	}
-/* TODO add extended extents support */
+/* TODO add extents overflow support */
+
+	if( libfdata_stream_set_mapped_size(
+	     safe_data_stream,
+	     fork_descriptor->size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set mapped size of data stream.",
+		 function );
+
+		goto on_error;
+	}
+	*block_stream = safe_data_stream;
+
 	return( 1 );
 
 on_error:
-	if( *allocation_block_vector != NULL )
+	if( safe_data_stream != NULL )
 	{
-		libfdata_vector_free(
-		 allocation_block_vector,
+		libfdata_stream_free(
+		 &safe_data_stream,
 		 NULL );
 	}
 	return( -1 );

@@ -38,6 +38,26 @@ struct libfshfs_directory_record
 	/* The identifier
 	 */
 	uint32_t identifier;
+
+	/* The creation time
+	 */
+	uint32_t creation_time;
+
+	/* The modification time
+	 */
+	uint32_t modification_time;
+
+	/* The entry modification time
+	 */
+	uint32_t entry_modification_time;
+
+	/* The access time
+	 */
+	uint32_t access_time;
+
+	/* The backup time
+	 */
+	uint32_t backup_time;
 };
 
 int libfshfs_directory_record_initialize(
@@ -48,10 +68,45 @@ int libfshfs_directory_record_free(
      libfshfs_directory_record_t **directory_record,
      libcerror_error_t **error );
 
+int libfshfs_directory_record_clone(
+     libfshfs_directory_record_t **destination_directory_record,
+     libfshfs_directory_record_t *source_directory_record,
+     libcerror_error_t **error );
+
 int libfshfs_directory_record_read_data(
      libfshfs_directory_record_t *directory_record,
      const uint8_t *data,
      size_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_identifier(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *identifier,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_creation_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_modification_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_entry_modification_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_access_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_backup_time(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *hfs_time,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

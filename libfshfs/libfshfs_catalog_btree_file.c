@@ -213,12 +213,13 @@ int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 
 			switch( record_type )
 			{
-				case 0x0003:
-				case 0x0300:
-				case 0x0004:
-				case 0x0400:
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_THREAD_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_FILE_THREAD_RECORD:
 					if( libfshfs_thread_record_initialize(
 					     thread_record,
+					     node_key->parent_identifier,
 					     error ) != 1 )
 					{
 						libcerror_error_set(
@@ -810,8 +811,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
 
 	switch( record_type )
 	{
-		case 0x0001:
-		case 0x0100:
+		case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD:
+		case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD:
 			if( libfshfs_directory_record_initialize(
 			     &directory_record,
 			     error ) != 1 )
@@ -844,8 +845,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
 
 			break;
 
-		case 0x0002:
-		case 0x0200:
+		case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD:
+		case LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD:
 			if( libfshfs_file_record_initialize(
 			     &file_record,
 			     error ) != 1 )
@@ -933,22 +934,24 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves a directory entry for a specific identifier from the catalog B-tree leaf node
+/* Retrieves a directory entry for a specific thread record from the catalog B-tree leaf node
  * Returns 1 if successful, 0 if not found or -1 on error
  */
-int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier(
+int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
-     uint32_t identifier,
+     libfshfs_thread_record_t *thread_record,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
 	libfshfs_catalog_btree_key_t *node_key = NULL;
 	const uint8_t *record_data             = NULL;
-	static char *function                  = "libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier";
+	static char *function                  = "libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint16_t record_index                  = 0;
+	uint16_t record_type                   = 0;
+	int compare_result                     = 0;
 	int is_leaf_node                       = 0;
 	int result                             = 0;
 
@@ -981,6 +984,17 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid B-tree node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( thread_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid thread record.",
 		 function );
 
 		return( -1 );
@@ -1095,26 +1109,62 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier
 
 			goto on_error;
 		}
-		if( node_key->parent_identifier == identifier )
+		if( node_key->parent_identifier == thread_record->parent_identifier )
 		{
-			result = libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
-			          btree_file,
-			          node_key,
-			          &( record_data[ record_data_offset ] ),
-			          record_data_size - record_data_offset,
-			          directory_entry,
-			          error );
+			byte_stream_copy_to_uint16_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 record_type );
 
-			if( result == -1 )
+			switch( record_type )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve directory entry from record data.",
-				 function );
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD:
+					compare_result = libfshfs_catalog_btree_key_compare_name(
+					                  node_key,
+					                  thread_record->name,
+					                  thread_record->name_size,
+					                  error );
 
-				goto on_error;
+					if( compare_result == -1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GENERIC,
+						 "%s: unable to compare thread record name with catalog B-tree key name.",
+						 function );
+
+						return( -1 );
+					}
+					break;
+
+				default:
+					compare_result = LIBUNA_COMPARE_LESS;
+					break;
+			}
+			if( compare_result != 0 )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
+				          btree_file,
+				          node_key,
+				          &( record_data[ record_data_offset ] ),
+				          record_data_size - record_data_offset,
+				          directory_entry,
+				          error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve directory entry from record data.",
+					 function );
+
+					goto on_error;
+				}
 			}
 		}
 		if( libfshfs_catalog_btree_key_free(
@@ -1153,14 +1203,14 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves a directory entry for a specific identifier from the catalog B-tree branch node
+/* Retrieves a directory entry for a specific thread record from the catalog B-tree branch node
  * Returns 1 if successful, 0 if not found or -1 on error
  */
-int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifier(
+int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
-     uint32_t identifier,
+     libfshfs_thread_record_t *thread_record,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error )
@@ -1169,7 +1219,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifi
 	libfshfs_btree_node_t *sub_node        = NULL;
 	libfshfs_catalog_btree_key_t *node_key = NULL;
 	const uint8_t *record_data             = NULL;
-	static char *function                  = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifier";
+	static char *function                  = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint32_t sub_node_number               = 0;
@@ -1206,6 +1256,17 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifi
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid B-tree node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( thread_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid thread record.",
 		 function );
 
 		return( -1 );
@@ -1349,7 +1410,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifi
 
 			goto on_error;
 		}
-		if( node_key->parent_identifier <= identifier )
+		if( node_key->parent_identifier <= thread_record->parent_identifier )
 		{
 			if( ( record_data_size < 4 )
 			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
@@ -1417,20 +1478,20 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifi
 			}
 			if( is_branch_node == 0 )
 			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier(
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
 				          btree_file,
 				          sub_node,
-				          identifier,
+				          thread_record,
 				          directory_entry,
 				          error );
 			}
 			else
 			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifier(
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 				          btree_file,
 				          file_io_handle,
 				          sub_node,
-				          identifier,
+				          thread_record,
 				          directory_entry,
 				          recursion_depth + 1,
 				          error );
@@ -1513,74 +1574,119 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	libfshfs_btree_node_t *root_node = NULL;
-	static char *function            = "libfshfs_catalog_btree_file_get_directory_entry_by_identifier";
-	int is_branch_node               = 0;
-	int result                       = 0;
+	libfshfs_btree_node_t *root_node        = NULL;
+	libfshfs_thread_record_t *thread_record = NULL;
+	static char *function                   = "libfshfs_catalog_btree_file_get_directory_entry_by_identifier";
+	int is_branch_node                      = 0;
+	int result                              = 0;
 
-	if( libfshfs_btree_file_get_root_node(
-	     btree_file,
-	     file_io_handle,
-	     &root_node,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve B-tree root node.",
-		 function );
+	result = libfshfs_catalog_btree_file_get_thread_record(
+	          btree_file,
+	          file_io_handle,
+	          identifier,
+	          &thread_record,
+	          error );
 
-		return( -1 );
-	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if B-tree root node is a branch node.",
-		 function );
-
-		return( -1 );
-	}
-	else if( is_branch_node == 0 )
-	{
-		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_identifier(
-		          btree_file,
-		          root_node,
-		          identifier,
-		          directory_entry,
-		          error );
-	}
-	else
-	{
-		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_identifier(
-		          btree_file,
-		          file_io_handle,
-		          root_node,
-		          identifier,
-		          directory_entry,
-		          0,
-		          error );
-	}
 	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve directory entry: %" PRIu32 " from catalog B-tree root node.",
+		 "%s: unable to retrieve thread record: %" PRIu32 " from catalog B-tree root node.",
 		 function,
 		 identifier );
 
-		return( -1 );
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_btree_file_get_root_node(
+		     btree_file,
+		     file_io_handle,
+		     &root_node,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve B-tree root node.",
+			 function );
+
+			goto on_error;
+		}
+		is_branch_node = libfshfs_btree_node_is_branch_node(
+		                  root_node,
+		                  error );
+
+		if( is_branch_node == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine if B-tree root node is a branch node.",
+			 function );
+
+			goto on_error;
+		}
+		else if( is_branch_node == 0 )
+		{
+			result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
+			          btree_file,
+			          root_node,
+			          thread_record,
+			          directory_entry,
+			          error );
+		}
+		else
+		{
+			result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
+			          btree_file,
+			          file_io_handle,
+			          root_node,
+			          thread_record,
+			          directory_entry,
+			          0,
+			          error );
+		}
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry: %" PRIu32 " from catalog B-tree root node.",
+			 function,
+			 identifier );
+
+			goto on_error;
+		}
+		if( libfshfs_thread_record_free(
+		     &thread_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free thread record.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	return( result );
+
+on_error:
+	if( thread_record != NULL )
+	{
+		libfshfs_thread_record_free(
+		 &thread_record,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Retrieves a directory entry for an UTF-8 encoded name from the catalog B-tree leaf node
@@ -1601,6 +1707,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint16_t record_index                  = 0;
+	uint16_t record_type                   = 0;
 	int compare_result                     = 0;
 	int is_leaf_node                       = 0;
 	int result                             = 0;
@@ -1750,24 +1857,40 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 		}
 		if( node_key->parent_identifier == parent_identifier )
 		{
-			compare_result = libfshfs_catalog_btree_key_compare_name_with_utf8_string(
-			                  node_key,
-			                  utf8_string,
-			                  utf8_string_length,
-			                  error );
+			byte_stream_copy_to_uint16_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 record_type );
 
-			if( compare_result == -1 )
+			switch( record_type )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 "%s: unable to compare UTF-8 string with catalog B-tree key name.",
-				 function );
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD:
+					compare_result = libfshfs_catalog_btree_key_compare_name_with_utf8_string(
+					                  node_key,
+					                  utf8_string,
+					                  utf8_string_length,
+					                  error );
 
-				return( -1 );
+					if( compare_result == -1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GENERIC,
+						 "%s: unable to compare UTF-8 string with catalog B-tree key name.",
+						 function );
+
+						return( -1 );
+					}
+					break;
+
+				default:
+					compare_result = LIBUNA_COMPARE_LESS;
+					break;
 			}
-			else if( compare_result == LIBUNA_COMPARE_EQUAL )
+			if( compare_result == LIBUNA_COMPARE_EQUAL )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
 				          btree_file,
@@ -2536,6 +2659,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint16_t record_index                  = 0;
+	uint16_t record_type                   = 0;
 	int compare_result                     = 0;
 	int is_leaf_node                       = 0;
 	int result                             = 0;
@@ -2685,24 +2809,40 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 		}
 		if( node_key->parent_identifier == parent_identifier )
 		{
-			compare_result = libfshfs_catalog_btree_key_compare_name_with_utf16_string(
-			                  node_key,
-			                  utf16_string,
-			                  utf16_string_length,
-			                  error );
+			byte_stream_copy_to_uint16_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 record_type );
 
-			if( compare_result == -1 )
+			switch( record_type )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GENERIC,
-				 "%s: unable to compare UTF-16 string with catalog B-tree key name.",
-				 function );
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD:
+				case LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD:
+					compare_result = libfshfs_catalog_btree_key_compare_name_with_utf16_string(
+					                  node_key,
+					                  utf16_string,
+					                  utf16_string_length,
+					                  error );
 
-				return( -1 );
+					if( compare_result == -1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GENERIC,
+						 "%s: unable to compare UTF-16 string with catalog B-tree key name.",
+						 function );
+
+						return( -1 );
+					}
+					break;
+
+				default:
+					compare_result = LIBUNA_COMPARE_LESS;
+					break;
 			}
-			else if( compare_result == LIBUNA_COMPARE_EQUAL )
+			if( compare_result == LIBUNA_COMPARE_EQUAL )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
 				          btree_file,

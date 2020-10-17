@@ -66,6 +66,12 @@ int libfshfs_catalog_btree_key_read_data(
      size_t data_size,
      libcerror_error_t **error );
 
+int libfshfs_catalog_btree_key_compare_name(
+     libfshfs_catalog_btree_key_t *catalog_btree_key,
+     const uint8_t *name,
+     size_t name_size,
+     libcerror_error_t **error );
+
 int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint8_t *utf8_string,

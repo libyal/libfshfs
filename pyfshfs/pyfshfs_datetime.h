@@ -1,5 +1,5 @@
 /*
- * Catalog B-tree file thread record functions
+ * Date and time functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,57 +19,47 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_THREAD_RECORD_H )
-#define _LIBFSHFS_THREAD_RECORD_H
+#if !defined( _PYFSHFS_DATETIME_H )
+#define _PYFSHFS_DATETIME_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_libcerror.h"
+#include "pyfshfs_python.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfshfs_thread_record libfshfs_thread_record_t;
+PyObject *pyfshfs_datetime_new_from_time_elements(
+           uint16_t year,
+           uint64_t number_of_days,
+           uint8_t hours,
+           uint8_t minutes,
+           uint8_t seconds,
+           uint8_t micro_seconds );
 
-struct libfshfs_thread_record
-{
-	/* Identifier
-	 */
-	uint32_t identifier;
+PyObject *pyfshfs_datetime_new_from_fat_date_time(
+           uint32_t fat_date_time );
 
-	/* Parent identifier
-	 */
-	uint32_t parent_identifier;
+PyObject *pyfshfs_datetime_new_from_filetime(
+           uint64_t filetime );
 
-	/* Name size
-	 */
-	uint16_t name_size;
+PyObject *pyfshfs_datetime_new_from_floatingtime(
+           uint64_t floatingtime );
 
-	/* Name
-	 */
-	uint8_t *name;
-};
+PyObject *pyfshfs_datetime_new_from_hfs_time(
+           uint32_t hfs_time );
 
-int libfshfs_thread_record_initialize(
-     libfshfs_thread_record_t **thread_record,
-     uint32_t identifier,
-     libcerror_error_t **error );
+PyObject *pyfshfs_datetime_new_from_posix_time(
+           int64_t posix_time );
 
-int libfshfs_thread_record_free(
-     libfshfs_thread_record_t **thread_record,
-     libcerror_error_t **error );
-
-int libfshfs_thread_record_read_data(
-     libfshfs_thread_record_t *thread_record,
-     const uint8_t *data,
-     size_t data_size,
-     libcerror_error_t **error );
+PyObject *pyfshfs_datetime_new_from_posix_time_in_micro_seconds(
+           int64_t posix_time );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_THREAD_RECORD_H ) */
+#endif /* !defined( _PYFSHFS_DATETIME_H ) */
 

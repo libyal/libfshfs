@@ -43,11 +43,12 @@ int libfshfs_btree_node_vector_initialize(
      libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
-	static char *function  = "libfshfs_btree_node_vector_initialize";
-	off64_t segment_offset = 0;
-	size64_t segment_size  = 0;
-	int extent_index       = 0;
-	int segment_index      = 0;
+	libfdata_vector_t *safe_btree_node_vector = NULL;
+	static char *function                     = "libfshfs_btree_node_vector_initialize";
+	size64_t segment_size                     = 0;
+	off64_t segment_offset                    = 0;
+	int extent_index                          = 0;
+	int segment_index                         = 0;
 
 	if( btree_node_vector == NULL )
 	{
@@ -83,7 +84,7 @@ int libfshfs_btree_node_vector_initialize(
 		return( -1 );
 	}
 	if( libfdata_vector_initialize(
-	     btree_node_vector,
+	     &safe_btree_node_vector,
 	     (size64_t) node_size,
 	     (intptr_t *) io_handle,
 	     NULL,
@@ -106,11 +107,16 @@ int libfshfs_btree_node_vector_initialize(
 	     extent_index < 8;
 	     extent_index++ )
 	{
-		segment_offset = fork_descriptor->extents[ extent_index ][ 0 ] * io_handle->allocation_block_size;
-		segment_size   = fork_descriptor->extents[ extent_index ][ 1 ] * io_handle->allocation_block_size;
+		segment_offset = fork_descriptor->extents[ extent_index ][ 0 ] * io_handle->block_size;
+		segment_size   = fork_descriptor->extents[ extent_index ][ 1 ] * io_handle->block_size;
 
+		if( ( segment_offset == 0 )
+		 || ( segment_size == 0 ) )
+		{
+			break;
+		}
 		if( libfdata_vector_append_segment(
-		     *btree_node_vector,
+		     safe_btree_node_vector,
 		     &segment_index,
 		     0,
 		     segment_offset,
@@ -129,14 +135,17 @@ int libfshfs_btree_node_vector_initialize(
 			goto on_error;
 		}
 	}
-/* TODO add extended extents support */
+/* TODO add extents overflow support */
+
+	*btree_node_vector = safe_btree_node_vector;
+
 	return( 1 );
 
 on_error:
-	if( *btree_node_vector != NULL )
+	if( safe_btree_node_vector != NULL )
 	{
 		libfdata_vector_free(
-		 btree_node_vector,
+		 &safe_btree_node_vector,
 		 NULL );
 	}
 	return( -1 );

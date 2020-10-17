@@ -39,10 +39,6 @@ struct libfshfs_fork_descriptor
 	 */
 	uint64_t size;
 
-	/* The clump size
-	 */
-	uint32_t clump_size;
-
 	/* The number of blocks
 	 */
 	uint32_t number_of_blocks;
@@ -58,6 +54,11 @@ int libfshfs_fork_descriptor_initialize(
 
 int libfshfs_fork_descriptor_free(
      libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_fork_descriptor_clone(
+     libfshfs_fork_descriptor_t **destination_fork_descriptor,
+     libfshfs_fork_descriptor_t *source_fork_descriptor,
      libcerror_error_t **error );
 
 int libfshfs_fork_descriptor_read_data(

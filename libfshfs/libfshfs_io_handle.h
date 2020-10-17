@@ -42,9 +42,9 @@ struct libfshfs_io_handle
 	 */
 	uint8_t file_system_type;
 
-	/* The allocation block size
+	/* The block size
 	 */
-	uint32_t allocation_block_size;
+	uint32_t block_size;
 
 	/* Value to indicate if abort was signalled
 	 */

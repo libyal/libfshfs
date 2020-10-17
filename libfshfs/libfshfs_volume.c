@@ -1055,8 +1055,8 @@ int libfshfs_internal_volume_open_read(
 
 		goto on_error;
 	}
-	internal_volume->io_handle->file_system_type      = internal_volume->volume_header->file_system_type;
-	internal_volume->io_handle->allocation_block_size = internal_volume->volume_header->allocation_block_size;
+	internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
+	internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
 
 	if( internal_volume->volume_header->catalog_file_fork_descriptor->size > 0 )
 	{
@@ -1532,8 +1532,9 @@ int libfshfs_volume_get_file_entry_by_identifier(
 		 */
 		if( libfshfs_file_entry_initialize(
 		     file_entry,
-		     directory_entry,
+		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
+		     directory_entry,
 		     internal_volume->catalog_btree_file,
 		     error ) != 1 )
 		{
@@ -1577,9 +1578,10 @@ int libfshfs_volume_get_root_directory(
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error )
 {
-	libfshfs_internal_volume_t *internal_volume = NULL;
-	static char *function                       = "libfshfs_volume_get_root_directory";
-	int result                                  = 1;
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	libfshfs_internal_volume_t *internal_volume      = NULL;
+	static char *function                            = "libfshfs_volume_get_root_directory";
+	int result                                       = 1;
 
 	if( volume == NULL )
 	{
@@ -1594,17 +1596,6 @@ int libfshfs_volume_get_root_directory(
 	}
 	internal_volume = (libfshfs_internal_volume_t *) volume;
 
-	if( internal_volume->root_directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid volume - missing root directory entry.",
-		 function );
-
-		return( -1 );
-	}
 	if( file_entry == NULL )
 	{
 		libcerror_error_set(
@@ -1642,21 +1633,45 @@ int libfshfs_volume_get_root_directory(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_file_entry_initialize(
-	     file_entry,
+	if( libfshfs_directory_entry_clone(
+	     &safe_directory_entry,
 	     internal_volume->root_directory_entry,
-	     internal_volume->file_io_handle,
-	     internal_volume->catalog_btree_file,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file entry.",
+		 "%s: unable to clone root directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     file_entry,
+		     internal_volume->io_handle,
+		     internal_volume->file_io_handle,
+		     safe_directory_entry,
+		     internal_volume->catalog_btree_file,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &safe_directory_entry,
+			 NULL );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1766,8 +1781,9 @@ int libfshfs_volume_get_file_entry_by_utf8_path(
 		 */
 		if( libfshfs_file_entry_initialize(
 		     file_entry,
-		     directory_entry,
+		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
+		     directory_entry,
 		     internal_volume->catalog_btree_file,
 		     error ) != 1 )
 		{

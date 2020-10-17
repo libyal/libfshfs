@@ -1,19 +1,20 @@
 Debug info:
-* implement get_file_entry_by_path
 * implement file entry data stream interface
+** add extents overflow support
+** handle file records without a data fork
+* add support for resource fork data stream
+* add support for file_mode
+** implement permissions
 * get_file_entry_by_path determine unicode form
-* directory listing:
-  - get all sub file and directory records (from the catalog) given a CNID
 * Retrieve the volume name from the root directory entry
+* split HFS and HFS+ documentation?
 
 Format support:
 * implement HFS support
-* implement format suport
-* implement permissions
-* implement file information
-* implement extended file information
-* implement folder information
-* implement extended folder information
+* implement support for file information
+* implement support for extended file information
+* implement support for folder information
+* implement support for extended folder information
 * debug print text encoding hint
 * implement LZVN compression support
 

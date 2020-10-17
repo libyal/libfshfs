@@ -262,7 +262,7 @@ int libfshfs_btree_file_read_file_io_handle(
 	}
 	/* Read the header record first to determine the B-tree node size.
 	 */
-	file_offset = fork_descriptor->extents[ 0 ][ 0 ] * io_handle->allocation_block_size;
+	file_offset = fork_descriptor->extents[ 0 ][ 0 ] * io_handle->block_size;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )

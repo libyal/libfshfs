@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
@@ -51,7 +52,7 @@ struct libfshfs_directory_entry
 	 */
 	uint32_t parent_identifier;
 
-	/* File or directory catalog record
+	/* Directory or file catalog record
 	 */
 	intptr_t *catalog_record;
 };
@@ -64,9 +65,39 @@ int libfshfs_directory_entry_free(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
+int libfshfs_directory_entry_clone(
+     libfshfs_directory_entry_t **destination_directory_entry,
+     libfshfs_directory_entry_t *source_directory_entry,
+     libcerror_error_t **error );
+
 int libfshfs_directory_entry_get_identifier(
      libfshfs_directory_entry_t *directory_entry,
      uint32_t *identifier,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_creation_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_modification_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_entry_modification_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_access_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_backup_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
      libcerror_error_t **error );
 
 int libfshfs_directory_entry_get_utf8_name_size(
@@ -89,6 +120,16 @@ int libfshfs_directory_entry_get_utf16_name(
      libfshfs_directory_entry_t *directory_entry,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_data_fork_descriptor(
+     libfshfs_directory_entry_t *directory_entry,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_resource_fork_descriptor(
+     libfshfs_directory_entry_t *directory_entry,
+     libfshfs_fork_descriptor_t **fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

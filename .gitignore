@@ -132,6 +132,7 @@ stamp-h[1-9]
 /tests/fshfs_test_btree_header
 /tests/fshfs_test_btree_node
 /tests/fshfs_test_btree_node_descriptor
+/tests/fshfs_test_block_vector
 /tests/fshfs_test_catalog_btree_key
 /tests/fshfs_test_directory_entry
 /tests/fshfs_test_directory_record

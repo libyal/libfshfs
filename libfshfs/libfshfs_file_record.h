@@ -40,6 +40,26 @@ struct libfshfs_file_record
 	 */
 	uint32_t identifier;
 
+	/* The creation time
+	 */
+	uint32_t creation_time;
+
+	/* The modification time
+	 */
+	uint32_t modification_time;
+
+	/* The entry modification time
+	 */
+	uint32_t entry_modification_time;
+
+	/* The access time
+	 */
+	uint32_t access_time;
+
+	/* The backup time
+	 */
+	uint32_t backup_time;
+
 	/* The data fork descriptor
 	 */
 	libfshfs_fork_descriptor_t *data_fork_descriptor;
@@ -57,10 +77,55 @@ int libfshfs_file_record_free(
      libfshfs_file_record_t **file_record,
      libcerror_error_t **error );
 
+int libfshfs_file_record_clone(
+     libfshfs_file_record_t **destination_file_record,
+     libfshfs_file_record_t *source_file_record,
+     libcerror_error_t **error );
+
 int libfshfs_file_record_read_data(
      libfshfs_file_record_t *file_record,
      const uint8_t *data,
      size_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_identifier(
+     libfshfs_file_record_t *file_record,
+     uint32_t *identifier,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_creation_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_modification_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_entry_modification_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_access_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_backup_time(
+     libfshfs_file_record_t *file_record,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_data_fork_descriptor(
+     libfshfs_file_record_t *file_record,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_resource_fork_descriptor(
+     libfshfs_file_record_t *file_record,
+     libfshfs_fork_descriptor_t **fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

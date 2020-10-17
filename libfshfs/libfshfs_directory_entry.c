@@ -23,9 +23,11 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_directory_record.h"
 #include "libfshfs_file_record.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libuna.h"
 
@@ -137,8 +139,8 @@ int libfshfs_directory_entry_free(
 		}
 		if( ( *directory_entry )->catalog_record != NULL )
 		{
-			if( ( ( *directory_entry )->record_type == 0x0001 )
-			 || ( ( *directory_entry )->record_type == 0x0100 ) )
+			if( ( ( *directory_entry )->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+			 || ( ( *directory_entry )->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD ) )
 			{
 				if( libfshfs_directory_record_free(
 				     (libfshfs_directory_record_t **) &( ( *directory_entry )->catalog_record ),
@@ -154,8 +156,8 @@ int libfshfs_directory_entry_free(
 					result = -1;
 				}
 			}
-			else if( ( ( *directory_entry )->record_type == 0x0002 )
-			      || ( ( *directory_entry )->record_type == 0x0200 ) )
+			else if( ( ( *directory_entry )->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+			      || ( ( *directory_entry )->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
 			{
 				if( libfshfs_file_record_free(
 				     (libfshfs_file_record_t **) &( ( *directory_entry )->catalog_record ),
@@ -180,6 +182,165 @@ int libfshfs_directory_entry_free(
 	return( result );
 }
 
+/* Clones the directory entry value
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_clone(
+     libfshfs_directory_entry_t **destination_directory_entry,
+     libfshfs_directory_entry_t *source_directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_clone";
+
+	if( destination_directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid destination directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *destination_directory_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid destination directory entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( source_directory_entry == NULL )
+	{
+		*destination_directory_entry = NULL;
+
+		return( 1 );
+	}
+	*destination_directory_entry = memory_allocate_structure(
+	                                libfshfs_directory_entry_t );
+
+	if( *destination_directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create destination directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     *destination_directory_entry,
+	     source_directory_entry,
+	     sizeof( libfshfs_directory_entry_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy source to destination directory entry.",
+		 function );
+
+		memory_free(
+		 *destination_directory_entry );
+
+		*destination_directory_entry = NULL;
+
+		return( -1 );
+	}
+	( *destination_directory_entry )->name           = NULL;
+	( *destination_directory_entry )->catalog_record = NULL;
+
+	if( source_directory_entry->name != NULL )
+	{
+		( *destination_directory_entry )->name = (uint8_t *) memory_allocate(
+		                                                      sizeof( uint8_t ) * source_directory_entry->name_size );
+
+		if( ( *destination_directory_entry )->name == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create destination name.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_copy(
+		     ( *destination_directory_entry )->name,
+		     source_directory_entry->name,
+		     source_directory_entry->name_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy source name to destination.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( ( source_directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( source_directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD ) )
+	{
+		if( libfshfs_directory_record_clone(
+		     (libfshfs_directory_record_t **) &( ( *destination_directory_entry )->catalog_record ),
+		     (libfshfs_directory_record_t *) source_directory_entry->catalog_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create destination catalog directory record.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	else if( ( source_directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	      || ( source_directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		if( libfshfs_file_record_clone(
+		     (libfshfs_file_record_t **) &( ( *destination_directory_entry )->catalog_record ),
+		     (libfshfs_file_record_t *) source_directory_entry->catalog_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create destination catalog file record.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( *destination_directory_entry != NULL )
+	{
+		if( ( *destination_directory_entry )->name != NULL )
+		{
+			memory_free(
+			 ( *destination_directory_entry )->name );
+		}
+		memory_free(
+		 *destination_directory_entry );
+
+		*destination_directory_entry = NULL;
+	}
+	return( -1 );
+}
+
 /* Retrieves the identifier
  * Returns 1 if successful or -1 on error
  */
@@ -189,6 +350,7 @@ int libfshfs_directory_entry_get_identifier(
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_directory_entry_get_identifier";
+	int result            = 0;
 
 	if( directory_entry == NULL )
 	{
@@ -201,37 +363,385 @@ int libfshfs_directory_entry_get_identifier(
 
 		return( -1 );
 	}
-	if( directory_entry->catalog_record == NULL )
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid directory entry - missing catalog record.",
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
 		 function );
 
 		return( -1 );
 	}
-	if( identifier == NULL )
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD ) )
+	{
+		result = libfshfs_directory_record_get_identifier(
+		          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+		          identifier,
+		          error );
+	}
+	else if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	      || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_identifier(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          identifier,
+		          error );
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve identifier from catalog record.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the creation date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_get_creation_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_creation_time";
+	int result            = 0;
+
+	if( directory_entry == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid identifier.",
+		 "%s: invalid directory entry.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( directory_entry->record_type == 0x0001 )
-	 || ( directory_entry->record_type == 0x0100 ) )
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
 	{
-		*identifier = ( (libfshfs_directory_record_t *) directory_entry->catalog_record )->identifier;
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
 	}
-	else if( ( directory_entry->record_type == 0x0002 )
-	      || ( directory_entry->record_type == 0x0200 ) )
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD ) )
 	{
-		*identifier = ( (libfshfs_file_record_t *) directory_entry->catalog_record )->identifier;
+		result = libfshfs_directory_record_get_creation_time(
+		          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+		          hfs_time,
+		          error );
+	}
+	else if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	      || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_creation_time(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          hfs_time,
+		          error );
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve creation time from catalog record.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_get_modification_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_modification_time";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD ) )
+	{
+		result = libfshfs_directory_record_get_modification_time(
+		          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+		          hfs_time,
+		          error );
+	}
+	else if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	      || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_modification_time(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          hfs_time,
+		          error );
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve modification time from catalog record.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the entry modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_entry_modification_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_entry_modification_time";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD ) )
+	{
+		if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+		{
+			result = libfshfs_directory_record_get_entry_modification_time(
+				  (libfshfs_directory_record_t *) directory_entry->catalog_record,
+				  hfs_time,
+				  error );
+		}
+		else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+		{
+			result = libfshfs_file_record_get_entry_modification_time(
+				  (libfshfs_file_record_t *) directory_entry->catalog_record,
+				  hfs_time,
+				  error );
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve entry modification time from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
+}
+
+/* Retrieves the access date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_access_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_access_time";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD ) )
+	{
+		if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+		{
+			result = libfshfs_directory_record_get_access_time(
+				  (libfshfs_directory_record_t *) directory_entry->catalog_record,
+				  hfs_time,
+				  error );
+		}
+		else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+		{
+			result = libfshfs_file_record_get_access_time(
+				  (libfshfs_file_record_t *) directory_entry->catalog_record,
+				  hfs_time,
+				  error );
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve access time from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
+}
+
+/* Retrieves the backup date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_get_backup_time(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_backup_time";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD ) )
+	{
+		result = libfshfs_directory_record_get_backup_time(
+		          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+		          hfs_time,
+		          error );
+	}
+	else if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	      || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_backup_time(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          hfs_time,
+		          error );
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve backup time from catalog record.",
+		 function );
+
+		return( -1 );
 	}
 	return( 1 );
 }
@@ -412,7 +922,9 @@ int libfshfs_directory_entry_get_utf16_name_size(
      size_t *utf16_string_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_directory_entry_get_utf16_name_size";
+	static char *function         = "libfshfs_directory_entry_get_utf16_name_size";
+	size_t name_index             = 0;
+	size_t safe_utf16_string_size = 0;
 
 	if( directory_entry == NULL )
 	{
@@ -425,11 +937,42 @@ int libfshfs_directory_entry_get_utf16_name_size(
 
 		return( -1 );
 	}
+	if( directory_entry->name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid directory entry - missing name.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO detect special names on read */
+	if( ( directory_entry->name_size == 42 )
+	 && ( memory_compare(
+	       directory_entry->name,
+	       hfsplus_private_data,
+	       42 ) == 0 ) )
+	{
+		name_index = 8;
+	}
 	if( libuna_utf16_string_size_from_utf16_stream(
-	     directory_entry->name,
-	     (size_t) directory_entry->name_size,
+	     &( directory_entry->name[ name_index ] ),
+	     (size_t) directory_entry->name_size - name_index,
 	     LIBUNA_ENDIAN_BIG,
-	     utf16_string_size,
+	     &safe_utf16_string_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -441,6 +984,8 @@ int libfshfs_directory_entry_get_utf16_name_size(
 
 		return( -1 );
 	}
+	*utf16_string_size = safe_utf16_string_size + ( name_index / 2 );
+
 	return( 1 );
 }
 
@@ -454,7 +999,9 @@ int libfshfs_directory_entry_get_utf16_name(
      size_t utf16_string_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_directory_entry_get_utf16_name";
+	static char *function     = "libfshfs_directory_entry_get_utf16_name";
+	size_t name_index         = 0;
+	size_t utf16_string_index = 0;
 
 	if( directory_entry == NULL )
 	{
@@ -467,11 +1014,57 @@ int libfshfs_directory_entry_get_utf16_name(
 
 		return( -1 );
 	}
+	if( directory_entry->name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid directory entry - missing name.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->name_size == 42 )
+	 && ( memory_compare(
+	       directory_entry->name,
+	       hfsplus_private_data,
+	       42 ) == 0 ) )
+	{
+		if( utf16_string_size < 4 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid UTF-16 string size too small.",
+			 function );
+
+			return( -1 );
+		}
+		name_index = 8;
+
+		utf16_string[ utf16_string_index++ ] = 0;
+		utf16_string[ utf16_string_index++ ] = 0;
+		utf16_string[ utf16_string_index++ ] = 0;
+		utf16_string[ utf16_string_index++ ] = 0;
+	}
 	if( libuna_utf16_string_copy_from_utf16_stream(
-	     utf16_string,
-	     utf16_string_size,
-	     directory_entry->name,
-	     (size_t) directory_entry->name_size,
+	     &( utf16_string[ utf16_string_index ] ),
+	     utf16_string_size - utf16_string_index,
+	     &( directory_entry->name[ name_index ] ),
+	     (size_t) directory_entry->name_size - name_index,
 	     LIBUNA_ENDIAN_BIG,
 	     error ) != 1 )
 	{
@@ -485,5 +1078,123 @@ int libfshfs_directory_entry_get_utf16_name(
 		return( -1 );
 	}
 	return( 1 );
+}
+
+/* Retrieves the data fork descriptor
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_data_fork_descriptor(
+     libfshfs_directory_entry_t *directory_entry,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_data_fork_descriptor";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_data_fork_descriptor(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          fork_descriptor,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data fork descriptor from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
+}
+
+/* Retrieves the resource fork descriptor
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_resource_fork_descriptor(
+     libfshfs_directory_entry_t *directory_entry,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_resource_fork_descriptor";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_resource_fork_descriptor(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          fork_descriptor,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve resource fork descriptor from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
 }
 
