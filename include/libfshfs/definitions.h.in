@@ -24,11 +24,11 @@
 
 #include <libfshfs/types.h>
 
-#define LIBFSHFS_VERSION		@VERSION@
+#define LIBFSHFS_VERSION			@VERSION@
 
 /* The version string
  */
-#define LIBFSHFS_VERSION_STRING		"@VERSION@"
+#define LIBFSHFS_VERSION_STRING			"@VERSION@"
 
 /* The file access
  * bit 1        set to 1 for read access
@@ -37,22 +37,22 @@
  */
 enum LIBFSHFS_ACCESS_FLAGS
 {
-	LIBFSHFS_ACCESS_FLAG_READ	= 0x01,
+	LIBFSHFS_ACCESS_FLAG_READ		= 0x01,
 /* Reserved: not supported yet */
-	LIBFSHFS_ACCESS_FLAG_WRITE	= 0x02
+	LIBFSHFS_ACCESS_FLAG_WRITE		= 0x02
 };
 
 /* The file access macros
  */
-#define LIBFSHFS_OPEN_READ		( LIBFSHFS_ACCESS_FLAG_READ )
+#define LIBFSHFS_OPEN_READ			( LIBFSHFS_ACCESS_FLAG_READ )
 /* Reserved: not supported yet */
-#define LIBFSHFS_OPEN_WRITE		( LIBFSHFS_ACCESS_FLAG_WRITE )
+#define LIBFSHFS_OPEN_WRITE			( LIBFSHFS_ACCESS_FLAG_WRITE )
 /* Reserved: not supported yet */
-#define LIBFSHFS_OPEN_READ_WRITE	( LIBFSHFS_ACCESS_FLAG_READ | LIBFSHFS_ACCESS_FLAG_WRITE )
+#define LIBFSHFS_OPEN_READ_WRITE		( LIBFSHFS_ACCESS_FLAG_READ | LIBFSHFS_ACCESS_FLAG_WRITE )
 
 /* The path segment separator
  */
-#define LIBFSHFS_SEPARATOR		'/'
+#define LIBFSHFS_SEPARATOR			'/'
 
 /* The file system types
  */

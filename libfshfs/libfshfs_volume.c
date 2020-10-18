@@ -1266,6 +1266,12 @@ on_error:
 		 &( internal_volume->catalog_btree_file ),
 		 NULL );
 	}
+	if( internal_volume->extents_btree_file != NULL )
+	{
+		libfshfs_btree_file_free(
+		 &( internal_volume->extents_btree_file ),
+		 NULL );
+	}
 	if( internal_volume->volume_header != NULL )
 	{
 		libfshfs_volume_header_free(
