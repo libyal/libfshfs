@@ -58,6 +58,18 @@ struct libfshfs_directory_record
 	/* The backup time
 	 */
 	uint32_t backup_time;
+
+	/* The owner identifier
+	 */
+	uint32_t owner_identifier;
+
+	/* The group identifier
+	 */
+	uint32_t group_identifier;
+
+	/* The file mode
+	 */
+	uint16_t file_mode;
 };
 
 int libfshfs_directory_record_initialize(
@@ -107,6 +119,21 @@ int libfshfs_directory_record_get_access_time(
 int libfshfs_directory_record_get_backup_time(
      libfshfs_directory_record_t *directory_record,
      uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_file_mode(
+     libfshfs_directory_record_t *directory_record,
+     uint16_t *file_mode,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_owner_identifier(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *owner_identifier,
+     libcerror_error_t **error );
+
+int libfshfs_directory_record_get_group_identifier(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *group_identifier,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -1,12 +1,18 @@
 Debug info:
-* implement file entry data stream interface
+* handle "\0\0\0\0HFS+ Private Data" in compare name functions
+* pyfshfs_volume handle 0-byte values in get_file_entry_by_path
+
+* add support for case folding
+** determine Unicode form
+
+* implement file entry data streams
 ** add extents overflow support
 ** handle file records without a data fork
-* add support for resource fork data stream
-* add support for file_mode
-** implement permissions
-* get_file_entry_by_path determine unicode form
-* Retrieve the volume name from the root directory entry
+** add support for resource fork data stream
+** add support for compressed files
+
+* add support for extended attributes (attributes btree file)
+* can the metadata B-tree files require additional extents?
 * split HFS and HFS+ documentation?
 
 Format support:
@@ -15,7 +21,6 @@ Format support:
 * implement support for extended file information
 * implement support for folder information
 * implement support for extended folder information
-* debug print text encoding hint
 * implement LZVN compression support
 
 20160605

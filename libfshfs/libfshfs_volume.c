@@ -902,6 +902,22 @@ int libfshfs_volume_close(
 
 		result = -1;
 	}
+	if( internal_volume->extents_btree_file != NULL )
+	{
+		if( libfshfs_btree_file_free(
+		     &( internal_volume->extents_btree_file ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extents btree file.",
+			 function );
+
+			result = -1;
+		}
+	}
 	if( internal_volume->catalog_btree_file != NULL )
 	{
 		if( libfshfs_btree_file_free(
@@ -913,6 +929,22 @@ int libfshfs_volume_close(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free catalog btree file.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_volume->attributes_btree_file != NULL )
+	{
+		if( libfshfs_btree_file_free(
+		     &( internal_volume->attributes_btree_file ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free attributes btree file.",
 			 function );
 
 			result = -1;
@@ -997,6 +1029,17 @@ int libfshfs_internal_volume_open_read(
 
 		return( -1 );
 	}
+	if( internal_volume->extents_btree_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - extents btree file value already set.",
+		 function );
+
+		return( -1 );
+	}
 	if( internal_volume->catalog_btree_file != NULL )
 	{
 		libcerror_error_set(
@@ -1004,6 +1047,17 @@ int libfshfs_internal_volume_open_read(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid volume - catalog btree file value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_volume->attributes_btree_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - attributes btree file value already set.",
 		 function );
 
 		return( -1 );
@@ -1058,70 +1112,138 @@ int libfshfs_internal_volume_open_read(
 	internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
 	internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
 
-	if( internal_volume->volume_header->catalog_file_fork_descriptor->size > 0 )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
 	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "Reading catalog B-tree file:\n" );
-		}
+		libcnotify_printf(
+		 "Reading extents B-tree file:\n" );
+	}
 #endif
-		if( libfshfs_btree_file_initialize(
-		     &( internal_volume->catalog_btree_file ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create catalog B-tree file.",
-			 function );
+	if( libfshfs_btree_file_initialize(
+	     &( internal_volume->extents_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents B-tree file.",
+		 function );
 
-			goto on_error;
-		}
-/* TODO what about extra extents? */
-		if( libfshfs_btree_file_read_file_io_handle(
-		     internal_volume->catalog_btree_file,
-		     internal_volume->io_handle,
-		     file_io_handle,
-		     internal_volume->volume_header->catalog_file_fork_descriptor,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to read catalog B-tree file.",
-			 function );
+		goto on_error;
+	}
+	if( libfshfs_btree_file_read_file_io_handle(
+	     internal_volume->extents_btree_file,
+	     internal_volume->io_handle,
+	     file_io_handle,
+	     internal_volume->volume_header->extents_file_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to read extents B-tree file.",
+		 function );
 
-			goto on_error;
-		}
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "Reading volume name directory entry:\n" );
-		}
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "Reading catalog B-tree file:\n" );
+	}
 #endif
-		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
-		          internal_volume->catalog_btree_file,
-		          file_io_handle,
-		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
-		          &( internal_volume->root_directory_entry ),
-		          error );
+	if( libfshfs_btree_file_initialize(
+	     &( internal_volume->catalog_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create catalog B-tree file.",
+		 function );
 
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve root directory entry from catalog B-tree file.",
-			 function );
+		goto on_error;
+	}
+	if( libfshfs_btree_file_read_file_io_handle(
+	     internal_volume->catalog_btree_file,
+	     internal_volume->io_handle,
+	     file_io_handle,
+	     internal_volume->volume_header->catalog_file_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to read catalog B-tree file.",
+		 function );
 
-			goto on_error;
-		}
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "Reading attributes B-tree file:\n" );
+	}
+#endif
+	if( libfshfs_btree_file_initialize(
+	     &( internal_volume->attributes_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_file_read_file_io_handle(
+	     internal_volume->attributes_btree_file,
+	     internal_volume->io_handle,
+	     file_io_handle,
+	     internal_volume->volume_header->attributes_file_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to read attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "Reading root directory entry:\n" );
+	}
+#endif
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
+	          internal_volume->catalog_btree_file,
+	          file_io_handle,
+	          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
+	          &( internal_volume->root_directory_entry ),
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve root directory entry from catalog B-tree file.",
+		 function );
+
+		goto on_error;
 	}
 	return( 1 );
 
@@ -1130,6 +1252,12 @@ on_error:
 	{
 		libfshfs_directory_entry_free(
 		 &( internal_volume->root_directory_entry ),
+		 NULL );
+	}
+	if( internal_volume->attributes_btree_file != NULL )
+	{
+		libfshfs_btree_file_free(
+		 &( internal_volume->attributes_btree_file ),
 		 NULL );
 	}
 	if( internal_volume->catalog_btree_file != NULL )

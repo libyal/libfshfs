@@ -82,6 +82,22 @@ PyObject *pyfshfs_file_entry_get_modification_time_as_integer(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 
+PyObject *pyfshfs_file_entry_get_entry_modification_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_entry_modification_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_access_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_access_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
 PyObject *pyfshfs_file_entry_get_backup_time(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
@@ -103,6 +119,10 @@ PyObject *pyfshfs_file_entry_get_group_identifier(
            PyObject *arguments );
 
 PyObject *pyfshfs_file_entry_get_name(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_symbolic_link_target(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 

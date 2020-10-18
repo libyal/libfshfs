@@ -55,6 +55,10 @@ struct libfshfs_internal_file_entry
 	 */
 	libfshfs_directory_entry_t *directory_entry;
 
+	/* File mode
+	 */
+	uint16_t file_mode;
+
 	/* Sub directory entries
 	 */
 	libcdata_array_t *sub_directory_entries;
@@ -70,6 +74,14 @@ struct libfshfs_internal_file_entry
 	/* The data size
 	 */
 	size64_t data_size;
+
+	/* The symbolic link data
+	 */
+	uint8_t *symbolic_link_data;
+
+	/* The symbolic link data size
+	 */
+	size_t symbolic_link_data_size;
 
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
@@ -105,6 +117,18 @@ int libfshfs_file_entry_get_creation_time(
 
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_modification_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_entry_modification_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_access_time(
      libfshfs_file_entry_t *file_entry,
      uint32_t *hfs_time,
      libcerror_error_t **error );
@@ -154,6 +178,32 @@ int libfshfs_file_entry_get_utf16_name_size(
 
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_utf8_symbolic_link_target_size(
+     libfshfs_file_entry_t *file_entry,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_utf8_symbolic_link_target(
+     libfshfs_file_entry_t *file_entry,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_utf16_symbolic_link_target_size(
+     libfshfs_file_entry_t *file_entry,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_utf16_symbolic_link_target(
      libfshfs_file_entry_t *file_entry,
      uint16_t *utf16_string,
      size_t utf16_string_size,

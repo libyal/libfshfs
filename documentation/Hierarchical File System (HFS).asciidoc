@@ -56,6 +56,7 @@ Email change
 | 0.0.7 | J.B. Metz | December 2017 | Additional information about HFS+ volume attribute flags and textual changes.
 | 0.0.8 | J.B. Metz | January 2017 | Textual changes.
 | 0.0.9 | J.B. Metz | August 2020 | Changes to formatting.
+| 0.0.10 | J.B. Metz | October 2020 | Textual changes and changes to formatting.
 |===
 
 :numbered:
@@ -159,6 +160,7 @@ HFS+ uses the following default node sizes:
 [yellow-background]*TODO: determine what TN1150 means with "in Mac OS X"*
 
 The size of a B-tree file can be calculated in the following manner:
+
 ....
 size = number of nodes x node size
 ....
@@ -252,6 +254,7 @@ contains 3 records:
 The records in the B-tree header node do not have keys.
 
 [yellow-background]*TODO: reword*
+
 ....
 For both the extents overflow and the catalog file the location of the header
 node is stored in the first 2 bytes (first record) of the corresponding extent
@@ -299,6 +302,7 @@ The first node in the file is referenced by node number 0.
 
 The node offset relative to the start of the file given a node number can be
 calculated in the following manner:
+
 ....
 node offset = node number x node size
 ....
@@ -335,7 +339,7 @@ This bit is not used for HFS+ B-trees.
 | 0x00000002 | kBTBigKeysMask | Big keys +
 If this bit is set, the key size value of the keys in index and leaf nodes is 16-bit integer; otherwise, it is an 8-bit integer. +
 This bit must be set for all HFS+ B‑trees.
-| 0x00000004 | kBTVariableIndexKeysMask | Variable index keys +
+| 0x00000004 | kBTVariableIndexKeysMask | Variable-size index keys +
 If this bit is set, the keys in index nodes occupy the number of bytes indicated by their key size; otherwise, the keys in index nodes always occupy maximum key size. +
 This bit must be set for the HFS+ Catalog B-tree, and cleared for the HFS+ Extents B-tree.
 |===
@@ -492,11 +496,13 @@ The size of the System heap on a Macintosh computer having 512 KiB or more of RA
 
 The boot code entry point contains machine-language instructions that translate
 to:
+
 ....
 BRA.S *+ 0x90
 ....
 
 Or for older versions of the boot block header:
+
 ....
 BRA.S *+ 0x88
 ....
@@ -642,12 +648,14 @@ blocks.
 
 A floppy disk that can hold 800 KiB of data and has an allocation block size of
 one physical block (512 bytes) has a volume bitmap size of:
+
 ....
 ( ( 800 x 1024 ) / ( 512 x 8 ) ) = 1600 bits (200 bytes).
 ....
 
 A volume containing 32 MiB of data and having an allocation block size of one
 physical block has a volume bitmap size of:
+
 ....
 ( ( 32 x 1024 x 1024 ) / ( 512 x 8 ) ) = 65536 bits (8192 bytes).
 ....
@@ -919,92 +927,6 @@ volume use that encoding. This means that when an implementation deletes or
 renames an object, it does not have to clear the encoding bit if that was the
 last name to use the given encoding.
 
-=== [[permissions]]Permissions
-
-For each file and folder HFS+ maintains basic access permissions record for
-each file and folder. These are similar to basic Unix file permissions.
-
-The permissions record is 16 bytes of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 4 | | Owner identifier
-| 4 | 4 | | Group identifier
-| 8 | 1 | | Administration flags +
-BSD like flags settable by the super-user only +
-Also see: <<administration_flags,Administration flags>>
-| 9 | 1 | | Owner flags +
-BSD like flags settable by the owner +
-Also see: <<owner_flags,Owner flags>>
-| 10 | 2 | | File mode
-| 12 | 4 | | Union of special permission data. +
-Consist of either: hard link inode number, hard link count, raw device number
-|===
-
-==== Owner and group identifier
-
-The Mac OS X user ID of the owner of the file or folder. Mac OS X versions
-prior to 10.3 treats user ID 99 as if it was the user ID of the user currently
-logged in to the console. If no user is logged in to the console, user ID 99 is
-treated as user ID 0 (root). Mac OS X version 10.3 treats user ID 99 as if it
-was the user ID of the process making the call (in effect, making it owned by
-everyone simultaneously). These substitutions happen at run-time. The actual
-user ID on disk is not changed.
-
-The Mac OS X group ID of the group associated with the file or folder. Mac OS X
-typically maps group ID 99 to the group named "unknown." There is no run-time
-substitution of group IDs in Mac OS X.
-
-==== [[administration_flags]]Administration flags
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x01 | SF_ARCHIVED | File has been archived
-| 0x02 | SF_IMMUTABLE | File is immutable and may not be changed
-| 0x04 | SF_APPEND | Writes to file may only append
-|===
-
-==== [[owner_flags]]Owner flags
-
-[cols="1,1,5",options="header"]
-|===
-| Value | Identifier | Description
-| 0x01 | UF_NODUMP | Do not backup (dump) this file
-| 0x02 | UF_IMMUTABLE | File is immutable and may not be changed
-| 0x04 | UF_APPEND | Writes to file may only append
-| 0x08 | UF_OPAQUE | Directory is opaque
-|===
-
-==== File mode
-
-HFS+ uses the BSD file type and mode bits. Note that the constants from the
-header shown below are in octal (base eight), not hexadecimal.
-
-[cols="1,1,5",options="header"]
-|===
-| Octal value | Identifier | Description
-| 0004000 | S_ISUID | Set user identifier on execution
-| 0002000 | S_ISGID | Set group identifier on execution
-| 0001000 | S_ISTXT | Sticky bit
-| | |
-| 0000700 | S_IRWXU | Read, write and execute access for owner
-| 0000400 | S_IRUSR | Read access for owner
-| 0000200 | S_IWUSR | Write access for owner
-| 0000100 | S_IXUSR | Execute access for owner
-| | |
-| 0000070 | S_IRWXG | Read, write and execute access for group
-| 0000040 | S_IRGRP | Read access for group
-| 0000020 | S_IWGRP | Write access for group
-| 0000010 | S_IXGRP | Execute access for group
-| | |
-| 0000007 | S_IRWXO | Read, write and execute access for other
-| 0000004 | S_IROTH | Read access for other
-| 0000002 | S_IWOTH | Write access for other
-| 0000001 | S_IXOTH | Execute access for other
-|===
-
 ===== Notes
 
 ....
@@ -1104,20 +1026,30 @@ A hard link with a link reference equal to 0 is invalid. Such a hard link may be
 
 ==== Symbolic Links
 
+The data fork of a symbolic link contains the path of the directory or file it
+refers to.
+
+On HFS+ path is a POSIX pathname, as used by the Mac OS BSD and Cocoa
+programming interfaces. It is not a traditional Mac OS, or Carbon, path. The
+path is stored as an UTF-8 encoded string without an end-of-string character.
+The length of the path should be 1024 bytes or less. The path may be full or
+partial, with or without a leading forward slash.
+
 ===== Notes
 
 ....
-Similar to a hard link, a symbolic link is a special kind of file that refers to another file or directory. A symbolic link stores the path name of the file or directory it refers to.
-
-On an HFS+ volume, a symbolic link is stored as an ordinary file with special values in some of the fields of its catalog record. The pathname of the file being referred to is stored in the data fork. The file type in the fileMode field of the permissions is set to S_IFLNK. For compatibility with Carbon and Classic applications, the file type of a symbolic link is set to kSymLinkFileType, and the creator code is set to kSymLinkCreator. The resource fork of the symbolic link has zero length and is reserved.
+On an HFS+ volume, a symbolic link is stored as an ordinary file with special
+values in some of the fields of its catalog record. The pathname of the file
+being referred to is stored in the data fork. The file type in the fileMode
+field of the permissions is set to S_IFLNK. For compatibility with Carbon and
+Classic applications, the file type of a symbolic link is set to
+kSymLinkFileType, and the creator code is set to kSymLinkCreator. The resource
+fork of the symbolic link has zero length and is reserved.
 
 enum {
     kSymLinkFileType  = 0x736C6E6B, /* 'slnk' */
     kSymLinkCreator   = 0x72686170  /* 'rhap' */
 };
-
-Note:
-The pathname stored in a symbolic link is assumed to be a POSIX pathname, as used by the Mac OS X BSD and Cocoa programming interfaces. It is not a traditional Mac OS, or Carbon, pathname. The path is encoded in UTF-8. It must be a valid UTF-8 sequence, with no null (zero) bytes. The path may refer to another volume. The path need not refer to any existing file or directory. The path may be full or partial (with or without a leading forward slash). For maximum compatibility, the length of the path should be 1024 bytes or less.
 ....
 
 == The HFS wrapper
@@ -1406,12 +1338,26 @@ Contains an HFS timestamp
 Contains an HFS timestamp
 | 28 | 4 | | Backup date and time +
 Contains an HFS timestamp
-| 32 | 16 | | Permissions +
-See section: <<permissions,Permissions>>
+4+| _Permissions_
+| 32 | 4 | | Owner identifier
+| 36 | 4 | | Group identifier
+| 40 | 1 | | Administration flags +
+BSD like flags settable by the super-user only +
+Also see: <<administration_flags,Administration flags>>
+| 41 | 1 | | Owner flags +
+BSD like flags settable by the owner +
+Also see: <<owner_flags,Owner flags>>
+| 42 | 2 | | File mode +
+Also see: <<file_mode,File mode>>
+| 44 | 4 | | Union of special permission data. +
+Consist of either: hard link inode number, hard link count, raw device number
+4+| _Folder information_
 | 48 | 16 | | Folder information +
 See section: <<hfs_plus_folder_information,HFS+ folder information>>
+4+| _Extended folder information_
 | 64 | 16 | | Extended folder information +
 See section: <<hfs_plus_extended_folder_information,HFS+ extended folder information>>
+4+|
 | 80 | 4 | | Text encoding hint +
 See section: <<text_encoding,Text encoding>>
 | 84 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
@@ -1483,12 +1429,26 @@ Contains an HFS timestamp
 Contains an HFS timestamp
 | 28 | 4 | | Backup date and time +
 Contains an HFS timestamp
-| 32 | 16 | | Permissions +
-See section: <<permissions,Permissions>>
+4+| _Permissions_
+| 32 | 4 | | Owner identifier
+| 36 | 4 | | Group identifier
+| 40 | 1 | | Administration flags +
+BSD like flags settable by the super-user only +
+Also see: <<administration_flags,Administration flags>>
+| 41 | 1 | | Owner flags +
+BSD like flags settable by the owner +
+Also see: <<owner_flags,Owner flags>>
+| 42 | 2 | | File mode +
+Also see: <<file_mode,File mode>>
+| 44 | 4 | | Union of special permission data. +
+Consist of either: hard link inode number, hard link count, raw device number
+4+| _File information_
 | 48 | 16 | | File information (or user information) +
 See section: <<hfs_plus_file_information,HFS+ file information>>
+4+| _Extended file information_
 | 64 | 16 | | Extended file information (or finder information) +
 See section: <<hfs_plus_exteded_file_information,HFS+ extended file information>>
+4+|
 | 80 | 4 | | Text encoding hint +
 See section: <<text_encoding,Text encoding>>
 | 84 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
@@ -1554,6 +1514,76 @@ Contains the name of the associated file or directory
 |===
 
 [yellow-background]*Maximum name string length 255 characters?*
+
+=== Permissions
+
+For each file and folder HFS+ maintains basic access permissions record for
+each file and folder. These are similar to basic Unix file permissions.
+
+[yellow-background]*TODO: add note about permissions on HFS*
+
+==== Owner and group identifier
+
+The Mac OS X user ID of the owner of the file or folder. Mac OS X versions
+prior to 10.3 treats user ID 99 as if it was the user ID of the user currently
+logged in to the console. If no user is logged in to the console, user ID 99 is
+treated as user ID 0 (root). Mac OS X version 10.3 treats user ID 99 as if it
+was the user ID of the process making the call (in effect, making it owned by
+everyone simultaneously). These substitutions happen at run-time. The actual
+user ID on disk is not changed.
+
+The Mac OS X group ID of the group associated with the file or folder. Mac OS X
+typically maps group ID 99 to the group named "unknown." There is no run-time
+substitution of group IDs in Mac OS X.
+
+==== [[administration_flags]]Administration flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x01 | SF_ARCHIVED | File has been archived
+| 0x02 | SF_IMMUTABLE | File is immutable and may not be changed
+| 0x04 | SF_APPEND | Writes to file may only append
+|===
+
+==== [[owner_flags]]Owner flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x01 | UF_NODUMP | Do not backup (dump) this file
+| 0x02 | UF_IMMUTABLE | File is immutable and may not be changed
+| 0x04 | UF_APPEND | Writes to file may only append
+| 0x08 | UF_OPAQUE | Directory is opaque
+|===
+
+==== [[file_mode]]File mode
+
+HFS+ uses the BSD file type and mode bits. Note that the constants from the
+header shown below are in octal (base eight), not hexadecimal.
+
+[cols="1,1,5",options="header"]
+|===
+| Octal value | Identifier | Description
+| 0004000 | S_ISUID | Set user identifier on execution
+| 0002000 | S_ISGID | Set group identifier on execution
+| 0001000 | S_ISTXT | Sticky bit
+| | |
+| 0000700 | S_IRWXU | Read, write and execute access for owner
+| 0000400 | S_IRUSR | Read access for owner
+| 0000200 | S_IWUSR | Write access for owner
+| 0000100 | S_IXUSR | Execute access for owner
+| | |
+| 0000070 | S_IRWXG | Read, write and execute access for group
+| 0000040 | S_IRGRP | Read access for group
+| 0000020 | S_IWGRP | Write access for group
+| 0000010 | S_IXGRP | Execute access for group
+| | |
+| 0000007 | S_IRWXO | Read, write and execute access for other
+| 0000004 | S_IROTH | Read access for other
+| 0000002 | S_IWOTH | Write access for other
+| 0000001 | S_IXOTH | Execute access for other
+|===
 
 === File system hierarchy
 
@@ -1680,6 +1710,7 @@ The first allocation block index described by the corresponding extent record
 
 The first eight extents in a fork are held in its catalog file record. So the
 number of extent records for a fork is:
+
 ....
 ((number of extents - 8 + 7) / 8)
 ....
@@ -1696,6 +1727,7 @@ and number of blocks set to zero.
 
 The HFS extent data consist of an array of three HFS extent descriptors. The
 size of the HFS extent data is:
+
 ....
 3 x 4 = 12
 ....
@@ -1713,6 +1745,7 @@ The HFS extent descriptor is 4 bytes of size and consists of:
 
 The HFS+ extents array (HFSPlusExtentRecord) consist of an array of eight HFS+
 extent descriptors. The size of the HFS+ extent data is:
+
 ....
 8 x 8 = 64
 ....
@@ -1793,9 +1826,12 @@ named forks, but is also used to store extended attributes.
 
 === Attributes file index keys
 
-[yellow-background]*An attributes files has a variable length key. The
-structure of the keys in the attribute B-tree has not been finalized and is
-subject to change.*
+An attributes files has a variable length key similiar to those of the catalog
+file.
+
+[NOTE]
+The structure of the keys in the attribute B-tree has not been finalized and is
+subject to change.
 
 === The attributes file data
 

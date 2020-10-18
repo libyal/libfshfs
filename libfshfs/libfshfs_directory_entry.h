@@ -100,6 +100,21 @@ int libfshfs_directory_entry_get_backup_time(
      uint32_t *hfs_time,
      libcerror_error_t **error );
 
+int libfshfs_directory_entry_get_file_mode(
+     libfshfs_directory_entry_t *directory_entry,
+     uint16_t *file_mode,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_owner_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *owner_identifier,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_get_group_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *group_identifier,
+     libcerror_error_t **error );
+
 int libfshfs_directory_entry_get_utf8_name_size(
      libfshfs_directory_entry_t *directory_entry,
      size_t *utf8_string_size,

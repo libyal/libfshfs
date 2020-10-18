@@ -300,10 +300,35 @@ struct fshfs_catalog_directory_record_hfsplus
 	 */
 	uint8_t backup_time[ 4 ];
 
-	/* The permissions
-	 * Consists of 16 bytes
+	/* The owner identifier
+	 * Consists of 4 bytes
 	 */
-	uint8_t permissions[ 16 ];
+	uint8_t owner_identifier[ 4 ];
+
+	/* The group identifier
+	 * Consists of 4 bytes
+	 */
+	uint8_t group_identifier[ 4 ];
+
+	/* The administration flags
+	 * Consists of 1 byte
+	 */
+	uint8_t administration_flags;
+
+	/* The owner flags
+	 * Consists of 1 byte
+	 */
+	uint8_t owner_flags;
+
+	/* The file mode
+	 * Consists of 2 bytes
+	 */
+	uint8_t file_mode[ 2 ];
+
+	/* The special permissions
+	 * Consists of 4 bytes
+	 */
+	uint8_t special_permissions[ 4 ];
 
 	/* The folder information
 	 * Consists of 16 bytes
@@ -380,10 +405,35 @@ struct fshfs_catalog_file_record_hfsplus
 	 */
 	uint8_t backup_time[ 4 ];
 
-	/* The permissions
-	 * Consists of 16 bytes
+	/* The owner identifier
+	 * Consists of 4 bytes
 	 */
-	uint8_t permissions[ 16 ];
+	uint8_t owner_identifier[ 4 ];
+
+	/* The group identifier
+	 * Consists of 4 bytes
+	 */
+	uint8_t group_identifier[ 4 ];
+
+	/* The administration flags
+	 * Consists of 1 byte
+	 */
+	uint8_t administration_flags;
+
+	/* The owner flags
+	 * Consists of 1 byte
+	 */
+	uint8_t owner_flags;
+
+	/* The file mode
+	 * Consists of 2 bytes
+	 */
+	uint8_t file_mode[ 2 ];
+
+	/* The special permissions
+	 * Consists of 4 bytes
+	 */
+	uint8_t special_permissions[ 4 ];
 
 	/* The file information
 	 * Consists of 16 bytes

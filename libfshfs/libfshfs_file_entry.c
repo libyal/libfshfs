@@ -30,7 +30,10 @@
 #include "libfshfs_file_entry.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libcnotify.h"
 #include "libfshfs_libcthreads.h"
+#include "libfshfs_libuna.h"
+#include "libfshfs_types.h"
 
 /* Creates a file_entry
  * Make sure the value file_entry is referencing, is set to NULL
@@ -71,17 +74,6 @@ int libfshfs_file_entry_initialize(
 
 		return( -1 );
 	}
-	if( directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid directory entry.",
-		 function );
-
-		return( -1 );
-	}
 	internal_file_entry = memory_allocate_structure(
 	                       libfshfs_internal_file_entry_t );
 
@@ -112,6 +104,23 @@ int libfshfs_file_entry_initialize(
 		 internal_file_entry );
 
 		return( -1 );
+	}
+	result = libfshfs_directory_entry_get_file_mode(
+	          directory_entry,
+	          &( internal_file_entry->file_mode ),
+	          error );
+
+/* TODO handle result == 0 for HFS */
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve file mode from directory entry.",
+		 function );
+
+		goto on_error;
 	}
 	result = libfshfs_directory_entry_get_data_fork_descriptor(
 	          directory_entry,
@@ -284,6 +293,11 @@ int libfshfs_file_entry_free(
 				result = -1;
 			}
 		}
+		if( internal_file_entry->symbolic_link_data != NULL )
+		{
+			memory_free(
+			 internal_file_entry->symbolic_link_data );
+		}
 		memory_free(
 		 internal_file_entry );
 	}
@@ -364,7 +378,7 @@ int libfshfs_file_entry_get_identifier(
 
 /* Retrieves the creation date and time
  * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
- * Returns 1 if successful, 0 if not available or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int libfshfs_file_entry_get_creation_time(
      libfshfs_file_entry_t *file_entry,
@@ -508,6 +522,156 @@ int libfshfs_file_entry_get_modification_time(
 	return( result );
 }
 
+/* Retrieves the entry modification date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_entry_modification_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_entry_modification_time";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_directory_entry_get_entry_modification_time(
+	          internal_file_entry->directory_entry,
+	          hfs_time,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve entry modification time from directory entry.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the access date and time
+ * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_access_time(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *hfs_time,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_access_time";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_directory_entry_get_access_time(
+	          internal_file_entry->directory_entry,
+	          hfs_time,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve access time from directory entry.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Retrieves the backup date and time
  * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
  * Returns 1 if successful or -1 on error
@@ -582,7 +746,7 @@ int libfshfs_file_entry_get_backup_time(
 }
 
 /* Retrieves the file mode
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_file_mode(
      libfshfs_file_entry_t *file_entry,
@@ -591,7 +755,7 @@ int libfshfs_file_entry_get_file_mode(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_file_mode";
-	int result                                          = 1;
+	int result                                          = 0;
 
 	if( file_entry == NULL )
 	{
@@ -606,17 +770,6 @@ int libfshfs_file_entry_get_file_mode(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( file_mode == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file mode.",
-		 function );
-
-		return( -1 );
-	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
@@ -632,9 +785,22 @@ int libfshfs_file_entry_get_file_mode(
 		return( -1 );
 	}
 #endif
-/* TODO implement */
-	*file_mode = 0;
+	result = libfshfs_directory_entry_get_file_mode(
+	          internal_file_entry->directory_entry,
+	          file_mode,
+	          error );
 
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve file mode from directory entry.",
+		 function );
+
+		result = -1;
+	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
@@ -654,7 +820,7 @@ int libfshfs_file_entry_get_file_mode(
 }
 
 /* Retrieves the owner identifier
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_owner_identifier(
      libfshfs_file_entry_t *file_entry,
@@ -663,7 +829,7 @@ int libfshfs_file_entry_get_owner_identifier(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_owner_identifier";
-	int result                                          = 1;
+	int result                                          = 0;
 
 	if( file_entry == NULL )
 	{
@@ -678,17 +844,6 @@ int libfshfs_file_entry_get_owner_identifier(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( owner_identifier == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid owner identifier.",
-		 function );
-
-		return( -1 );
-	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
@@ -704,9 +859,22 @@ int libfshfs_file_entry_get_owner_identifier(
 		return( -1 );
 	}
 #endif
-/* TODO implement */
-	*owner_identifier = 0;
+	result = libfshfs_directory_entry_get_owner_identifier(
+	          internal_file_entry->directory_entry,
+	          owner_identifier,
+	          error );
 
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve owner identifier from directory entry.",
+		 function );
+
+		result = -1;
+	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
@@ -726,7 +894,7 @@ int libfshfs_file_entry_get_owner_identifier(
 }
 
 /* Retrieves the group identifier
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_group_identifier(
      libfshfs_file_entry_t *file_entry,
@@ -735,7 +903,7 @@ int libfshfs_file_entry_get_group_identifier(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_group_identifier";
-	int result                                          = 1;
+	int result                                          = 0;
 
 	if( file_entry == NULL )
 	{
@@ -750,17 +918,6 @@ int libfshfs_file_entry_get_group_identifier(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( group_identifier == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid group identifier.",
-		 function );
-
-		return( -1 );
-	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
@@ -776,9 +933,22 @@ int libfshfs_file_entry_get_group_identifier(
 		return( -1 );
 	}
 #endif
-/* TODO implement */
-	*group_identifier = 0;
+	result = libfshfs_directory_entry_get_group_identifier(
+	          internal_file_entry->directory_entry,
+	          group_identifier,
+	          error );
 
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve group identifier from directory entry.",
+		 function );
+
+		result = -1;
+	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
@@ -1204,6 +1374,501 @@ on_error:
 		 NULL );
 	}
 	return( -1 );
+}
+
+/* Determines the symbolic link data
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_symbolic_link_data(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_internal_file_entry_get_symbolic_link_data";
+	ssize_t read_count    = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - symbolic link data value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_SYMBOLIC_LINK )
+	{
+		if( ( internal_file_entry->data_size == 0 )
+		 || ( internal_file_entry->data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		internal_file_entry->symbolic_link_data = (uint8_t *) memory_allocate(
+		                                                       sizeof( uint8_t ) * (size_t) internal_file_entry->data_size );
+
+		if( internal_file_entry->symbolic_link_data == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create symbolic link data.",
+			 function );
+
+			goto on_error;
+		}
+		internal_file_entry->symbolic_link_data_size = (size_t) internal_file_entry->data_size;
+
+		read_count = libfdata_stream_read_buffer_at_offset(
+		              internal_file_entry->data_block_stream,
+		              (intptr_t *) internal_file_entry->file_io_handle,
+		              internal_file_entry->symbolic_link_data,
+		              (size_t) internal_file_entry->data_size,
+		              0,
+		              0,
+		              error );
+
+		if( read_count != (ssize_t) internal_file_entry->data_size )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read from data block stream.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: symbolic link data:\n",
+			 function );
+			libcnotify_print_data(
+			 internal_file_entry->symbolic_link_data,
+			 internal_file_entry->symbolic_link_data_size,
+			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+		}
+#endif
+	}
+	return( 1 );
+
+on_error:
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		memory_free(
+		 internal_file_entry->symbolic_link_data );
+
+		internal_file_entry->symbolic_link_data = NULL;
+	}
+	internal_file_entry->symbolic_link_data_size = 0;
+
+	return( -1 );
+}
+
+/* Retrieves the size of the UTF-8 encoded symbolic link target
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_utf8_symbolic_link_target_size(
+     libfshfs_file_entry_t *file_entry,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_utf8_symbolic_link_target_size";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->symbolic_link_data == NULL )
+	{
+		if( libfshfs_internal_file_entry_get_symbolic_link_data(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine symbolic link data.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		result = libuna_utf8_string_size_from_utf8_stream(
+		          internal_file_entry->symbolic_link_data,
+		          internal_file_entry->symbolic_link_data_size,
+		          utf8_string_size,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve UTF-8 string size.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the UTF-8 encoded symbolic link target
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_utf8_symbolic_link_target(
+     libfshfs_file_entry_t *file_entry,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_utf8_symbolic_link_target";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->symbolic_link_data == NULL )
+	{
+		if( libfshfs_internal_file_entry_get_symbolic_link_data(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine symbolic link data.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		result = libuna_utf8_string_copy_from_utf8_stream(
+		          utf8_string,
+		          utf8_string_size,
+		          internal_file_entry->symbolic_link_data,
+		          internal_file_entry->symbolic_link_data_size,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve UTF-8 string.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the size of the UTF-16 encoded symbolic link target
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_utf16_symbolic_link_target_size(
+     libfshfs_file_entry_t *file_entry,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_utf16_symbolic_link_target_size";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->symbolic_link_data == NULL )
+	{
+		if( libfshfs_internal_file_entry_get_symbolic_link_data(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine symbolic link data.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		result = libuna_utf16_string_size_from_utf8_stream(
+		          internal_file_entry->symbolic_link_data,
+		          internal_file_entry->symbolic_link_data_size,
+		          utf16_string_size,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve UTF-16 string size.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the UTF-16 encoded symbolic link target
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_utf16_symbolic_link_target(
+     libfshfs_file_entry_t *file_entry,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_utf16_symbolic_link_target";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->symbolic_link_data == NULL )
+	{
+		if( libfshfs_internal_file_entry_get_symbolic_link_data(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine symbolic link data.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		result = libuna_utf16_string_copy_from_utf8_stream(
+		          utf16_string,
+		          utf16_string_size,
+		          internal_file_entry->symbolic_link_data,
+		          internal_file_entry->symbolic_link_data_size,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve UTF-16 string.",
+			 function );
+
+			result = -1;
+		}
+		result = 1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
 }
 
 /* Retrieves the number of sub file entries
@@ -1737,25 +2402,13 @@ ssize_t libfshfs_file_entry_read_buffer(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( internal_file_entry->directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid file entry - missing directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-	 && ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	if( ( internal_file_entry->file_mode & 0xf000 ) != LIBFSHFS_FILE_TYPE_REGULAR_FILE )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid file entry - invalid directory entry - unsupported record type not a file record.",
+		 "%s: invalid file entry - unsupported file mode not a regular file.",
 		 function );
 
 		return( -1 );
@@ -1839,25 +2492,13 @@ ssize_t libfshfs_file_entry_read_buffer_at_offset(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( internal_file_entry->directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid file entry - missing directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-	 && ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	if( ( internal_file_entry->file_mode & 0xf000 ) != LIBFSHFS_FILE_TYPE_REGULAR_FILE )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid file entry - invalid directory entry - unsupported record type not a file record.",
+		 "%s: invalid file entry - unsupported file mode not a regular file.",
 		 function );
 
 		return( -1 );
@@ -1942,25 +2583,13 @@ off64_t libfshfs_file_entry_seek_offset(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( internal_file_entry->directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid file entry - missing directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-	 && ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	if( ( internal_file_entry->file_mode & 0xf000 ) != LIBFSHFS_FILE_TYPE_REGULAR_FILE )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid file entry - invalid directory entry - unsupported record type not a file record.",
+		 "%s: invalid file entry - unsupported file mode not a regular file.",
 		 function );
 
 		return( -1 );
@@ -2040,25 +2669,13 @@ int libfshfs_file_entry_get_offset(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-	if( internal_file_entry->directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid file entry - missing directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-	 && ( internal_file_entry->directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	if( ( internal_file_entry->file_mode & 0xf000 ) != LIBFSHFS_FILE_TYPE_REGULAR_FILE )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid file entry - invalid directory entry - unsupported record type not a file record.",
+		 "%s: invalid file entry - unsupported file mode not a regular file.",
 		 function );
 
 		return( -1 );

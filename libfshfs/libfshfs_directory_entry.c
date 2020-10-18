@@ -746,6 +746,210 @@ int libfshfs_directory_entry_get_backup_time(
 	return( 1 );
 }
 
+/* Retrieves the file mode
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_file_mode(
+     libfshfs_directory_entry_t *directory_entry,
+     uint16_t *file_mode,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_file_mode";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD ) )
+	{
+		if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+		{
+			result = libfshfs_directory_record_get_file_mode(
+			          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+			          file_mode,
+			          error );
+		}
+		else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+		{
+			result = libfshfs_file_record_get_file_mode(
+			          (libfshfs_file_record_t *) directory_entry->catalog_record,
+			          file_mode,
+			          error );
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve file mode from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
+}
+
+/* Retrieves the owner identifier
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_owner_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *owner_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_owner_identifier";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD ) )
+	{
+		if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+		{
+			result = libfshfs_directory_record_get_owner_identifier(
+			          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+			          owner_identifier,
+			          error );
+		}
+		else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+		{
+			result = libfshfs_file_record_get_owner_identifier(
+			          (libfshfs_file_record_t *) directory_entry->catalog_record,
+			          owner_identifier,
+			          error );
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve owner identifier from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
+}
+
+/* Retrieves the group identifier
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_group_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *group_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_group_identifier";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD ) )
+	{
+		if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+		{
+			result = libfshfs_directory_record_get_group_identifier(
+			          (libfshfs_directory_record_t *) directory_entry->catalog_record,
+			          group_identifier,
+			          error );
+		}
+		else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+		{
+			result = libfshfs_file_record_get_group_identifier(
+			          (libfshfs_file_record_t *) directory_entry->catalog_record,
+			          group_identifier,
+			          error );
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve group identifier from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
+}
+
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
  * Returns 1 if successful or -1 on error

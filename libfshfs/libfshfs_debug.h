@@ -34,6 +34,9 @@ extern "C" {
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
+void libfshfs_debug_print_btree_attribute_flags(
+      uint32_t btree_attribute_flags );
+
 void libfshfs_debug_print_volume_attribute_flags(
       uint32_t volume_attribute_flags );
 
@@ -42,6 +45,9 @@ const char *libfshfs_debug_print_btree_node_type(
 
 const char *libfshfs_debug_print_catalog_record_type(
              uint16_t record_type );
+
+const char *libfshfs_debug_print_text_encoding_hint(
+             uint32_t text_encoding_hint );
 
 int libfshfs_debug_print_hfs_time_value(
      const char *function_name,

@@ -36,6 +36,28 @@
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
+/* Prints the B-tree attribute flags
+ */
+void libfshfs_debug_print_btree_attribute_flags(
+      uint32_t btree_attribute_flags )
+{
+	if( ( btree_attribute_flags & 0x00000001UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tBad close (kBTBadCloseMask)\n" );
+	}
+	if( ( btree_attribute_flags & 0x00000002UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tBig keys (kBTBigKeysMask)\n" );
+	}
+	if( ( btree_attribute_flags & 0x00000004UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tVariable-size index keys (kBTVariableIndexKeysMask)\n" );
+	}
+}
+
 /* Prints the volume attribute flags
  */
 void libfshfs_debug_print_volume_attribute_flags(
@@ -147,6 +169,133 @@ const char *libfshfs_debug_print_catalog_record_type(
 
 		case 0x0400:
 			return( "HFS file thread record (kHFSFileThreadRecord)" );
+	}
+	return( "Unknown" );
+}
+
+/* Prints the text encoding hint
+ */
+const char *libfshfs_debug_print_text_encoding_hint(
+             uint32_t text_encoding_hint )
+{
+	switch( text_encoding_hint )
+	{
+		case 0:
+			return( "MacRoman" );
+
+		case 1:
+			return( "MacJapanese" );
+
+		case 2:
+			return( "MacChineseTrad" );
+
+		case 3:
+			return( "MacKorean" );
+
+		case 4:
+			return( "MacArabic" );
+
+		case 5:
+			return( "MacHebrew" );
+
+		case 6:
+			return( "MacGreek" );
+
+		case 7:
+			return( "MacCyrillic" );
+
+		case 9:
+			return( "MacDevanagari" );
+
+		case 10:
+			return( "MacGurmukhi" );
+
+		case 11:
+			return( "MacGujarati" );
+
+		case 12:
+			return( "MacOriya" );
+
+		case 13:
+			return( "MacBengali" );
+
+		case 14:
+			return( "MacTamil" );
+
+		case 15:
+			return( "MacTelugu" );
+
+		case 16:
+			return( "MacKannada" );
+
+		case 17:
+			return( "MacMalayalam" );
+
+		case 18:
+			return( "MacSinhalese" );
+
+		case 19:
+			return( "MacBurmese" );
+
+		case 20:
+			return( "MacKhmer" );
+
+		case 21:
+			return( "MacThai" );
+
+		case 22:
+			return( "MacLaotian" );
+
+		case 23:
+			return( "MacGeorgian" );
+
+		case 24:
+			return( "MacArmenian" );
+
+		case 25:
+			return( "MacChineseSimp" );
+
+		case 26:
+			return( "MacTibetan" );
+
+		case 27:
+			return( "MacMongolian" );
+
+		case 28:
+			return( "MacEthiopic" );
+
+		case 29:
+			return( "MacCentralEurRoman" );
+
+		case 30:
+			return( "MacVietnamese" );
+
+		case 31:
+			return( "MacExtArabic" );
+
+		case 33:
+			return( "MacSymbol" );
+
+		case 34:
+			return( "MacDingbats" );
+
+		case 35:
+			return( "MacTurkish" );
+
+		case 36:
+			return( "MacCroatian" );
+
+		case 37:
+			return( "MacIcelandic" );
+
+		case 38:
+			return( "MacRomanian" );
+
+		case 140:
+			return( "MacFarsi" );
+
+		case 152:
+			return( "MacUkrainian" );
 	}
 	return( "Unknown" );
 }

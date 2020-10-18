@@ -63,9 +63,17 @@ struct libfshfs_internal_volume
 	 */
 	libfshfs_volume_header_t *volume_header;
 
+	/* The extents btree file
+	 */
+	libfshfs_btree_file_t *extents_btree_file;
+
 	/* The catalog btree file
 	 */
 	libfshfs_btree_file_t *catalog_btree_file;
+
+	/* The attributes btree file
+	 */
+	libfshfs_btree_file_t *attributes_btree_file;
 
 	/* The root directory entry
 	 */

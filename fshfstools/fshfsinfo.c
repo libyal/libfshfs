@@ -51,6 +51,9 @@
 
 enum FSHFSINFO_MODES
 {
+	FSHFSINFO_MODE_FILE_ENTRIES,
+	FSHFSINFO_MODE_FILE_ENTRY_BY_IDENTIFIER,
+	FSHFSINFO_MODE_FILE_ENTRY_BY_PATH,
 	FSHFSINFO_MODE_FILE_SYSTEM_HIERARCHY,
 	FSHFSINFO_MODE_VOLUME
 };
@@ -70,10 +73,13 @@ void usage_fprint(
 	fprintf( stream, "Use fshfsinfo to determine information about a Hierarchical\n"
 	                 " File System (HFS) volume.\n\n" );
 
-	fprintf( stream, "Usage: fshfsinfo [ -o offset ] [ -hHvV ] source\n\n" );
+	fprintf( stream, "Usage: fshfsinfo [ -E identifier ] [ -F file_entry ]\n"
+	                 "                 [ -o offset ] [ -hHvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file or device\n\n" );
 
+	fprintf( stream, "\t-E:     show information about a specific file system entry or \"all\"\n" );
+	fprintf( stream, "\t-F:     show information about a specific file entry path.\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-H:     shows the file system hierarchy\n" );
 	fprintf( stream, "\t-o:     specify the volume offset\n" );
@@ -133,13 +139,17 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libfshfs_error_t *error                  = NULL;
-	system_character_t *option_volume_offset = NULL;
-	system_character_t *source               = NULL;
-	char *program                            = "fshfsinfo";
-	system_integer_t option                  = 0;
-	int option_mode                          = FSHFSINFO_MODE_VOLUME;
-	int verbose                              = 0;
+	libfshfs_error_t *error                          = NULL;
+	system_character_t *option_file_entry_identifier = NULL;
+	system_character_t *option_file_entry_path       = NULL;
+	system_character_t *option_volume_offset         = NULL;
+	system_character_t *source                       = NULL;
+	char *program                                    = "fshfsinfo";
+	system_integer_t option                          = 0;
+	size_t string_length                             = 0;
+	uint64_t file_entry_identifier                   = 0;
+	int option_mode                                  = FSHFSINFO_MODE_VOLUME;
+	int verbose                                      = 0;
 
 	libcnotify_stream_set(
 	 stderr,
@@ -174,7 +184,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = fshfstools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "hHo:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "E:F:hHo:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -189,6 +199,18 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_FAILURE );
+
+			case (system_integer_t) 'E':
+				option_mode                  = FSHFSINFO_MODE_FILE_ENTRY_BY_IDENTIFIER;
+				option_file_entry_identifier = optarg;
+
+				break;
+
+			case (system_integer_t) 'F':
+				option_mode            = FSHFSINFO_MODE_FILE_ENTRY_BY_PATH;
+				option_file_entry_path = optarg;
+
+				break;
 
 			case (system_integer_t) 'h':
 				usage_fprint(
@@ -279,8 +301,92 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+	if( option_mode == FSHFSINFO_MODE_FILE_ENTRY_BY_IDENTIFIER )
+	{
+		if( option_file_entry_identifier == NULL )
+		{
+			fprintf(
+			 stderr,
+			 "Mising file entry identifier string.\n" );
+
+			goto on_error;
+		}
+		string_length = system_string_length(
+				 option_file_entry_identifier );
+
+		if( ( string_length == 3 )
+		 && ( system_string_compare(
+		       option_file_entry_identifier,
+		       _SYSTEM_STRING( "all" ),
+		       3 ) == 0 ) )
+		{
+			option_mode = FSHFSINFO_MODE_FILE_ENTRIES;
+		}
+		else if( fshfstools_system_string_copy_from_64_bit_in_decimal(
+		          option_file_entry_identifier,
+		          string_length + 1,
+		          &file_entry_identifier,
+		          &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to copy file entry identifier string to 64-bit decimal.\n" );
+
+			goto on_error;
+		}
+		else if( file_entry_identifier > (uint64_t) UINT32_MAX )
+		{
+			fprintf(
+			 stderr,
+			 "Invalid file entry identifier value out of bounds." );
+
+			goto on_error;
+		}
+	}
 	switch( option_mode )
 	{
+		case FSHFSINFO_MODE_FILE_ENTRIES:
+			if( info_handle_file_entries_fprint(
+			     fshfsinfo_info_handle,
+			     &error ) != 1 )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to print file entries.\n" );
+
+				goto on_error;
+			}
+			break;
+
+		case FSHFSINFO_MODE_FILE_ENTRY_BY_IDENTIFIER:
+			if( info_handle_file_entry_fprint_by_identifier(
+			     fshfsinfo_info_handle,
+			     (uint32_t) file_entry_identifier,
+			     &error ) != 1 )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to print file entry: %" PRIu64 ".\n",
+				 file_entry_identifier );
+
+				goto on_error;
+			}
+			break;
+
+		case FSHFSINFO_MODE_FILE_ENTRY_BY_PATH:
+			if( info_handle_file_entry_fprint_by_path(
+			     fshfsinfo_info_handle,
+			     option_file_entry_path,
+			     &error ) != 1 )
+			{
+				fprintf(
+				 stderr,
+				 "Unable to print file entry information.\n" );
+
+				goto on_error;
+			}
+			break;
+
 		case FSHFSINFO_MODE_FILE_SYSTEM_HIERARCHY:
 			if( info_handle_file_system_hierarchy_fprint(
 			     fshfsinfo_info_handle,

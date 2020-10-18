@@ -60,6 +60,18 @@ struct libfshfs_file_record
 	 */
 	uint32_t backup_time;
 
+	/* The owner identifier
+	 */
+	uint32_t owner_identifier;
+
+	/* The group identifier
+	 */
+	uint32_t group_identifier;
+
+	/* The file mode
+	 */
+	uint16_t file_mode;
+
 	/* The data fork descriptor
 	 */
 	libfshfs_fork_descriptor_t *data_fork_descriptor;
@@ -126,6 +138,21 @@ int libfshfs_file_record_get_data_fork_descriptor(
 int libfshfs_file_record_get_resource_fork_descriptor(
      libfshfs_file_record_t *file_record,
      libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_file_mode(
+     libfshfs_file_record_t *file_record,
+     uint16_t *file_mode,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_owner_identifier(
+     libfshfs_file_record_t *file_record,
+     uint32_t *owner_identifier,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_group_identifier(
+     libfshfs_file_record_t *file_record,
+     uint32_t *group_identifier,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

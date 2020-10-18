@@ -21,11 +21,7 @@
 
 #include <common.h>
 #include <byte_stream.h>
-#include <memory.h>
-#include <narrow_string.h>
-#include <system_string.h>
 #include <types.h>
-#include <wide_string.h>
 
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_catalog_btree_key.h"
@@ -2511,7 +2507,25 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 	if( ( utf8_string_length == 0 )
 	 || ( utf8_string_length == 1 ) )
 	{
-		result = 1;
+/* TODO optimize this */
+		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
+		          btree_file,
+		          file_io_handle,
+		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
+		          &safe_directory_entry,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve root directory entry from catalog B-tree file.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	else while( utf8_string_index < utf8_string_length )
 	{
@@ -2623,8 +2637,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 			goto on_error;
 		}
 	}
-	root_node = NULL;
-
 	if( result != 0 )
 	{
 		*directory_entry = safe_directory_entry;
@@ -3463,7 +3475,25 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 	if( ( utf16_string_length == 0 )
 	 || ( utf16_string_length == 1 ) )
 	{
-		result = 1;
+/* TODO optimize this */
+		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
+		          btree_file,
+		          file_io_handle,
+		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
+		          &safe_directory_entry,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve root directory entry from catalog B-tree file.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	else while( utf16_string_index < utf16_string_length )
 	{
@@ -3575,8 +3605,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 			goto on_error;
 		}
 	}
-	root_node = NULL;
-
 	if( result != 0 )
 	{
 		*directory_entry = safe_directory_entry;

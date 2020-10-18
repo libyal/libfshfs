@@ -106,11 +106,38 @@ int info_handle_name_value_fprint(
      size_t value_string_length,
      libcerror_error_t **error );
 
+int info_handle_hfs_time_value_fprint(
+     info_handle_t *info_handle,
+     const char *value_name,
+     uint32_t value_32bit,
+     libcerror_error_t **error );
+
+int info_handle_file_entry_value_with_name_fprint(
+     info_handle_t *info_handle,
+     libfshfs_file_entry_t *file_entry,
+     const system_character_t *path,
+     const system_character_t *file_entry_name,
+     libcerror_error_t **error );
+
 int info_handle_file_system_hierarchy_fprint_file_entry(
      info_handle_t *info_handle,
      libfshfs_file_entry_t *file_entry,
      const system_character_t *path,
      size_t path_length,
+     libcerror_error_t **error );
+
+int info_handle_file_entries_fprint(
+     info_handle_t *info_handle,
+     libcerror_error_t **error );
+
+int info_handle_file_entry_fprint_by_identifier(
+     info_handle_t *info_handle,
+     uint32_t file_entry_identifier,
+     libcerror_error_t **error );
+
+int info_handle_file_entry_fprint_by_path(
+     info_handle_t *info_handle,
+     const system_character_t *path,
      libcerror_error_t **error );
 
 int info_handle_file_system_hierarchy_fprint(

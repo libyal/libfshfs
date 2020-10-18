@@ -311,6 +311,10 @@ int libfshfs_btree_header_read_data(
 		 "%s: attributes\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 value_32bit );
+		libfshfs_debug_print_btree_attribute_flags(
+		 value_32bit );
+		libcnotify_printf(
+		 "\n" );
 
 		libcnotify_printf(
 		 "%s: unknown:\n",
@@ -320,7 +324,8 @@ int libfshfs_btree_header_read_data(
 		 64,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 /* TODO check if node side is supported: 512 or 4096
  */
 	return( 1 );

@@ -58,7 +58,7 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  METH_NOARGS,
 	  "get_creation_time_as_integer() -> Integer or None\n"
 	  "\n"
-	  "Retrieves the creation date and time as a 64-bit integer containing a HFS timestamp value." },
+	  "Retrieves the creation date and time as a 32-bit integer containing a HFS timestamp value." },
 
 	{ "get_modification_time",
 	  (PyCFunction) pyfshfs_file_entry_get_modification_time,
@@ -72,7 +72,35 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  METH_NOARGS,
 	  "get_modification_time_as_integer() -> Integer or None\n"
 	  "\n"
-	  "Retrieves the modification date and time as a 64-bit integer containing a HFS timestamp value." },
+	  "Retrieves the modification date and time as a 32-bit integer containing a HFS timestamp value." },
+
+	{ "get_entry_modification_time",
+	  (PyCFunction) pyfshfs_file_entry_get_entry_modification_time,
+	  METH_NOARGS,
+	  "get_entry_modification_time() -> Datetime or None\n"
+	  "\n"
+	  "Retrieves the entry modification date and time." },
+
+	{ "get_entry_modification_time_as_integer",
+	  (PyCFunction) pyfshfs_file_entry_get_entry_modification_time_as_integer,
+	  METH_NOARGS,
+	  "get_entry_modification_time_as_integer() -> Integer or None\n"
+	  "\n"
+	  "Retrieves the entry modification date and time as a 32-bit integer containing a HFS timestamp value." },
+
+	{ "get_access_time",
+	  (PyCFunction) pyfshfs_file_entry_get_access_time,
+	  METH_NOARGS,
+	  "get_access_time() -> Datetime or None\n"
+	  "\n"
+	  "Retrieves the access date and time." },
+
+	{ "get_access_time_as_integer",
+	  (PyCFunction) pyfshfs_file_entry_get_access_time_as_integer,
+	  METH_NOARGS,
+	  "get_access_time_as_integer() -> Integer or None\n"
+	  "\n"
+	  "Retrieves the access date and time as a 32-bit integer containing a HFS timestamp value." },
 
 	{ "get_backup_time",
 	  (PyCFunction) pyfshfs_file_entry_get_backup_time,
@@ -91,21 +119,21 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	{ "get_file_mode",
 	  (PyCFunction) pyfshfs_file_entry_get_file_mode,
 	  METH_NOARGS,
-	  "get_file_mode() -> Integer\n"
+	  "get_file_mode() -> Integer or None\n"
 	  "\n"
 	  "Retrieves the file mode." },
 
 	{ "get_owner_identifier",
 	  (PyCFunction) pyfshfs_file_entry_get_owner_identifier,
 	  METH_NOARGS,
-	  "get_owner_identifier() -> Integer\n"
+	  "get_owner_identifier() -> Integer or None\n"
 	  "\n"
 	  "Retrieves the owner identifier." },
 
 	{ "get_group_identifier",
 	  (PyCFunction) pyfshfs_file_entry_get_group_identifier,
 	  METH_NOARGS,
-	  "get_group_identifier() -> Integer\n"
+	  "get_group_identifier() -> Integer or None\n"
 	  "\n"
 	  "Retrieves the group identifier." },
 
@@ -115,6 +143,13 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  "get_name() -> Unicode string or None\n"
 	  "\n"
 	  "Retrieves the name." },
+
+	{ "get_symbolic_link_target",
+	  (PyCFunction) pyfshfs_file_entry_get_symbolic_link_target,
+	  METH_NOARGS,
+	  "get_symbolic_link_target() -> Unicode string or None\n"
+	  "\n"
+	  "Returns the symbolic link target." },
 
 	{ "get_number_of_sub_file_entries",
 	  (PyCFunction) pyfshfs_file_entry_get_number_of_sub_file_entries,
@@ -217,6 +252,18 @@ PyGetSetDef pyfshfs_file_entry_object_get_set_definitions[] = {
 	  "The modification date and time.",
 	  NULL },
 
+	{ "entry_modification_time",
+	  (getter) pyfshfs_file_entry_get_entry_modification_time,
+	  (setter) 0,
+	  "The entry modification date and time.",
+	  NULL },
+
+	{ "access_time",
+	  (getter) pyfshfs_file_entry_get_access_time,
+	  (setter) 0,
+	  "The access date and time.",
+	  NULL },
+
 	{ "backup_time",
 	  (getter) pyfshfs_file_entry_get_backup_time,
 	  (setter) 0,
@@ -245,6 +292,12 @@ PyGetSetDef pyfshfs_file_entry_object_get_set_definitions[] = {
 	  (getter) pyfshfs_file_entry_get_name,
 	  (setter) 0,
 	  "The name.",
+	  NULL },
+
+	{ "symbolic_link_target",
+	  (getter) pyfshfs_file_entry_get_symbolic_link_target,
+	  (setter) 0,
+	  "The symbolic link target.",
 	  NULL },
 
 	{ "number_of_sub_file_entries",
@@ -602,7 +655,7 @@ PyObject *pyfshfs_file_entry_get_creation_time(
 
 	Py_END_ALLOW_THREADS
 
-	if( result == -1 )
+	if( result != 1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -614,13 +667,6 @@ PyObject *pyfshfs_file_entry_get_creation_time(
 		 &error );
 
 		return( NULL );
-	}
-	else if( result == 0 )
-	{
-		Py_IncRef(
-		 Py_None );
-
-		return( Py_None );
 	}
 	datetime_object = pyfshfs_datetime_new_from_hfs_time(
 	                   hfs_time );
@@ -661,7 +707,7 @@ PyObject *pyfshfs_file_entry_get_creation_time_as_integer(
 
 	Py_END_ALLOW_THREADS
 
-	if( result == -1 )
+	if( result != 1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -673,13 +719,6 @@ PyObject *pyfshfs_file_entry_get_creation_time_as_integer(
 		 &error );
 
 		return( NULL );
-	}
-	else if( result == 0 )
-	{
-		Py_IncRef(
-		 Py_None );
-
-		return( Py_None );
 	}
 	integer_object = PyLong_FromUnsignedLong(
 	                  (unsigned long) hfs_time );
@@ -720,7 +759,7 @@ PyObject *pyfshfs_file_entry_get_modification_time(
 
 	Py_END_ALLOW_THREADS
 
-	if( result == -1 )
+	if( result != 1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -732,13 +771,6 @@ PyObject *pyfshfs_file_entry_get_modification_time(
 		 &error );
 
 		return( NULL );
-	}
-	else if( result == 0 )
-	{
-		Py_IncRef(
-		 Py_None );
-
-		return( Py_None );
 	}
 	datetime_object = pyfshfs_datetime_new_from_hfs_time(
 	                   hfs_time );
@@ -779,12 +811,241 @@ PyObject *pyfshfs_file_entry_get_modification_time_as_integer(
 
 	Py_END_ALLOW_THREADS
 
-	if( result == -1 )
+	if( result != 1 )
 	{
 		pyfshfs_error_raise(
 		 error,
 		 PyExc_IOError,
 		 "%s: unable to retrieve modification date and time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) hfs_time );
+
+	return( integer_object );
+}
+
+/* Retrieves the entry modification date and time
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_entry_modification_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *datetime_object = NULL;
+	libcerror_error_t *error  = NULL;
+	static char *function     = "pyfshfs_file_entry_get_entry_modification_time";
+	uint32_t hfs_time         = 0;
+	int result                = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_entry_modification_time(
+	          pyfshfs_file_entry->file_entry,
+	          &hfs_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve entry modification date and time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	datetime_object = pyfshfs_datetime_new_from_hfs_time(
+	                   hfs_time );
+
+	return( datetime_object );
+}
+
+/* Retrieves the entry modification date and time as an integer
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_entry_modification_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_get_entry_modification_time_as_integer";
+	uint32_t hfs_time        = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_entry_modification_time(
+	          pyfshfs_file_entry->file_entry,
+	          &hfs_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve entry modification date and time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) hfs_time );
+
+	return( integer_object );
+}
+
+/* Retrieves the access date and time
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_access_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *datetime_object = NULL;
+	libcerror_error_t *error  = NULL;
+	static char *function     = "pyfshfs_file_entry_get_access_time";
+	uint32_t hfs_time         = 0;
+	int result                = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_access_time(
+	          pyfshfs_file_entry->file_entry,
+	          &hfs_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve access date and time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	datetime_object = pyfshfs_datetime_new_from_hfs_time(
+	                   hfs_time );
+
+	return( datetime_object );
+}
+
+/* Retrieves the access date and time as an integer
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_access_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_get_access_time_as_integer";
+	uint32_t hfs_time        = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_access_time(
+	          pyfshfs_file_entry->file_entry,
+	          &hfs_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve access date and time.",
 		 function );
 
 		libcerror_error_free(
@@ -838,7 +1099,7 @@ PyObject *pyfshfs_file_entry_get_backup_time(
 
 	Py_END_ALLOW_THREADS
 
-	if( result == -1 )
+	if( result != 1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -850,13 +1111,6 @@ PyObject *pyfshfs_file_entry_get_backup_time(
 		 &error );
 
 		return( NULL );
-	}
-	else if( result == 0 )
-	{
-		Py_IncRef(
-		 Py_None );
-
-		return( Py_None );
 	}
 	datetime_object = pyfshfs_datetime_new_from_hfs_time(
 	                   hfs_time );
@@ -897,7 +1151,7 @@ PyObject *pyfshfs_file_entry_get_backup_time_as_integer(
 
 	Py_END_ALLOW_THREADS
 
-	if( result == -1 )
+	if( result != 1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -909,13 +1163,6 @@ PyObject *pyfshfs_file_entry_get_backup_time_as_integer(
 		 &error );
 
 		return( NULL );
-	}
-	else if( result == 0 )
-	{
-		Py_IncRef(
-		 Py_None );
-
-		return( Py_None );
 	}
 	integer_object = PyLong_FromUnsignedLong(
 	                  (unsigned long) hfs_time );
@@ -956,7 +1203,7 @@ PyObject *pyfshfs_file_entry_get_file_mode(
 
 	Py_END_ALLOW_THREADS
 
-	if( result != 1 )
+	if( result == -1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -968,6 +1215,13 @@ PyObject *pyfshfs_file_entry_get_file_mode(
 		 &error );
 
 		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
 	}
 #if PY_MAJOR_VERSION >= 3
 	integer_object = PyLong_FromLong(
@@ -1012,7 +1266,7 @@ PyObject *pyfshfs_file_entry_get_owner_identifier(
 
 	Py_END_ALLOW_THREADS
 
-	if( result != 1 )
+	if( result == -1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -1024,6 +1278,13 @@ PyObject *pyfshfs_file_entry_get_owner_identifier(
 		 &error );
 
 		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
 	}
 	integer_object = PyLong_FromUnsignedLong(
 	                  (unsigned long) value_32bit );
@@ -1064,7 +1325,7 @@ PyObject *pyfshfs_file_entry_get_group_identifier(
 
 	Py_END_ALLOW_THREADS
 
-	if( result != 1 )
+	if( result == -1 )
 	{
 		pyfshfs_error_raise(
 		 error,
@@ -1076,6 +1337,13 @@ PyObject *pyfshfs_file_entry_get_group_identifier(
 		 &error );
 
 		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
 	}
 	integer_object = PyLong_FromUnsignedLong(
 	                  (unsigned long) value_32bit );
@@ -1193,6 +1461,120 @@ on_error:
 	{
 		PyMem_Free(
 		 name );
+	}
+	return( NULL );
+}
+
+/* Retrieves the symbolic link target
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_symbolic_link_target(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	PyObject *string_object  = NULL;
+	const char *errors       = NULL;
+	uint8_t *target          = NULL;
+	static char *function    = "pyfshfs_file_entry_get_symbolic_link_target";
+	size_t target_size       = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_utf8_symbolic_link_target_size(
+	          pyfshfs_file_entry->file_entry,
+	          &target_size,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve symbolic link target size.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	else if( ( result == 0 )
+	      || ( target_size == 0 ) )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	target = (uint8_t *) PyMem_Malloc(
+	                      sizeof( uint8_t ) * target_size );
+
+	if( target == NULL )
+	{
+		PyErr_Format(
+		 PyExc_IOError,
+		 "%s: unable to create target.",
+		 function );
+
+		goto on_error;
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_utf8_symbolic_link_target(
+		  pyfshfs_file_entry->file_entry,
+		  target,
+		  target_size,
+		  &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve symbolic link target.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	/* Pass the string length to PyUnicode_DecodeUTF8
+	 * otherwise it makes the end of string character is part
+	 * of the string
+	 */
+	string_object = PyUnicode_DecodeUTF8(
+			 (char *) target,
+			 (Py_ssize_t) target_size - 1,
+			 errors );
+
+	PyMem_Free(
+	 target );
+
+	return( string_object );
+
+on_error:
+	if( target != NULL )
+	{
+		PyMem_Free(
+		 target );
 	}
 	return( NULL );
 }

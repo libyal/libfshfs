@@ -341,6 +341,18 @@ int libfshfs_directory_record_read_data(
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->backup_time,
 		 directory_record->backup_time );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->owner_identifier,
+		 directory_record->owner_identifier );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->group_identifier,
+		 directory_record->group_identifier );
+
+		byte_stream_copy_to_uint16_big_endian(
+		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->file_mode,
+		 directory_record->file_mode );
 	}
 	else
 	{
@@ -562,11 +574,39 @@ int libfshfs_directory_record_read_data(
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
 			libcnotify_printf(
-			 "%s: permissions:\n",
+			 "%s: owner identifier\t\t\t: %" PRIu32 "\n",
+			 function,
+			 directory_record->owner_identifier );
+
+			byte_stream_copy_to_uint32_big_endian(
+			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->group_identifier,
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: group identifier\t\t\t: %" PRIu32 "\n",
+			 function,
+			 directory_record->group_identifier );
+
+			libcnotify_printf(
+			 "%s: administration flags\t\t: 0x%02" PRIx8 "\n",
+			 function,
+			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->administration_flags );
+
+			libcnotify_printf(
+			 "%s: owner flags\t\t\t: 0x%02" PRIx8 "\n",
+			 function,
+			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->owner_flags );
+
+			libcnotify_printf(
+			 "%s: file mode\t\t\t\t: 0o%" PRIo16 "\n",
+			 function,
+			 directory_record->file_mode );
+
+			libcnotify_printf(
+			 "%s: special permissions:\n",
 			 function );
 			libcnotify_print_data(
-			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->permissions,
-			 16,
+			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->special_permissions,
+			 4,
 			 0 );
 		}
 		libcnotify_printf(
@@ -611,9 +651,11 @@ int libfshfs_directory_record_read_data(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->text_encoding_hint,
 			 value_32bit );
 			libcnotify_printf(
-			 "%s: text encoding hint\t\t\t: 0x%08" PRIx32 "\n",
+			 "%s: text encoding hint\t\t\t: %" PRIu32 " (%s)\n",
 			 function,
-			 value_32bit );
+			 value_32bit,
+			 libfshfs_debug_print_text_encoding_hint(
+			  value_32bit ) );
 
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->unknown1,
@@ -865,6 +907,117 @@ int libfshfs_directory_record_get_backup_time(
 		return( -1 );
 	}
 	*hfs_time = directory_record->backup_time;
+
+	return( 1 );
+}
+
+/* Retrieves the file mode
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_file_mode(
+     libfshfs_directory_record_t *directory_record,
+     uint16_t *file_mode,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_file_mode";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_mode == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file mode.",
+		 function );
+
+		return( -1 );
+	}
+	*file_mode = directory_record->file_mode;
+
+	return( 1 );
+}
+
+/* Retrieves the owner identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_owner_identifier(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *owner_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_owner_identifier";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( owner_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid owner identifier.",
+		 function );
+
+		return( -1 );
+	}
+	*owner_identifier = directory_record->owner_identifier;
+
+	return( 1 );
+}
+
+/* Retrieves the group identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_group_identifier(
+     libfshfs_directory_record_t *directory_record,
+     uint32_t *group_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_group_identifier";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( group_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid group identifier.",
+		 function );
+
+		return( -1 );
+	}
+	*group_identifier = directory_record->group_identifier;
 
 	return( 1 );
 }
