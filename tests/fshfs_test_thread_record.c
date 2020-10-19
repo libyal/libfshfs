@@ -121,6 +121,8 @@ int fshfs_test_thread_record_initialize(
 	          0,
 	          &error );
 
+	thread_record = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -132,8 +134,6 @@ int fshfs_test_thread_record_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	thread_record = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 

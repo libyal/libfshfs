@@ -27,6 +27,15 @@
 #include <stdlib.h>
 #endif
 
+#if defined( TIME_WITH_SYS_TIME )
+#include <sys/time.h>
+#include <time.h>
+#elif defined( HAVE_SYS_TIME_H )
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+
 #include "fshfs_test_libcerror.h"
 #include "fshfs_test_libfshfs.h"
 #include "fshfs_test_macros.h"
@@ -34,6 +43,8 @@
 #include "fshfs_test_unused.h"
 
 #include "../libfshfs/libfshfs_file_entry.h"
+
+#define FSHFS_TEST_FILE_ENTRY_READ_BUFFER_SIZE	4096
 
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
@@ -102,6 +113,24 @@ int main(
 	 "libfshfs_file_entry_free",
 	 fshfs_test_file_entry_free );
 
+	/* TODO: add tests for libfshfs_file_entry_get_identifier */
+
+	/* TODO: add tests for libfshfs_file_entry_get_creation_time */
+
+	/* TODO: add tests for libfshfs_file_entry_get_modification_time */
+
+	/* TODO: add tests for libfshfs_file_entry_get_entry_modification_time */
+
+	/* TODO: add tests for libfshfs_file_entry_get_access_time */
+
+	/* TODO: add tests for libfshfs_file_entry_get_backup_time */
+
+	/* TODO: add tests for libfshfs_file_entry_get_file_mode */
+
+	/* TODO: add tests for libfshfs_file_entry_get_owner_identifier */
+
+	/* TODO: add tests for libfshfs_file_entry_get_group_identifier */
+
 	/* TODO: add tests for libfshfs_file_entry_get_utf8_name_size */
 
 	/* TODO: add tests for libfshfs_file_entry_get_utf8_name */
@@ -110,9 +139,37 @@ int main(
 
 	/* TODO: add tests for libfshfs_file_entry_get_utf16_name */
 
+	/* TODO: add tests for libfshfs_file_entry_get_utf8_symbolic_link_target_size */
+
+	/* TODO: add tests for libfshfs_file_entry_get_utf8_symbolic_link_target */
+
+	/* TODO: add tests for libfshfs_file_entry_get_utf16_symbolic_link_target_size */
+
+	/* TODO: add tests for libfshfs_file_entry_get_utf16_symbolic_link_target */
+
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
+
+	/* TODO: add tests for libfshfs_internal_file_entry_get_sub_directory_entries */
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
+
 	/* TODO: add tests for libfshfs_file_entry_get_number_of_sub_file_entries */
 
 	/* TODO: add tests for libfshfs_file_entry_get_sub_file_entry_by_index */
+
+	/* TODO: add tests for libfshfs_file_entry_get_sub_file_entry_by_utf8_name */
+
+	/* TODO: add tests for libfshfs_file_entry_get_sub_file_entry_by_utf16_name */
+
+	/* TODO: add tests for libfshfs_file_entry_read_buffer */
+
+	/* TODO: add tests for libfshfs_file_entry_read_buffer_at_offset */
+
+	/* TODO: add tests for libfshfs_file_entry_seek_offset */
+
+	/* TODO: add tests for libfshfs_file_entry_get_offset */
+
+	/* TODO: add tests for libfshfs_file_entry_get_size */
 
 	return( EXIT_SUCCESS );
 

@@ -73,11 +73,12 @@ void usage_fprint(
 	fprintf( stream, "Use fshfsinfo to determine information about a Hierarchical\n"
 	                 " File System (HFS) volume.\n\n" );
 
-	fprintf( stream, "Usage: fshfsinfo [ -E identifier ] [ -F file_entry ]\n"
+	fprintf( stream, "Usage: fshfsinfo [ -B bodyfile ] [ -E identifier ] [ -F file_entry ]\n"
 	                 "                 [ -o offset ] [ -hHvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file or device\n\n" );
 
+	fprintf( stream, "\t-B:     output file system information as a bodyfile\n" );
 	fprintf( stream, "\t-E:     show information about a specific file system entry or \"all\"\n" );
 	fprintf( stream, "\t-F:     show information about a specific file entry path.\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -140,6 +141,7 @@ int main( int argc, char * const argv[] )
 #endif
 {
 	libfshfs_error_t *error                          = NULL;
+	system_character_t *option_bodyfile              = NULL;
 	system_character_t *option_file_entry_identifier = NULL;
 	system_character_t *option_file_entry_path       = NULL;
 	system_character_t *option_volume_offset         = NULL;
@@ -184,7 +186,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = fshfstools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "E:F:hHo:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "B:E:F:hHo:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -199,6 +201,11 @@ int main( int argc, char * const argv[] )
 				 stdout );
 
 				return( EXIT_FAILURE );
+
+			case (system_integer_t) 'B':
+				option_bodyfile = optarg;
+
+				break;
 
 			case (system_integer_t) 'E':
 				option_mode                  = FSHFSINFO_MODE_FILE_ENTRY_BY_IDENTIFIER;
@@ -270,6 +277,20 @@ int main( int argc, char * const argv[] )
 		 "Unable to initialize info handle.\n" );
 
 		goto on_error;
+	}
+	if( option_bodyfile != NULL )
+	{
+		if( info_handle_set_bodyfile(
+		     fshfsinfo_info_handle,
+		     option_bodyfile,
+		     &error ) != 1 )
+		{
+			fprintf(
+			 stderr,
+			 "Unable to set bodyfile.\n" );
+
+			goto on_error;
+		}
 	}
 	if( option_volume_offset != NULL )
 	{

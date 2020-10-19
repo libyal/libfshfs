@@ -419,10 +419,15 @@ int info_handle_set_bodyfile(
 
 		return( -1 );
 	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	info_handle->bodyfile_stream = file_stream_open_wide(
+	                                filename,
+	                                L"wb" );
+#else
 	info_handle->bodyfile_stream = file_stream_open(
 	                                filename,
 	                                "wb" );
-
+#endif
 	if( info_handle->bodyfile_stream == NULL )
 	{
 		libcerror_error_set(
@@ -781,11 +786,20 @@ int info_handle_name_value_fprint(
 	}
 	escaped_value_string[ escaped_value_string_index ] = 0;
 
-	fprintf(
-	 info_handle->notify_stream,
-	 "%" PRIs_SYSTEM "",
-	 escaped_value_string );
-
+	if( info_handle->bodyfile_stream != NULL )
+	{
+		fprintf(
+		 info_handle->bodyfile_stream,
+		 "%" PRIs_SYSTEM "",
+		 escaped_value_string );
+	}
+	else
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "%" PRIs_SYSTEM "",
+		 escaped_value_string );
+	}
 	memory_free(
 	 escaped_value_string );
 
@@ -928,7 +942,9 @@ int info_handle_file_entry_value_with_name_fprint(
      info_handle_t *info_handle,
      libfshfs_file_entry_t *file_entry,
      const system_character_t *path,
+     size_t path_length,
      const system_character_t *file_entry_name,
+     size_t file_entry_name_length,
      libcerror_error_t **error )
 {
 	char file_mode_string[ 11 ]              = { '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0 };
@@ -1225,31 +1241,53 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		if( path != NULL )
 		{
-			fprintf(
-			 info_handle->bodyfile_stream,
-			 "%" PRIs_SYSTEM "",
-			 path );
+			if( info_handle_name_value_fprint(
+			     info_handle,
+			     path,
+			     path_length,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print path string.",
+				 function );
+
+				goto on_error;
+			}
 		}
 		if( ( file_entry_name != NULL )
 		 && ( file_entry_identifier != 2 ) )
 		{
-			fprintf(
-			 info_handle->bodyfile_stream,
-			 "%" PRIs_SYSTEM "",
-			 file_entry_name );
+			if( info_handle_name_value_fprint(
+			     info_handle,
+			     file_entry_name,
+			     file_entry_name_length,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print file entry name string.",
+				 function );
+
+				goto on_error;
+			}
 		}
 		fprintf(
 		 info_handle->bodyfile_stream,
-		 "|%" PRIu32 "|%s|%" PRIu32 "|%" PRIu32 "|%" PRIu64 "|%.9f|%.9f|%.9f|%.9f\n",
+		 "|%" PRIu32 "|%s|%" PRIu32 "|%" PRIu32 "|%" PRIu64 "|%" PRIi64 "|%" PRIi64 "|%" PRIi64 "|%" PRIi64 "\n",
 		 file_entry_identifier,
 		 file_mode_string,
 		 owner_identifier,
 		 group_identifier,
 		 size,
-		 (double) access_time / 1000000000,
-		 (double) modification_time / 1000000000,
-		 (double) entry_modification_time / 1000000000,
-		 (double) creation_time / 1000000000 );
+		 (int64_t) access_time - 2082844800,
+		 (int64_t) modification_time - 2082844800,
+		 (int64_t) entry_modification_time - 2082844800,
+		 (int64_t) creation_time - 2082844800 );
 	}
 	else
 	{
@@ -1266,15 +1304,44 @@ int info_handle_file_entry_value_with_name_fprint(
 
 			if( path != NULL )
 			{
-				fprintf(
-				 info_handle->notify_stream,
-				 "%" PRIs_SYSTEM "",
-				 path );
+				if( info_handle_name_value_fprint(
+				     info_handle,
+				     path,
+				     path_length,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print path string.",
+					 function );
+
+					goto on_error;
+				}
+			}
+			if( ( file_entry_name != NULL )
+			 && ( file_entry_identifier != 2 ) )
+			{
+				if( info_handle_name_value_fprint(
+				     info_handle,
+				     file_entry_name,
+				     file_entry_name_length,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print file entry name string.",
+					 function );
+
+					goto on_error;
+				}
 			}
 			fprintf(
 			 info_handle->notify_stream,
-			 "%" PRIs_SYSTEM "\n",
-			 file_entry_name );
+			 "\n" );
 		}
 		fprintf(
 		 info_handle->notify_stream,
@@ -1428,7 +1495,7 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 	static char *function                 = "info_handle_file_system_hierarchy_fprint_file_entry";
 	size_t file_entry_name_size           = 0;
 	size_t sub_path_size                  = 0;
-	uint32_t identifier                   = 0;
+	uint32_t file_entry_identifier        = 0;
 	int number_of_sub_file_entries        = 0;
 	int result                            = 0;
 	int sub_file_entry_index              = 0;
@@ -1468,7 +1535,7 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 	}
 	if( libfshfs_file_entry_get_identifier(
 	     file_entry,
-	     &identifier,
+	     &file_entry_identifier,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1560,12 +1627,13 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 	}
 	if( info_handle->bodyfile_stream != NULL )
 	{
-/* TODO
 		if( info_handle_file_entry_value_with_name_fprint(
 		     info_handle,
 		     file_entry,
 		     path,
+		     path_length,
 		     file_entry_name,
+		     file_entry_name_size - 1,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1577,7 +1645,6 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 
 			goto on_error;
 		}
-*/
 	}
 	else
 	{
@@ -1597,7 +1664,7 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 			goto on_error;
 		}
 		if( ( file_entry_name != NULL )
-		 && ( identifier != 2 ) )
+		 && ( file_entry_identifier != 2 ) )
 		{
 			if( info_handle_name_value_fprint(
 			     info_handle,
@@ -1624,7 +1691,7 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 		sub_path_size = path_length + 1;
 
 		if( ( file_entry_name != NULL )
-		 && ( identifier != 2 ) )
+		 && ( file_entry_identifier != 2 ) )
 		{
 			sub_path_size += file_entry_name_size;
 		}
@@ -1657,7 +1724,7 @@ int info_handle_file_system_hierarchy_fprint_file_entry(
 			goto on_error;
 		}
 		if( ( file_entry_name != NULL )
-		 && ( identifier != 2 ) )
+		 && ( file_entry_identifier != 2 ) )
 		{
 			if( system_string_copy(
 			     &( sub_path[ path_length ] ),
@@ -1896,7 +1963,9 @@ int info_handle_file_entry_fprint_by_identifier(
 		     info_handle,
 		     file_entry,
 		     NULL,
+		     0,
 		     NULL,
+		     0,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1947,9 +2016,9 @@ int info_handle_file_entry_fprint_by_path(
      libcerror_error_t **error )
 {
 	libfshfs_file_entry_t *file_entry = NULL;
-	static char *function              = "info_handle_file_entry_fprint_by_path";
-	size_t path_length                 = 0;
-	int result                         = 0;
+	static char *function             = "info_handle_file_entry_fprint_by_path";
+	size_t path_length                = 0;
+	int result                        = 0;
 
 	if( info_handle == NULL )
 	{
@@ -2019,7 +2088,9 @@ int info_handle_file_entry_fprint_by_path(
 	     info_handle,
 	     file_entry,
 	     path,
+	     path_length,
 	     NULL,
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -2081,14 +2152,16 @@ int info_handle_file_system_hierarchy_fprint(
 
 		return( -1 );
 	}
-	fprintf(
-	 info_handle->notify_stream,
-	 "Hierarchical File System information:\n\n" );
+	if( info_handle->bodyfile_stream == NULL )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "Hierarchical File System information:\n\n" );
 
-	fprintf(
-	 info_handle->notify_stream,
-	 "File system hierarchy:\n" );
-
+		fprintf(
+		 info_handle->notify_stream,
+		 "File system hierarchy:\n" );
+	}
 	if( libfshfs_volume_get_root_directory(
 	     info_handle->input_volume,
 	     &file_entry,
@@ -2132,10 +2205,12 @@ int info_handle_file_system_hierarchy_fprint(
 
 		goto on_error;
 	}
-	fprintf(
-	 info_handle->notify_stream,
-	 "\n" );
-
+	if( info_handle->bodyfile_stream == NULL )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "\n" );
+	}
 	return( 1 );
 
 on_error:

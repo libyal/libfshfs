@@ -122,6 +122,8 @@ int fshfs_test_btree_header_initialize(
 	          &btree_header,
 	          &error );
 
+	btree_header = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -133,8 +135,6 @@ int fshfs_test_btree_header_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	btree_header = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 

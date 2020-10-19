@@ -116,6 +116,8 @@ int fshfs_test_catalog_btree_key_initialize(
 	          &catalog_btree_key,
 	          &error );
 
+	catalog_btree_key = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -127,8 +129,6 @@ int fshfs_test_catalog_btree_key_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	catalog_btree_key = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
@@ -459,6 +459,12 @@ int main(
 	FSHFS_TEST_RUN(
 	 "libfshfs_catalog_btree_key_read_data",
 	 fshfs_test_catalog_btree_key_read_data );
+
+	/* TODO: add tests for libfshfs_catalog_btree_key_compare_name */
+
+	/* TODO: add tests for libfshfs_catalog_btree_key_compare_name_with_utf8_string */
+
+	/* TODO: add tests for libfshfs_catalog_btree_key_compare_name_with_utf16_string */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

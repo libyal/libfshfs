@@ -299,93 +299,6 @@ int libfshfs_volume_header_free(
 	return( result );
 }
 
-/* Reads the volume header
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_volume_header_read_file_io_handle(
-     libfshfs_volume_header_t *volume_header,
-     libbfio_handle_t *file_io_handle,
-     off64_t file_offset,
-     libcerror_error_t **error )
-{
-	uint8_t volume_header_data[ 1024 ];
-
-	static char *function = "libfshfs_volume_header_read_file_io_handle";
-	ssize_t read_count    = 0;
-
-	if( volume_header == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume header.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: reading volume header at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-		 function,
-		 file_offset,
-		 file_offset );
-	}
-#endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek volume header offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 file_offset,
-		 file_offset );
-
-		return( -1 );
-	}
-	read_count = libbfio_handle_read_buffer(
-	              file_io_handle,
-	              (uint8_t *) &volume_header_data,
-	              1024,
-	              error );
-
-	if( read_count != (ssize_t) 1024 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read volume header data.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_volume_header_read_data(
-	     volume_header,
-	     (uint8_t *) &volume_header_data,
-	     1024,
-	     error ) != 1)
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read volume header data.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
 /* Reads a volume header
  * Returns 1 if successful or -1 on error
  */
@@ -791,6 +704,93 @@ int libfshfs_volume_header_read_data(
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read startup file fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Reads the volume header
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_volume_header_read_file_io_handle(
+     libfshfs_volume_header_t *volume_header,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libcerror_error_t **error )
+{
+	uint8_t volume_header_data[ 1024 ];
+
+	static char *function = "libfshfs_volume_header_read_file_io_handle";
+	ssize_t read_count    = 0;
+
+	if( volume_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume header.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: reading volume header at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 file_offset,
+		 file_offset );
+	}
+#endif
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     file_offset,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek volume header offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
+
+		return( -1 );
+	}
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
+	              (uint8_t *) &volume_header_data,
+	              1024,
+	              error );
+
+	if( read_count != (ssize_t) 1024 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read volume header data.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_volume_header_read_data(
+	     volume_header,
+	     (uint8_t *) &volume_header_data,
+	     1024,
+	     error ) != 1)
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read volume header data.",
 		 function );
 
 		return( -1 );

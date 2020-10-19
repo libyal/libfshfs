@@ -116,6 +116,8 @@ int fshfs_test_btree_node_descriptor_initialize(
 	          &btree_node_descriptor,
 	          &error );
 
+	btree_node_descriptor = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -127,8 +129,6 @@ int fshfs_test_btree_node_descriptor_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	btree_node_descriptor = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 

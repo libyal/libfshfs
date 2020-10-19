@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #endif
 
+#include "fshfs_test_functions.h"
+#include "fshfs_test_libbfio.h"
 #include "fshfs_test_libcerror.h"
 #include "fshfs_test_libfshfs.h"
 #include "fshfs_test_macros.h"
@@ -113,6 +115,8 @@ int fshfs_test_btree_file_initialize(
 	          &btree_file,
 	          &error );
 
+	btree_file = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +128,6 @@ int fshfs_test_btree_file_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	btree_file = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
@@ -276,6 +278,7 @@ on_error:
 int fshfs_test_btree_file_read_file_io_handle(
      void )
 {
+	libbfio_handle_t *file_io_handle  = NULL;
 	libcerror_error_t *error          = NULL;
 	libfshfs_btree_file_t *btree_file = NULL;
 	int result                        = 0;
@@ -298,6 +301,33 @@ int fshfs_test_btree_file_read_file_io_handle(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+
+	/* Initialize file IO handle
+	 */
+/* TODO implement
+	result = fshfs_test_open_file_io_handle(
+	          &file_io_handle,
+	          fshfs_test_volume_header_data1,
+	          1024,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "file_io_handle",
+	 file_io_handle );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+*/
+
+	/* Test regular cases
+	 */
+/* TODO implement */
 
 	/* Test error cases
 	 */
@@ -339,6 +369,27 @@ int fshfs_test_btree_file_read_file_io_handle(
 	libcerror_error_free(
 	 &error );
 
+	/* Clean up file IO handle
+	 */
+/* TODO implement
+	result = fshfs_test_close_file_io_handle(
+	          &file_io_handle,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+*/
+
+	/* Test data too small
+	 */
+/* TODO implement */
+
 	/* Clean up
 	 */
 	result = libfshfs_btree_file_free(
@@ -365,6 +416,12 @@ on_error:
 	{
 		libcerror_error_free(
 		 &error );
+	}
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
 	}
 	if( btree_file != NULL )
 	{
@@ -402,19 +459,23 @@ int main(
 	 "libfshfs_btree_file_free",
 	 fshfs_test_btree_file_free );
 
-	/* TODO: add tests for libfshfs_btree_file_get_node_by_number */
-
-	/* TODO: add tests for libfshfs_btree_file_get_root_node */
-
 	FSHFS_TEST_RUN(
 	 "libfshfs_btree_file_read_file_io_handle",
 	 fshfs_test_btree_file_read_file_io_handle );
+
+	/* TODO: add tests for libfshfs_btree_file_get_node_by_number */
+
+	/* TODO: add tests for libfshfs_btree_file_get_root_node */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 }
 

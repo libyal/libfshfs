@@ -59,6 +59,8 @@ check_PROGRAMS = \
 	fshfs_test_volume_header
 
 fshfs_test_btree_file_SOURCES = \
+	fshfs_test_functions.c fshfs_test_functions.h \
+	fshfs_test_libbfio.h \
 	fshfs_test_btree_file.c \
 	fshfs_test_libcerror.h \
 	fshfs_test_libfshfs.h \
@@ -67,6 +69,14 @@ fshfs_test_btree_file_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_btree_file_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 
@@ -277,6 +287,8 @@ fshfs_test_volume_LDADD = \
 	@PTHREAD_LIBADD@
 
 fshfs_test_volume_header_SOURCES = \
+	fshfs_test_functions.c fshfs_test_functions.h \
+	fshfs_test_libbfio.h \
 	fshfs_test_libcerror.h \
 	fshfs_test_libfshfs.h \
 	fshfs_test_macros.h \
@@ -285,6 +297,14 @@ fshfs_test_volume_header_SOURCES = \
 	fshfs_test_volume_header.c
 
 fshfs_test_volume_header_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

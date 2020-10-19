@@ -37,9 +37,16 @@
 #include "fshfs_test_libfshfs.h"
 #include "fshfs_test_macros.h"
 #include "fshfs_test_memory.h"
-#include "fshfs_test_unused.h"
 
 #include "../libfshfs/libfshfs_volume.h"
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#error Unsupported size of wchar_t
+#endif
+
+/* Define to make fshfs_test_volume generate verbose output
+#define FSHFS_TEST_VOLUME_VERBOSE
+ */
 
 #if !defined( LIBFSHFS_HAVE_BFIO )
 
@@ -57,14 +64,6 @@ int libfshfs_volume_open_file_io_handle(
 
 #endif /* !defined( LIBFSHFS_HAVE_BFIO ) */
 
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
-#error Unsupported size of wchar_t
-#endif
-
-/* Define to make fshfs_test_volume generate verbose output
-#define FSHFS_TEST_VOLUME_VERBOSE
- */
-
 /* Creates and opens a source volume
  * Returns 1 if successful or -1 on error
  */
@@ -74,7 +73,6 @@ int fshfs_test_volume_open_source(
      libcerror_error_t **error )
 {
 	static char *function = "fshfs_test_volume_open_source";
-	size_t string_length  = 0;
 	int result            = 0;
 
 	if( volume == NULL )
@@ -267,6 +265,8 @@ int fshfs_test_volume_initialize(
 	          &volume,
 	          &error );
 
+	volume = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -278,8 +278,6 @@ int fshfs_test_volume_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	volume = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
@@ -434,7 +432,6 @@ int fshfs_test_volume_open(
 
 	libcerror_error_t *error  = NULL;
 	libfshfs_volume_t *volume = NULL;
-	size_t string_length      = 0;
 	int result                = 0;
 
 	/* Initialize test
@@ -612,7 +609,6 @@ int fshfs_test_volume_open_wide(
 
 	libcerror_error_t *error  = NULL;
 	libfshfs_volume_t *volume = NULL;
-	size_t string_length      = 0;
 	int result                = 0;
 
 	/* Initialize test
@@ -803,13 +799,13 @@ int fshfs_test_volume_open_file_io_handle(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NOT_NULL(
-         "file_io_handle",
-         file_io_handle );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "file_io_handle",
+	 file_io_handle );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	string_length = system_string_length(
 	                 source );
@@ -832,9 +828,9 @@ int fshfs_test_volume_open_file_io_handle(
 	 result,
 	 1 );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libfshfs_volume_initialize(
 	          &volume,
@@ -975,12 +971,12 @@ int fshfs_test_volume_open_file_io_handle(
 	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
-         "file_io_handle",
-         file_io_handle );
+	 "file_io_handle",
+	 file_io_handle );
 
-        FSHFS_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 
@@ -1051,7 +1047,6 @@ int fshfs_test_volume_open_close(
 {
 	libcerror_error_t *error  = NULL;
 	libfshfs_volume_t *volume = NULL;
-	size_t string_length      = 0;
 	int result                = 0;
 
 	/* Initialize test
@@ -1244,34 +1239,31 @@ on_error:
 int fshfs_test_volume_get_utf8_name_size(
      libfshfs_volume_t *volume )
 {
-	libcerror_error_t *error  = NULL;
-	size_t utf8_name_size     = 0;
-	int result                = 0;
-	int utf8_name_size_is_set = 0;
+	libcerror_error_t *error = NULL;
+	size_t utf8_string_size  = 0;
+	int result               = 0;
 
 	/* Test regular cases
 	 */
 	result = libfshfs_volume_get_utf8_name_size(
 	          volume,
-	          &utf8_name_size,
+	          &utf8_string_size,
 	          &error );
 
-	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	utf8_name_size_is_set = result;
-
 	/* Test error cases
 	 */
 	result = libfshfs_volume_get_utf8_name_size(
 	          NULL,
-	          &utf8_name_size,
+	          &utf8_string_size,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -1286,25 +1278,23 @@ int fshfs_test_volume_get_utf8_name_size(
 	libcerror_error_free(
 	 &error );
 
-	if( utf8_name_size_is_set != 0 )
-	{
-		result = libfshfs_volume_get_utf8_name_size(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfshfs_volume_get_utf8_name_size(
+	          volume,
+	          NULL,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -1322,36 +1312,33 @@ on_error:
 int fshfs_test_volume_get_utf8_name(
      libfshfs_volume_t *volume )
 {
-	uint8_t utf8_name[ 512 ];
+	uint8_t utf8_string[ 512 ];
 
 	libcerror_error_t *error = NULL;
 	int result               = 0;
-	int utf8_name_is_set     = 0;
 
 	/* Test regular cases
 	 */
 	result = libfshfs_volume_get_utf8_name(
 	          volume,
-	          utf8_name,
+	          utf8_string,
 	          512,
 	          &error );
 
-	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	utf8_name_is_set = result;
-
 	/* Test error cases
 	 */
 	result = libfshfs_volume_get_utf8_name(
 	          NULL,
-	          utf8_name,
+	          utf8_string,
 	          512,
 	          &error );
 
@@ -1367,62 +1354,60 @@ int fshfs_test_volume_get_utf8_name(
 	libcerror_error_free(
 	 &error );
 
-	if( utf8_name_is_set != 0 )
-	{
-		result = libfshfs_volume_get_utf8_name(
-		          volume,
-		          NULL,
-		          512,
-		          &error );
+	result = libfshfs_volume_get_utf8_name(
+	          volume,
+	          NULL,
+	          512,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
+	libcerror_error_free(
+	 &error );
 
-		result = libfshfs_volume_get_utf8_name(
-		          volume,
-		          utf8_name,
-		          0,
-		          &error );
+	result = libfshfs_volume_get_utf8_name(
+	          volume,
+	          utf8_string,
+	          0,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
+	libcerror_error_free(
+	 &error );
 
-		result = libfshfs_volume_get_utf8_name(
-		          volume,
-		          utf8_name,
-		          (size_t) SSIZE_MAX + 1,
-		          &error );
+	result = libfshfs_volume_get_utf8_name(
+	          volume,
+	          utf8_string,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -1440,34 +1425,31 @@ on_error:
 int fshfs_test_volume_get_utf16_name_size(
      libfshfs_volume_t *volume )
 {
-	libcerror_error_t *error   = NULL;
-	size_t utf16_name_size     = 0;
-	int result                 = 0;
-	int utf16_name_size_is_set = 0;
+	libcerror_error_t *error = NULL;
+	size_t utf16_string_size = 0;
+	int result               = 0;
 
 	/* Test regular cases
 	 */
 	result = libfshfs_volume_get_utf16_name_size(
 	          volume,
-	          &utf16_name_size,
+	          &utf16_string_size,
 	          &error );
 
-	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	utf16_name_size_is_set = result;
-
 	/* Test error cases
 	 */
 	result = libfshfs_volume_get_utf16_name_size(
 	          NULL,
-	          &utf16_name_size,
+	          &utf16_string_size,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -1482,25 +1464,23 @@ int fshfs_test_volume_get_utf16_name_size(
 	libcerror_error_free(
 	 &error );
 
-	if( utf16_name_size_is_set != 0 )
-	{
-		result = libfshfs_volume_get_utf16_name_size(
-		          volume,
-		          NULL,
-		          &error );
+	result = libfshfs_volume_get_utf16_name_size(
+	          volume,
+	          NULL,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -1518,36 +1498,33 @@ on_error:
 int fshfs_test_volume_get_utf16_name(
      libfshfs_volume_t *volume )
 {
-	uint16_t utf16_name[ 512 ];
+	uint16_t utf16_string[ 512 ];
 
 	libcerror_error_t *error = NULL;
 	int result               = 0;
-	int utf16_name_is_set    = 0;
 
 	/* Test regular cases
 	 */
 	result = libfshfs_volume_get_utf16_name(
 	          volume,
-	          utf16_name,
+	          utf16_string,
 	          512,
 	          &error );
 
-	FSHFS_TEST_ASSERT_NOT_EQUAL_INT(
+	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 -1 );
+	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	utf16_name_is_set = result;
-
 	/* Test error cases
 	 */
 	result = libfshfs_volume_get_utf16_name(
 	          NULL,
-	          utf16_name,
+	          utf16_string,
 	          512,
 	          &error );
 
@@ -1563,62 +1540,60 @@ int fshfs_test_volume_get_utf16_name(
 	libcerror_error_free(
 	 &error );
 
-	if( utf16_name_is_set != 0 )
-	{
-		result = libfshfs_volume_get_utf16_name(
-		          volume,
-		          NULL,
-		          512,
-		          &error );
+	result = libfshfs_volume_get_utf16_name(
+	          volume,
+	          NULL,
+	          512,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
+	libcerror_error_free(
+	 &error );
 
-		result = libfshfs_volume_get_utf16_name(
-		          volume,
-		          utf16_name,
-		          0,
-		          &error );
+	result = libfshfs_volume_get_utf16_name(
+	          volume,
+	          utf16_string,
+	          0,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
+	libcerror_error_free(
+	 &error );
 
-		result = libfshfs_volume_get_utf16_name(
-		          volume,
-		          utf16_name,
-		          (size_t) SSIZE_MAX + 1,
-		          &error );
+	result = libfshfs_volume_get_utf16_name(
+	          volume,
+	          utf16_string,
+	          (size_t) SSIZE_MAX + 1,
+	          &error );
 
-		FSHFS_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
 
-		FSHFS_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
-		libcerror_error_free(
-		 &error );
-	}
+	libcerror_error_free(
+	 &error );
+
 	return( 1 );
 
 on_error:
@@ -1626,6 +1601,110 @@ on_error:
 	{
 		libcerror_error_free(
 		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_volume_get_root_directory function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_volume_get_root_directory(
+     libfshfs_volume_t *volume )
+{
+	libcerror_error_t *error              = NULL;
+	libfshfs_file_entry_t *root_directory = NULL;
+	int result                            = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_volume_get_root_directory(
+	          volume,
+	          &root_directory,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "root_directory",
+	 root_directory );
+
+	result = libfshfs_file_entry_free(
+	          &root_directory,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_volume_get_root_directory(
+	          NULL,
+	          &root_directory,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "root_directory",
+	 root_directory );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_volume_get_root_directory(
+	          volume,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "root_directory",
+	 root_directory );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( root_directory != NULL )
+	{
+		libfshfs_file_entry_free(
+		 &root_directory,
+		 NULL );
 	}
 	return( 0 );
 }
@@ -1817,6 +1896,7 @@ int main(
 		 "libfshfs_volume_open_close",
 		 fshfs_test_volume_open_close,
 		 source );
+
 	}
 	if( result != 0 )
 	{
@@ -1847,7 +1927,7 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
-		/* TODO: add tests for libfshfs_volume_open_read */
+		/* TODO: add tests for libfshfs_internal_volume_open_read */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
@@ -1870,6 +1950,29 @@ int main(
 		 "libfshfs_volume_get_utf16_name",
 		 fshfs_test_volume_get_utf16_name,
 		 volume );
+
+		/* TODO: add tests for libfshfs_volume_get_file_entry_by_identifier */
+
+		FSHFS_TEST_RUN_WITH_ARGS(
+		 "libfshfs_volume_get_root_directory",
+		 fshfs_test_volume_get_root_directory,
+		 volume );
+
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
+
+		/* TODO: add tests for libfshfs_internal_volume_get_file_entry_by_utf8_path */
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
+
+		/* TODO: add tests for libfshfs_volume_get_file_entry_by_utf8_path */
+
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
+
+		/* TODO: add tests for libfshfs_internal_volume_get_file_entry_by_utf16_path */
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
+
+		/* TODO: add tests for libfshfs_volume_get_file_entry_by_utf16_path */
 
 		/* Clean up
 		 */

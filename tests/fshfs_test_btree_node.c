@@ -116,6 +116,8 @@ int fshfs_test_btree_node_initialize(
 	          128,
 	          &error );
 
+	btree_node = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -127,8 +129,6 @@ int fshfs_test_btree_node_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	btree_node = NULL;
 
 	result = libfshfs_btree_node_initialize(
 	          &btree_node,

@@ -121,6 +121,8 @@ int fshfs_test_directory_record_initialize(
 	          &directory_record,
 	          &error );
 
+	directory_record = NULL;
+
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -132,8 +134,6 @@ int fshfs_test_directory_record_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	directory_record = NULL;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
 
@@ -274,6 +274,275 @@ on_error:
 	{
 		libcerror_error_free(
 		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_clone function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_clone(
+     void )
+{
+	libcerror_error_t *error                                  = NULL;
+	libfshfs_directory_record_t *destination_directory_record = NULL;
+	libfshfs_directory_record_t *source_directory_record      = NULL;
+	int result                                                = 0;
+
+#if defined( HAVE_FSHFS_TEST_MEMORY )
+	int number_of_malloc_fail_tests                           = 1;
+	int test_number                                           = 0;
+
+#if defined( OPTIMIZATION_DISABLED )
+	int number_of_memcpy_fail_tests                           = 1;
+#endif
+#endif /* defined( HAVE_FSHFS_TEST_MEMORY ) */
+
+	/* Initialize test
+	 */
+	result = libfshfs_directory_record_initialize(
+	          &source_directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "source_directory_record",
+	 source_directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_clone(
+	          &destination_directory_record,
+	          source_directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "destination_directory_record",
+	 destination_directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_directory_record_free(
+	          &destination_directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "destination_directory_record",
+	 destination_directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_directory_record_clone(
+	          &destination_directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "destination_directory_record",
+	 destination_directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_clone(
+	          NULL,
+	          source_directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	destination_directory_record = (libfshfs_directory_record_t *) 0x12345678UL;
+
+	result = libfshfs_directory_record_clone(
+	          &destination_directory_record,
+	          source_directory_record,
+	          &error );
+
+	destination_directory_record = NULL;
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_FSHFS_TEST_MEMORY )
+
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
+	{
+		/* Test libfshfs_directory_record_clone with malloc failing
+		 */
+		fshfs_test_malloc_attempts_before_fail = test_number;
+
+		result = libfshfs_directory_record_clone(
+		          &destination_directory_record,
+		          source_directory_record,
+		          &error );
+
+		if( fshfs_test_malloc_attempts_before_fail != -1 )
+		{
+			fshfs_test_malloc_attempts_before_fail = -1;
+
+			if( destination_directory_record != NULL )
+			{
+				libfshfs_directory_record_free(
+				 &destination_directory_record,
+				 NULL );
+			}
+		}
+		else
+		{
+			FSHFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSHFS_TEST_ASSERT_IS_NULL(
+			 "destination_directory_record",
+			 destination_directory_record );
+
+			FSHFS_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#if defined( OPTIMIZATION_DISABLED )
+
+	for( test_number = 0;
+	     test_number < number_of_memcpy_fail_tests;
+	     test_number++ )
+	{
+		/* Test libfshfs_directory_record_clone with memcpy failing
+		 */
+		fshfs_test_memcpy_attempts_before_fail = test_number;
+
+		result = libfshfs_directory_record_clone(
+		          &destination_directory_record,
+		          source_directory_record,
+		          &error );
+
+		if( fshfs_test_memcpy_attempts_before_fail != -1 )
+		{
+			fshfs_test_memcpy_attempts_before_fail = -1;
+
+			if( destination_directory_record != NULL )
+			{
+				libfshfs_directory_record_free(
+				 &destination_directory_record,
+				 NULL );
+			}
+		}
+		else
+		{
+			FSHFS_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			FSHFS_TEST_ASSERT_IS_NULL(
+			 "destination_directory_record",
+			 destination_directory_record );
+
+			FSHFS_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#endif /* defined( OPTIMIZATION_DISABLED ) */
+#endif /* defined( HAVE_FSHFS_TEST_MEMORY ) */
+
+	/* Clean up
+	 */
+	result = libfshfs_directory_record_free(
+	          &source_directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "source_directory_record",
+	 source_directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( destination_directory_record != NULL )
+	{
+		libfshfs_directory_record_free(
+		 &destination_directory_record,
+		 NULL );
+	}
+	if( source_directory_record != NULL )
+	{
+		libfshfs_directory_record_free(
+		 &source_directory_record,
+		 NULL );
 	}
 	return( 0 );
 }
@@ -434,6 +703,663 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfshfs_directory_record_get_identifier function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_identifier(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error = NULL;
+	uint32_t identifier      = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_identifier(
+	          directory_record,
+	          &identifier,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_identifier(
+	          NULL,
+	          &identifier,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_identifier(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_creation_time function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_creation_time(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error = NULL;
+	uint32_t creation_time   = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_creation_time(
+	          directory_record,
+	          &creation_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_creation_time(
+	          NULL,
+	          &creation_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_creation_time(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_modification_time function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_modification_time(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error   = NULL;
+	uint32_t modification_time = 0;
+	int result                 = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_modification_time(
+	          directory_record,
+	          &modification_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_modification_time(
+	          NULL,
+	          &modification_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_modification_time(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_entry_modification_time function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_entry_modification_time(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error         = NULL;
+	uint32_t entry_modification_time = 0;
+	int result                       = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_entry_modification_time(
+	          directory_record,
+	          &entry_modification_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_entry_modification_time(
+	          NULL,
+	          &entry_modification_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_entry_modification_time(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_access_time function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_access_time(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error = NULL;
+	uint32_t access_time     = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_access_time(
+	          directory_record,
+	          &access_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_access_time(
+	          NULL,
+	          &access_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_access_time(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_backup_time function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_backup_time(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error = NULL;
+	uint32_t backup_time     = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_backup_time(
+	          directory_record,
+	          &backup_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_backup_time(
+	          NULL,
+	          &backup_time,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_backup_time(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_file_mode function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_file_mode(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error = NULL;
+	uint16_t file_mode       = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_file_mode(
+	          directory_record,
+	          &file_mode,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_file_mode(
+	          NULL,
+	          &file_mode,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_file_mode(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_owner_identifier function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_owner_identifier(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error  = NULL;
+	uint32_t owner_identifier = 0;
+	int result                = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_owner_identifier(
+	          directory_record,
+	          &owner_identifier,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_owner_identifier(
+	          NULL,
+	          &owner_identifier,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_owner_identifier(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_directory_record_get_group_identifier function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_directory_record_get_group_identifier(
+     libfshfs_directory_record_t *directory_record )
+{
+	libcerror_error_t *error  = NULL;
+	uint32_t group_identifier = 0;
+	int result                = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_directory_record_get_group_identifier(
+	          directory_record,
+	          &group_identifier,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_directory_record_get_group_identifier(
+	          NULL,
+	          &group_identifier,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_directory_record_get_group_identifier(
+	          directory_record,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 /* The main program
@@ -448,6 +1374,14 @@ int main(
      char * const argv[] FSHFS_TEST_ATTRIBUTE_UNUSED )
 #endif
 {
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
+
+	libcerror_error_t *error                      = NULL;
+	libfshfs_directory_record_t *directory_record = NULL;
+	int result                                    = 0;
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
+
 	FSHFS_TEST_UNREFERENCED_PARAMETER( argc )
 	FSHFS_TEST_UNREFERENCED_PARAMETER( argv )
 
@@ -462,14 +1396,139 @@ int main(
 	 fshfs_test_directory_record_free );
 
 	FSHFS_TEST_RUN(
+	 "libfshfs_directory_record_clone",
+	 fshfs_test_directory_record_clone );
+
+	FSHFS_TEST_RUN(
 	 "libfshfs_directory_record_read_data",
 	 fshfs_test_directory_record_read_data );
 
+#if !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 )
+
+	/* Initialize directory_record for tests
+	 */
+	result = libfshfs_directory_record_initialize(
+	          &directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "directory_record",
+	 directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_directory_record_read_data(
+	          directory_record,
+	          fshfs_test_directory_record_data1,
+	          88,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Run tests
+	 */
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_identifier",
+	 fshfs_test_directory_record_get_identifier,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_creation_time",
+	 fshfs_test_directory_record_get_creation_time,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_modification_time",
+	 fshfs_test_directory_record_get_modification_time,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_entry_modification_time",
+	 fshfs_test_directory_record_get_entry_modification_time,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_access_time",
+	 fshfs_test_directory_record_get_access_time,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_backup_time",
+	 fshfs_test_directory_record_get_backup_time,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_file_mode",
+	 fshfs_test_directory_record_get_file_mode,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_owner_identifier",
+	 fshfs_test_directory_record_get_owner_identifier,
+	 directory_record );
+
+	FSHFS_TEST_RUN_WITH_ARGS(
+	 "libfshfs_directory_record_get_group_identifier",
+	 fshfs_test_directory_record_get_group_identifier,
+	 directory_record );
+
+	/* Clean up
+	 */
+	result = libfshfs_directory_record_free(
+	          &directory_record,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "directory_record",
+	 directory_record );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+#endif /* !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 ) */
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
+
 on_error:
+#if !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 )
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( directory_record != NULL )
+	{
+		libfshfs_directory_record_free(
+		 &directory_record,
+		 NULL );
+	}
+#endif /* !defined( __BORLANDC__ ) || ( __BORLANDC__ >= 0x0560 ) */
+
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 }
 
