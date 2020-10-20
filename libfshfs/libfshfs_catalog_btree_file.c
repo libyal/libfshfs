@@ -777,7 +777,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
 		 "%s: invalid record data size value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( directory_entry == NULL )
 	{
@@ -1132,7 +1132,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 						 "%s: unable to compare thread record name with catalog B-tree key name.",
 						 function );
 
-						return( -1 );
+						goto on_error;
 					}
 					break;
 
@@ -1878,7 +1878,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 						 "%s: unable to compare UTF-8 string with catalog B-tree key name.",
 						 function );
 
-						return( -1 );
+						goto on_error;
 					}
 					break;
 
@@ -2476,7 +2476,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 		 "%s: unable to retrieve B-tree root node.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	is_branch_node = libfshfs_btree_node_is_branch_node(
 	                  root_node,
@@ -2491,7 +2491,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 		 "%s: unable to determine if B-tree root node is a branch node.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	lookup_identifier = LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER;
 
@@ -2846,7 +2846,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 						 "%s: unable to compare UTF-16 string with catalog B-tree key name.",
 						 function );
 
-						return( -1 );
+						goto on_error;
 					}
 					break;
 
@@ -3444,7 +3444,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 		 "%s: unable to retrieve B-tree root node.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	is_branch_node = libfshfs_btree_node_is_branch_node(
 	                  root_node,
@@ -3459,7 +3459,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 		 "%s: unable to determine if B-tree root node is a branch node.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	lookup_identifier = LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER;
 
