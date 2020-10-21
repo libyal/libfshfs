@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "btree_file btree_header btree_node btree_node_descriptor catalog_btree_key directory_entry directory_record error file_entry file_record fork_descriptor io_handle notify thread_record volume_header"
+$LibraryTests = "btree_file btree_header btree_node btree_node_descriptor catalog_btree_key directory_entry directory_record error extent extents_btree_key file_entry file_record file_system fork_descriptor io_handle notify thread_record volume_header"
 $LibraryTestsWithInput = "support volume"
 $OptionSets = "offset"
 

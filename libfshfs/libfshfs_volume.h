@@ -25,9 +25,13 @@
 #include <common.h>
 #include <types.h>
 
+/* TODO move these into file_system */
+
 #include "libfshfs_btree_file.h"
 #include "libfshfs_directory_entry.h"
+
 #include "libfshfs_extern.h"
+#include "libfshfs_file_system.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
@@ -62,6 +66,12 @@ struct libfshfs_internal_volume
 	/* The volume header
 	 */
 	libfshfs_volume_header_t *volume_header;
+
+	/* The file system
+	 */
+	libfshfs_file_system_t *file_system;
+
+/* TODO move these into file_system */
 
 	/* The extents btree file
 	 */

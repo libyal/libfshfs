@@ -1,4 +1,6 @@
 Debug info:
+* check number of blocks in extent, if < number of block read extents overflow
+
 * bodyfile add support for symbolic link target
 * handle "\0\0\0\0HFS+ Private Data" in compare name functions
 * pyfshfs_volume handle 0-byte values in get_file_entry_by_path

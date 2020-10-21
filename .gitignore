@@ -135,8 +135,11 @@ stamp-h[1-9]
 /tests/fshfs_test_directory_entry
 /tests/fshfs_test_directory_record
 /tests/fshfs_test_error
+/tests/fshfs_test_extent
+/tests/fshfs_test_extents_btree_key
 /tests/fshfs_test_file_entry
 /tests/fshfs_test_file_record
+/tests/fshfs_test_file_system
 /tests/fshfs_test_fork_descriptor
 /tests/fshfs_test_io_handle
 /tests/fshfs_test_notify

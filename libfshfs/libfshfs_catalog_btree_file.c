@@ -190,7 +190,18 @@ int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 		}
 		record_data_offset = node_key->data_size;
 
-		if( record_data_offset >= record_data_size )
+		if( record_data_size < 2 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( record_data_offset >= ( record_data_size - 2 ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -1094,7 +1105,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 		}
 		record_data_offset = node_key->data_size;
 
-		if( record_data_offset >= record_data_size )
+		if( record_data_size < 2 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( record_data_offset >= ( record_data_size - 2 ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -1840,7 +1862,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 		}
 		record_data_offset = node_key->data_size;
 
-		if( record_data_offset >= record_data_size )
+		if( record_data_size < 2 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( record_data_offset >= ( record_data_size - 2 ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -2808,7 +2841,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 		}
 		record_data_offset = node_key->data_size;
 
-		if( record_data_offset >= record_data_size )
+		if( record_data_size < 2 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( record_data_offset >= ( record_data_size - 2 ) )
 		{
 			libcerror_error_set(
 			 error,

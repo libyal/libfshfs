@@ -191,7 +191,7 @@ int libfshfs_catalog_btree_key_read_data(
 	 ( (fshfs_catalog_index_key_hfsplus_t *) data )->data_size,
 	 key_data_size );
 
-	if( key_data_size > ( data_size - 2 ) )
+	if( (size_t) key_data_size > ( data_size - 2 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -333,14 +333,16 @@ int libfshfs_catalog_btree_key_read_data(
 			}
 #endif
 		}
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "\n" );
-		}
-#endif
 	}
+/* TODO print trailing data */
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
 	catalog_btree_key->data_size = key_data_size + 2;
 
 	return( 1 );

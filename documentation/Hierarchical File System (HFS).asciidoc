@@ -153,7 +153,7 @@ HFS+ uses the following default node sizes:
 |===
 | Feature | HFS | HFS+/HFSX
 | catalog file | 512 | 4 KiB (8 KiB in Mac OS X)
-| extents overflow file | 512 | 1 KiB (4 KiB in Mac OS X)
+| extents (overflow) file | 512 | 1 KiB (4 KiB in Mac OS X)
 | attributes file | N/A | 4 KiB
 |===
 
@@ -256,7 +256,7 @@ The records in the B-tree header node do not have keys.
 [yellow-background]*TODO: reword*
 
 ....
-For both the extents overflow and the catalog file the location of the header
+For both the extents (overflow) and the catalog file the location of the header
 node is stored in the first 2 bytes (first record) of the corresponding extent
 data records of the MDB. The location is stored as the allocation block index.
 ....
@@ -385,7 +385,7 @@ record consists of a key followed by the node number of the corresponding node.
 The size of the key varies according to the type of B-tree file.
 
 * In a catalog file, the search key is a combination of the file or directory name and the parent identifier of that file or directory.
-* In an extents overflow file, the search key is a combination of that file's type, its file identifier and the index of the first allocation block in the extent.
+* In an extents (overflow) file, the search key is a combination of that file's type, its file identifier and the index of the first allocation block in the extent.
 
 The immediate descendants of an index node are called the children of the index
 node. An index node can have from 1 to 15 children, depending on the size of
@@ -399,7 +399,7 @@ The bottom level of a B-tree structure is occupied exclusively by leaf nodes.
 The leaf nodes contain data records. The structure of the leaf node data
 records varies according to the type of B-tree.
 
-* In an extents overflow file, the leaf node data records consist of a key and an extent record.
+* In an extents (overflow) file, the leaf node data records consist of a key and an extent record.
 * In a catalog file, the leaf node data records can be any one of four kinds of records.
 
 == The HFS volume
@@ -423,10 +423,10 @@ Following the boot blocks are two additional structures:
 * the volume bitmap, which contains a record of which blocks in the volume are currently in use.
 
 All the areas on a volume are of fixed size and location, except for the
-catalog file and the extents overflow file. These two files can appear anywhere
-between the volume bitmap and the alternate master directory block (MDB). They
-can appear in any order and are not necessarily contiguous. The catalog and
-extents overflow files are both organized as B-trees.
+catalog file and the extents (overflow) file. These two files can appear
+anywhere between the volume bitmap and the alternate master directory block
+(MDB). They can appear in any order and are not necessarily contiguous. The
+catalog and extents (overflow) files are both organized as B-trees.
 
 The last block (512 bytes) were used during Apple's CPU manufacturing process.
 
@@ -588,7 +588,7 @@ ASCII string +
 | 67 | 2 | | Volume backup sequence number
 | 69 | 4 | | Volume write count +
 Contains the number of times the volume has been written to.
-| 73 | 4 | | Clump size for extents overflow file
+| 73 | 4 | | Clump size for extents (overflow) file
 | 77 | 4 | | Clump size for catalog file
 | 81 | 2 | | The number of sub directories in the root directory
 | 83 | 4 | | The number of files in the volume
@@ -598,8 +598,8 @@ See section: <<finder_information,Finder information>>
 | 123 | 2 | | Allocation block size of the volume cache
 | 125 | 2 | | Allocation block size of the volume bitmap cache
 | 127 | 2 | | Allocation block size of the common volume cache
-| 129 | 4 | | Allocation block size of the extents overflow file
-| 133 | 12 | | The extent data record for the extents overflow file +
+| 129 | 4 | | Allocation block size of the extents (overflow) file
+| 133 | 12 | | The extent data record for the extents (overflow) file +
 See section: <<hfs_extent_data,The HFS extent data>>
 | 145 | 4 | | Allocation block size of the catalog file
 | 149 | 12 | | The extent data record for the catalog file +
@@ -622,7 +622,7 @@ The volume attributes uses the following bit flags:
 ==== Alternate MDB
 
 A copy of the MDB is maintained in the Alternate MDB. This copy is updated when
-the extents overflow or the catalog file grows larger. The Alternate MBD is
+the extents (overflow) or the catalog file grows larger. The Alternate MBD is
 intended for use solely by disk utilities.
 
 === Volume bitmaps
@@ -637,7 +637,7 @@ The volume bitmap does not indicate which files occupy which blocks. The actual
 file-mapping information in maintained in two locations:
 
 * in each file's catalog entry;
-* in the extents overflow file.
+* in the extents (overflow) file.
 
 The size of the volume bitmap depends on the number of allocation blocks in the
 volume. The number of allocation blocks depends both on the number of physical
@@ -746,8 +746,8 @@ See section: <<finder_information,Finder information>>
 | 112 | 80 | | Allocation file fork descriptor +
 Information about the location and size of the allocation file. +
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
-| 192 | 80 | | Extents file fork descriptor +
-Information about the location and size of the extents file. +
+| 192 | 80 | | Extents (overflow) file fork descriptor +
+Information about the location and size of the extents (overflow) file. +
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 | 272 | 80 | | Catalog file fork descriptor +
 Information about the location and size of the catalog file. +
@@ -785,7 +785,7 @@ This bit is set if the volume is write-protected due to a hardware setting.
 | 8 | kHFSVolumeUnmountedBit | Volume unmounted +
 This bit is set if the volume was correctly flushed before being unmounted or ejected.
 | 9 | kHFSVolumeSparedBlocksBit | Volume spared blocks +
-This bit is set if there are any records in the extents overflow file for bad blocks.
+This bit is set if there are any records in the extents (overflow) file for bad blocks.
 | 10 | kHFSVolumeNoCacheRequiredBit | Volume no cache required +
 This bit is set if the blocks from this volume should not be cached.
 | 11 | kHFSBootVolumeInconsistentBit | Boot volume inconsistent +
@@ -832,7 +832,7 @@ stored there.
 ....
 Mac OS X version 10.3 introduced a new policy for determining where to allocate space for files, which improves performance for most users. This policy places the volume metadata and frequently used small files ("hot files") near each other on disk, which reduces the seek time for typical accesses. This area on disk is known as the metadata zone.
 
-The volume metadata are the structures that let the file system manage the contents of the volume. It includes the allocation bitmap file, extents overflow file, and the catalog file, and the journal file. The volume header and alternate volume header are also metadata, but they have fixed locations within the volume, so they are not located in the hot file area. Mac OS X may use a quota users file and quota groups file to manage disk space quotas on a volume. These files aren't strictly metadata, but they are included in the metadata zone because of their heavy use by the OS and they are too large to be considered ordinary hot files.
+The volume metadata are the structures that let the file system manage the contents of the volume. It includes the allocation bitmap file, extents (overflow) file, and the catalog file, and the journal file. The volume header and alternate volume header are also metadata, but they have fixed locations within the volume, so they are not located in the hot file area. Mac OS X may use a quota users file and quota groups file to manage disk space quotas on a volume. These files aren't strictly metadata, but they are included in the metadata zone because of their heavy use by the OS and they are too large to be considered ordinary hot files.
 
 Implementations are encouraged not to interfere with the metadata zone policy. For example, a disk optimizer should avoid moving files into the metadata zone unless that file is known to be frequently accessed, in which case it may be added to the "hot file" list. Similarly, files in the metadata zone should not be moved elsewhere on disk unless they are also removed from the hot file list.
 
@@ -854,7 +854,7 @@ The sizes reserved for quota users and groups files are the result of complex ca
 
 The total size of the metadata zone is the sum of the above sizes, rounded up so that the metadata zone is represented by a whole number of allocation blocks within the volume bitmap. That is, the start and end of the metadata zone fall on allocation block boundaries in the volume bitmap. That means that the size of the metadata zone is rounded up to a multiple of 8 times the square of the allocation block size. In Mac OS X version 10.3, the extra space due to the round up of the metadata zone is split up between the catalog and the hot file area (2/3 and 1/3, respectively).
 
-The calculations for the extents overflow file and journal file divide the total size of the volume by 100GB, rounding down. Then they add one (to compensate for any remainder lost as part of the rounding). The result is then multiplied by 4MB or 8MB, respectively. If the volume's total size is not a multiple of 100GB, this is equivalent to 4MB (or 8MB) per 100GB, rounded up.
+The calculations for the extents (overflow) file and journal file divide the total size of the volume by 100GB, rounding down. Then they add one (to compensate for any remainder lost as part of the rounding). The result is then multiplied by 4MB or 8MB, respectively. If the volume's total size is not a multiple of 100GB, this is equivalent to 4MB (or 8MB) per 100GB, rounded up.
 
 In Mac OS X version 10.3, the metadata zone is located at the start of the volume, following the volume header. The hot file area is located towards the end of the metadata zone.
 
@@ -1148,7 +1148,7 @@ standard assignments:
 | 0 | | [yellow-background]*Unknown (Reserved)*
 | 1 | kHFSRootParentID | Parent identifier of the root directory (folder)
 | 2 | kHFSRootFolderID | Directory identifier of the root directory (folder)
-| 3 | kHFSExtentsFileID | The extents file
+| 3 | kHFSExtentsFileID | The extents (overflow) file
 | 4 | kHFSCatalogFileID | The catalog file
 | 5 | kHFSBadBlockFileID | The bad allocation block file
 | 6 | kHFSAllocationFileID | The allocation file (HFS+)
@@ -1632,15 +1632,15 @@ For fork descriptor structures:
 * in the volume header this is the fork's clump size, which is used in preference to the default clump size in the volume header.
 * in a catalog record, this value was intended to store a per-fork clump size to override the default clump size in the volume header. However, Apple implementations prior to Mac OS X version 10.3 ignored this field. As of Mac OS X version 10.3, this field is used to keep track of the number of blocks actually read from the fork.
 
-== The extents overflow file
+== The extents (overflow) file
 
 In HFS and HFS+ extents (contiguous ranges of allocation blocks) are used to
 track which blocks belong to a file. The first three (HFS) and eight (HFS+) are
 stored in the catalog file. Additional extents are stored in the extents
-overflow file.
+(overflow) file.
 
-The structure of an extents overflow file is relatively simple compared to that
-of a catalog file. The function of the extents overflow file is to store those
+The structure of an extents (overflow) file is relatively simple compared to that
+of a catalog file. The function of the extents (overflow) file is to store those
 file extents that are not contained in the master directory block (MDB) or
 volume header and the catalog file.
 
@@ -1657,10 +1657,10 @@ grouped together in the B-tree, right next to all the extent records for the
 other fork of the file. The fork offset of the preceding extent record is
 needed to determine the key of the next extent record.
 
-In an extents overflow the search key consists of:
+In an extents (overflow) file the search key consists of:
 
-* file idnetifier
-* file type
+* fork type
+* file identifier
 * first allocation block in the extent
 
 ==== The HFS extent key (record)
@@ -1670,9 +1670,8 @@ The HFS extent key (record) is 8 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 1 | | Key byte size +
-Signed 8-bit integer +
-Typically 7
+| 0 | 1 | 7 | Key byte size +
+Signed 8-bit integer
 | 1 | 1 | | Fork type +
 Signed 8-bit integer +
 0x00 => is data fork +
@@ -1694,14 +1693,13 @@ The HFS+ extent key (record) is 12 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | | Key byte size +
-unsigned 16-bit integer +
-Typically 10
+| 0 | 2 | 10 | Key byte size +
+Unsigned 16-bit integer
 | 2 | 1 | | Fork type +
 Signed 8-bit integer +
 0x00 => is data fork +
 0xff => is resource fork
-| 3 | 1 | 0x00 | Padding
+| 3 | 1 | 0x00 | [yellow-background]*Unknown (Padding)*
 | 4 | 4 | | File identifier +
 Contains a CNID
 | 8 | 4 | | Start block +
@@ -1712,7 +1710,7 @@ The first eight extents in a fork are held in its catalog file record. So the
 number of extent records for a fork is:
 
 ....
-((number of extents - 8 + 7) / 8)
+( ( number of extents - 8 + 7 ) / 8 )
 ....
 
 === The extent (data) record
@@ -2172,7 +2170,7 @@ Typically 1
 The block list size contains the number of bytes used for the block list, including the header and the data in each block.
 | 8 | 4 | | Checksum +
 See section: <<journal_checksums,Journal checksums>>
-| 12 | 4 | 0x00 | Padding +
+| 12 | 4 | 0x00 | [yellow-background]*Unknown (Padding)* +
 used for alignment
 | 16 | ... | | Journal block information array
 |===

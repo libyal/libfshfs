@@ -23,6 +23,7 @@ lib_LTLIBRARIES = libfshfs.la
 libfshfs_la_SOURCES = \
 	fshfs_btree.h \
 	fshfs_catalog_file.h \
+	fshfs_extents_file.h \
 	fshfs_fork.h \
 	fshfs_volume.h \
 	libfshfs.c \
@@ -40,9 +41,13 @@ libfshfs_la_SOURCES = \
 	libfshfs_directory_entry.c libfshfs_directory_entry.h \
 	libfshfs_directory_record.c libfshfs_directory_record.h \
 	libfshfs_error.c libfshfs_error.h \
+	libfshfs_extent.c libfshfs_extent.h \
+	libfshfs_extents_btree_file.c libfshfs_extents_btree_file.h \
+	libfshfs_extents_btree_key.c libfshfs_extents_btree_key.h \
 	libfshfs_extern.h \
 	libfshfs_file_entry.c libfshfs_file_entry.h \
 	libfshfs_file_record.c libfshfs_file_record.h \
+	libfshfs_file_system.c libfshfs_file_system.h \
 	libfshfs_fork_descriptor.c libfshfs_fork_descriptor.h \
 	libfshfs_io_handle.c libfshfs_io_handle.h \
 	libfshfs_libbfio.h \

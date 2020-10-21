@@ -226,11 +226,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_extent.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_extents_btree_file.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_extents_btree_key.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_file_entry.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_file_record.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_file_system.c"
 				>
 			</File>
 			<File
@@ -273,6 +289,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\fshfs_catalog_file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\fshfs_extents_file.h"
 				>
 			</File>
 			<File
@@ -340,6 +360,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_extent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_extents_btree_file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_extents_btree_key.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_extern.h"
 				>
 			</File>
@@ -349,6 +381,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_file_record.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_file_system.h"
 				>
 			</File>
 			<File
