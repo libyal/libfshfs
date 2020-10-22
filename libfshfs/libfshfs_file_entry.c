@@ -24,10 +24,10 @@
 #include <types.h>
 
 #include "libfshfs_block_stream.h"
-#include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_file_entry.h"
+#include "libfshfs_file_system.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
@@ -44,7 +44,7 @@ int libfshfs_file_entry_initialize(
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_directory_entry_t *directory_entry,
-     libfshfs_btree_file_t *catalog_btree_file,
+     libfshfs_file_system_t *file_system,
      libcerror_error_t **error )
 {
 	libfshfs_fork_descriptor_t *data_fork_descriptor    = NULL;
@@ -185,10 +185,10 @@ int libfshfs_file_entry_initialize(
 		goto on_error;
 	}
 #endif
-	internal_file_entry->io_handle          = io_handle;
-	internal_file_entry->file_io_handle     = file_io_handle;
-	internal_file_entry->directory_entry    = directory_entry;
-	internal_file_entry->catalog_btree_file = catalog_btree_file;
+	internal_file_entry->io_handle       = io_handle;
+	internal_file_entry->file_io_handle  = file_io_handle;
+	internal_file_entry->directory_entry = directory_entry;
+	internal_file_entry->file_system     = file_system;
 
 	*file_entry = (libfshfs_file_entry_t *) internal_file_entry;
 
@@ -245,7 +245,7 @@ int libfshfs_file_entry_free(
 			result = -1;
 		}
 #endif
-		/* The file_io_handle and catalog_btree_file references are freed elsewhere
+		/* The file_io_handle and file_system references are freed elsewhere
 		 */
 		if( libfshfs_directory_entry_free(
 		     &( internal_file_entry->directory_entry ),
@@ -1347,8 +1347,8 @@ int libfshfs_internal_file_entry_get_sub_directory_entries(
 
 		goto on_error;
 	}
-	if( libfshfs_catalog_btree_file_get_directory_entries(
-	     internal_file_entry->catalog_btree_file,
+	if( libfshfs_file_system_get_directory_entries(
+	     internal_file_entry->file_system,
 	     internal_file_entry->file_io_handle,
 	     identifier,
 	     internal_file_entry->sub_directory_entries,
@@ -1358,8 +1358,9 @@ int libfshfs_internal_file_entry_get_sub_directory_entries(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
-		 function );
+		 "%s: unable to retrieve sub directory entries for entry: %" PRIu32 " from file system.",
+		 function,
+		 identifier );
 
 		goto on_error;
 	}
@@ -2083,7 +2084,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 		          internal_file_entry->io_handle,
 		          internal_file_entry->file_io_handle,
 		          safe_directory_entry,
-		          internal_file_entry->catalog_btree_file,
+		          internal_file_entry->file_system,
 		          error ) != 1 )
 		{
 			libcerror_error_set(
@@ -2183,8 +2184,8 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
-	          internal_file_entry->catalog_btree_file,
+	result = libfshfs_file_system_get_directory_entry_by_utf8_name(
+	          internal_file_entry->file_system,
 	          internal_file_entry->file_io_handle,
 	          internal_file_entry->directory_entry->parent_identifier,
 	          utf8_string,
@@ -2212,7 +2213,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
 		     sub_directory_entry,
-		     internal_file_entry->catalog_btree_file,
+		     internal_file_entry->file_system,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -2312,8 +2313,8 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
-	          internal_file_entry->catalog_btree_file,
+	result = libfshfs_file_system_get_directory_entry_by_utf16_name(
+	          internal_file_entry->file_system,
 	          internal_file_entry->file_io_handle,
 	          internal_file_entry->directory_entry->parent_identifier,
 	          utf16_string,
@@ -2341,7 +2342,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
 		     sub_directory_entry,
-		     internal_file_entry->catalog_btree_file,
+		     internal_file_entry->file_system,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

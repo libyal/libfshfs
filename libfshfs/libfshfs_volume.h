@@ -71,20 +71,6 @@ struct libfshfs_internal_volume
 	 */
 	libfshfs_file_system_t *file_system;
 
-/* TODO move these into file_system */
-
-	/* The extents btree file
-	 */
-	libfshfs_btree_file_t *extents_btree_file;
-
-	/* The catalog btree file
-	 */
-	libfshfs_btree_file_t *catalog_btree_file;
-
-	/* The attributes btree file
-	 */
-	libfshfs_btree_file_t *attributes_btree_file;
-
 	/* The root directory entry
 	 */
 	libfshfs_directory_entry_t *root_directory_entry;
@@ -186,25 +172,11 @@ int libfshfs_volume_get_root_directory(
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 
-int libfshfs_internal_volume_get_file_entry_by_utf8_path(
-     libfshfs_internal_volume_t *internal_volume,
-     const uint8_t *utf8_string,
-     size_t utf8_string_length,
-     libfshfs_file_entry_t **file_entry,
-     libcerror_error_t **error );
-
 LIBFSHFS_EXTERN \
 int libfshfs_volume_get_file_entry_by_utf8_path(
      libfshfs_volume_t *volume,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
-     libfshfs_file_entry_t **file_entry,
-     libcerror_error_t **error );
-
-int libfshfs_internal_volume_get_file_entry_by_utf16_path(
-     libfshfs_internal_volume_t *internal_volume,
-     const uint16_t *utf16_string,
-     size_t utf16_string_length,
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 

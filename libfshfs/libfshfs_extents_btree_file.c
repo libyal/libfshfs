@@ -35,26 +35,119 @@
 
 #include "fshfs_extents_file.h"
 
-/* Retrieves extent for a specific parent identifier from the extents B-tree leaf node
+/* Retrieves the extents for from the extents B-tree record data
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_extents_btree_file_get_extents_from_record_data(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_extents_btree_key_t *node_key,
+     const uint8_t *record_data,
+     size_t record_data_size,
+     libcdata_array_t *extents,
+     libcerror_error_t **error )
+{
+	libfshfs_extent_t *extent = NULL;
+	static char *function     = "libfshfs_extents_btree_file_get_extents_from_record_data";
+	int entry_index           = 0;
+	int result                = 0;
+
+	if( btree_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree file.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid node key.",
+		 function );
+
+		return( -1 );
+	}
+	if( record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid record data.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( record_data_size != 12 )
+	 && ( record_data_size != 64 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid record data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO read extents */
+	result = 0;
+
+	if( result != 0 )
+	{
+		if( libcdata_array_append_entry(
+		     extents,
+		     &entry_index,
+		     (intptr_t *) extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append extent to array.",
+			 function );
+
+			goto on_error;
+		}
+		extent = NULL;
+	}
+	return( result );
+
+on_error:
+	if( extent != NULL )
+	{
+		libfshfs_extent_free(
+		 &extent,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves the extents for a specific parent identifier from the extents B-tree leaf node
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_extents_btree_file_get_directory_entries_from_leaf_node(
+int libfshfs_extents_btree_file_get_extents_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
-     libcdata_array_t *directory_entries,
+     libcdata_array_t *extents,
      libcerror_error_t **error )
 {
 	libfshfs_extent_t *extent              = NULL;
 	libfshfs_extents_btree_key_t *node_key = NULL;
 	const uint8_t *record_data             = NULL;
-	static char *function                  = "libfshfs_extents_btree_file_get_directory_entries_from_leaf_node";
+	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_leaf_node";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint16_t record_index                  = 0;
-	int entry_index                        = 0;
 	int is_leaf_node                       = 0;
-	int result                             = 0;
 
 	if( btree_file == NULL )
 	{
@@ -179,27 +272,22 @@ int libfshfs_extents_btree_file_get_directory_entries_from_leaf_node(
 		}
 		if( node_key->identifier == identifier )
 		{
-/* TODO read extents */
-			result = 0;
-
-			if( result != 0 )
+			if( libfshfs_extents_btree_file_get_extents_from_record_data(
+			     btree_file,
+			     node_key,
+			     &( record_data[ record_data_offset ] ),
+			     record_data_size - record_data_offset,
+			     extents,
+			     error ) != 1 )
 			{
-				if( libcdata_array_append_entry(
-				     directory_entries,
-				     &entry_index,
-				     (intptr_t *) extent,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-					 "%s: unable to append extent to array.",
-					 function );
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve extents from record data.",
+				 function );
 
-					goto on_error;
-				}
-				extent = NULL;
+				goto on_error;
 			}
 		}
 		if( libfshfs_extents_btree_key_free(
@@ -234,15 +322,15 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves extent for a specific parent identifier from the extents B-tree branch node
+/* Retrieves the extents for a specific parent identifier from the extents B-tree branch node
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_extents_btree_file_get_directory_entries_from_branch_node(
+int libfshfs_extents_btree_file_get_extents_from_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
-     libcdata_array_t *directory_entries,
+     libcdata_array_t *extents,
      int recursion_depth,
      libcerror_error_t **error )
 {
@@ -250,7 +338,7 @@ int libfshfs_extents_btree_file_get_directory_entries_from_branch_node(
 	libfshfs_btree_node_t *sub_node        = NULL;
 	libfshfs_extents_btree_key_t *node_key = NULL;
 	const uint8_t *record_data             = NULL;
-	static char *function                  = "libfshfs_extents_btree_file_get_directory_entries_from_node";
+	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_node";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
 	uint32_t sub_node_number               = 0;
@@ -476,21 +564,21 @@ int libfshfs_extents_btree_file_get_directory_entries_from_branch_node(
 			}
 			if( is_branch_node == 0 )
 			{
-				result = libfshfs_extents_btree_file_get_directory_entries_from_leaf_node(
+				result = libfshfs_extents_btree_file_get_extents_from_leaf_node(
 				          btree_file,
 				          sub_node,
 				          identifier,
-				          directory_entries,
+				          extents,
 				          error );
 			}
 			else
 			{
-				result = libfshfs_extents_btree_file_get_directory_entries_from_branch_node(
+				result = libfshfs_extents_btree_file_get_extents_from_branch_node(
 				          btree_file,
 				          file_io_handle,
 				          sub_node,
 				          identifier,
-				          directory_entries,
+				          extents,
 				          recursion_depth + 1,
 				          error );
 			}
@@ -552,18 +640,18 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves extent for a specific parent identifier from the extents B-tree file
+/* Retrieves the extents for a specific parent identifier from the extents B-tree file
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_extents_btree_file_get_directory_entries(
+int libfshfs_extents_btree_file_get_extents(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
-     libcdata_array_t *directory_entries,
+     libcdata_array_t *extents,
      libcerror_error_t **error )
 {
 	libfshfs_btree_node_t *root_node = NULL;
-	static char *function            = "libfshfs_extents_btree_file_get_directory_entries";
+	static char *function            = "libfshfs_extents_btree_file_get_extents";
 	int is_branch_node               = 0;
 	int result                       = 0;
 
@@ -599,21 +687,21 @@ int libfshfs_extents_btree_file_get_directory_entries(
 	}
 	if( is_branch_node == 0 )
 	{
-		result = libfshfs_extents_btree_file_get_directory_entries_from_leaf_node(
+		result = libfshfs_extents_btree_file_get_extents_from_leaf_node(
 		          btree_file,
 		          root_node,
 		          identifier,
-		          directory_entries,
+		          extents,
 		          error );
 	}
 	else
 	{
-		result = libfshfs_extents_btree_file_get_directory_entries_from_branch_node(
+		result = libfshfs_extents_btree_file_get_extents_from_branch_node(
 		          btree_file,
 		          file_io_handle,
 		          root_node,
 		          identifier,
-		          directory_entries,
+		          extents,
 		          0,
 		          error );
 	}
@@ -632,7 +720,7 @@ int libfshfs_extents_btree_file_get_directory_entries(
 
 on_error:
 	libcdata_array_empty(
-	 directory_entries,
+	 extents,
 	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
 	 NULL );
 

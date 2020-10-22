@@ -35,6 +35,14 @@
 extern "C" {
 #endif
 
+int libfshfs_extents_btree_file_get_extents_from_record_data(
+     libfshfs_btree_file_t *btree_file,
+     libfshfs_extents_btree_key_t *node_key,
+     const uint8_t *record_data,
+     size_t record_data_size,
+     libcdata_array_t *extents,
+     libcerror_error_t **error );
+
 int libfshfs_extents_btree_file_get_extents_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,

@@ -23,7 +23,11 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_btree_file.h"
+#include "libfshfs_catalog_btree_file.h"
+#include "libfshfs_directory_entry.h"
 #include "libfshfs_file_system.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
@@ -159,11 +163,565 @@ int libfshfs_file_system_free(
 			result = -1;
 		}
 #endif
+		if( ( *file_system )->extents_btree_file != NULL )
+		{
+			if( libfshfs_btree_file_free(
+			     &( ( *file_system )->extents_btree_file ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free extents B-tree file.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( ( *file_system )->catalog_btree_file != NULL )
+		{
+			if( libfshfs_btree_file_free(
+			     &( ( *file_system )->catalog_btree_file ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free catalog B-tree file.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( ( *file_system )->attributes_btree_file != NULL )
+		{
+			if( libfshfs_btree_file_free(
+			     &( ( *file_system )->attributes_btree_file ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free attributes B-tree file.",
+				 function );
+
+				result = -1;
+			}
+		}
 		memory_free(
 		 *file_system );
 
 		*file_system = NULL;
 	}
 	return( result );
+}
+
+/* Reads the attributes B-tree file
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_read_attributes_file(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *attributes_file_fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_read_attributes_file";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_system->attributes_btree_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file system - attributes B-tree file value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_file_initialize(
+	     &( file_system->attributes_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_file_read_file_io_handle(
+	     file_system->attributes_btree_file,
+	     io_handle,
+	     file_io_handle,
+	     attributes_file_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to read attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_system->extents_btree_file != NULL )
+	{
+		libfshfs_btree_file_free(
+		 &( file_system->extents_btree_file ),
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Reads the catalog B-tree file
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_read_catalog_file(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *catalog_file_fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_read_catalog_file";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_system->catalog_btree_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file system - catalog B-tree file value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_file_initialize(
+	     &( file_system->catalog_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create catalog B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_file_read_file_io_handle(
+	     file_system->catalog_btree_file,
+	     io_handle,
+	     file_io_handle,
+	     catalog_file_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to read catalog B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_system->extents_btree_file != NULL )
+	{
+		libfshfs_btree_file_free(
+		 &( file_system->extents_btree_file ),
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Reads the extents B-tree file
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_read_extents_file(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *extents_file_fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_read_extents_file";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_system->extents_btree_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file system - extents B-tree file value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_file_initialize(
+	     &( file_system->extents_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_file_read_file_io_handle(
+	     file_system->extents_btree_file,
+	     io_handle,
+	     file_io_handle,
+	     extents_file_fork_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to read extents B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_system->extents_btree_file != NULL )
+	{
+		libfshfs_btree_file_free(
+		 &( file_system->extents_btree_file ),
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves a directory entry for a specific identifier
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_file_system_get_directory_entry_by_identifier(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_directory_entry_by_identifier";
+	int result            = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
+	          file_system->catalog_btree_file,
+	          file_io_handle,
+	          identifier,
+	          directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry: %" PRIu32 ".",
+		 function,
+		 identifier );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Retrieves a directory entry for an UTF-8 encoded name
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_file_system_get_directory_entry_by_utf8_name(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_directory_entry_by_utf8_name";
+	int result            = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
+	          file_system->catalog_btree_file,
+	          file_io_handle,
+	          parent_identifier,
+	          utf8_string,
+	          utf8_string_length,
+	          directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry by UTF-8 name.",
+		 function );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Retrieves a directory entry for a specific identifier
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_file_system_get_directory_entry_by_utf8_path(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_directory_entry_by_utf8_path";
+	int result            = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
+	          file_system->catalog_btree_file,
+	          file_io_handle,
+	          utf8_string,
+	          utf8_string_length,
+	          directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry by UTF-8 path.",
+		 function );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Retrieves a directory entry for an UTF-16 encoded name
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_file_system_get_directory_entry_by_utf16_name(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_directory_entry_by_utf16_name";
+	int result            = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
+	          file_system->catalog_btree_file,
+	          file_io_handle,
+	          parent_identifier,
+	          utf16_string,
+	          utf16_string_length,
+	          directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry by UTF-16 name.",
+		 function );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Retrieves a directory entry for a specific identifier
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_file_system_get_directory_entry_by_utf16_path(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_directory_entry_by_utf16_path";
+	int result            = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
+	          file_system->catalog_btree_file,
+	          file_io_handle,
+	          utf16_string,
+	          utf16_string_length,
+	          directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry by UTF-16 path.",
+		 function );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Retrieves directory entries for a specific parent identifier from the catalog B-tree file
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_get_directory_entries(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_directory_entries";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_catalog_btree_file_get_directory_entries(
+	     file_system->catalog_btree_file,
+	     file_io_handle,
+	     parent_identifier,
+	     directory_entries,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entries for entry: %" PRIu32 " from catalog B-tree file.",
+		 function,
+		 parent_identifier );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 

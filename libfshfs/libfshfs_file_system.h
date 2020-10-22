@@ -27,6 +27,7 @@
 
 #include "libfshfs_btree_file.h"
 #include "libfshfs_directory_entry.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
@@ -51,10 +52,6 @@ struct libfshfs_file_system
 	 */
 	libfshfs_btree_file_t *attributes_btree_file;
 
-	/* The root directory entry
-	 */
-	libfshfs_directory_entry_t *root_directory_entry;
-
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
 	 */
@@ -68,6 +65,75 @@ int libfshfs_file_system_initialize(
 
 int libfshfs_file_system_free(
      libfshfs_file_system_t **file_system,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_read_attributes_file(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *attributes_file_fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_read_catalog_file(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *catalog_file_fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_read_extents_file(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_fork_descriptor_t *extents_file_fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_directory_entry_by_identifier(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_directory_entry_by_utf8_name(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_directory_entry_by_utf8_path(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_directory_entry_by_utf16_name(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_directory_entry_by_utf16_path(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_directory_entries(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     libcdata_array_t *directory_entries,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

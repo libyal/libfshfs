@@ -1582,7 +1582,7 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves a directory entry for an UTF-8 encoded path from the catalog B-tree file
+/* Retrieves a directory entry for a specific identifier from the catalog B-tree file
  * Returns 1 if successful, 0 if not found or -1 on error
  */
 int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(

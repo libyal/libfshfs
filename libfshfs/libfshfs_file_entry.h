@@ -25,9 +25,9 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_btree_file.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_extern.h"
+#include "libfshfs_file_system.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -63,9 +63,9 @@ struct libfshfs_internal_file_entry
 	 */
 	libcdata_array_t *sub_directory_entries;
 
-	/* The catalog btree file
+	/* The file system
 	 */
-	libfshfs_btree_file_t *catalog_btree_file;
+	libfshfs_file_system_t *file_system;
 
 	/* The data block stream
 	 */
@@ -95,7 +95,7 @@ int libfshfs_file_entry_initialize(
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_directory_entry_t *directory_entry,
-     libfshfs_btree_file_t *catalog_btree_file,
+     libfshfs_file_system_t *file_system,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

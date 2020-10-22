@@ -25,8 +25,6 @@
 #include <types.h>
 #include <wide_string.h>
 
-#include "libfshfs_btree_file.h"
-#include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
@@ -902,49 +900,17 @@ int libfshfs_volume_close(
 
 		result = -1;
 	}
-	if( internal_volume->extents_btree_file != NULL )
+	if( internal_volume->file_system != NULL )
 	{
-		if( libfshfs_btree_file_free(
-		     &( internal_volume->extents_btree_file ),
+		if( libfshfs_file_system_free(
+		     &( internal_volume->file_system ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free extents btree file.",
-			 function );
-
-			result = -1;
-		}
-	}
-	if( internal_volume->catalog_btree_file != NULL )
-	{
-		if( libfshfs_btree_file_free(
-		     &( internal_volume->catalog_btree_file ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free catalog btree file.",
-			 function );
-
-			result = -1;
-		}
-	}
-	if( internal_volume->attributes_btree_file != NULL )
-	{
-		if( libfshfs_btree_file_free(
-		     &( internal_volume->attributes_btree_file ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free attributes btree file.",
+			 "%s: unable to free file system.",
 			 function );
 
 			result = -1;
@@ -1029,35 +995,13 @@ int libfshfs_internal_volume_open_read(
 
 		return( -1 );
 	}
-	if( internal_volume->extents_btree_file != NULL )
+	if( internal_volume->file_system != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - extents btree file value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->catalog_btree_file != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - catalog btree file value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_volume->attributes_btree_file != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid volume - attributes btree file value already set.",
+		 "%s: invalid volume - file system value already set.",
 		 function );
 
 		return( -1 );
@@ -1112,6 +1056,19 @@ int libfshfs_internal_volume_open_read(
 	internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
 	internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
 
+	if( libfshfs_file_system_initialize(
+	     &( internal_volume->file_system ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file system.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1119,21 +1076,8 @@ int libfshfs_internal_volume_open_read(
 		 "Reading extents B-tree file:\n" );
 	}
 #endif
-	if( libfshfs_btree_file_initialize(
-	     &( internal_volume->extents_btree_file ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create extents B-tree file.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfshfs_btree_file_read_file_io_handle(
-	     internal_volume->extents_btree_file,
+	if( libfshfs_file_system_read_extents_file(
+	     internal_volume->file_system,
 	     internal_volume->io_handle,
 	     file_io_handle,
 	     internal_volume->volume_header->extents_file_fork_descriptor,
@@ -1155,21 +1099,8 @@ int libfshfs_internal_volume_open_read(
 		 "Reading catalog B-tree file:\n" );
 	}
 #endif
-	if( libfshfs_btree_file_initialize(
-	     &( internal_volume->catalog_btree_file ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create catalog B-tree file.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfshfs_btree_file_read_file_io_handle(
-	     internal_volume->catalog_btree_file,
+	if( libfshfs_file_system_read_catalog_file(
+	     internal_volume->file_system,
 	     internal_volume->io_handle,
 	     file_io_handle,
 	     internal_volume->volume_header->catalog_file_fork_descriptor,
@@ -1191,21 +1122,8 @@ int libfshfs_internal_volume_open_read(
 		 "Reading attributes B-tree file:\n" );
 	}
 #endif
-	if( libfshfs_btree_file_initialize(
-	     &( internal_volume->attributes_btree_file ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create attributes B-tree file.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfshfs_btree_file_read_file_io_handle(
-	     internal_volume->attributes_btree_file,
+	if( libfshfs_file_system_read_attributes_file(
+	     internal_volume->file_system,
 	     internal_volume->io_handle,
 	     file_io_handle,
 	     internal_volume->volume_header->attributes_file_fork_descriptor,
@@ -1227,8 +1145,8 @@ int libfshfs_internal_volume_open_read(
 		 "Reading root directory entry:\n" );
 	}
 #endif
-	result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
-	          internal_volume->catalog_btree_file,
+	result = libfshfs_file_system_get_directory_entry_by_identifier(
+	          internal_volume->file_system,
 	          file_io_handle,
 	          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
 	          &( internal_volume->root_directory_entry ),
@@ -1254,22 +1172,10 @@ on_error:
 		 &( internal_volume->root_directory_entry ),
 		 NULL );
 	}
-	if( internal_volume->attributes_btree_file != NULL )
+	if( internal_volume->file_system != NULL )
 	{
-		libfshfs_btree_file_free(
-		 &( internal_volume->attributes_btree_file ),
-		 NULL );
-	}
-	if( internal_volume->catalog_btree_file != NULL )
-	{
-		libfshfs_btree_file_free(
-		 &( internal_volume->catalog_btree_file ),
-		 NULL );
-	}
-	if( internal_volume->extents_btree_file != NULL )
-	{
-		libfshfs_btree_file_free(
-		 &( internal_volume->extents_btree_file ),
+		libfshfs_file_system_free(
+		 &( internal_volume->file_system ),
 		 NULL );
 	}
 	if( internal_volume->volume_header != NULL )
@@ -1641,8 +1547,8 @@ int libfshfs_volume_get_file_entry_by_identifier(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
-	          internal_volume->catalog_btree_file,
+	result = libfshfs_file_system_get_directory_entry_by_identifier(
+	          internal_volume->file_system,
 	          internal_volume->file_io_handle,
 	          identifier,
 	          &directory_entry,
@@ -1669,7 +1575,7 @@ int libfshfs_volume_get_file_entry_by_identifier(
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
 		     directory_entry,
-		     internal_volume->catalog_btree_file,
+		     internal_volume->file_system,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1790,7 +1696,7 @@ int libfshfs_volume_get_root_directory(
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
 		     safe_directory_entry,
-		     internal_volume->catalog_btree_file,
+		     internal_volume->file_system,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1890,8 +1796,8 @@ int libfshfs_volume_get_file_entry_by_utf8_path(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
-	          internal_volume->catalog_btree_file,
+	result = libfshfs_file_system_get_directory_entry_by_utf8_path(
+	          internal_volume->file_system,
 	          internal_volume->file_io_handle,
 	          utf8_string,
 	          utf8_string_length,
@@ -1918,7 +1824,139 @@ int libfshfs_volume_get_file_entry_by_utf8_path(
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
 		     directory_entry,
-		     internal_volume->catalog_btree_file,
+		     internal_volume->file_system,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &directory_entry,
+			 NULL );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		libfshfs_file_entry_free(
+		 file_entry,
+		 NULL );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the file entry for an UTF-16 encoded path
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_volume_get_file_entry_by_utf16_path(
+     libfshfs_volume_t *volume,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry = NULL;
+	libfshfs_internal_volume_t *internal_volume = NULL;
+	static char *function                       = "libfshfs_volume_get_file_entry_by_utf16_path";
+	int result                                  = 0;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfshfs_internal_volume_t *) volume;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_file_system_get_directory_entry_by_utf16_path(
+	          internal_volume->file_system,
+	          internal_volume->file_io_handle,
+	          utf16_string,
+	          utf16_string_length,
+	          &directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     file_entry,
+		     internal_volume->io_handle,
+		     internal_volume->file_io_handle,
+		     directory_entry,
+		     internal_volume->file_system,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
