@@ -169,8 +169,8 @@ int libfshfs_extents_btree_key_read_data(
 
 		return( -1 );
 	}
-	if( ( data_size != sizeof( fshfs_extents_index_key_hfs_t ) )
-	 && ( data_size != sizeof( fshfs_extents_index_key_hfsplus_t ) ) )
+	if( ( data_size < 2 )
+	 || ( data_size > SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -181,7 +181,7 @@ int libfshfs_extents_btree_key_read_data(
 
 		return( -1 );
 	}
-	if( data_size == sizeof( fshfs_extents_index_key_hfsplus_t ) )
+	if( data[ 0 ] == 0 )
 	{
 		additional_size = 2;
 
@@ -218,16 +218,19 @@ int libfshfs_extents_btree_key_read_data(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
+	if( ( key_data_size != 7 )
+	 && ( key_data_size != 10 ) )
 	{
-		libcnotify_printf(
-		 "%s: key data size\t\t\t: %" PRIu16 "\n",
-		 function,
-		 key_data_size );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported key data size.",
+		 function );
+
+		return( -1 );
 	}
-#endif
-	if( data_size == sizeof( fshfs_extents_index_key_hfsplus_t ) )
+	if( key_data_size == 10 )
 	{
 		extents_btree_key->fork_type = ( (fshfs_extents_index_key_hfsplus_t *) data )->fork_type;
 
@@ -255,14 +258,19 @@ int libfshfs_extents_btree_key_read_data(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: fork type\t\t\t: %" PRIu8 "\n",
+		 "%s: key data size\t\t\t: %" PRIu16 "\n",
+		 function,
+		 key_data_size );
+
+		libcnotify_printf(
+		 "%s: fork type\t\t\t\t: %" PRIu8 "\n",
 		 function,
 		 extents_btree_key->fork_type );
 
-		if( data_size == sizeof( fshfs_extents_index_key_hfsplus_t ) )
+		if( key_data_size == 10 )
 		{
 			libcnotify_printf(
-			 "%s: unknown1\t\t\t: %" PRIu8 "\n",
+			 "%s: unknown1\t\t\t\t: %" PRIu8 "\n",
 			 function,
 			 ( (fshfs_extents_index_key_hfsplus_t *) data )->unknown1 );
 		}

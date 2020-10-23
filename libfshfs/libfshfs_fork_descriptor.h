@@ -46,6 +46,10 @@ struct libfshfs_fork_descriptor
 	/* The extents
 	 */
 	uint32_t extents[ 8 ][ 2 ];
+
+	/* The number of blocks in the extents
+	 */
+	uint32_t number_of_blocks_in_extents;
 };
 
 int libfshfs_fork_descriptor_initialize(
@@ -65,6 +69,10 @@ int libfshfs_fork_descriptor_read_data(
      libfshfs_fork_descriptor_t *fork_descriptor,
      const uint8_t *data,
      size_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_fork_descriptor_has_extents_overflow(
+     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

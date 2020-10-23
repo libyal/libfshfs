@@ -495,8 +495,13 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		}
 		if( node_key->parent_identifier <= identifier )
 		{
+                        libcnotify_print_data(
+                         record_data,
+                         record_data_size,
+                         LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+
 			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+			 || ( record_data_offset > ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -1431,7 +1436,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 		if( node_key->parent_identifier <= thread_record->parent_identifier )
 		{
 			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+			 || ( record_data_offset > ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -2179,7 +2184,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 		if( node_key->parent_identifier <= parent_identifier )
 		{
 			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+			 || ( record_data_offset > ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -3158,7 +3163,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 		if( node_key->parent_identifier <= parent_identifier )
 		{
 			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+			 || ( record_data_offset > ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -4057,7 +4062,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		if( node_key->parent_identifier <= parent_identifier )
 		{
 			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+			 || ( record_data_offset > ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,

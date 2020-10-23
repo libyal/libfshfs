@@ -23,8 +23,9 @@
 #include <types.h>
 
 #include "libfshfs_block_data_handle.h"
-#include "libfshfs_fork_descriptor.h"
+#include "libfshfs_extent.h"
 #include "libfshfs_io_handle.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libfdata.h"
 
@@ -35,14 +36,17 @@
 int libfshfs_block_stream_initialize(
      libfdata_stream_t **block_stream,
      libfshfs_io_handle_t *io_handle,
-     libfshfs_fork_descriptor_t *fork_descriptor,
+     size64_t data_size,
+     libcdata_array_t *extents,
      libcerror_error_t **error )
 {
 	libfdata_stream_t *safe_data_stream = NULL;
+	libfshfs_extent_t *extent           = NULL;
 	static char *function               = "libfshfs_block_stream_initialize";
 	size64_t segment_size               = 0;
 	off64_t segment_offset              = 0;
 	int extent_index                    = 0;
+	int number_of_extents               = 0;
 	int segment_index                   = 0;
 
 	if( block_stream == NULL )
@@ -78,6 +82,20 @@ int libfshfs_block_stream_initialize(
 
 		return( -1 );
 	}
+	if( libcdata_array_get_number_of_entries(
+	     extents,
+	     &number_of_extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of extents.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfdata_stream_initialize(
 	     &safe_data_stream,
 	     NULL,
@@ -100,17 +118,64 @@ int libfshfs_block_stream_initialize(
 		goto on_error;
 	}
 	for( extent_index = 0;
-	     extent_index < 8;
+	     extent_index < number_of_extents;
 	     extent_index++ )
 	{
-		segment_offset = (off64_t) fork_descriptor->extents[ extent_index ][ 0 ] * io_handle->block_size;
-		segment_size   = (size64_t) fork_descriptor->extents[ extent_index ][ 1 ] * io_handle->block_size;
-
-		if( ( segment_offset == 0 )
-		 || ( segment_size == 0 ) )
+		if( libcdata_array_get_entry_by_index(
+		     extents,
+		     extent_index,
+		     (intptr_t **) &extent,
+		     error ) != 1 )
 		{
-			break;
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extent: %d.",
+			 function,
+			 extent_index );
+
+			goto on_error;
 		}
+		if( extent == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing extent: %d.",
+			 function,
+			 extent_index );
+
+			goto on_error;
+		}
+		if( extent->block_number == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: invalid extent: %d - missing block number.",
+			 function,
+			 extent_index );
+
+			goto on_error;
+		}
+		if( extent->number_of_blocks == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: invalid extent: %d - missing number of blocks.",
+			 function,
+			 extent_index );
+
+			goto on_error;
+		}
+		segment_offset = (off64_t) extent->block_number * io_handle->block_size;
+		segment_size   = (size64_t) extent->number_of_blocks * io_handle->block_size;
+
 		if( libfdata_stream_append_segment(
 		     safe_data_stream,
 		     &segment_index,
@@ -131,11 +196,9 @@ int libfshfs_block_stream_initialize(
 			goto on_error;
 		}
 	}
-/* TODO add extents overflow support */
-
 	if( libfdata_stream_set_mapped_size(
 	     safe_data_stream,
-	     fork_descriptor->size,
+	     data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

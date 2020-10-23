@@ -26,6 +26,8 @@
 #include "libfshfs_btree_file.h"
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_directory_entry.h"
+#include "libfshfs_extent.h"
+#include "libfshfs_extents_btree_file.h"
 #include "libfshfs_file_system.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libbfio.h"
@@ -682,14 +684,14 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 	return( result );
 }
 
-/* Retrieves directory entries for a specific parent identifier from the catalog B-tree file
+/* Retrieves directory entries for a specific parent identifier
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_file_system_get_directory_entries(
      libfshfs_file_system_t *file_system,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
-     libcdata_array_t *directory_entries,
+     libcdata_array_t **directory_entries,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_file_system_get_directory_entries";
@@ -705,11 +707,36 @@ int libfshfs_file_system_get_directory_entries(
 
 		return( -1 );
 	}
+	if( directory_entries == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entries.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_initialize(
+	     directory_entries,
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create directory entries array.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfshfs_catalog_btree_file_get_directory_entries(
 	     file_system->catalog_btree_file,
 	     file_io_handle,
 	     parent_identifier,
-	     directory_entries,
+	     *directory_entries,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -720,8 +747,185 @@ int libfshfs_file_system_get_directory_entries(
 		 function,
 		 parent_identifier );
 
-		return( -1 );
+		goto on_error;
 	}
 	return( 1 );
+
+on_error:
+	if( *directory_entries != NULL )
+	{
+		libcdata_array_free(
+		 directory_entries,
+		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_directory_entry_free,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves extents for a specific fork descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_get_extents(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     uint8_t fork_type,
+     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcdata_array_t **extents,
+     libcerror_error_t **error )
+{
+	libfshfs_extent_t *extent        = NULL;
+	static char *function            = "libfshfs_file_system_get_extents";
+	uint32_t extent_block_number     = 0;
+	uint32_t extent_number_of_blocks = 0;
+	int entry_index                  = 0;
+	int extent_index                 = 0;
+	int result                       = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( extents == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extents.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_initialize(
+	     extents,
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents array.",
+		 function );
+
+		goto on_error;
+	}
+	for( extent_index = 0;
+	     extent_index < 8;
+	     extent_index++ )
+	{
+		extent_block_number     = fork_descriptor->extents[ extent_index ][ 0 ];
+		extent_number_of_blocks = fork_descriptor->extents[ extent_index ][ 1 ];
+
+		if( ( extent_block_number == 0 )
+		 || ( extent_number_of_blocks == 0 ) )
+		{
+			break;
+		}
+		if( libfshfs_extent_initialize(
+		     &extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extent.",
+			 function );
+
+			goto on_error;
+		}
+		extent->block_number     = extent_block_number;
+		extent->number_of_blocks = extent_number_of_blocks;
+
+		if( libcdata_array_append_entry(
+		     *extents,
+		     &entry_index,
+		     (intptr_t *) extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append extent to array.",
+			 function );
+
+			goto on_error;
+		}
+		extent = NULL;
+	}
+	result = libfshfs_fork_descriptor_has_extents_overflow(
+	          fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine if fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_extents_btree_file_get_extents(
+		     file_system->extents_btree_file,
+		     file_io_handle,
+		     identifier,
+		     fork_type,
+		     *extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extents for entry: %" PRIu32 " from extents (overflow) B-tree file.",
+			 function,
+			 identifier );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( extent != NULL )
+	{
+		libfshfs_extent_free(
+		 &extent,
+		 NULL );
+	}
+	if( *extents != NULL )
+	{
+		libcdata_array_free(
+		 extents,
+		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+		 NULL );
+	}
+	return( -1 );
 }
 

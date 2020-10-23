@@ -1216,6 +1216,8 @@ Contains a CNID
 | 8 | ... | | Name string +
 UTF-16 big-endian string without end-of-string character +
 Contains the name of the file or directory
+4+| _If branch node_
+| ... | 4 | | The sub node number
 |===
 
 [yellow-background]*Maximum name string length 255 characters?*
@@ -1674,8 +1676,7 @@ The HFS extent key (record) is 8 bytes of size and consists of:
 Signed 8-bit integer
 | 1 | 1 | | Fork type +
 Signed 8-bit integer +
-0x00 => is data fork +
-0xff => is resource fork
+See section: <<hfs_fork_types,HFS fork types>>
 | 2 | 4 | | File identifier +
 Contains a CNID
 | 6 | 2 | | Start block +
@@ -1697,13 +1698,14 @@ The HFS+ extent key (record) is 12 bytes of size and consists of:
 Unsigned 16-bit integer
 | 2 | 1 | | Fork type +
 Signed 8-bit integer +
-0x00 => is data fork +
-0xff => is resource fork
+See section: <<hfs_fork_types,HFS fork types>>
 | 3 | 1 | 0x00 | [yellow-background]*Unknown (Padding)*
 | 4 | 4 | | File identifier +
 Contains a CNID
 | 8 | 4 | | Start block +
 The first allocation block index described by the corresponding extent record
+4+| _If branch node_
+| 12 | 4 | | The sub node number
 |===
 
 The first eight extents in a fork are held in its catalog file record. So the
@@ -1712,6 +1714,15 @@ number of extent records for a fork is:
 ....
 ( ( number of extents - 8 + 7 ) / 8 )
 ....
+
+==== [[hfs_fork_type]]HFS fork types
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| -1 (0xff) | | Resource fork
+| 0 (0x00) | | Data fork
+|===
 
 === The extent (data) record
 

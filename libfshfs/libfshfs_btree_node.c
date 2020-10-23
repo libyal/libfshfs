@@ -440,7 +440,7 @@ int libfshfs_btree_node_read_data(
 		 "%s: B-tree node record offsets data:\n",
 		 function );
 		libcnotify_print_data(
-		 (uint8_t *) &( data[ data_size - records_data_size ] ),
+		 &( data[ data_size - records_data_size ] ),
 		 records_data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
@@ -535,8 +535,35 @@ int libfshfs_btree_node_read_data(
 
 			goto on_error;
 		}
-		node_record->data = &( data[ node_record->offset ] );
+		node_record->data      = &( data[ node_record->offset ] );
+		node_record->data_size = next_record_offset - node_record->offset;
+		next_record_offset     = node_record->offset;
 
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: record: % 2d offset\t\t\t: 0x%04" PRIx16 "\n",
+			 function,
+			 record_index,
+			 node_record->offset );
+
+			libcnotify_printf(
+			 "%s: record: % 2d data size\t\t\t: %" PRIu16 "\n",
+			 function,
+			 record_index,
+			 node_record->data_size );
+
+			libcnotify_printf(
+			 "%s: record: % 2d data:\n",
+			 function,
+			 record_index );
+			libcnotify_print_data(
+			 node_record->data,
+			 node_record->data_size,
+			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+		}
+#endif
 		if( libcdata_array_set_entry_by_index(
 		     node->records_array,
 		     record_index,
@@ -723,7 +750,7 @@ int libfshfs_btree_node_get_record_data_by_index(
 		return( -1 );
 	}
 	*record_data      = node_record->data;
-	*record_data_size = node->data_size - node_record->offset;
+	*record_data_size = node_record->data_size;
 
 	return( 1 );
 }
@@ -871,7 +898,7 @@ int libfshfs_btree_node_read_element_data(
 		 "%s: B-tree root node data:\n",
 		 function );
 		libcnotify_print_data(
-		 (uint8_t *) node->data,
+		 node->data,
 		 node->data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}

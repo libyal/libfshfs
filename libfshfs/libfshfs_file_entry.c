@@ -26,6 +26,7 @@
 #include "libfshfs_block_stream.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
+#include "libfshfs_extent.h"
 #include "libfshfs_file_entry.h"
 #include "libfshfs_file_system.h"
 #include "libfshfs_fork_descriptor.h"
@@ -50,6 +51,7 @@ int libfshfs_file_entry_initialize(
 	libfshfs_fork_descriptor_t *data_fork_descriptor    = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_initialize";
+	uint32_t identifier                                 = 0;
 	int result                                          = 0;
 
 	if( file_entry == NULL )
@@ -105,6 +107,20 @@ int libfshfs_file_entry_initialize(
 
 		return( -1 );
 	}
+	if( libfshfs_directory_entry_get_identifier(
+	     directory_entry,
+	     &identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve identifier from directory entry.",
+		 function );
+
+		goto on_error;
+	}
 	result = libfshfs_directory_entry_get_file_mode(
 	          directory_entry,
 	          &( internal_file_entry->file_mode ),
@@ -140,10 +156,29 @@ int libfshfs_file_entry_initialize(
 	}
 	else if( result != 0 ) 
 	{
+		if( libfshfs_file_system_get_extents(
+		     file_system,
+		     file_io_handle,
+		     identifier,
+		     LIBFSHFS_FORK_TYPE_DATA,
+		     data_fork_descriptor,
+		     &( internal_file_entry->extents ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extents of data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
 		if( libfshfs_block_stream_initialize(
 		     &( internal_file_entry->data_block_stream ),
 		     io_handle,
-		     data_fork_descriptor,
+		     (size64_t) data_fork_descriptor->size,
+		     internal_file_entry->extents,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -288,6 +323,23 @@ int libfshfs_file_entry_free(
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 				 "%s: unable to free data block stream.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( internal_file_entry->extents != NULL )
+		{
+			if( libcdata_array_free(
+			     &( internal_file_entry->extents ),
+			     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free sub extents array.",
 				 function );
 
 				result = -1;
@@ -1331,27 +1383,13 @@ int libfshfs_internal_file_entry_get_sub_directory_entries(
 		 "%s: unable to retrieve identifier.",
 		 function );
 
-		goto on_error;
-	}
-	if( libcdata_array_initialize(
-	     &( internal_file_entry->sub_directory_entries ),
-	     0,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create sub directory entries array.",
-		 function );
-
-		goto on_error;
+		return( -1 );
 	}
 	if( libfshfs_file_system_get_directory_entries(
 	     internal_file_entry->file_system,
 	     internal_file_entry->file_io_handle,
 	     identifier,
-	     internal_file_entry->sub_directory_entries,
+	     &( internal_file_entry->sub_directory_entries ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1362,19 +1400,9 @@ int libfshfs_internal_file_entry_get_sub_directory_entries(
 		 function,
 		 identifier );
 
-		goto on_error;
+		return( -1 );
 	}
 	return( 1 );
-
-on_error:
-	if( internal_file_entry->sub_directory_entries != NULL )
-	{
-		libcdata_array_free(
-		 &( internal_file_entry->sub_directory_entries ),
-		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_directory_entry_free,
-		 NULL );
-	}
-	return( -1 );
 }
 
 /* Determines the symbolic link data

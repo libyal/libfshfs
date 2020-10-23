@@ -47,6 +47,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
+     uint8_t fork_type,
      libcdata_array_t *extents,
      libcerror_error_t **error );
 
@@ -55,6 +56,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
+     uint8_t fork_type,
      libcdata_array_t *extents,
      int recursion_depth,
      libcerror_error_t **error );
@@ -63,6 +65,7 @@ int libfshfs_extents_btree_file_get_extents(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
+     uint8_t fork_type,
      libcdata_array_t *extents,
      libcerror_error_t **error );
 

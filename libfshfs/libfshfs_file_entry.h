@@ -75,6 +75,10 @@ struct libfshfs_internal_file_entry
 	 */
 	size64_t data_size;
 
+	/* Extents
+	 */
+	libcdata_array_t *extents;
+
 	/* The symbolic link data
 	 */
 	uint8_t *symbolic_link_data;

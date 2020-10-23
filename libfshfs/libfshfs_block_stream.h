@@ -25,11 +25,9 @@
 #include <common.h>
 #include <types.h>
 
-#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
-#include "libfshfs_libbfio.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfcache.h"
 #include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
@@ -39,7 +37,8 @@ extern "C" {
 int libfshfs_block_stream_initialize(
      libfdata_stream_t **block_stream,
      libfshfs_io_handle_t *io_handle,
-     libfshfs_fork_descriptor_t *fork_descriptor,
+     size64_t data_size,
+     libcdata_array_t *extents,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

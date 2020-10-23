@@ -1,5 +1,6 @@
 Debug info:
-* check number of blocks in extent, if < number of block read extents overflow
+* file entry API: add extents functions
+* file entry: make initialize data stream on demand?
 
 * bodyfile add support for symbolic link target
 * handle "\0\0\0\0HFS+ Private Data" in compare name functions

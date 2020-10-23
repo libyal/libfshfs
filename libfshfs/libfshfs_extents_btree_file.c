@@ -36,7 +36,7 @@
 #include "fshfs_extents_file.h"
 
 /* Retrieves the extents for from the extents B-tree record data
- * Returns 1 if successful, 0 if not found or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int libfshfs_extents_btree_file_get_extents_from_record_data(
      libfshfs_btree_file_t *btree_file,
@@ -46,10 +46,14 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
      libcdata_array_t *extents,
      libcerror_error_t **error )
 {
-	libfshfs_extent_t *extent = NULL;
-	static char *function     = "libfshfs_extents_btree_file_get_extents_from_record_data";
-	int entry_index           = 0;
-	int result                = 0;
+	libfshfs_extent_t *extent        = NULL;
+	static char *function            = "libfshfs_extents_btree_file_get_extents_from_record_data";
+	size_t record_data_offset        = 0;
+	uint32_t extent_block_number     = 0;
+	uint32_t extent_number_of_blocks = 0;
+	int entry_index                  = 0;
+	int extent_index                 = 0;
+	int number_of_extents            = 0;
 
 	if( btree_file == NULL )
 	{
@@ -96,11 +100,75 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 
 		return( -1 );
 	}
-/* TODO read extents */
-	result = 0;
-
-	if( result != 0 )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
 	{
+		libcnotify_printf(
+		 "%s: extents record data:\n",
+		 function );
+		libcnotify_print_data(
+		 record_data,
+		 record_data_size,
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+	}
+#endif
+	if( record_data_size == 12 )
+	{
+		number_of_extents = 4;
+	}
+	else
+	{
+		number_of_extents = 8;
+	}
+	for( extent_index = 0;
+	     extent_index < number_of_extents;
+	     extent_index++ )
+	{
+		if( record_data_size == 12 )
+		{
+			byte_stream_copy_to_uint16_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 extent_block_number );
+
+			byte_stream_copy_to_uint16_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 extent_number_of_blocks );
+
+			record_data_offset += 4;
+		}
+		else
+		{
+			byte_stream_copy_to_uint32_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 extent_block_number );
+
+			byte_stream_copy_to_uint32_big_endian(
+			 &( record_data[ record_data_offset ] ),
+			 extent_number_of_blocks );
+
+			record_data_offset += 8;
+		}
+		if( ( extent_block_number == 0 )
+		 || ( extent_number_of_blocks == 0 ) )
+		{
+			break;
+		}
+		if( libfshfs_extent_initialize(
+		     &extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extent.",
+			 function );
+
+			goto on_error;
+		}
+		extent->block_number     = extent_block_number;
+		extent->number_of_blocks = extent_number_of_blocks;
+
 		if( libcdata_array_append_entry(
 		     extents,
 		     &entry_index,
@@ -118,7 +186,7 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 		}
 		extent = NULL;
 	}
-	return( result );
+	return( 1 );
 
 on_error:
 	if( extent != NULL )
@@ -137,6 +205,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
+     uint8_t fork_type,
      libcdata_array_t *extents,
      libcerror_error_t **error )
 {
@@ -330,6 +399,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
+     uint8_t fork_type,
      libcdata_array_t *extents,
      int recursion_depth,
      libcerror_error_t **error )
@@ -499,7 +569,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 		if( node_key->identifier <= identifier )
 		{
 			if( ( record_data_size < 4 )
-			 || ( record_data_offset >= ( record_data_size - 4 ) ) )
+			 || ( record_data_offset > ( record_data_size - 4 ) ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -568,6 +638,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 				          btree_file,
 				          sub_node,
 				          identifier,
+				          fork_type,
 				          extents,
 				          error );
 			}
@@ -578,6 +649,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 				          file_io_handle,
 				          sub_node,
 				          identifier,
+				          fork_type,
 				          extents,
 				          recursion_depth + 1,
 				          error );
@@ -647,6 +719,7 @@ int libfshfs_extents_btree_file_get_extents(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
+     uint8_t fork_type,
      libcdata_array_t *extents,
      libcerror_error_t **error )
 {
@@ -691,6 +764,7 @@ int libfshfs_extents_btree_file_get_extents(
 		          btree_file,
 		          root_node,
 		          identifier,
+		          fork_type,
 		          extents,
 		          error );
 	}
@@ -701,6 +775,7 @@ int libfshfs_extents_btree_file_get_extents(
 		          file_io_handle,
 		          root_node,
 		          identifier,
+		          fork_type,
 		          extents,
 		          0,
 		          error );

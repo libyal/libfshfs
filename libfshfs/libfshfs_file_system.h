@@ -133,7 +133,16 @@ int libfshfs_file_system_get_directory_entries(
      libfshfs_file_system_t *file_system,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
-     libcdata_array_t *directory_entries,
+     libcdata_array_t **directory_entries,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_extents(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     uint8_t fork_type,
+     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcdata_array_t **extents,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

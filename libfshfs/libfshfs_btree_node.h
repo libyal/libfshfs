@@ -45,6 +45,10 @@ struct libfshfs_btree_node_record
 	 */
 	const uint8_t *data;
 
+	/* The size of the node record data
+	 */
+	uint16_t data_size;
+
 	/* The offset of the node record
 	 */
 	uint16_t offset;
