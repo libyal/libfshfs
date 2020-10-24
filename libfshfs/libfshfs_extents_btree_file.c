@@ -215,6 +215,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_leaf_node";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
+	uint32_t node_identifier               = 0;
 	uint16_t record_index                  = 0;
 	int is_leaf_node                       = 0;
 
@@ -339,7 +340,9 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 
 			goto on_error;
 		}
-		if( node_key->identifier == identifier )
+		node_identifier = node_key->identifier;
+
+		if( node_identifier == identifier )
 		{
 			if( libfshfs_extents_btree_file_get_extents_from_record_data(
 			     btree_file,
@@ -371,6 +374,10 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 			 function );
 
 			goto on_error;
+		}
+		if( node_identifier > identifier )
+		{
+			break;
 		}
 	}
 	return( 1 );
@@ -404,13 +411,13 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
      int recursion_depth,
      libcerror_error_t **error )
 {
-	libfcache_cache_t *sub_node_cache      = NULL;
 	libfshfs_btree_node_t *sub_node        = NULL;
 	libfshfs_extents_btree_key_t *node_key = NULL;
 	const uint8_t *record_data             = NULL;
 	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_node";
 	size_t record_data_offset              = 0;
 	size_t record_data_size                = 0;
+	uint32_t node_identifier               = 0;
 	uint32_t sub_node_number               = 0;
 	uint16_t record_index                  = 0;
 	int is_branch_node                     = 0;
@@ -487,23 +494,6 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 
 		goto on_error;
 	}
-	/* Use a local cache to prevent cache invalidation of index node
-	 * when reading sub nodes.
-	 */
-	if( libfcache_cache_initialize(
-	     &sub_node_cache,
-	     1,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create sub node cache.",
-		 function );
-
-		goto on_error;
-	}
 	for( record_index = 0;
 	     record_index < node->descriptor->number_of_records;
 	     record_index++ )
@@ -566,7 +556,9 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 
 			goto on_error;
 		}
-		if( node_key->identifier <= identifier )
+		node_identifier = node_key->identifier;
+
+		if( node_identifier <= identifier )
 		{
 			if( ( record_data_size < 4 )
 			 || ( record_data_offset > ( record_data_size - 4 ) ) )
@@ -601,9 +593,9 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
-			     sub_node_cache,
 			     sub_node_number,
 			     &sub_node,
+			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -680,19 +672,10 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 
 			goto on_error;
 		}
-	}
-	if( libfcache_cache_free(
-	     &sub_node_cache,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free sub node cache.",
-		 function );
-
-		goto on_error;
+		if( node_identifier > identifier )
+		{
+			break;
+		}
 	}
 	return( 1 );
 
@@ -701,12 +684,6 @@ on_error:
 	{
 		libfshfs_extents_btree_key_free(
 		 &node_key,
-		 NULL );
-	}
-	if( sub_node_cache != NULL )
-	{
-		libfcache_cache_free(
-		 &sub_node_cache,
 		 NULL );
 	}
 	return( -1 );
@@ -732,6 +709,7 @@ int libfshfs_extents_btree_file_get_extents(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
+	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -777,7 +755,7 @@ int libfshfs_extents_btree_file_get_extents(
 		          identifier,
 		          fork_type,
 		          extents,
-		          0,
+		          1,
 		          error );
 	}
 	if( result != 1 )

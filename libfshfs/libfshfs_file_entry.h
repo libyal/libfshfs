@@ -59,13 +59,13 @@ struct libfshfs_internal_file_entry
 	 */
 	uint16_t file_mode;
 
-	/* Sub directory entries
-	 */
-	libcdata_array_t *sub_directory_entries;
-
 	/* The file system
 	 */
 	libfshfs_file_system_t *file_system;
+
+	/* Sub directory entries
+	 */
+	libcdata_array_t *sub_directory_entries;
 
 	/* The data block stream
 	 */
@@ -105,6 +105,18 @@ int libfshfs_file_entry_initialize(
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_free(
      libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_data_block_stream(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_symbolic_link_data(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_sub_directory_entries(
+     libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
@@ -211,10 +223,6 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
      libfshfs_file_entry_t *file_entry,
      uint16_t *utf16_string,
      size_t utf16_string_size,
-     libcerror_error_t **error );
-
-int libfshfs_internal_file_entry_get_sub_directory_entries(
-     libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

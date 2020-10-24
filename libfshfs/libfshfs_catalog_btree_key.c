@@ -128,11 +128,8 @@ int libfshfs_catalog_btree_key_free(
 	}
 	if( *catalog_btree_key != NULL )
 	{
-		if( ( *catalog_btree_key )->name != NULL )
-		{
-			memory_free(
-			 ( *catalog_btree_key )->name );
-		}
+		/* The name_data and record_data references are freed elsewhere
+		 */
 		memory_free(
 		 *catalog_btree_key );
 
@@ -150,8 +147,9 @@ int libfshfs_catalog_btree_key_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function  = "libfshfs_catalog_btree_key_read_data";
-	uint16_t key_data_size = 0;
+	static char *function    = "libfshfs_catalog_btree_key_read_data";
+	uint16_t additional_size = 0;
+	uint16_t key_data_size   = 0;
 
 	if( catalog_btree_key == NULL )
 	{
@@ -176,22 +174,33 @@ int libfshfs_catalog_btree_key_read_data(
 		return( -1 );
 	}
 	if( ( data_size < 2 )
-	 || ( data_size > (size_t) SSIZE_MAX ) )
+	 || ( data_size > SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
 		 "%s: invalid data size value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
-	byte_stream_copy_to_uint16_big_endian(
-	 ( (fshfs_catalog_index_key_hfsplus_t *) data )->data_size,
-	 key_data_size );
+	{
+		additional_size = 2;
 
-	if( (size_t) key_data_size > ( data_size - 2 ) )
+		byte_stream_copy_to_uint16_big_endian(
+		 ( (fshfs_catalog_index_key_hfsplus_t *) data )->data_size,
+		 key_data_size );
+	}
+/* TODO add legacy HFS name size support
+	else
+	{
+		additional_size = 1;
+
+		key_data_size = (int8_t) ( (fshfs_catalog_index_key_hfs_t *) data )->data_size;
+	}
+*/
+	if( (size_t) key_data_size > ( data_size - additional_size ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -200,7 +209,7 @@ int libfshfs_catalog_btree_key_read_data(
 		 "%s: invalid key data size value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -210,7 +219,7 @@ int libfshfs_catalog_btree_key_read_data(
 		 function );
 		libcnotify_print_data(
 		 data,
-		 (size_t) key_data_size + 2,
+		 (size_t) key_data_size + additional_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
@@ -223,6 +232,23 @@ int libfshfs_catalog_btree_key_read_data(
 		 key_data_size );
 	}
 #endif
+	/* The key data size can be 0 if the node is no longer used
+	 */
+	catalog_btree_key->data_size = key_data_size + additional_size;
+
+	if( additional_size == 1 )
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: unknown1\t\t\t\t: %" PRIu8 "\n",
+			 function,
+			 ( (fshfs_catalog_index_key_hfs_t *) data )->unknown1 );
+		}
+#endif
+		key_data_size -= 1;
+	}
 	if( key_data_size >= 4 )
 	{
 		byte_stream_copy_to_uint32_big_endian(
@@ -239,7 +265,10 @@ int libfshfs_catalog_btree_key_read_data(
 		}
 #endif
 	}
-	if( key_data_size >= 6 )
+/* TODO add legacy HFS name size support */
+
+	if( ( additional_size == 2 )
+	 && ( key_data_size >= 6 ) )
 	{
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_index_key_hfsplus_t *) data )->name_size,
@@ -249,74 +278,44 @@ int libfshfs_catalog_btree_key_read_data(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: name number of characters\t\t: %" PRIu16 "\n",
+			 "%s: name number of characters\t\t: %" PRIu16 " (%" PRIu32 ")\n",
 			 function,
-			 catalog_btree_key->name_size );
+			 catalog_btree_key->name_size,
+			 (uint32_t) catalog_btree_key->name_size * 2 );
 		}
 #endif
-		if( catalog_btree_key->name_size > 0 )
+		if( (uint32_t) catalog_btree_key->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
 		{
-			if( (uint32_t) catalog_btree_key->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid catalog B-tree key - name size value out of bounds.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid catalog B-tree key - name size value out of bounds.",
+			 function );
 
-				goto on_error;
-			}
-			catalog_btree_key->name_size *= 2;
+			return( -1 );
+		}
+		catalog_btree_key->name_size *= 2;
+	}
+	if( catalog_btree_key->name_size > 0 )
+	{
+		if( additional_size == 1 )
+		{
+			catalog_btree_key->name_data = &( data[ sizeof( fshfs_catalog_index_key_hfs_t ) ] );
 
-			if( ( data_size < sizeof( fshfs_catalog_index_key_hfsplus_t ) )
-			 || ( catalog_btree_key->name_size > ( data_size - sizeof( fshfs_catalog_index_key_hfsplus_t ) ) ) )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid catalog B-tree key - name size value out of bounds.",
-				 function );
+/* TODO print ASCII string */
+		}
+		else
+		{
+			catalog_btree_key->name_data = &( data[ sizeof( fshfs_catalog_index_key_hfsplus_t ) ] );
 
-				goto on_error;
-			}
-/* TODO handle name with leading 0 bytes such as "\x00\x00\x00\x00HFS+ Private Data" */
-			catalog_btree_key->name = (uint8_t *) memory_allocate(
-			                                       sizeof( uint8_t ) * catalog_btree_key->name_size );
-
-			if( catalog_btree_key->name == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-				 "%s: unable to create name.",
-				 function );
-
-				goto on_error;
-			}
-			if( memory_copy(
-			     catalog_btree_key->name,
-			     &( data[ sizeof( fshfs_catalog_index_key_hfsplus_t ) ] ),
-			     catalog_btree_key->name_size ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-				 "%s: unable to copy name.",
-				 function );
-
-				goto on_error;
-			}
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				if( libfshfs_debug_print_utf16_name_value(
 				     function,
 				     "name\t\t\t\t",
-				     &( data[ sizeof( fshfs_catalog_index_key_hfsplus_t ) ] ),
+				     catalog_btree_key->name_data,
 				     (size_t) catalog_btree_key->name_size,
 				     LIBUNA_ENDIAN_BIG,
 				     error ) != 1 )
@@ -328,14 +327,12 @@ int libfshfs_catalog_btree_key_read_data(
 					 "%s: unable to print UTF-16 name value.",
 					 function );
 
-					goto on_error;
+					return( -1 );
 				}
 			}
 #endif
 		}
 	}
-/* TODO print trailing data */
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -343,19 +340,22 @@ int libfshfs_catalog_btree_key_read_data(
 		 "\n" );
 	}
 #endif
-	catalog_btree_key->data_size = key_data_size + 2;
+	catalog_btree_key->record_data      = &( data[ catalog_btree_key->data_size ] );
+	catalog_btree_key->record_data_size = data_size - catalog_btree_key->data_size;
 
-	return( 1 );
-
-on_error:
-	if( catalog_btree_key->name != NULL )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
 	{
-		memory_free(
-		 catalog_btree_key->name );
-
-		catalog_btree_key->name = NULL;
+		libcnotify_printf(
+		 "%s: record data:\n",
+		 function );
+		libcnotify_print_data(
+		 catalog_btree_key->record_data,
+		 catalog_btree_key->record_data_size,
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
-	return( -1 );
+#endif
+	return( 1 );
 }
 
 /* Compares a name with the catalog B-tree key name
@@ -393,7 +393,7 @@ int libfshfs_catalog_btree_key_compare_name(
 	}
 	if( ( name_size == catalog_btree_key->name_size )
 	 && ( memory_compare(
-	       catalog_btree_key->name,
+	       catalog_btree_key->name_data,
 	       name,
 	       name_size ) == 0 ) )
 	{
@@ -428,7 +428,7 @@ int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
 	result = libuna_utf8_string_compare_with_utf16_stream(
 	          utf8_string,
 	          utf8_string_length,
-	          catalog_btree_key->name,
+	          catalog_btree_key->name_data,
 	          catalog_btree_key->name_size,
 	          LIBUNA_ENDIAN_BIG,
 	          error );
@@ -473,7 +473,7 @@ int libfshfs_catalog_btree_key_compare_name_with_utf16_string(
 	result = libuna_utf16_string_compare_with_utf16_stream(
 	          utf16_string,
 	          utf16_string_length,
-	          catalog_btree_key->name,
+	          catalog_btree_key->name_data,
 	          catalog_btree_key->name_size,
 	          LIBUNA_ENDIAN_BIG,
 	          error );

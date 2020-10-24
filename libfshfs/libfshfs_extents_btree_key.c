@@ -181,7 +181,6 @@ int libfshfs_extents_btree_key_read_data(
 
 		return( -1 );
 	}
-	if( data[ 0 ] == 0 )
 	{
 		additional_size = 2;
 
@@ -189,12 +188,14 @@ int libfshfs_extents_btree_key_read_data(
 		 ( (fshfs_extents_index_key_hfsplus_t *) data )->data_size,
 		 key_data_size );
 	}
+/* TODO add legacy HFS name size support
 	else
 	{
 		additional_size = 1;
 
 		key_data_size = (int8_t) ( (fshfs_extents_index_key_hfs_t *) data )->data_size;
 	}
+*/
 	if( (size_t) key_data_size > ( data_size - additional_size ) )
 	{
 		libcerror_error_set(

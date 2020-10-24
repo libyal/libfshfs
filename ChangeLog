@@ -1,6 +1,11 @@
 Debug info:
+* determine what to do with hard links, since they have their own identifier
+
+* file entry: revisit tracking sub directory entries in array
+** would libfshfs_catalog_btree_file_get_directory_entry_by_index be faster than libfshfs_catalog_btree_file_get_directory_entry_by_identifier, seeing the thread_record lookup?
 * file entry API: add extents functions
-* file entry: make initialize data stream on demand?
+
+* catalog btree file, include name in branch key check
 
 * bodyfile add support for symbolic link target
 * handle "\0\0\0\0HFS+ Private Data" in compare name functions

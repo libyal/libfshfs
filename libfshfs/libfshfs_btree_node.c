@@ -24,124 +24,14 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libfshfs_btree_node_descriptor.h"
 #include "libfshfs_btree_node.h"
-#include "libfshfs_debug.h"
-#include "libfshfs_definitions.h"
+#include "libfshfs_btree_node_descriptor.h"
+#include "libfshfs_btree_node_record.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
-#include "libfshfs_unused.h"
 
 #include "fshfs_btree.h"
-
-/* Creates a B-tree node record
- * Make sure the value node_record is referencing, is set to NULL
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_btree_node_record_initialize(
-     libfshfs_btree_node_record_t **node_record,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_btree_node_record_initialize";
-
-	if( node_record == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid B-tree node record.",
-		 function );
-
-		return( -1 );
-	}
-	if( *node_record != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid B-tree node record value already set.",
-		 function );
-
-		return( -1 );
-	}
-	*node_record = memory_allocate_structure(
-	                libfshfs_btree_node_record_t );
-
-	if( *node_record == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create B-tree node record.",
-		 function );
-
-		goto on_error;
-	}
-	if( memory_set(
-	     *node_record,
-	     0,
-	     sizeof( libfshfs_btree_node_record_t ) ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear B-tree node record.",
-		 function );
-
-		memory_free(
-		 *node_record );
-
-		*node_record = NULL;
-
-		return( -1 );
-	}
-	return( 1 );
-
-on_error:
-	if( *node_record != NULL )
-	{
-		memory_free(
-		 *node_record );
-
-		*node_record = NULL;
-	}
-	return( -1 );
-}
-
-/* Frees a B-tree node record
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_btree_node_record_free(
-     libfshfs_btree_node_record_t **node_record,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_btree_node_record_free";
-
-	if( node_record == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid B-tree node record.",
-		 function );
-
-		return( -1 );
-	}
-	if( *node_record != NULL )
-	{
-		memory_free(
-		 *node_record );
-
-		*node_record = NULL;
-	}
-	return( 1 );
-}
 
 /* Creates a B-tree node
  * Make sure the value node is referencing, is set to NULL
@@ -364,7 +254,7 @@ int libfshfs_btree_node_read_data(
 	static char *function                     = "libfshfs_btree_node_read_data";
 	size_t records_data_offset                = 0;
 	size_t records_data_size                  = 0;
-	uint16_t next_record_offset               = 0;
+	uint16_t record_offset                    = 0;
 	int record_index                          = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -405,6 +295,18 @@ int libfshfs_btree_node_read_data(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: B-tree node data:\n",
+		 function );
+		libcnotify_print_data(
+		 data,
+		 data_size,
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+	}
+#endif
 	if( libfshfs_btree_node_descriptor_read_data(
 	     node->descriptor,
 	     data,
@@ -420,9 +322,7 @@ int libfshfs_btree_node_read_data(
 
 		goto on_error;
 	}
-	records_data_size = ( (size_t) node->descriptor->number_of_records + 1 ) * 2;
-
-	if( records_data_size > data_size )
+	if( (size_t) node->descriptor->number_of_records > ( data_size / 2 ) - 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -433,6 +333,8 @@ int libfshfs_btree_node_read_data(
 
 		goto on_error;
 	}
+	records_data_size = ( (size_t) node->descriptor->number_of_records + 1 ) * 2;
+
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -443,39 +345,6 @@ int libfshfs_btree_node_read_data(
 		 &( data[ data_size - records_data_size ] ),
 		 records_data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-	}
-#endif
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		records_data_offset = data_size - 2;
-
-		for( record_index = 0;
-		     record_index < (int) node->descriptor->number_of_records;
-		     record_index++ )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 &( data[ records_data_offset ] ),
-			 value_16bit );
-
-			records_data_offset -= 2;
-
-			libcnotify_printf(
-			 "%s: record offset: % 2d\t\t\t: 0x%04" PRIx16 "\n",
-			 function,
-			 record_index,
-			 value_16bit );
-		}
-		byte_stream_copy_to_uint16_big_endian(
-		 &( data[ records_data_offset ] ),
-		 value_16bit );
-		libcnotify_printf(
-		 "%s: free space offset\t\t\t: 0x%04" PRIx16 "\n",
-		 function,
-		 value_16bit );
-
-		libcnotify_printf(
-		 "\n" );
 	}
 #endif
 	if( libcdata_array_resize(
@@ -493,17 +362,12 @@ int libfshfs_btree_node_read_data(
 
 		goto on_error;
 	}
-	records_data_offset = data_size - records_data_size;
+	records_data_offset = data_size - 2;
+	data_size          -= records_data_size;
 
-	byte_stream_copy_to_uint16_big_endian(
-	 &( data[ records_data_offset ] ),
-	 next_record_offset );
-
-	records_data_offset += 2;
-
-	for( record_index = (int) node->descriptor->number_of_records - 1;
-	     record_index >= 0;
-	     record_index-- )
+	for( record_index = 0;
+	     record_index < (int) node->descriptor->number_of_records;
+	     record_index++ )
 	{
 		if( libfshfs_btree_node_record_initialize(
 		     &node_record,
@@ -520,24 +384,9 @@ int libfshfs_btree_node_read_data(
 		}
 		byte_stream_copy_to_uint16_big_endian(
 		 &( data[ records_data_offset ] ),
-		 node_record->offset );
+		 record_offset );
 
-		records_data_offset += 2;
-
-		if( node_record->offset > next_record_offset )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid node record offset value out of bounds.",
-			 function );
-
-			goto on_error;
-		}
-		node_record->data      = &( data[ node_record->offset ] );
-		node_record->data_size = next_record_offset - node_record->offset;
-		next_record_offset     = node_record->offset;
+		records_data_offset -= 2;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -546,24 +395,26 @@ int libfshfs_btree_node_read_data(
 			 "%s: record: % 2d offset\t\t\t: 0x%04" PRIx16 "\n",
 			 function,
 			 record_index,
-			 node_record->offset );
-
-			libcnotify_printf(
-			 "%s: record: % 2d data size\t\t\t: %" PRIu16 "\n",
-			 function,
-			 record_index,
-			 node_record->data_size );
-
-			libcnotify_printf(
-			 "%s: record: % 2d data:\n",
-			 function,
-			 record_index );
-			libcnotify_print_data(
-			 node_record->data,
-			 node_record->data_size,
-			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+			 record_offset );
 		}
 #endif
+		if( ( record_offset < sizeof( fshfs_btree_node_descriptor_t ) )
+		 || ( record_offset > data_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record: %d offset value out of bounds.",
+			 function,
+			 record_index );
+
+			goto on_error;
+		}
+		node_record->offset    = record_offset;
+		node_record->data      = &( data[ record_offset ] );
+		node_record->data_size = data_size - record_offset;
+
 		if( libcdata_array_set_entry_by_index(
 		     node->records_array,
 		     record_index,
@@ -582,6 +433,22 @@ int libfshfs_btree_node_read_data(
 		}
 		node_record = NULL;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		byte_stream_copy_to_uint16_big_endian(
+		 &( data[ records_data_offset ] ),
+		 value_16bit );
+		libcnotify_printf(
+		 "%s: free space offset\t\t\t: 0x%04" PRIx16 "\n",
+		 function,
+		 value_16bit );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	return( 1 );
 
 on_error:
@@ -597,6 +464,91 @@ on_error:
 	 NULL );
 
 	return( -1 );
+}
+
+/* Reads a B-tree node
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_node_read_file_io_handle(
+     libfshfs_btree_node_t *node,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_node_read_file_io_handle";
+	ssize_t read_count    = 0;
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: reading B-tree node at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 file_offset,
+		 file_offset );
+	}
+#endif
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     file_offset,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek B-tree node offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
+
+		return( -1 );
+	}
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
+	              node->data,
+	              node->data_size,
+	              error );
+
+	if( read_count != (ssize_t) node->data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read B-tree node data.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_node_read_data(
+	     node,
+	     node->data,
+	     node->data_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 
 /* Determines if the node is a branch node
@@ -675,6 +627,47 @@ int libfshfs_btree_node_is_leaf_node(
 	return( 0 );
 }
 
+/* Retrieves a specific record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_node_get_record_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     libfshfs_btree_node_record_t **node_record,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_node_get_record_by_index";
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     node->records_array,
+	     (int) record_index,
+	     (intptr_t **) node_record,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to retrieve node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
 /* Retrieves the data of a specific record
  * Returns 1 if successful or -1 on error
  */
@@ -723,7 +716,7 @@ int libfshfs_btree_node_get_record_data_by_index(
 	}
 	if( libcdata_array_get_entry_by_index(
 	     node->records_array,
-	     record_index,
+	     (int) record_index,
 	     (intptr_t **) &node_record,
 	     error ) != 1 )
 	{
@@ -753,199 +746,5 @@ int libfshfs_btree_node_get_record_data_by_index(
 	*record_data_size = node_record->data_size;
 
 	return( 1 );
-}
-
-/* Reads a B-tree node
- * Callback function for the B-tree node vector
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_btree_node_read_element_data(
-     libfshfs_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     libfdata_vector_t *vector,
-     libfdata_cache_t *cache,
-     int element_index LIBFSHFS_ATTRIBUTE_UNUSED,
-     int element_data_file_index LIBFSHFS_ATTRIBUTE_UNUSED,
-     off64_t btree_node_offset,
-     size64_t btree_node_size,
-     uint32_t range_flags,
-     uint8_t read_flags LIBFSHFS_ATTRIBUTE_UNUSED,
-     libcerror_error_t **error )
-{
-	libfshfs_btree_node_t *node = NULL;
-	static char *function       = "libfshfs_btree_node_read_element_data";
-	ssize_t read_count          = 0;
-
-	LIBFSHFS_UNREFERENCED_PARAMETER( element_index )
-	LIBFSHFS_UNREFERENCED_PARAMETER( element_data_file_index )
-	LIBFSHFS_UNREFERENCED_PARAMETER( read_flags )
-
-	if( io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( btree_node_size == 0 )
-	 || ( btree_node_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid B-tree node size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_btree_node_initialize(
-	     &node,
-	     (size_t) btree_node_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create B-tree node.",
-		 function );
-
-		goto on_error;
-	}
-	if( node == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing B-tree node.",
-		 function );
-
-		goto on_error;
-	}
-	if( ( range_flags & LIBFDATA_RANGE_FLAG_IS_SPARSE ) != 0 )
-	{
-		if( memory_set(
-		     node->data,
-		     0,
-		     node->data_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear B-tree node data.",
-			 function );
-
-			goto on_error;
-		}
-	}
-	else
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: reading B-tree node at offset: 0x%08" PRIx64 " with size: %" PRIu64 ".\n",
-			 function,
-			 btree_node_offset,
-			 btree_node_size );
-		}
-#endif
-		if( libbfio_handle_seek_offset(
-		     file_io_handle,
-		     btree_node_offset,
-		     SEEK_SET,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_SEEK_FAILED,
-			 "%s: unable to seek offset: 0x%08" PRIx64 ".",
-			 function,
-			 btree_node_offset );
-
-			goto on_error;
-		}
-		read_count = libbfio_handle_read_buffer(
-		              file_io_handle,
-		              node->data,
-		              node->data_size,
-		              error );
-
-		if( read_count != (ssize_t) node->data_size )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read B-tree node.",
-			 function );
-
-			goto on_error;
-		}
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: B-tree root node data:\n",
-		 function );
-		libcnotify_print_data(
-		 node->data,
-		 node->data_size,
-		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-	}
-#endif
-	if( libfshfs_btree_node_read_data(
-	     node,
-	     node->data,
-	     node->data_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree node.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfdata_vector_set_element_value_by_index(
-	     vector,
-	     (intptr_t *) file_io_handle,
-	     cache,
-	     element_index,
-	     (intptr_t *) node,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_free,
-	     LIBFDATA_VECTOR_ELEMENT_VALUE_FLAG_MANAGED,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set B-tree node as element value.",
-		 function );
-
-		goto on_error;
-	}
-	return( 1 );
-
-on_error:
-	if( node != NULL )
-	{
-		libfshfs_btree_node_free(
-		 &node,
-		 NULL );
-	}
-	return( -1 );
 }
 

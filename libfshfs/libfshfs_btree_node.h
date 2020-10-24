@@ -26,33 +26,14 @@
 #include <types.h>
 
 #include "libfshfs_btree_node_descriptor.h"
-#include "libfshfs_io_handle.h"
+#include "libfshfs_btree_node_record.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfcache.h"
-#include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
-
-typedef struct libfshfs_btree_node_record libfshfs_btree_node_record_t;
-
-struct libfshfs_btree_node_record
-{
-	/* The reference to the node record data
-	 */
-	const uint8_t *data;
-
-	/* The size of the node record data
-	 */
-	uint16_t data_size;
-
-	/* The offset of the node record
-	 */
-	uint16_t offset;
-};
 
 typedef struct libfshfs_btree_node libfshfs_btree_node_t;
 
@@ -75,14 +56,6 @@ struct libfshfs_btree_node
 	libcdata_array_t *records_array;
 };
 
-int libfshfs_btree_node_record_initialize(
-     libfshfs_btree_node_record_t **btree_node_record,
-     libcerror_error_t **error );
-
-int libfshfs_btree_node_record_free(
-     libfshfs_btree_node_record_t **node_record,
-     libcerror_error_t **error );
-
 int libfshfs_btree_node_initialize(
      libfshfs_btree_node_t **node,
      size_t data_size,
@@ -98,6 +71,12 @@ int libfshfs_btree_node_read_data(
      size_t data_size,
      libcerror_error_t **error );
 
+int libfshfs_btree_node_read_file_io_handle(
+     libfshfs_btree_node_t *node,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libcerror_error_t **error );
+
 int libfshfs_btree_node_is_branch_node(
      libfshfs_btree_node_t *node,
      libcerror_error_t **error );
@@ -106,24 +85,17 @@ int libfshfs_btree_node_is_leaf_node(
      libfshfs_btree_node_t *node,
      libcerror_error_t **error );
 
+int libfshfs_btree_node_get_record_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     libfshfs_btree_node_record_t **node_record,
+     libcerror_error_t **error );
+
 int libfshfs_btree_node_get_record_data_by_index(
      libfshfs_btree_node_t *node,
      uint16_t record_index,
      const uint8_t **record_data,
      size_t *record_data_size,
-     libcerror_error_t **error );
-
-int libfshfs_btree_node_read_element_data(
-     libfshfs_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     libfdata_vector_t *vector,
-     libfdata_cache_t *cache,
-     int element_index,
-     int element_data_file_index,
-     off64_t btree_node_offset,
-     size64_t btree_node_size,
-     uint32_t range_flags,
-     uint8_t read_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

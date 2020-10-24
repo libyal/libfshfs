@@ -40,13 +40,13 @@ struct libfshfs_directory_entry
 	 */
 	uint16_t record_type;
 
-	/* Name size
-	 */
-	uint16_t name_size;
-
 	/* Name
 	 */
 	uint8_t *name;
+
+	/* Name size
+	 */
+	uint16_t name_size;
 
 	/* Parent identifier
 	 */
@@ -68,6 +68,12 @@ int libfshfs_directory_entry_free(
 int libfshfs_directory_entry_clone(
      libfshfs_directory_entry_t **destination_directory_entry,
      libfshfs_directory_entry_t *source_directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_set_name(
+     libfshfs_directory_entry_t *directory_entry,
+     const uint8_t *name,
+     size_t name_size,
      libcerror_error_t **error );
 
 int libfshfs_directory_entry_get_identifier(

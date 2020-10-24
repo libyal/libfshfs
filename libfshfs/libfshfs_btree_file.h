@@ -27,6 +27,7 @@
 
 #include "libfshfs_btree_header.h"
 #include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_vector.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
@@ -48,7 +49,7 @@ struct libfshfs_btree_file
 
 	/* The nodes vector
 	 */
-	libfdata_vector_t *nodes_vector;
+	libfshfs_btree_node_vector_t *nodes_vector;
 
 	/* The nodes cache
 	 */
@@ -73,15 +74,16 @@ int libfshfs_btree_file_read_file_io_handle(
 int libfshfs_btree_file_get_node_by_number(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
-     libfcache_cache_t *nodes_cache,
-     int node_number,
+     uint32_t node_number,
      libfshfs_btree_node_t **node,
+     int recursion_depth,
      libcerror_error_t **error );
 
 int libfshfs_btree_file_get_root_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t **root_node,
+     int recursion_depth,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

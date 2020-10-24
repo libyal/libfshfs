@@ -37,6 +37,22 @@
 extern "C" {
 #endif
 
+int libfshfs_catalog_btree_file_get_key_from_node_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     libfshfs_catalog_btree_key_t **node_key,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_sub_node_number_from_key(
+     libfshfs_catalog_btree_key_t *node_key,
+     uint32_t *sub_node_number,
+     libcerror_error_t **error );
+
+int libfshfs_catalog_btree_file_get_thread_record_from_key(
+     libfshfs_catalog_btree_key_t *node_key,
+     libfshfs_thread_record_t **thread_record,
+     libcerror_error_t **error );
+
 int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
@@ -60,11 +76,8 @@ int libfshfs_catalog_btree_file_get_thread_record(
      libfshfs_thread_record_t **thread_record,
      libcerror_error_t **error );
 
-int libfshfs_catalog_btree_file_get_directory_entry_from_record_data(
-     libfshfs_btree_file_t *btree_file,
+int libfshfs_catalog_btree_file_get_directory_entry_from_key(
      libfshfs_catalog_btree_key_t *node_key,
-     const uint8_t *record_data,
-     size_t record_data_size,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 

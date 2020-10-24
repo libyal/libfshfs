@@ -341,6 +341,84 @@ on_error:
 	return( -1 );
 }
 
+/* Sets the name
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_set_name(
+     libfshfs_directory_entry_t *directory_entry,
+     const uint8_t *name,
+     size_t name_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_set_name";
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( directory_entry->name != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid directory entry - name value already set.",
+		 function );
+
+		return( -1 );
+	}
+	directory_entry->name = (uint8_t *) memory_allocate(
+	                                     sizeof( uint8_t ) * name_size );
+
+	if( directory_entry->name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create name.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     directory_entry->name,
+	     name,
+	     name_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy name.",
+		 function );
+
+		goto on_error;
+	}
+	directory_entry->name_size = name_size;
+
+	return( 1 );
+
+on_error:
+	if( directory_entry->name != NULL )
+	{
+		memory_free(
+		 directory_entry->name );
+
+		directory_entry->name = NULL;
+	}
+	directory_entry->name_size = 0;
+
+	return( -1 );
+}
+
 /* Retrieves the identifier
  * Returns 1 if successful or -1 on error
  */

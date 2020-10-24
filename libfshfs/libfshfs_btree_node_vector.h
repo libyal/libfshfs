@@ -25,20 +25,57 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_btree_node.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
+#include "libfshfs_libbfio.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfdata.h"
+#include "libfshfs_libfcache.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
+typedef struct libfshfs_btree_node_vector libfshfs_btree_node_vector_t;
+
+struct libfshfs_btree_node_vector
+{
+	/* The IO handle
+	 */
+	libfshfs_io_handle_t *io_handle;
+
+	/* The node size
+	 */
+	uint16_t node_size;
+
+	/* The number of nodes
+	 */
+	uint32_t number_of_nodes;
+
+	/* Extents
+	 */
+	libcdata_array_t *extents;
+};
+
 int libfshfs_btree_node_vector_initialize(
-     libfdata_vector_t **btree_node_vector,
+     libfshfs_btree_node_vector_t **node_vector,
      libfshfs_io_handle_t *io_handle,
      uint16_t node_size,
      libfshfs_fork_descriptor_t *fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_btree_node_vector_free(
+     libfshfs_btree_node_vector_t **node_vector,
+     libcerror_error_t **error );
+
+int libfshfs_btree_node_vector_get_node_by_number(
+     libfshfs_btree_node_vector_t *node_vector,
+     libbfio_handle_t *file_io_handle,
+     libfcache_cache_t *cache,
+     uint32_t node_number,
+     libfshfs_btree_node_t **node,
+     int recursion_depth,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

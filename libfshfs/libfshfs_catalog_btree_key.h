@@ -43,13 +43,21 @@ struct libfshfs_catalog_btree_key
 	 */
 	uint32_t parent_identifier;
 
+	/* Name data
+	 */
+	const uint8_t *name_data;
+
 	/* Name size
 	 */
 	uint16_t name_size;
 
-	/* Name
+	/* Record data
 	 */
-	uint8_t *name;
+	const uint8_t *record_data;
+
+	/* Record data size
+	 */
+	size_t record_data_size;
 };
 
 int libfshfs_catalog_btree_key_initialize(

@@ -239,7 +239,7 @@ etc. An additional record offset is added at the end to signify the start
 of the free space.
 
 [NOTE]
-The record offsets are not necessarily stored in order.
+The record offsets are not necessarily stored in linear order.
 
 === The B-tree header node
 
@@ -1184,7 +1184,7 @@ Contains number of bytes
 | 1 | 1 | | [yellow-background]*Unknown (Reserved)*
 | 2 | 4 | | The parent identifier +
 Contains a CNID
-| 6 | ... | | Catalog node name +
+| 6 | ... | | Name string +
 Contains an ASCII string +
 Contains the name of the file or directory
 |===

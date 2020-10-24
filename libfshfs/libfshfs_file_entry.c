@@ -51,7 +51,8 @@ int libfshfs_file_entry_initialize(
 	libfshfs_fork_descriptor_t *data_fork_descriptor    = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_initialize";
-	uint32_t identifier                                 = 0;
+	size64_t data_size                                  = 0;
+	uint16_t file_mode                                  = 0;
 	int result                                          = 0;
 
 	if( file_entry == NULL )
@@ -107,23 +108,9 @@ int libfshfs_file_entry_initialize(
 
 		return( -1 );
 	}
-	if( libfshfs_directory_entry_get_identifier(
-	     directory_entry,
-	     &identifier,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve identifier from directory entry.",
-		 function );
-
-		goto on_error;
-	}
 	result = libfshfs_directory_entry_get_file_mode(
 	          directory_entry,
-	          &( internal_file_entry->file_mode ),
+	          &file_mode,
 	          error );
 
 /* TODO handle result == 0 for HFS */
@@ -156,54 +143,7 @@ int libfshfs_file_entry_initialize(
 	}
 	else if( result != 0 ) 
 	{
-		if( libfshfs_file_system_get_extents(
-		     file_system,
-		     file_io_handle,
-		     identifier,
-		     LIBFSHFS_FORK_TYPE_DATA,
-		     data_fork_descriptor,
-		     &( internal_file_entry->extents ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve extents of data fork descriptor.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfshfs_block_stream_initialize(
-		     &( internal_file_entry->data_block_stream ),
-		     io_handle,
-		     (size64_t) data_fork_descriptor->size,
-		     internal_file_entry->extents,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create data block stream.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfdata_stream_get_size(
-		     internal_file_entry->data_block_stream,
-		     &( internal_file_entry->data_size ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve size from data block stream.",
-			 function );
-
-			goto on_error;
-		}
+		data_size = (size64_t) data_fork_descriptor->size;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
@@ -224,6 +164,8 @@ int libfshfs_file_entry_initialize(
 	internal_file_entry->file_io_handle  = file_io_handle;
 	internal_file_entry->directory_entry = directory_entry;
 	internal_file_entry->file_system     = file_system;
+	internal_file_entry->file_mode       = file_mode;
+	internal_file_entry->data_size       = data_size;
 
 	*file_entry = (libfshfs_file_entry_t *) internal_file_entry;
 
@@ -339,7 +281,7 @@ int libfshfs_file_entry_free(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free sub extents array.",
+				 "%s: unable to free extents array.",
 				 function );
 
 				result = -1;
@@ -354,6 +296,311 @@ int libfshfs_file_entry_free(
 		 internal_file_entry );
 	}
 	return( result );
+}
+
+/* Retrieves the data block stream of the data fork
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_data_block_stream(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
+	static char *function                            = "libfshfs_internal_file_entry_get_data_block_stream";
+	uint32_t identifier                              = 0;
+	int result                                       = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->data_block_stream != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - data block stream value already set.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_directory_entry_get_data_fork_descriptor(
+	          internal_file_entry->directory_entry,
+	          &data_fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve data fork descriptor from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 ) 
+	{
+		if( libfshfs_directory_entry_get_identifier(
+		     internal_file_entry->directory_entry,
+		     &identifier,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve identifier from directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_file_system_get_extents(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     identifier,
+		     LIBFSHFS_FORK_TYPE_DATA,
+		     data_fork_descriptor,
+		     &( internal_file_entry->extents ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extents of data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_block_stream_initialize(
+		     &( internal_file_entry->data_block_stream ),
+		     internal_file_entry->io_handle,
+		     (size64_t) data_fork_descriptor->size,
+		     internal_file_entry->extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create data block stream.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( internal_file_entry->data_block_stream != NULL )
+	{
+		libfdata_stream_free(
+		 &( internal_file_entry->data_block_stream ),
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves the sub directory entries
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_sub_directory_entries(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_internal_file_entry_get_sub_directory_entries";
+	uint32_t identifier   = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->sub_directory_entries != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - sub directory entries value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_directory_entry_get_identifier(
+	     internal_file_entry->directory_entry,
+	     &identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve identifier.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_file_system_get_directory_entries(
+	     internal_file_entry->file_system,
+	     internal_file_entry->file_io_handle,
+	     identifier,
+	     &( internal_file_entry->sub_directory_entries ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve sub directory entries for entry: %" PRIu32 " from file system.",
+		 function,
+		 identifier );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Determines the symbolic link data
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_symbolic_link_data(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_internal_file_entry_get_symbolic_link_data";
+	ssize_t read_count    = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - symbolic link data value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->data_block_stream == NULL )
+	{
+		if( libfshfs_internal_file_entry_get_data_block_stream(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data block stream.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_SYMBOLIC_LINK )
+	{
+		if( ( internal_file_entry->data_size == 0 )
+		 || ( internal_file_entry->data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		internal_file_entry->symbolic_link_data = (uint8_t *) memory_allocate(
+		                                                       sizeof( uint8_t ) * (size_t) internal_file_entry->data_size );
+
+		if( internal_file_entry->symbolic_link_data == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create symbolic link data.",
+			 function );
+
+			goto on_error;
+		}
+		internal_file_entry->symbolic_link_data_size = (size_t) internal_file_entry->data_size;
+
+		read_count = libfdata_stream_read_buffer_at_offset(
+		              internal_file_entry->data_block_stream,
+		              (intptr_t *) internal_file_entry->file_io_handle,
+		              internal_file_entry->symbolic_link_data,
+		              (size_t) internal_file_entry->data_size,
+		              0,
+		              0,
+		              error );
+
+		if( read_count != (ssize_t) internal_file_entry->data_size )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read from data block stream.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: symbolic link data:\n",
+			 function );
+			libcnotify_print_data(
+			 internal_file_entry->symbolic_link_data,
+			 internal_file_entry->symbolic_link_data_size,
+			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+		}
+#endif
+	}
+	return( 1 );
+
+on_error:
+	if( internal_file_entry->symbolic_link_data != NULL )
+	{
+		memory_free(
+		 internal_file_entry->symbolic_link_data );
+
+		internal_file_entry->symbolic_link_data = NULL;
+	}
+	internal_file_entry->symbolic_link_data_size = 0;
+
+	return( -1 );
 }
 
 /* Retrieves the identifier (or catalog node identifier (CNID))
@@ -1339,182 +1586,6 @@ int libfshfs_file_entry_get_utf16_name(
 	return( result );
 }
 
-/* Retrieves the sub directory entries
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_internal_file_entry_get_sub_directory_entries(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_internal_file_entry_get_sub_directory_entries";
-	uint32_t identifier   = 0;
-
-	if( internal_file_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_file_entry->sub_directory_entries != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - sub directory entries value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_directory_entry_get_identifier(
-	     internal_file_entry->directory_entry,
-	     &identifier,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve identifier.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_file_system_get_directory_entries(
-	     internal_file_entry->file_system,
-	     internal_file_entry->file_io_handle,
-	     identifier,
-	     &( internal_file_entry->sub_directory_entries ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve sub directory entries for entry: %" PRIu32 " from file system.",
-		 function,
-		 identifier );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
-/* Determines the symbolic link data
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_internal_file_entry_get_symbolic_link_data(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_internal_file_entry_get_symbolic_link_data";
-	ssize_t read_count    = 0;
-
-	if( internal_file_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_file_entry->symbolic_link_data != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - symbolic link data value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_SYMBOLIC_LINK )
-	{
-		if( ( internal_file_entry->data_size == 0 )
-		 || ( internal_file_entry->data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid data size value out of bounds.",
-			 function );
-
-			goto on_error;
-		}
-		internal_file_entry->symbolic_link_data = (uint8_t *) memory_allocate(
-		                                                       sizeof( uint8_t ) * (size_t) internal_file_entry->data_size );
-
-		if( internal_file_entry->symbolic_link_data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create symbolic link data.",
-			 function );
-
-			goto on_error;
-		}
-		internal_file_entry->symbolic_link_data_size = (size_t) internal_file_entry->data_size;
-
-		read_count = libfdata_stream_read_buffer_at_offset(
-		              internal_file_entry->data_block_stream,
-		              (intptr_t *) internal_file_entry->file_io_handle,
-		              internal_file_entry->symbolic_link_data,
-		              (size_t) internal_file_entry->data_size,
-		              0,
-		              0,
-		              error );
-
-		if( read_count != (ssize_t) internal_file_entry->data_size )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read from data block stream.",
-			 function );
-
-			goto on_error;
-		}
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: symbolic link data:\n",
-			 function );
-			libcnotify_print_data(
-			 internal_file_entry->symbolic_link_data,
-			 internal_file_entry->symbolic_link_data_size,
-			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-		}
-#endif
-	}
-	return( 1 );
-
-on_error:
-	if( internal_file_entry->symbolic_link_data != NULL )
-	{
-		memory_free(
-		 internal_file_entry->symbolic_link_data );
-
-		internal_file_entry->symbolic_link_data = NULL;
-	}
-	internal_file_entry->symbolic_link_data_size = 0;
-
-	return( -1 );
-}
-
 /* Retrieves the size of the UTF-8 encoded symbolic link target
  * The size should include the end of string character
  * Returns 1 if successful, 0 if not available or -1 on error
@@ -2457,24 +2528,43 @@ ssize_t libfshfs_file_entry_read_buffer(
 		return( -1 );
 	}
 #endif
-	read_count = libfdata_stream_read_buffer(
-	              internal_file_entry->data_block_stream,
-	              (intptr_t *) internal_file_entry->file_io_handle,
-	              buffer,
-	              buffer_size,
-	              0,
-	              error );
-
-	if( read_count < 0 )
+	if( internal_file_entry->data_block_stream == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read from data block stream.",
-		 function );
+		if( libfshfs_internal_file_entry_get_data_block_stream(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data block stream.",
+			 function );
 
-		read_count = -1;
+			read_count = -1;
+		}
+	}
+	if( internal_file_entry->data_block_stream != NULL )
+	{
+		read_count = libfdata_stream_read_buffer(
+		              internal_file_entry->data_block_stream,
+		              (intptr_t *) internal_file_entry->file_io_handle,
+		              buffer,
+		              buffer_size,
+		              0,
+		              error );
+
+		if( read_count < 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read from data block stream.",
+			 function );
+
+			read_count = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -2547,27 +2637,46 @@ ssize_t libfshfs_file_entry_read_buffer_at_offset(
 		return( -1 );
 	}
 #endif
-	read_count = libfdata_stream_read_buffer_at_offset(
-	              internal_file_entry->data_block_stream,
-	              (intptr_t *) internal_file_entry->file_io_handle,
-	              buffer,
-	              buffer_size,
-	              offset,
-	              0,
-	              error );
-
-	if( read_count < 0 )
+	if( internal_file_entry->data_block_stream == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read from data block stream at offset: %" PRIi64 "(0x%08" PRIx64 ").",
-		 function,
-		 offset,
-		 offset );
+		if( libfshfs_internal_file_entry_get_data_block_stream(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data block stream.",
+			 function );
 
-		read_count = -1;
+			read_count = -1;
+		}
+	}
+	if( internal_file_entry->data_block_stream != NULL )
+	{
+		read_count = libfdata_stream_read_buffer_at_offset(
+		              internal_file_entry->data_block_stream,
+		              (intptr_t *) internal_file_entry->file_io_handle,
+		              buffer,
+		              buffer_size,
+		              offset,
+		              0,
+		              error );
+
+		if( read_count < 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read from data block stream at offset: %" PRIi64 "(0x%08" PRIx64 ").",
+			 function,
+			 offset,
+			 offset );
+
+			read_count = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -2638,22 +2747,41 @@ off64_t libfshfs_file_entry_seek_offset(
 		return( -1 );
 	}
 #endif
-	offset = libfdata_stream_seek_offset(
-	          internal_file_entry->data_block_stream,
-	          offset,
-	          whence,
-	          error );
-
-	if( offset == -1 )
+	if( internal_file_entry->data_block_stream == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset in data block stream.",
-		 function );
+		if( libfshfs_internal_file_entry_get_data_block_stream(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data block stream.",
+			 function );
 
-		offset = -1;
+			offset = -1;
+		}
+	}
+	if( internal_file_entry->data_block_stream != NULL )
+	{
+		offset = libfdata_stream_seek_offset(
+		          internal_file_entry->data_block_stream,
+		          offset,
+		          whence,
+		          error );
+
+		if( offset == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_SEEK_FAILED,
+			 "%s: unable to seek offset in data block stream.",
+			 function );
+
+			offset = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -2724,19 +2852,38 @@ int libfshfs_file_entry_get_offset(
 		return( -1 );
 	}
 #endif
-	if( libfdata_stream_get_offset(
-	     internal_file_entry->data_block_stream,
-	     offset,
-	     error ) != 1 )
+	if( internal_file_entry->data_block_stream == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve offset from data block stream.",
-		 function );
+		if( libfshfs_internal_file_entry_get_data_block_stream(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data block stream.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
+	}
+	if( internal_file_entry->data_block_stream != NULL )
+	{
+		if( libfdata_stream_get_offset(
+		     internal_file_entry->data_block_stream,
+		     offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve offset from data block stream.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2766,6 +2913,7 @@ int libfshfs_file_entry_get_size(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_size";
+	int result                                          = 1;
 
 	if( file_entry == NULL )
 	{
@@ -2823,6 +2971,6 @@ int libfshfs_file_entry_get_size(
 		return( -1 );
 	}
 #endif
-	return( 1 );
+	return( result );
 }
 
