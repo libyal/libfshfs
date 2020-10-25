@@ -22,7 +22,6 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
-#include <system_string.h>
 #include <types.h>
 
 #include "libfshfs_catalog_btree_key.h"
@@ -296,6 +295,18 @@ int libfshfs_catalog_btree_key_read_data(
 			return( -1 );
 		}
 		catalog_btree_key->name_size *= 2;
+
+		if( (size_t) catalog_btree_key->name_size > ( data_size - 8 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid catalog B-tree key - name size value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( catalog_btree_key->name_size > 0 )
 	{
@@ -343,18 +354,6 @@ int libfshfs_catalog_btree_key_read_data(
 	catalog_btree_key->record_data      = &( data[ catalog_btree_key->data_size ] );
 	catalog_btree_key->record_data_size = data_size - catalog_btree_key->data_size;
 
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: record data:\n",
-		 function );
-		libcnotify_print_data(
-		 catalog_btree_key->record_data,
-		 catalog_btree_key->record_data_size,
-		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-	}
-#endif
 	return( 1 );
 }
 

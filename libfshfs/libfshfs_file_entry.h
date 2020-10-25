@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_attribute_record.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_extern.h"
 #include "libfshfs_file_system.h"
@@ -32,7 +33,7 @@
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
-#include "libfshfs_libcdata.h"
+#include "libfshfs_libfdata.h"
 #include "libfshfs_types.h"
 
 #if defined( __cplusplus )
@@ -55,6 +56,10 @@ struct libfshfs_internal_file_entry
 	 */
 	libfshfs_directory_entry_t *directory_entry;
 
+	/* Identifier
+	 */
+	uint32_t identifier;
+
 	/* File mode
 	 */
 	uint16_t file_mode;
@@ -67,9 +72,9 @@ struct libfshfs_internal_file_entry
 	 */
 	libcdata_array_t *sub_directory_entries;
 
-	/* The data block stream
+	/* The data stream
 	 */
-	libfdata_stream_t *data_block_stream;
+	libfdata_stream_t *data_stream;
 
 	/* The data size
 	 */
@@ -86,6 +91,10 @@ struct libfshfs_internal_file_entry
 	/* The symbolic link data size
 	 */
 	size_t symbolic_link_data_size;
+
+	/* Attributes
+	 */
+	libcdata_array_t *attributes;
 
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
@@ -107,15 +116,11 @@ int libfshfs_file_entry_free(
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 
-int libfshfs_internal_file_entry_get_data_block_stream(
+int libfshfs_internal_file_entry_get_data_stream(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
 int libfshfs_internal_file_entry_get_symbolic_link_data(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libcerror_error_t **error );
-
-int libfshfs_internal_file_entry_get_sub_directory_entries(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
@@ -223,6 +228,63 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
      libfshfs_file_entry_t *file_entry,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_number_of_extended_attributes(
+     libfshfs_file_entry_t *file_entry,
+     int *number_of_extended_attributes,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extended_attribute_by_index(
+     libfshfs_file_entry_t *file_entry,
+     int extended_attribute_index,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_attribute_record_t **attribute_record,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_attribute_record_t **attribute_record,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_has_extended_attribute_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_has_extended_attribute_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extended_attribute_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extended_attribute_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_extended_attribute_t **extended_attribute,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

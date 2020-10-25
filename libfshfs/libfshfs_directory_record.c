@@ -22,7 +22,6 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
-#include <system_string.h>
 #include <types.h>
 
 #include "libfshfs_debug.h"
@@ -390,7 +389,7 @@ int libfshfs_directory_record_read_data(
 			value_16bit = ( (fshfs_catalog_directory_record_hfs_t *) data )->record_type;
 		}
 		libcnotify_printf(
-		 "%s: record type\t\t\t: %" PRIu16 " (%s)\n",
+		 "%s: record type\t\t\t: 0x%04" PRIx16 " (%s)\n",
 		 function,
 		 value_16bit,
 		 libfshfs_debug_print_catalog_record_type(

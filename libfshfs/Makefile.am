@@ -15,18 +15,23 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_EXPORT@
 
 lib_LTLIBRARIES = libfshfs.la
 
 libfshfs_la_SOURCES = \
+	fshfs_attributes_file.h \
 	fshfs_btree.h \
 	fshfs_catalog_file.h \
 	fshfs_extents_file.h \
 	fshfs_fork.h \
 	fshfs_volume.h \
 	libfshfs.c \
+	libfshfs_attribute_record.c libfshfs_attribute_record.h \
+	libfshfs_attributes_btree_file.c libfshfs_attributes_btree_file.h \
+	libfshfs_attributes_btree_key.c libfshfs_attributes_btree_key.h \
 	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_btree_header.c libfshfs_btree_header.h \
 	libfshfs_btree_node.c libfshfs_btree_node.h \
@@ -34,14 +39,19 @@ libfshfs_la_SOURCES = \
 	libfshfs_btree_node_record.c libfshfs_btree_node_record.h \
 	libfshfs_btree_node_vector.c libfshfs_btree_node_vector.h \
 	libfshfs_block_data_handle.c libfshfs_block_data_handle.h \
-	libfshfs_block_stream.c libfshfs_block_stream.h \
+	libfshfs_buffer_data_handle.c libfshfs_buffer_data_handle.h \
 	libfshfs_catalog_btree_file.c libfshfs_catalog_btree_file.h \
 	libfshfs_catalog_btree_key.c libfshfs_catalog_btree_key.h \
+	libfshfs_compressed_data_handle.c libfshfs_compressed_data_handle.h \
+	libfshfs_compression.c libfshfs_compression.h \
+	libfshfs_data_stream.c libfshfs_data_stream.h \
 	libfshfs_debug.c libfshfs_debug.h \
+	libfshfs_deflate.c libfshfs_deflate.h \
 	libfshfs_definitions.h \
 	libfshfs_directory_entry.c libfshfs_directory_entry.h \
 	libfshfs_directory_record.c libfshfs_directory_record.h \
 	libfshfs_error.c libfshfs_error.h \
+	libfshfs_extended_attribute.c libfshfs_extended_attribute.h \
 	libfshfs_extent.c libfshfs_extent.h \
 	libfshfs_extents_btree_file.c libfshfs_extents_btree_file.h \
 	libfshfs_extents_btree_key.c libfshfs_extents_btree_key.h \
@@ -62,6 +72,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_libfdatetime.h \
 	libfshfs_libfguid.h \
 	libfshfs_libuna.h \
+	libfshfs_lzvn.c libfshfs_lzvn.h \
 	libfshfs_notify.c libfshfs_notify.h \
 	libfshfs_support.c libfshfs_support.h \
 	libfshfs_thread_record.c libfshfs_thread_record.h \
@@ -85,6 +96,7 @@ libfshfs_la_LIBADD = \
 	@LIBFDATA_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
 	@LIBFGUID_LIBADD@ \
+	@ZLIB_LIBADD@ \
 	@PTHREAD_LIBADD@
 
 libfshfs_la_LDFLAGS = -no-undefined -version-info 1:0:0

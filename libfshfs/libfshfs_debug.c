@@ -117,6 +117,25 @@ void libfshfs_debug_print_volume_attribute_flags(
 	}
 }
 
+/* Prints the attributes record type
+ */
+const char *libfshfs_debug_print_attributes_record_type(
+             uint32_t record_type )
+{
+	switch( record_type )
+	{
+		case 0x00000010UL:
+			return( "Inline data attribute record (kHFSPlusAttrInlineData)" );
+
+		case 0x00000020UL:
+			return( "Fork descriptor attribute record (kHFSPlusAttrForkData)" );
+
+		case 0x00000030UL:
+			return( "Extents attribute record (kHFSPlusAttrExtents)" );
+	}
+	return( "Unknown" );
+}
+
 /* Prints the B-tree node type
  */
 const char *libfshfs_debug_print_btree_node_type(
@@ -554,10 +573,6 @@ int libfshfs_debug_print_utf16_name_value(
 
 	/* Handle leading 0-byte values
 	 */
-	libcnotify_printf(
-	 "(%zd) ",
-	 byte_stream_size );
-
 	for( byte_stream_index = 0;
 	     byte_stream_index < byte_stream_size;
 	     byte_stream_index += 2 )

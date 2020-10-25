@@ -22,10 +22,7 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
-#include <narrow_string.h>
-#include <system_string.h>
 #include <types.h>
-#include <wide_string.h>
 
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
@@ -289,7 +286,7 @@ int libfshfs_thread_record_read_data(
 			value_16bit = ( (fshfs_catalog_thread_record_hfs_t *) data )->record_type;
 		}
 		libcnotify_printf(
-		 "%s: record type\t\t\t\t: %" PRIu16 " (%s)\n",
+		 "%s: record type\t\t\t\t: 0x%04" PRIx16 " (%s)\n",
 		 function,
 		 value_16bit,
 		 libfshfs_debug_print_catalog_record_type(
@@ -330,9 +327,10 @@ int libfshfs_thread_record_read_data(
 		 thread_record->parent_identifier );
 
 		libcnotify_printf(
-		 "%s: name number of characters\t\t: %" PRIu16 "\n",
+		 "%s: name number of characters\t\t: %" PRIu16 " (%" PRIu32 ")\n",
 		 function,
-		 thread_record->name_size );
+		 thread_record->name_size,
+		 (uint32_t) thread_record->name_size * 2 );
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 

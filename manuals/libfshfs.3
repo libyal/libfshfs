@@ -1,4 +1,4 @@
-.Dd October 18, 2020
+.Dd October 25, 2020
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -123,6 +123,18 @@ File entry functions
 .Ft int
 .Fn libfshfs_file_entry_get_utf16_symbolic_link_target "libfshfs_file_entry_t *file_entry" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
 .Ft int
+.Fn libfshfs_file_entry_get_number_of_extended_attributes "libfshfs_file_entry_t *file_entry" "int *number_of_extended_attributes" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_extended_attribute_by_index "libfshfs_file_entry_t *file_entry" "int extended_attribute_index" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_has_extended_attribute_by_utf8_name "libfshfs_file_entry_t *file_entry" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_has_extended_attribute_by_utf16_name "libfshfs_file_entry_t *file_entry" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_extended_attribute_by_utf8_name "libfshfs_file_entry_t *file_entry" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_extended_attribute_by_utf16_name "libfshfs_file_entry_t *file_entry" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Ft int
 .Fn libfshfs_file_entry_get_number_of_sub_file_entries "libfshfs_file_entry_t *file_entry" "int *number_of_sub_file_entries" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_sub_file_entry_by_index "libfshfs_file_entry_t *file_entry" "int sub_file_entry_index" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
@@ -140,6 +152,18 @@ File entry functions
 .Fn libfshfs_file_entry_get_offset "libfshfs_file_entry_t *file_entry" "off64_t *offset" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_size "libfshfs_file_entry_t *file_entry" "size64_t *size" "libfshfs_error_t **error"
+.Pp
+Extended attribute functions
+.Ft int
+.Fn libfshfs_extended_attribute_free "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_utf8_name_size "libfshfs_extended_attribute_t *extended_attribute" "size_t *utf8_string_size" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_utf8_name "libfshfs_extended_attribute_t *extended_attribute" "uint8_t *utf8_string" "size_t utf8_string_size" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_utf16_name_size "libfshfs_extended_attribute_t *extended_attribute" "size_t *utf16_string_size" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_utf16_name "libfshfs_extended_attribute_t *extended_attribute" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version

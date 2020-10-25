@@ -1,5 +1,5 @@
 /*
- * The extents B-tree file functions
+ * The extents (overflow) B-tree file functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -35,11 +35,20 @@
 extern "C" {
 #endif
 
+int libfshfs_extents_btree_file_get_key_from_node_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     libfshfs_extents_btree_key_t **node_key,
+     libcerror_error_t **error );
+
+int libfshfs_extents_btree_file_get_sub_node_number_from_key(
+     libfshfs_extents_btree_key_t *node_key,
+     uint32_t *sub_node_number,
+     libcerror_error_t **error );
+
 int libfshfs_extents_btree_file_get_extents_from_record_data(
      libfshfs_btree_file_t *btree_file,
      libfshfs_extents_btree_key_t *node_key,
-     const uint8_t *record_data,
-     size_t record_data_size,
      libcdata_array_t *extents,
      libcerror_error_t **error );
 

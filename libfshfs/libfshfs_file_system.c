@@ -23,6 +23,8 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_attribute_record.h"
+#include "libfshfs_attributes_btree_file.h"
 #include "libfshfs_btree_file.h"
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_directory_entry.h"
@@ -924,6 +926,84 @@ on_error:
 		libcdata_array_free(
 		 extents,
 		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves attributes for a specific parent identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_get_attributes(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t parent_identifier,
+     libcdata_array_t **attributes,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_attributes";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( attributes == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid attributes.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_initialize(
+	     attributes,
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create attributes array.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_attributes_btree_file_get_attributes(
+	     file_system->attributes_btree_file,
+	     file_io_handle,
+	     parent_identifier,
+	     *attributes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve attributes for entry: %" PRIu32 " from attributes B-tree file.",
+		 function,
+		 parent_identifier );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( *attributes != NULL )
+	{
+		libcdata_array_free(
+		 attributes,
+		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_attribute_record_free,
 		 NULL );
 	}
 	return( -1 );

@@ -23,9 +23,11 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libfshfs_block_stream.h"
+#include "libfshfs_attribute_record.h"
+#include "libfshfs_data_stream.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
+#include "libfshfs_extended_attribute.h"
 #include "libfshfs_extent.h"
 #include "libfshfs_file_entry.h"
 #include "libfshfs_file_system.h"
@@ -33,6 +35,7 @@
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libcthreads.h"
+#include "libfshfs_libfdata.h"
 #include "libfshfs_libuna.h"
 #include "libfshfs_types.h"
 
@@ -107,6 +110,20 @@ int libfshfs_file_entry_initialize(
 		 internal_file_entry );
 
 		return( -1 );
+	}
+	if( libfshfs_directory_entry_get_identifier(
+	     directory_entry,
+	     &( internal_file_entry->identifier ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve identifier from directory entry.",
+		 function );
+
+		goto on_error;
 	}
 	result = libfshfs_directory_entry_get_file_mode(
 	          directory_entry,
@@ -254,17 +271,17 @@ int libfshfs_file_entry_free(
 				result = -1;
 			}
 		}
-		if( internal_file_entry->data_block_stream != NULL )
+		if( internal_file_entry->data_stream != NULL )
 		{
 			if( libfdata_stream_free(
-			     &( internal_file_entry->data_block_stream ),
+			     &( internal_file_entry->data_stream ),
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free data block stream.",
+				 "%s: unable to free data stream.",
 				 function );
 
 				result = -1;
@@ -287,6 +304,23 @@ int libfshfs_file_entry_free(
 				result = -1;
 			}
 		}
+		if( internal_file_entry->attributes != NULL )
+		{
+			if( libcdata_array_free(
+			     &( internal_file_entry->attributes ),
+			     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_attribute_record_free,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free attributes array.",
+				 function );
+
+				result = -1;
+			}
+		}
 		if( internal_file_entry->symbolic_link_data != NULL )
 		{
 			memory_free(
@@ -298,17 +332,20 @@ int libfshfs_file_entry_free(
 	return( result );
 }
 
-/* Retrieves the data block stream of the data fork
+/* Retrieves the data stream
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_internal_file_entry_get_data_block_stream(
+int libfshfs_internal_file_entry_get_data_stream(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error )
 {
-	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
-	static char *function                            = "libfshfs_internal_file_entry_get_data_block_stream";
-	uint32_t identifier                              = 0;
-	int result                                       = 0;
+	libfdata_stream_t *compressed_data_stream             = NULL;
+	libfshfs_attribute_record_t *decmpfs_attribute_record = NULL;
+	libfshfs_fork_descriptor_t *data_fork_descriptor      = NULL;
+	static char *function                                 = "libfshfs_internal_file_entry_get_data_stream";
+	size64_t uncompressed_data_size                       = 0;
+	int compression_method                                = 0;
+	int result                                            = 0;
 
 	if( internal_file_entry == NULL )
 	{
@@ -321,13 +358,13 @@ int libfshfs_internal_file_entry_get_data_block_stream(
 
 		return( -1 );
 	}
-	if( internal_file_entry->data_block_stream != NULL )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - data block stream value already set.",
+		 "%s: invalid file entry - data stream value already set.",
 		 function );
 
 		return( -1 );
@@ -348,133 +385,145 @@ int libfshfs_internal_file_entry_get_data_block_stream(
 
 		goto on_error;
 	}
-	else if( result != 0 ) 
+	else if( result != 0 )
 	{
-		if( libfshfs_directory_entry_get_identifier(
-		     internal_file_entry->directory_entry,
-		     &identifier,
-		     error ) != 1 )
+		if( data_fork_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+		          internal_file_entry,
+		          (uint8_t *) "com.apple.decmpfs",
+		          17,
+		          &decmpfs_attribute_record,
+		          error );
+
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve identifier from directory entry.",
+			 "%s: unable to retrieve com.apple.decmpfs attribute record.",
 			 function );
 
-			goto on_error;
+			result = -1;
 		}
-		if( libfshfs_file_system_get_extents(
-		     internal_file_entry->file_system,
-		     internal_file_entry->file_io_handle,
-		     identifier,
-		     LIBFSHFS_FORK_TYPE_DATA,
-		     data_fork_descriptor,
-		     &( internal_file_entry->extents ),
-		     error ) != 1 )
+		else if( result == 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve extents of data fork descriptor.",
-			 function );
+			if( libfshfs_file_system_get_extents(
+			     internal_file_entry->file_system,
+			     internal_file_entry->file_io_handle,
+			     internal_file_entry->identifier,
+			     LIBFSHFS_FORK_TYPE_DATA,
+			     data_fork_descriptor,
+			     &( internal_file_entry->extents ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve extents of data fork descriptor.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
+			if( libfshfs_data_stream_initialize_from_extents(
+			     &( internal_file_entry->data_stream ),
+			     internal_file_entry->io_handle,
+			     internal_file_entry->extents,
+			     (size64_t) data_fork_descriptor->size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create data stream.",
+				 function );
+
+				goto on_error;
+			}
 		}
-		if( libfshfs_block_stream_initialize(
-		     &( internal_file_entry->data_block_stream ),
-		     internal_file_entry->io_handle,
-		     (size64_t) data_fork_descriptor->size,
-		     internal_file_entry->extents,
-		     error ) != 1 )
+		else
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create data block stream.",
-			 function );
+			if( decmpfs_attribute_record == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing com.apple.decmpfs attribute record.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
+			if( data_fork_descriptor->size > 0 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported file entry - size of data fork is greater than 0 and has com.apple.decmpfs extended attribute.",
+				 function );
+
+				goto on_error;
+			}
+			if( decmpfs_attribute_record->record_type != 0x00000010UL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported com.apple.decmpfs attribute record type.",
+				 function );
+
+				goto on_error;
+			}
+/* TODO create compressed data stream */
+
+			if( libfshfs_data_stream_initialize_from_compressed_data_stream(
+			     &( internal_file_entry->data_stream ),
+			     compressed_data_stream,
+			     uncompressed_data_size,
+			     compression_method,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create data stream.",
+				 function );
+
+				goto on_error;
+			}
 		}
 	}
 	return( 1 );
 
 on_error:
-	if( internal_file_entry->data_block_stream != NULL )
+	if( compressed_data_stream != NULL )
 	{
 		libfdata_stream_free(
-		 &( internal_file_entry->data_block_stream ),
+		 &compressed_data_stream,
+		 NULL );
+	}
+	if( internal_file_entry->data_stream != NULL )
+	{
+		libfdata_stream_free(
+		 &( internal_file_entry->data_stream ),
 		 NULL );
 	}
 	return( -1 );
-}
-
-/* Retrieves the sub directory entries
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_internal_file_entry_get_sub_directory_entries(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_internal_file_entry_get_sub_directory_entries";
-	uint32_t identifier   = 0;
-
-	if( internal_file_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_file_entry->sub_directory_entries != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - sub directory entries value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_directory_entry_get_identifier(
-	     internal_file_entry->directory_entry,
-	     &identifier,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve identifier.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfshfs_file_system_get_directory_entries(
-	     internal_file_entry->file_system,
-	     internal_file_entry->file_io_handle,
-	     identifier,
-	     &( internal_file_entry->sub_directory_entries ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve sub directory entries for entry: %" PRIu32 " from file system.",
-		 function,
-		 identifier );
-
-		return( -1 );
-	}
-	return( 1 );
 }
 
 /* Determines the symbolic link data
@@ -509,9 +558,9 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 
 		return( -1 );
 	}
-	if( internal_file_entry->data_block_stream == NULL )
+	if( internal_file_entry->data_stream == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_data_block_stream(
+		if( libfshfs_internal_file_entry_get_data_stream(
 		     internal_file_entry,
 		     error ) != 1 )
 		{
@@ -519,7 +568,7 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve data block stream.",
+			 "%s: unable to retrieve data stream.",
 			 function );
 
 			goto on_error;
@@ -556,7 +605,7 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 		internal_file_entry->symbolic_link_data_size = (size_t) internal_file_entry->data_size;
 
 		read_count = libfdata_stream_read_buffer_at_offset(
-		              internal_file_entry->data_block_stream,
+		              internal_file_entry->data_stream,
 		              (intptr_t *) internal_file_entry->file_io_handle,
 		              internal_file_entry->symbolic_link_data,
 		              (size_t) internal_file_entry->data_size,
@@ -570,7 +619,7 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read from data block stream.",
+			 "%s: unable to read from data stream.",
 			 function );
 
 			goto on_error;
@@ -613,7 +662,6 @@ int libfshfs_file_entry_get_identifier(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_identifier";
-	int result                                          = 1;
 
 	if( file_entry == NULL )
 	{
@@ -628,6 +676,17 @@ int libfshfs_file_entry_get_identifier(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
+	if( identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid identifier.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
@@ -643,20 +702,8 @@ int libfshfs_file_entry_get_identifier(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_identifier(
-	     internal_file_entry->directory_entry,
-	     identifier,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve identifier from directory entry.",
-		 function );
+	*identifier = internal_file_entry->identifier;
 
-		result = -1;
-	}
 #if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
@@ -672,7 +719,7 @@ int libfshfs_file_entry_get_identifier(
 		return( -1 );
 	}
 #endif
-	return( result );
+	return( 1 );
 }
 
 /* Retrieves the creation date and time
@@ -1971,6 +2018,841 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
 	return( result );
 }
 
+/* Retrieves the number of extended attributes
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_entry_get_number_of_extended_attributes(
+     libfshfs_file_entry_t *file_entry,
+     int *number_of_extended_attributes,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_number_of_extended_attributes";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->attributes == NULL )
+	{
+		if( libfshfs_file_system_get_attributes(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->attributes ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attributes.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( result != -1 )
+	{
+		if( libcdata_array_get_number_of_entries(
+		     internal_file_entry->attributes,
+		     number_of_extended_attributes,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of entries from attributes array.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the extended attribute for the specific index
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_entry_get_extended_attribute_by_index(
+     libfshfs_file_entry_t *file_entry,
+     int extended_attribute_index,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *attribute_record       = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_extended_attribute_by_index";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( extended_attribute == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extended attribute.",
+		 function );
+
+		return( -1 );
+	}
+	if( *extended_attribute != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extended attribute value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->attributes == NULL )
+	{
+		if( libfshfs_file_system_get_attributes(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->attributes ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attributes.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( result != -1 )
+	{
+		if( libcdata_array_get_entry_by_index(
+		     internal_file_entry->attributes,
+		     extended_attribute_index,
+		     (intptr_t **) &attribute_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attribute record: %d.",
+			 function,
+			 extended_attribute_index );
+
+			result = -1;
+		}
+		else if( libfshfs_extended_attribute_initialize(
+		          extended_attribute,
+		          attribute_record,
+		          error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extended attribute: %d.",
+			 function,
+			 extended_attribute_index );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the attribute record for an UTF-8 encoded name
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_attribute_record_t **attribute_record,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *safe_attribute_record = NULL;
+	static char *function                              = "libfshfs_internal_file_entry_get_attribute_record_by_utf8_name";
+	int attribute_index                                = 0;
+	int number_of_attributes                           = 0;
+	int result                                         = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->attributes == NULL )
+	{
+		if( libfshfs_file_system_get_attributes(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->attributes ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attributes.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( libcdata_array_get_number_of_entries(
+	     internal_file_entry->attributes,
+	     &number_of_attributes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of entries from attributes array.",
+		 function );
+
+		return( -1 );
+	}
+	for( attribute_index = 0;
+	     attribute_index < number_of_attributes;
+	     attribute_index++ )
+	{
+		if( libcdata_array_get_entry_by_index(
+		     internal_file_entry->attributes,
+		     attribute_index,
+		     (intptr_t **) &safe_attribute_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attribute record: %d.",
+			 function,
+			 attribute_index );
+
+			return( -1 );
+		}
+		result = libfshfs_attribute_record_compare_name_with_utf8_string(
+		          safe_attribute_record,
+		          utf8_string,
+		          utf8_string_length,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 "%s: unable to compare UTF-8 string with name of attribute record.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result == LIBUNA_COMPARE_EQUAL )
+		{
+			*attribute_record = safe_attribute_record;
+
+			return( 1 );
+		}
+	}
+	return( 0 );
+}
+
+/* Retrieves the attribute record for an UTF-16 encoded name
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_attribute_record_t **attribute_record,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *safe_attribute_record = NULL;
+	static char *function                              = "libfshfs_internal_file_entry_get_attribute_record_by_utf16_name";
+	int attribute_index                                = 0;
+	int number_of_attributes                           = 0;
+	int result                                         = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->attributes == NULL )
+	{
+		if( libfshfs_file_system_get_attributes(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->attributes ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attributes.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( libcdata_array_get_number_of_entries(
+	     internal_file_entry->attributes,
+	     &number_of_attributes,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of entries from attributes array.",
+		 function );
+
+		return( -1 );
+	}
+	for( attribute_index = 0;
+	     attribute_index < number_of_attributes;
+	     attribute_index++ )
+	{
+		if( libcdata_array_get_entry_by_index(
+		     internal_file_entry->attributes,
+		     attribute_index,
+		     (intptr_t **) &safe_attribute_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attribute record: %d.",
+			 function,
+			 attribute_index );
+
+			return( -1 );
+		}
+		result = libfshfs_attribute_record_compare_name_with_utf16_string(
+		          safe_attribute_record,
+		          utf16_string,
+		          utf16_string_length,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 "%s: unable to compare UTF-16 string with name of attribute record.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result == LIBUNA_COMPARE_EQUAL )
+		{
+			*attribute_record = safe_attribute_record;
+
+			return( 1 );
+		}
+	}
+	return( 0 );
+}
+
+/* Determines if there is an extended attribute for an UTF-8 encoded name
+ * Returns 1 if available, 0 if not or -1 on error
+ */
+int libfshfs_file_entry_has_extended_attribute_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *attribute_record       = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_has_extended_attribute_by_utf8_name";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+	          internal_file_entry,
+	          utf8_string,
+	          utf8_string_length,
+	          &attribute_record,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve attribute record for UTF-8 name.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Determines if there is an extended attribute for an UTF-8 encoded name
+ * Returns 1 if available, 0 if not or -1 on error
+ */
+int libfshfs_file_entry_has_extended_attribute_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *attribute_record       = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_has_extended_attribute_by_utf16_name";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
+	          internal_file_entry,
+	          utf16_string,
+	          utf16_string_length,
+	          &attribute_record,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve attribute record for UTF-16 name.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the extended attribute for an UTF-8 encoded name
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_file_entry_get_extended_attribute_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *attribute_record       = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_extended_attribute_by_utf8_name";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( extended_attribute == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extended attribute.",
+		 function );
+
+		return( -1 );
+	}
+	if( *extended_attribute != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extended attribute value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+	          internal_file_entry,
+	          utf8_string,
+	          utf8_string_length,
+	          &attribute_record,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve attribute record for UTF-8 name.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_extended_attribute_initialize(
+		     extended_attribute,
+		     attribute_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extended attribute.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the extended attribute for an UTF-16 encoded name
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_file_entry_get_extended_attribute_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libcerror_error_t **error )
+{
+	libfshfs_attribute_record_t *attribute_record       = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_extended_attribute_by_utf16_name";
+	int result                                           = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( extended_attribute == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extended attribute.",
+		 function );
+
+		return( -1 );
+	}
+	if( *extended_attribute != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extended attribute value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
+	          internal_file_entry,
+	          utf16_string,
+	          utf16_string_length,
+	          &attribute_record,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve attribute record for UTF-16 name.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_extended_attribute_initialize(
+		     extended_attribute,
+		     attribute_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extended attribute.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Retrieves the number of sub file entries
  * Returns 1 if successful or -1 on error
  */
@@ -2013,21 +2895,25 @@ int libfshfs_file_entry_get_number_of_sub_file_entries(
 #endif
 	if( internal_file_entry->sub_directory_entries == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_sub_directory_entries(
-		     internal_file_entry,
+		if( libfshfs_file_system_get_directory_entries(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->sub_directory_entries ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
-			 function );
+			 "%s: unable to retrieve sub directory entries for entry: %" PRIu32 " from file system.",
+			 function,
+			 internal_file_entry->identifier );
 
 			result = -1;
 		}
 	}
-	if( internal_file_entry->sub_directory_entries != NULL )
+	if( result != -1 )
 	{
 		if( libcdata_array_get_number_of_entries(
 		     internal_file_entry->sub_directory_entries,
@@ -2129,21 +3015,25 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 #endif
 	if( internal_file_entry->sub_directory_entries == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_sub_directory_entries(
-		     internal_file_entry,
+		if( libfshfs_file_system_get_directory_entries(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->sub_directory_entries ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve sub directory entries from catalog B-tree file.",
-			 function );
+			 "%s: unable to retrieve sub directory entries for entry: %" PRIu32 " from file system.",
+			 function,
+			 internal_file_entry->identifier );
 
 			result = -1;
 		}
 	}
-	if( internal_file_entry->sub_directory_entries != NULL )
+	if( result != -1 )
 	{
 		if( libcdata_array_get_entry_by_index(
 		     internal_file_entry->sub_directory_entries,
@@ -2528,9 +3418,9 @@ ssize_t libfshfs_file_entry_read_buffer(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->data_block_stream == NULL )
+	if( internal_file_entry->data_stream == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_data_block_stream(
+		if( libfshfs_internal_file_entry_get_data_stream(
 		     internal_file_entry,
 		     error ) != 1 )
 		{
@@ -2538,16 +3428,16 @@ ssize_t libfshfs_file_entry_read_buffer(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve data block stream.",
+			 "%s: unable to retrieve data stream.",
 			 function );
 
 			read_count = -1;
 		}
 	}
-	if( internal_file_entry->data_block_stream != NULL )
+	if( read_count != -1 )
 	{
 		read_count = libfdata_stream_read_buffer(
-		              internal_file_entry->data_block_stream,
+		              internal_file_entry->data_stream,
 		              (intptr_t *) internal_file_entry->file_io_handle,
 		              buffer,
 		              buffer_size,
@@ -2560,7 +3450,7 @@ ssize_t libfshfs_file_entry_read_buffer(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read from data block stream.",
+			 "%s: unable to read from data stream.",
 			 function );
 
 			read_count = -1;
@@ -2637,9 +3527,9 @@ ssize_t libfshfs_file_entry_read_buffer_at_offset(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->data_block_stream == NULL )
+	if( internal_file_entry->data_stream == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_data_block_stream(
+		if( libfshfs_internal_file_entry_get_data_stream(
 		     internal_file_entry,
 		     error ) != 1 )
 		{
@@ -2647,16 +3537,16 @@ ssize_t libfshfs_file_entry_read_buffer_at_offset(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve data block stream.",
+			 "%s: unable to retrieve data stream.",
 			 function );
 
 			read_count = -1;
 		}
 	}
-	if( internal_file_entry->data_block_stream != NULL )
+	if( read_count != -1 )
 	{
 		read_count = libfdata_stream_read_buffer_at_offset(
-		              internal_file_entry->data_block_stream,
+		              internal_file_entry->data_stream,
 		              (intptr_t *) internal_file_entry->file_io_handle,
 		              buffer,
 		              buffer_size,
@@ -2670,7 +3560,7 @@ ssize_t libfshfs_file_entry_read_buffer_at_offset(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read from data block stream at offset: %" PRIi64 "(0x%08" PRIx64 ").",
+			 "%s: unable to read from data stream at offset: %" PRIi64 "(0x%08" PRIx64 ").",
 			 function,
 			 offset,
 			 offset );
@@ -2747,9 +3637,9 @@ off64_t libfshfs_file_entry_seek_offset(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->data_block_stream == NULL )
+	if( internal_file_entry->data_stream == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_data_block_stream(
+		if( libfshfs_internal_file_entry_get_data_stream(
 		     internal_file_entry,
 		     error ) != 1 )
 		{
@@ -2757,16 +3647,16 @@ off64_t libfshfs_file_entry_seek_offset(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve data block stream.",
+			 "%s: unable to retrieve data stream.",
 			 function );
 
 			offset = -1;
 		}
 	}
-	if( internal_file_entry->data_block_stream != NULL )
+	if( offset != -1 )
 	{
 		offset = libfdata_stream_seek_offset(
-		          internal_file_entry->data_block_stream,
+		          internal_file_entry->data_stream,
 		          offset,
 		          whence,
 		          error );
@@ -2777,7 +3667,7 @@ off64_t libfshfs_file_entry_seek_offset(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_SEEK_FAILED,
-			 "%s: unable to seek offset in data block stream.",
+			 "%s: unable to seek offset in data stream.",
 			 function );
 
 			offset = -1;
@@ -2852,9 +3742,9 @@ int libfshfs_file_entry_get_offset(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->data_block_stream == NULL )
+	if( internal_file_entry->data_stream == NULL )
 	{
-		if( libfshfs_internal_file_entry_get_data_block_stream(
+		if( libfshfs_internal_file_entry_get_data_stream(
 		     internal_file_entry,
 		     error ) != 1 )
 		{
@@ -2862,16 +3752,16 @@ int libfshfs_file_entry_get_offset(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve data block stream.",
+			 "%s: unable to retrieve data stream.",
 			 function );
 
 			result = -1;
 		}
 	}
-	if( internal_file_entry->data_block_stream != NULL )
+	if( result != -1 )
 	{
 		if( libfdata_stream_get_offset(
-		     internal_file_entry->data_block_stream,
+		     internal_file_entry->data_stream,
 		     offset,
 		     error ) != 1 )
 		{
@@ -2879,7 +3769,7 @@ int libfshfs_file_entry_get_offset(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve offset from data block stream.",
+			 "%s: unable to retrieve offset from data stream.",
 			 function );
 
 			result = -1;

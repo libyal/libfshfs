@@ -1,36 +1,41 @@
 Debug info:
-* determine what to do with hard links, since they have their own identifier
-
-* file entry: revisit tracking sub directory entries in array
-** would libfshfs_catalog_btree_file_get_directory_entry_by_index be faster than libfshfs_catalog_btree_file_get_directory_entry_by_identifier, seeing the thread_record lookup?
-* file entry API: add extents functions
-
-* catalog btree file, include name in branch key check
-
-* bodyfile add support for symbolic link target
-* handle "\0\0\0\0HFS+ Private Data" in compare name functions
-* pyfshfs_volume handle 0-byte values in get_file_entry_by_path
-
-* add support for case folding
-** determine Unicode form
-
 * implement file entry data streams
 ** add extents overflow support
 ** handle file records without a data fork
 ** add support for resource fork data stream
 ** add support for compressed files
+*** create function to create data stream from attribute record
 
-* add support for extended attributes (attributes btree file)
+* ensure traditional HFS input errors for now
+
+* add support for case folding
+** determine Unicode form
+** add support for B-tree key compare type
+
+* what about a directory with extended attributes?
+** what if that attribute is named com.apple.decmpfs ?
+
+* determine what to do with hard links, since they have their own identifier
+
+* file entry API: add extents functions
+
+* catalog btree file, include name in branch key check
+
+* add support to print information about special files (those without a catalog record)
+
+* bodyfile add support for symbolic link target
+* handle "\0\0\0\0HFS+ Private Data" in compare name functions
+* pyfshfs_volume handle 0-byte values in get_file_entry_by_path
+
 * can the metadata B-tree files require additional extents?
 * split HFS and HFS+ documentation?
 
 Format support:
-* implement HFS support
+* implement traditional HFS support
 * implement support for file information
 * implement support for extended file information
 * implement support for folder information
 * implement support for extended folder information
-* implement LZVN compression support
 
 20160605
 * see `git log' for more recent change log

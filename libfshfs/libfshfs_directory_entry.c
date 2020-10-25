@@ -374,33 +374,58 @@ int libfshfs_directory_entry_set_name(
 
 		return( -1 );
 	}
-	directory_entry->name = (uint8_t *) memory_allocate(
-	                                     sizeof( uint8_t ) * name_size );
-
-	if( directory_entry->name == NULL )
+	if( name == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create name.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	if( memory_copy(
-	     directory_entry->name,
-	     name,
-	     name_size ) == NULL )
+	if( name_size > (uint32_t) MEMORY_MAXIMUM_ALLOCATION_SIZE )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy name.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
+	}
+	if( name_size > 0 )
+	{
+		directory_entry->name = (uint8_t *) memory_allocate(
+		                                     sizeof( uint8_t ) * name_size );
+
+		if( directory_entry->name == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create name.",
+			 function );
+
+			goto on_error;
+		}
+		if( memory_copy(
+		     directory_entry->name,
+		     name,
+		     name_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy name.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	directory_entry->name_size = name_size;
 
@@ -417,6 +442,70 @@ on_error:
 	directory_entry->name_size = 0;
 
 	return( -1 );
+}
+
+/* Sets the catalog record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_set_catalog_record(
+     libfshfs_directory_entry_t *directory_entry,
+     uint16_t record_type,
+     intptr_t *catalog_record,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_set_catalog_record";
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( directory_entry->catalog_record != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid directory entry - catalog record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( catalog_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid catalog record.",
+		 function );
+
+		return( -1 );
+	}
+	directory_entry->record_type    = record_type;
+	directory_entry->catalog_record = catalog_record;
+
+	return( 1 );
 }
 
 /* Retrieves the identifier

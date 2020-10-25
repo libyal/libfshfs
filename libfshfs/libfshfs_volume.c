@@ -1483,7 +1483,7 @@ int libfshfs_volume_get_utf16_name(
 	return( result );
 }
 
-/* Retrieves a specific file entry
+/* Retrieves the file entry for a specific identifier (or catalog node identifier (CNID))
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_volume_get_file_entry_by_identifier(

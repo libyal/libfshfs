@@ -302,7 +302,7 @@ int libfshfs_volume_get_utf16_name(
      size_t utf16_string_size,
      libfshfs_error_t **error );
 
-/* Retrieves a specific file entry
+/* Retrieves the file entry for a specific identifier (or catalog node identifier (CNID))
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -529,6 +529,67 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
      size_t utf16_string_size,
      libfshfs_error_t **error );
 
+/* Retrieves the number of extended attributes
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_number_of_extended_attributes(
+     libfshfs_file_entry_t *file_entry,
+     int *number_of_extended_attributes,
+     libfshfs_error_t **error );
+
+/* Retrieves the extended attribute for the specific index
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extended_attribute_by_index(
+     libfshfs_file_entry_t *file_entry,
+     int extended_attribute_index,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libfshfs_error_t **error );
+
+/* Determines if there is an extended attribute for an UTF-8 encoded name
+ * Returns 1 if available, 0 if not or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_has_extended_attribute_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_error_t **error );
+
+/* Determines if there is an extended attribute for an UTF-16 encoded name
+ * Returns 1 if available, 0 if not or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_has_extended_attribute_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_error_t **error );
+
+/* Retrieves the extended attribute for an UTF-8 encoded name
+ * Returns 1 if successful, 0 if the file entry does not contain such value or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extended_attribute_by_utf8_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint8_t *utf8_string,
+     size_t utf8_string_length,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libfshfs_error_t **error );
+
+/* Retrieves the extended attribute for an UTF-16 encoded name
+ * Returns 1 if successful, 0 if the file entry does not contain such value or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extended_attribute_by_utf16_name(
+     libfshfs_file_entry_t *file_entry,
+     const uint16_t *utf16_string,
+     size_t utf16_string_length,
+     libfshfs_extended_attribute_t **extended_attribute,
+     libfshfs_error_t **error );
+
 /* Retrieves the number of sub file entries
  * Returns 1 if successful or -1 on error
  */
@@ -617,6 +678,60 @@ LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_size(
      libfshfs_file_entry_t *file_entry,
      size64_t *size,
+     libfshfs_error_t **error );
+
+/* -------------------------------------------------------------------------
+ * Extended attribute functions
+ * ------------------------------------------------------------------------- */
+
+/* Frees an extended attribute
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_free(
+     libfshfs_extended_attribute_t **extended_attribute,
+     libfshfs_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_utf8_name_size(
+     libfshfs_extended_attribute_t *extended_attribute,
+     size_t *utf8_string_size,
+     libfshfs_error_t **error );
+
+/* Retrieves the UTF-8 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_utf8_name(
+     libfshfs_extended_attribute_t *extended_attribute,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libfshfs_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_utf16_name_size(
+     libfshfs_extended_attribute_t *extended_attribute,
+     size_t *utf16_string_size,
+     libfshfs_error_t **error );
+
+/* Retrieves the UTF-16 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_utf16_name(
+     libfshfs_extended_attribute_t *extended_attribute,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libfshfs_error_t **error );
 
 #if defined( __cplusplus )

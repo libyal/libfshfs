@@ -947,22 +947,27 @@ int info_handle_file_entry_value_with_name_fprint(
      size_t file_entry_name_length,
      libcerror_error_t **error )
 {
-	char file_mode_string[ 11 ]              = { '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0 };
+	char file_mode_string[ 11 ]                       = { '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0 };
 
-	system_character_t *symbolic_link_target = NULL;
-	static char *function                    = "info_handle_file_entry_value_with_name_fprint";
-	size64_t size                            = 0;
-	size_t symbolic_link_target_size         = 0;
-	uint32_t access_time                     = 0;
-	uint32_t backup_time                     = 0;
-	uint32_t creation_time                   = 0;
-	uint32_t entry_modification_time         = 0;
-	uint32_t file_entry_identifier           = 0;
-	uint32_t group_identifier                = 0;
-	uint32_t modification_time               = 0;
-	uint32_t owner_identifier                = 0;
-	uint16_t file_mode                       = 0;
-	int result                               = 0;
+	libfshfs_extended_attribute_t *extended_attribute = NULL;
+	system_character_t *extended_attribute_name       = NULL;
+	system_character_t *symbolic_link_target          = NULL;
+	static char *function                             = "info_handle_file_entry_value_with_name_fprint";
+	size64_t size                                     = 0;
+	size_t extended_attribute_name_size               = 0;
+	size_t symbolic_link_target_size                  = 0;
+	uint32_t access_time                              = 0;
+	uint32_t backup_time                              = 0;
+	uint32_t creation_time                            = 0;
+	uint32_t entry_modification_time                  = 0;
+	uint32_t file_entry_identifier                    = 0;
+	uint32_t group_identifier                         = 0;
+	uint32_t modification_time                        = 0;
+	uint32_t owner_identifier                         = 0;
+	uint16_t file_mode                                = 0;
+	int extended_attribute_index                      = 0;
+	int number_of_extended_attributes                 = 0;
+	int result                                        = 0;
 
 	if( info_handle == NULL )
 	{
@@ -1276,6 +1281,13 @@ int info_handle_file_entry_value_with_name_fprint(
 				goto on_error;
 			}
 		}
+		if( symbolic_link_target != NULL )
+		{
+			fprintf(
+			 info_handle->bodyfile_stream,
+			 " -> %" PRIs_SYSTEM "",
+			 symbolic_link_target );
+		}
 		fprintf(
 		 info_handle->bodyfile_stream,
 		 "|%" PRIu32 "|%s|%" PRIu32 "|%" PRIu32 "|%" PRIu64 "|%" PRIi64 "|%" PRIi64 "|%" PRIi64 "|%" PRIi64 "\n",
@@ -1460,6 +1472,144 @@ int info_handle_file_entry_value_with_name_fprint(
 			 "\tSymbolic link target\t: %" PRIs_SYSTEM "\n",
 			 symbolic_link_target );
 		}
+		if( libfshfs_file_entry_get_number_of_extended_attributes(
+		     file_entry,
+		     &number_of_extended_attributes,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of extended attributes.",
+			 function );
+
+			goto on_error;
+		}
+		if( number_of_extended_attributes > 0 )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "\tExtended attributes:\n" );
+
+			for( extended_attribute_index = 0;
+			     extended_attribute_index < number_of_extended_attributes;
+			     extended_attribute_index++ )
+			{
+				if( libfshfs_file_entry_get_extended_attribute_by_index(
+				     file_entry,
+				     extended_attribute_index,
+				     &extended_attribute,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve extended attribute: %d.",
+					 function,
+					 extended_attribute_index );
+
+					goto on_error;
+				}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				result = libfshfs_extended_attribute_get_utf16_name_size(
+				          extended_attribute,
+				          &extended_attribute_name_size,
+				          error );
+#else
+				result = libfshfs_extended_attribute_get_utf8_name_size(
+				          extended_attribute,
+				          &extended_attribute_name_size,
+				          error );
+#endif
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve extended attribute name string size.",
+					 function );
+
+					goto on_error;
+				}
+				fprintf(
+				 info_handle->notify_stream,
+				 "\t\tAttribute: %d\t: ",
+				 extended_attribute_index + 1 );
+
+				if( ( result == 1 )
+				 && ( extended_attribute_name_size > 0 ) )
+				{
+					extended_attribute_name = system_string_allocate(
+					                           extended_attribute_name_size );
+
+					if( extended_attribute_name == NULL )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_MEMORY,
+						 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+						 "%s: unable to create extended attribute name string.",
+						 function );
+
+						goto on_error;
+					}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+					result = libfshfs_extended_attribute_get_utf16_name(
+					          extended_attribute,
+					          (uint16_t *) extended_attribute_name,
+					          extended_attribute_name_size,
+					          error );
+#else
+					result = libfshfs_extended_attribute_get_utf8_name(
+					          extended_attribute,
+					          (uint8_t *) extended_attribute_name,
+					          extended_attribute_name_size,
+					          error );
+#endif
+					if( result != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+						 "%s: unable to retrieve extended attribute name string.",
+						 function );
+
+						goto on_error;
+					}
+					fprintf(
+					 info_handle->notify_stream,
+					 "%" PRIs_SYSTEM "",
+					 extended_attribute_name );
+
+					memory_free(
+					 extended_attribute_name );
+
+					extended_attribute_name = NULL;
+				}
+				fprintf(
+				 info_handle->notify_stream,
+				 "\n" );
+
+				if( libfshfs_extended_attribute_free(
+				     &extended_attribute,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+					 "%s: unable to free extended attribute: %d.",
+					 function,
+					 extended_attribute_index );
+
+					goto on_error;
+				}
+			}
+		}
 	}
 	if( symbolic_link_target != NULL )
 	{
@@ -1471,6 +1621,17 @@ int info_handle_file_entry_value_with_name_fprint(
 	return( 1 );
 
 on_error:
+	if( extended_attribute_name != NULL )
+	{
+		memory_free(
+		 extended_attribute_name );
+	}
+	if( extended_attribute != NULL )
+	{
+		libfshfs_extended_attribute_free(
+		 &extended_attribute,
+		 NULL );
+	}
 	if( symbolic_link_target != NULL )
 	{
 		memory_free(

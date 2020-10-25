@@ -15,6 +15,7 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_IMPORT@
 
@@ -40,11 +41,17 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	fshfs_test_attributes_btree_key \
 	fshfs_test_btree_file \
 	fshfs_test_btree_header \
 	fshfs_test_btree_node \
 	fshfs_test_btree_node_descriptor \
+	fshfs_test_btree_node_record \
+	fshfs_test_buffer_data_handle \
 	fshfs_test_catalog_btree_key \
+	fshfs_test_compressed_data_handle \
+	fshfs_test_compression \
+	fshfs_test_deflate \
 	fshfs_test_directory_entry \
 	fshfs_test_directory_record \
 	fshfs_test_error \
@@ -60,6 +67,18 @@ check_PROGRAMS = \
 	fshfs_test_thread_record \
 	fshfs_test_volume \
 	fshfs_test_volume_header
+
+fshfs_test_attributes_btree_key_SOURCES = \
+	fshfs_test_attributes_btree_key.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_attributes_btree_key_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
 
 fshfs_test_btree_file_SOURCES = \
 	fshfs_test_functions.c fshfs_test_functions.h \
@@ -119,6 +138,30 @@ fshfs_test_btree_node_descriptor_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 
+fshfs_test_btree_node_record_SOURCES = \
+	fshfs_test_btree_node_record.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_btree_node_record_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_buffer_data_handle_SOURCES = \
+	fshfs_test_buffer_data_handle.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_buffer_data_handle_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
 fshfs_test_catalog_btree_key_SOURCES = \
 	fshfs_test_catalog_btree_key.c \
 	fshfs_test_libcerror.h \
@@ -128,6 +171,47 @@ fshfs_test_catalog_btree_key_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_catalog_btree_key_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_compressed_data_handle_SOURCES = \
+	fshfs_test_compressed_data_handle.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfdata.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_compressed_data_handle_LDADD = \
+	@LIBFDATA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_compression_SOURCES = \
+	fshfs_test_compression.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_compression_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_deflate_SOURCES = \
+	fshfs_test_deflate.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libcnotify.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_unused.h
+
+fshfs_test_deflate_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

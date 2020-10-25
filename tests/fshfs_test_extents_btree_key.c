@@ -310,8 +310,6 @@ int fshfs_test_extents_btree_key_read_data(
 	          12,
 	          &error );
 
-FSHFS_TEST_FPRINT_ERROR( error );
-
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,

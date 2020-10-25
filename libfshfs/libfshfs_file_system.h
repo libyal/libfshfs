@@ -145,6 +145,13 @@ int libfshfs_file_system_get_extents(
      libcdata_array_t **extents,
      libcerror_error_t **error );
 
+int libfshfs_file_system_get_attributes(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libcdata_array_t **attributes,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

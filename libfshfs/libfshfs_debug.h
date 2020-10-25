@@ -40,6 +40,9 @@ void libfshfs_debug_print_btree_attribute_flags(
 void libfshfs_debug_print_volume_attribute_flags(
       uint32_t volume_attribute_flags );
 
+const char *libfshfs_debug_print_attributes_record_type(
+             uint32_t record_type );
+
 const char *libfshfs_debug_print_btree_node_type(
              uint8_t btree_node_type );
 

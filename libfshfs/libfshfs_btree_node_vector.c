@@ -594,7 +594,7 @@ int libfshfs_btree_node_vector_get_node_by_number(
 		     0,
 		     (intptr_t *) safe_node,
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_free,
-		     0,
+		     LIBFCACHE_CACHE_VALUE_FLAG_MANAGED,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

@@ -1,5 +1,5 @@
 /*
- * The extents B-tree key functions
+ * The extents (overflow) B-tree key functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -50,6 +50,14 @@ struct libfshfs_extents_btree_key
 	/* Start block
 	 */
 	uint32_t start_block;
+
+	/* Record data
+	 */
+	const uint8_t *record_data;
+
+	/* Record data size
+	 */
+	size_t record_data_size;
 };
 
 int libfshfs_extents_btree_key_initialize(

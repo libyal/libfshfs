@@ -36,10 +36,6 @@ typedef struct libfshfs_directory_entry libfshfs_directory_entry_t;
 
 struct libfshfs_directory_entry
 {
-	/* Record type
-	 */
-	uint16_t record_type;
-
 	/* Name
 	 */
 	uint8_t *name;
@@ -48,13 +44,17 @@ struct libfshfs_directory_entry
 	 */
 	uint16_t name_size;
 
-	/* Parent identifier
+	/* Record type
 	 */
-	uint32_t parent_identifier;
+	uint16_t record_type;
 
 	/* Directory or file catalog record
 	 */
 	intptr_t *catalog_record;
+
+	/* Parent identifier
+	 */
+	uint32_t parent_identifier;
 };
 
 int libfshfs_directory_entry_initialize(
@@ -74,6 +74,12 @@ int libfshfs_directory_entry_set_name(
      libfshfs_directory_entry_t *directory_entry,
      const uint8_t *name,
      size_t name_size,
+     libcerror_error_t **error );
+
+int libfshfs_directory_entry_set_catalog_record(
+     libfshfs_directory_entry_t *directory_entry,
+     uint16_t record_type,
+     intptr_t *catalog_record,
      libcerror_error_t **error );
 
 int libfshfs_directory_entry_get_identifier(

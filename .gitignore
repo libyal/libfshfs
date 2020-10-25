@@ -127,11 +127,17 @@ stamp-h[1-9]
 /fshfstools/*.exe
 /fshfstools/fshfsinfo
 /tests/*.exe
+/tests/fshfs_test_attributes_btree_key
 /tests/fshfs_test_btree_file
 /tests/fshfs_test_btree_header
 /tests/fshfs_test_btree_node
 /tests/fshfs_test_btree_node_descriptor
+/tests/fshfs_test_btree_node_record
+/tests/fshfs_test_buffer_data_handle
 /tests/fshfs_test_catalog_btree_key
+/tests/fshfs_test_compressed_data_handle
+/tests/fshfs_test_compression
+/tests/fshfs_test_deflate
 /tests/fshfs_test_directory_entry
 /tests/fshfs_test_directory_record
 /tests/fshfs_test_error

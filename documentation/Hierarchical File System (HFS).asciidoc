@@ -296,7 +296,7 @@ See section: <<btree_header_record_attributes,Attributes>>
 |===
 
 The root node is the start of the B-tree structure; usually the root node is
-first index node, but it might be a leaf node if there are no index nodes.
+an index node, but it might be a leaf node if there are no index nodes.
 
 The first node in the file is referenced by node number 0.
 
@@ -1216,8 +1216,6 @@ Contains a CNID
 | 8 | ... | | Name string +
 UTF-16 big-endian string without end-of-string character +
 Contains the name of the file or directory
-4+| _If branch node_
-| ... | 4 | | The sub node number
 |===
 
 [yellow-background]*Maximum name string length 255 characters?*
@@ -1351,7 +1349,7 @@ BSD like flags settable by the owner +
 Also see: <<owner_flags,Owner flags>>
 | 42 | 2 | | File mode +
 Also see: <<file_mode,File mode>>
-| 44 | 4 | | Union of special permission data. +
+| 44 | 4 | | Special permission data. +
 Consist of either: hard link inode number, hard link count, raw device number
 4+| _Folder information_
 | 48 | 16 | | Folder information +
@@ -1442,7 +1440,7 @@ BSD like flags settable by the owner +
 Also see: <<owner_flags,Owner flags>>
 | 42 | 2 | | File mode +
 Also see: <<file_mode,File mode>>
-| 44 | 4 | | Union of special permission data. +
+| 44 | 4 | | Special permission data. +
 Consist of either: hard link inode number, hard link count, raw device number
 4+| _File information_
 | 48 | 16 | | File information (or user information) +
@@ -1465,11 +1463,29 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
-| 0x0001 | kHFSFileLockedBit | File is locked and cannot be written to
-| 0x0002 | kHFSThreadExistsBit | Has file thread record
+| 0x0001 | kHFSFileLockedMask | File is locked and cannot be written to
+| 0x0002 | kHFSThreadExistsMask | Has file thread record
+| 0x0004 | | [yellow-background]*Unknown*
 | 0x0008 | | File record is used, otherwise the file record should be considered empty +
 [yellow-background]*Removed in HFS+?*
+3+|
+| 0x0080 | | [yellow-background]*Unknown (compressed?)*
 |===
+
+[yellow-background]*TODO: determine if the following values are related*
+
+....
+0x0004 kHFSHasAttributesMask
+0x0008 kHFSHasSecurityMask
+0x0010 kHFSHasFolderCountMask
+0x0020 kHFSHasLinkChainMask
+0x0040 kHFSHasChildLinkMask
+0x0080 kHFSHasDateAddedMask
+0x0100 kHFSFastDevPinnedMask
+0x0200 kHFSDoNotFastDevPinMask
+0x0400 kHFSFastDevCandidateMask
+0x0800 kHFSAutoCandidateMask
+....
 
 ==== The catalog thread record
 
@@ -1604,8 +1620,8 @@ Finding a file or directory by its CNID is a two-step process:
 
 Forks in HFS and HFS+ can be compared to data streams in NTFS. In HFS+ the fork
 values are grouped in a separate fork descriptor structure. HFS+ also defines
-named forks. These named forks are not stored in the catalog file but in
-the attributes file.
+extended attributes (named forks). These are not stored in the catalog file but
+in the attributes file.
 
 ==== [[hfs_plus_fork_descriptor_structure]]HFS+ fork descriptor structure
 
@@ -1704,8 +1720,6 @@ See section: <<hfs_fork_types,HFS fork types>>
 Contains a CNID
 | 8 | 4 | | Start block +
 The first allocation block index described by the corresponding extent record
-4+| _If branch node_
-| 12 | 4 | | The sub node number
 |===
 
 The first eight extents in a fork are held in its catalog file record. So the
@@ -1830,17 +1844,28 @@ Listing 1 Determining whether an allocation block is in use.
 == The HFS+ attributes file
 
 The HFS+ attributes file is a B-tree file. The location of the attributes file
-can be found in the volume header. The HFS+ attributes file is intended for
-named forks, but is also used to store extended attributes.
+can be found in the volume header. The HFS+ attributes file is intended to
+store extended attributes.
 
-=== Attributes file index keys
+=== HFS+ attributes index keys
 
-An attributes files has a variable length key similiar to those of the catalog
-file.
+The HFS+ attributes index key is variable in size and consists of:
 
-[NOTE]
-The structure of the keys in the attribute B-tree has not been finalized and is
-subject to change.
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | | The key data size +
+Contains number of bytes
+4+| _If key data size > 0_
+| 2 | 2 | | [yellow-background]*Unknown*
+| 4 | 4 | | The identifier +
+Contains a CNID
+| 8 | 4 | | [yellow-background]*Unknown*
+| 12 | 2 | | Number of characters in the name string
+| 14 | ... | | Name string +
+UTF-16 big-endian string without end-of-string character +
+Contains the name of the file or directory
+|===
 
 === The attributes file data
 
@@ -1863,32 +1888,59 @@ The HFS+ attributes file data record header is 4 bytes of size and consists of:
 |===
 | Offset | Size | Value | Description
 | 0 | 4 | | The record type +
-0x0010 => Inline data attribute +
-0x0020 => Fork data attribute +
-0x0030 => Extention attribute
+See section: <<attributes_file_data_record_types,Record types>>
 |===
 
-==== The fork data attribute
+===== [[attributes_file_data_record_types]]The attributes data record types
 
-The HFS+ attributes file fork data attribute is 84 bytes of size and consists of:
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x00000010 | kHFSPlusAttrInlineData | Attribute record with inline data
+| 0x00000020 | kHFSPlusAttrForkData | Attribute record with fork descriptor
+| 0x00000030 | kHFSPlusAttrExtents | Attribute record with extents
+|===
+
+==== The inline data attribute record
+
+The HFS+ attributes file inline data attribute record is variable of size and
+consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
-| 4 | 80 | | Attribute fork descriptor +
+| 0 | 4 | 0x00000010 | The record type
+| 4 | 4 | 0 | [yellow-background]*Unknown (Reserved)*
+| 8 | 4 | | [yellow-background]*Unknown*
+| 12 | 4 | | Attribute data size
+| 16 | ... | | Attribute data
+|===
+
+==== The fork descriptor attribute record
+
+The HFS+ attributes file fork descriptor attribute record is 88 bytes of size
+and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | 0x00000020 | The record type
+| 4 | 4 | 0 | [yellow-background]*Unknown (Reserved)*
+| 8 | 80 | | Attribute fork descriptor +
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
 
-==== The extension attribute
+==== The extents attribute record
 
-The HFS+ attributes file extension attribute is 68 bytes of size and consists of:
+The HFS+ attributes file extents attribute record is 72 bytes of size and
+consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
-| 4 | ( 8 x 8 ) = 64 | | Attribute extent data +
+| 0 | 4 | 0x00000030 | The record type
+| 4 | 4 | 0 | [yellow-background]*Unknown (Reserved)*
+| 8 | ( 8 x 8 ) = 64 | | Attribute extent data +
 See section: <<hfs_plus_extents_array,The HFS+ extents array>>
 |===
 

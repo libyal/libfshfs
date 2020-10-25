@@ -1,5 +1,5 @@
 /*
- * The extents B-tree key functions
+ * The extents (overflow) B-tree key functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -22,7 +22,6 @@
 #include <common.h>
 #include <byte_stream.h>
 #include <memory.h>
-#include <system_string.h>
 #include <types.h>
 
 #include "libfshfs_extents_btree_key.h"
@@ -126,6 +125,8 @@ int libfshfs_extents_btree_key_free(
 	}
 	if( *extents_btree_key != NULL )
 	{
+		/* The record_data reference is freed elsewhere
+		 */
 		memory_free(
 		 *extents_btree_key );
 
@@ -291,6 +292,9 @@ int libfshfs_extents_btree_key_read_data(
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 	extents_btree_key->data_size = key_data_size + additional_size;
+
+	extents_btree_key->record_data      = &( data[ extents_btree_key->data_size ] );
+	extents_btree_key->record_data_size = data_size - extents_btree_key->data_size;
 
 	return( 1 );
 }

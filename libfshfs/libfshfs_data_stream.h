@@ -1,5 +1,5 @@
 /*
- * Block stream functions
+ * Data stream functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_BLOCK_STREAM_H )
-#define _LIBFSHFS_BLOCK_STREAM_H
+#if !defined( _LIBFSHFS_DATA_STREAM_H )
+#define _LIBFSHFS_DATA_STREAM_H
 
 #include <common.h>
 #include <types.h>
@@ -34,16 +34,29 @@
 extern "C" {
 #endif
 
-int libfshfs_block_stream_initialize(
-     libfdata_stream_t **block_stream,
+int libfshfs_data_stream_initialize_from_data(
+     libfdata_stream_t **data_stream,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_data_stream_initialize_from_extents(
+     libfdata_stream_t **data_stream,
      libfshfs_io_handle_t *io_handle,
-     size64_t data_size,
      libcdata_array_t *extents,
+     size64_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_data_stream_initialize_from_compressed_data_stream(
+     libfdata_stream_t **data_stream,
+     libfdata_stream_t *compressed_data_stream,
+     size64_t uncompressed_data_size,
+     int compression_method,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_BLOCK_STREAM_H ) */
+#endif /* !defined( _LIBFSHFS_DATA_STREAM_H ) */
 

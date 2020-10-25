@@ -1,5 +1,5 @@
 /*
- * The extents B-tree file functions
+ * The extents (overflow) B-tree file functions
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -35,19 +35,178 @@
 
 #include "fshfs_extents_file.h"
 
+/* Retrieves the extents B-tree key from a specific B-tree node record
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_extents_btree_file_get_key_from_node_by_index(
+     libfshfs_btree_node_t *node,
+     uint16_t record_index,
+     libfshfs_extents_btree_key_t **node_key,
+     libcerror_error_t **error )
+{
+	libfshfs_btree_node_record_t *node_record   = NULL;
+	libfshfs_extents_btree_key_t *safe_node_key = NULL;
+	static char *function                       = "libfshfs_extents_btree_file_get_key_from_node_by_index";
+
+	if( node_key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extents B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_node_get_record_by_index(
+	     node,
+	     record_index,
+	     &node_record,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		goto on_error;
+	}
+	if( node_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing B-tree node record: %" PRIu16 ".",
+		 function,
+		 record_index );
+
+		goto on_error;
+	}
+	if( node_record->key_value == NULL )
+	{
+		if( libfshfs_extents_btree_key_initialize(
+		     &safe_node_key,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extents B-tree key.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_extents_btree_key_read_data(
+		     safe_node_key,
+		     node_record->data,
+		     node_record->data_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read extents B-tree key.",
+			 function );
+
+			goto on_error;
+		}
+		node_record->key_value               = (intptr_t *) safe_node_key;
+		node_record->key_value_free_function = (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extents_btree_key_free;
+	}
+	*node_key = (libfshfs_extents_btree_key_t *) node_record->key_value;
+
+	return( 1 );
+
+on_error:
+	if( safe_node_key != NULL )
+	{
+		libfshfs_extents_btree_key_free(
+		 &safe_node_key,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves a sub node number for from the extents B-tree key
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_extents_btree_file_get_sub_node_number_from_key(
+     libfshfs_extents_btree_key_t *node_key,
+     uint32_t *sub_node_number,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_extents_btree_file_get_sub_node_number_from_key";
+
+	if( node_key == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extents B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_key->record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid extents B-tree key - missing record data.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_key->record_data_size < 4 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extents B-tree key - record data size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( sub_node_number == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid sub node number.",
+		 function );
+
+		return( -1 );
+	}
+	byte_stream_copy_to_uint32_big_endian(
+	 node_key->record_data,
+	 *sub_node_number );
+
+	return( 1 );
+}
+
 /* Retrieves the extents for from the extents B-tree record data
  * Returns 1 if successful or -1 on error
  */
 int libfshfs_extents_btree_file_get_extents_from_record_data(
      libfshfs_btree_file_t *btree_file,
      libfshfs_extents_btree_key_t *node_key,
-     const uint8_t *record_data,
-     size_t record_data_size,
      libcdata_array_t *extents,
      libcerror_error_t **error )
 {
 	libfshfs_extent_t *extent        = NULL;
 	static char *function            = "libfshfs_extents_btree_file_get_extents_from_record_data";
+	size_t extents_data_size         = 0;
 	size_t record_data_offset        = 0;
 	uint32_t extent_block_number     = 0;
 	uint32_t extent_number_of_blocks = 0;
@@ -72,24 +231,26 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid node key.",
+		 "%s: invalid extents B-tree key.",
 		 function );
 
 		return( -1 );
 	}
-	if( record_data == NULL )
+	if( node_key->record_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid record data.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid extents B-tree key - missing record data.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( record_data_size != 12 )
-	 && ( record_data_size != 64 ) )
+/* TODO add traditional HFS support extents_data_size = 12; */
+	extents_data_size = 64;
+
+	if( node_key->record_data_size < extents_data_size )
 	{
 		libcerror_error_set(
 		 error,
@@ -107,46 +268,46 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 		 "%s: extents record data:\n",
 		 function );
 		libcnotify_print_data(
-		 record_data,
-		 record_data_size,
+		 node_key->record_data,
+		 extents_data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
-	if( record_data_size == 12 )
+	if( extents_data_size == 64 )
 	{
-		number_of_extents = 4;
+		number_of_extents = 8;
 	}
 	else
 	{
-		number_of_extents = 8;
+		number_of_extents = 4;
 	}
 	for( extent_index = 0;
 	     extent_index < number_of_extents;
 	     extent_index++ )
 	{
-		if( record_data_size == 12 )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 &( record_data[ record_data_offset ] ),
-			 extent_block_number );
-
-			byte_stream_copy_to_uint16_big_endian(
-			 &( record_data[ record_data_offset ] ),
-			 extent_number_of_blocks );
-
-			record_data_offset += 4;
-		}
-		else
+		if( extents_data_size == 64 )
 		{
 			byte_stream_copy_to_uint32_big_endian(
-			 &( record_data[ record_data_offset ] ),
+			 &( node_key->record_data[ record_data_offset ] ),
 			 extent_block_number );
 
 			byte_stream_copy_to_uint32_big_endian(
-			 &( record_data[ record_data_offset ] ),
+			 &( node_key->record_data[ record_data_offset ] ),
 			 extent_number_of_blocks );
 
 			record_data_offset += 8;
+		}
+		else
+		{
+			byte_stream_copy_to_uint16_big_endian(
+			 &( node_key->record_data[ record_data_offset ] ),
+			 extent_block_number );
+
+			byte_stream_copy_to_uint16_big_endian(
+			 &( node_key->record_data[ record_data_offset ] ),
+			 extent_number_of_blocks );
+
+			record_data_offset += 4;
 		}
 		if( ( extent_block_number == 0 )
 		 || ( extent_number_of_blocks == 0 ) )
@@ -195,6 +356,11 @@ on_error:
 		 &extent,
 		 NULL );
 	}
+	libcdata_array_empty(
+	 extents,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+	 NULL );
+
 	return( -1 );
 }
 
@@ -211,11 +377,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 {
 	libfshfs_extent_t *extent              = NULL;
 	libfshfs_extents_btree_key_t *node_key = NULL;
-	const uint8_t *record_data             = NULL;
 	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_leaf_node";
-	size_t record_data_offset              = 0;
-	size_t record_data_size                = 0;
-	uint32_t node_identifier               = 0;
 	uint16_t record_index                  = 0;
 	int is_leaf_node                       = 0;
 
@@ -282,73 +444,39 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 	     record_index < node->descriptor->number_of_records;
 	     record_index++ )
 	{
-		if( libfshfs_btree_node_get_record_data_by_index(
+		if( libfshfs_extents_btree_file_get_key_from_node_by_index(
 		     node,
 		     record_index,
-		     &record_data,
-		     &record_data_size,
+		     &node_key,
 		     error ) == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node record: %" PRIu16 " data.",
+			 "%s: unable to retrieve extents B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
 			goto on_error;
 		}
-		if( libfshfs_extents_btree_key_initialize(
-		     &node_key,
-		     error ) != 1 )
+		if( node_key == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extents B-tree key.",
-			 function );
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing extents B-tree key: %" PRIu16 ".",
+			 function,
+			 record_index );
 
 			goto on_error;
 		}
-		if( libfshfs_extents_btree_key_read_data(
-		     node_key,
-		     record_data,
-		     record_data_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to free extents B-tree key.",
-			 function );
-
-			goto on_error;
-		}
-		record_data_offset = node_key->data_size;
-
-		if( record_data_offset >= record_data_size )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid record data offset value out of bounds.",
-			 function );
-
-			goto on_error;
-		}
-		node_identifier = node_key->identifier;
-
-		if( node_identifier == identifier )
+		if( node_key->identifier == identifier )
 		{
 			if( libfshfs_extents_btree_file_get_extents_from_record_data(
 			     btree_file,
 			     node_key,
-			     &( record_data[ record_data_offset ] ),
-			     record_data_size - record_data_offset,
 			     extents,
 			     error ) != 1 )
 			{
@@ -362,20 +490,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 				goto on_error;
 			}
 		}
-		if( libfshfs_extents_btree_key_free(
-		     &node_key,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free extents B-tree key.",
-			 function );
-
-			goto on_error;
-		}
-		if( node_identifier > identifier )
+		if( node_key->identifier > identifier )
 		{
 			break;
 		}
@@ -389,12 +504,11 @@ on_error:
 		 &extent,
 		 NULL );
 	}
-	if( node_key != NULL )
-	{
-		libfshfs_extents_btree_key_free(
-		 &node_key,
-		 NULL );
-	}
+	libcdata_array_empty(
+	 extents,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+	 NULL );
+
 	return( -1 );
 }
 
@@ -411,17 +525,14 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
      int recursion_depth,
      libcerror_error_t **error )
 {
-	libfshfs_btree_node_t *sub_node        = NULL;
-	libfshfs_extents_btree_key_t *node_key = NULL;
-	const uint8_t *record_data             = NULL;
-	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_node";
-	size_t record_data_offset              = 0;
-	size_t record_data_size                = 0;
-	uint32_t node_identifier               = 0;
-	uint32_t sub_node_number               = 0;
-	uint16_t record_index                  = 0;
-	int is_branch_node                     = 0;
-	int result                             = 0;
+	libfshfs_btree_node_t *sub_node             = NULL;
+	libfshfs_extents_btree_key_t *last_node_key = NULL;
+	libfshfs_extents_btree_key_t *node_key      = NULL;
+	static char *function                       = "libfshfs_extents_btree_file_get_extents_from_node";
+	uint32_t sub_node_number                    = 0;
+	uint16_t record_index                       = 0;
+	int is_branch_node                          = 0;
+	int result                                  = 0;
 
 	if( btree_file == NULL )
 	{
@@ -494,88 +605,75 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 
 		goto on_error;
 	}
-	for( record_index = 0;
-	     record_index < node->descriptor->number_of_records;
+	if( libfshfs_extents_btree_file_get_key_from_node_by_index(
+	     node,
+	     0,
+	     &last_node_key,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extents B-tree key: 0.",
+		 function );
+
+		goto on_error;
+	}
+	node_key = last_node_key;
+
+	for( record_index = 1;
+	     record_index <= node->descriptor->number_of_records;
 	     record_index++ )
 	{
-		if( libfshfs_btree_node_get_record_data_by_index(
-		     node,
-		     record_index,
-		     &record_data,
-		     &record_data_size,
-		     error ) == -1 )
+		if( record_index < node->descriptor->number_of_records )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node record: %" PRIu16 " data.",
-			 function,
-			 record_index );
-
-			goto on_error;
-		}
-		if( libfshfs_extents_btree_key_initialize(
-		     &node_key,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extents B-tree key.",
-			 function );
-
-			goto on_error;
-		}
-		if( libfshfs_extents_btree_key_read_data(
-		     node_key,
-		     record_data,
-		     record_data_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to free extents B-tree key.",
-			 function );
-
-			goto on_error;
-		}
-		record_data_offset = node_key->data_size;
-
-		if( record_data_offset >= record_data_size )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid record data offset value out of bounds.",
-			 function );
-
-			goto on_error;
-		}
-		node_identifier = node_key->identifier;
-
-		if( node_identifier <= identifier )
-		{
-			if( ( record_data_size < 4 )
-			 || ( record_data_offset > ( record_data_size - 4 ) ) )
+			if( libfshfs_extents_btree_file_get_key_from_node_by_index(
+			     node,
+			     record_index,
+			     &node_key,
+			     error ) == -1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid record data size value out of bounds.",
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve extents B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
+
+				goto on_error;
+			}
+			if( node_key == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing extents B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
+
+				goto on_error;
+			}
+		}
+		if( ( record_index == node->descriptor->number_of_records )
+		 || ( node_key->identifier >= identifier ) )
+		{
+			if( libfshfs_extents_btree_file_get_sub_node_number_from_key(
+			     last_node_key,
+			     &sub_node_number,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve sub node number from extents B-Tree key.",
 				 function );
 
 				goto on_error;
 			}
-			byte_stream_copy_to_uint32_big_endian(
-			 &( record_data[ record_data_offset ] ),
-			 sub_node_number );
-
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
@@ -588,8 +686,6 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 				 "\n" );
 			}
 #endif
-			record_data_offset += 4;
-
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
@@ -652,40 +748,27 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve extent from extents B-tree node: %" PRIu32 ".",
+				 "%s: unable to retrieve extents from extents B-tree node: %" PRIu32 ".",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
+			if( node_key->identifier > identifier )
+			{
+				break;
+			}
 		}
-		if( libfshfs_extents_btree_key_free(
-		     &node_key,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free extents B-tree key.",
-			 function );
-
-			goto on_error;
-		}
-		if( node_identifier > identifier )
-		{
-			break;
-		}
+		last_node_key = node_key;
 	}
 	return( 1 );
 
 on_error:
-	if( node_key != NULL )
-	{
-		libfshfs_extents_btree_key_free(
-		 &node_key,
-		 NULL );
-	}
+	libcdata_array_empty(
+	 extents,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+	 NULL );
+
 	return( -1 );
 }
 
@@ -764,7 +847,7 @@ int libfshfs_extents_btree_file_get_extents(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extent from extents B-tree root node.",
+		 "%s: unable to retrieve extents from extents B-tree root node.",
 		 function );
 
 		goto on_error;

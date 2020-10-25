@@ -155,7 +155,18 @@ int libfshfs_catalog_btree_file_get_sub_node_number_from_key(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid node key.",
+		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_key->record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid catalog B-tree key - missing record data.",
 		 function );
 
 		return( -1 );
@@ -208,7 +219,18 @@ int libfshfs_catalog_btree_file_get_thread_record_from_key(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid node key.",
+		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_key->record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid catalog B-tree key - missing record data.",
 		 function );
 
 		return( -1 );
@@ -406,7 +428,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node key: %" PRIu16 ".",
+			 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -418,7 +440,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -575,7 +597,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve node key: 0.",
+		 "%s: unable to retrieve catalog B-tree key: 0.",
 		 function );
 
 		goto on_error;
@@ -598,7 +620,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve node key: %" PRIu16 ".",
+				 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 				 function,
 				 record_index );
 
@@ -611,7 +633,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -821,12 +843,13 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_key(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	libfshfs_directory_record_t *directory_record = NULL;
-	libfshfs_file_record_t *file_record           = NULL;
-	intptr_t *catalog_record                      = NULL;
-	static char *function                         = "libfshfs_catalog_btree_file_get_directory_entry_from_key";
-	uint16_t record_type                          = 0;
-	int result                                    = 0;
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	libfshfs_directory_record_t *directory_record    = NULL;
+	libfshfs_file_record_t *file_record              = NULL;
+	intptr_t *catalog_record                         = NULL;
+	static char *function                            = "libfshfs_catalog_btree_file_get_directory_entry_from_key";
+	uint16_t record_type                             = 0;
+	int result                                       = 0;
 
 	if( node_key == NULL )
 	{
@@ -834,7 +857,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_key(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid node key.",
+		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_key->record_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid catalog B-tree key - missing record data.",
 		 function );
 
 		return( -1 );
@@ -952,7 +986,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_key(
 	if( catalog_record != NULL )
 	{
 		if( libfshfs_directory_entry_initialize(
-		     directory_entry,
+		     &safe_directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -965,7 +999,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_key(
 			goto on_error;
 		}
 		if( libfshfs_directory_entry_set_name(
-		     *directory_entry,
+		     safe_directory_entry,
 		     node_key->name_data,
 		     node_key->name_size,
 		     error ) != 1 )
@@ -979,12 +1013,27 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_key(
 
 			goto on_error;
 		}
-		( *directory_entry )->record_type       = record_type;
-		( *directory_entry )->parent_identifier = node_key->parent_identifier;
-		( *directory_entry )->catalog_record    = catalog_record;
+		safe_directory_entry->parent_identifier = node_key->parent_identifier;
 
+		if( libfshfs_directory_entry_set_catalog_record(
+		     safe_directory_entry,
+		     record_type,
+		     catalog_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set catalog record of directory entry.",
+			 function );
+
+			goto on_error;
+		}
 		directory_record = NULL;
 		file_record      = NULL;
+
+		*directory_entry = safe_directory_entry;
 
 		result = 1;
 	}
@@ -1003,10 +1052,10 @@ on_error:
 		 &directory_record,
 		 NULL );
 	}
-	if( *directory_entry != NULL )
+	if( safe_directory_entry != NULL )
 	{
 		libfshfs_directory_entry_free(
-		 directory_entry,
+		 &safe_directory_entry,
 		 NULL );
 	}
 	return( -1 );
@@ -1125,7 +1174,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node key: %" PRIu16 ".",
+			 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -1137,7 +1186,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -1151,7 +1200,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid node key: %" PRIu16 " - record data size value out of bounds.",
+				 "%s: invalid catalog B-tree key: %" PRIu16 " - record data size value out of bounds.",
 				 function,
 				 record_index );
 
@@ -1352,7 +1401,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve node key: 0.",
+		 "%s: unable to retrieve catalog B-tree key: 0.",
 		 function );
 
 		goto on_error;
@@ -1375,7 +1424,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve node key: %" PRIu16 ".",
+				 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 				 function,
 				 record_index );
 
@@ -1388,7 +1437,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -1739,7 +1788,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node key: %" PRIu16 ".",
+			 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -1751,7 +1800,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -1765,7 +1814,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid node key: %" PRIu16 " - record data size value out of bounds.",
+				 "%s: invalid catalog B-tree key: %" PRIu16 " - record data size value out of bounds.",
 				 function,
 				 record_index );
 
@@ -1957,7 +2006,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve node key: 0.",
+		 "%s: unable to retrieve catalog B-tree key: 0.",
 		 function );
 
 		goto on_error;
@@ -1980,7 +2029,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve node key: %" PRIu16 ".",
+				 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 				 function,
 				 record_index );
 
@@ -1993,7 +2042,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -2565,7 +2614,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node key: %" PRIu16 ".",
+			 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -2577,7 +2626,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -2591,7 +2640,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid node key: %" PRIu16 " - record data size value out of bounds.",
+				 "%s: invalid catalog B-tree key: %" PRIu16 " - record data size value out of bounds.",
 				 function,
 				 record_index );
 
@@ -2783,7 +2832,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve node key: 0.",
+		 "%s: unable to retrieve catalog B-tree key: 0.",
 		 function );
 
 		goto on_error;
@@ -2806,7 +2855,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve node key: %" PRIu16 ".",
+				 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 				 function,
 				 record_index );
 
@@ -2819,7 +2868,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -3378,7 +3427,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve node key: %" PRIu16 ".",
+			 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -3390,7 +3439,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
@@ -3558,7 +3607,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve node key: 0.",
+		 "%s: unable to retrieve catalog B-tree key: 0.",
 		 function );
 
 		goto on_error;
@@ -3581,7 +3630,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve node key: %" PRIu16 ".",
+				 "%s: unable to retrieve catalog B-tree key: %" PRIu16 ".",
 				 function,
 				 record_index );
 
@@ -3594,7 +3643,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing node key: %" PRIu16 ".",
+			 "%s: missing catalog B-tree key: %" PRIu16 ".",
 			 function,
 			 record_index );
 
