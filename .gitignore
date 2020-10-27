@@ -151,6 +151,8 @@ stamp-h[1-9]
 /tests/fshfs_test_notify
 /tests/fshfs_test_support
 /tests/fshfs_test_thread_record
+/tests/fshfs_test_tools_output
+/tests/fshfs_test_tools_signal
 /tests/fshfs_test_volume
 /tests/fshfs_test_volume_header
 /tests/input

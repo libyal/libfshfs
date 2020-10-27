@@ -177,7 +177,6 @@ int libfshfs_attribute_record_read_data(
 	size_t record_size                 = 0;
 	uint32_t extent_number_of_blocks   = 0;
 	uint32_t extent_start_block_number = 0;
-	uint32_t record_type               = 0;
 	int extent_index                   = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -220,17 +219,17 @@ int libfshfs_attribute_record_read_data(
 	}
 	byte_stream_copy_to_uint32_big_endian(
 	 data,
-	 record_type );
+	 attribute_record->record_type );
 
-	if( record_type == 0x00000010UL )
+	if( attribute_record->record_type == 0x00000010UL )
 	{
 		record_size = 16;
 	}
-	else if( record_type == 0x00000020UL )
+	else if( attribute_record->record_type == 0x00000020UL )
 	{
 		record_size = 88;
 	}
-	else if( record_type == 0x00000030UL )
+	else if( attribute_record->record_type == 0x00000030UL )
 	{
 		record_size = 72;
 	}
@@ -242,7 +241,7 @@ int libfshfs_attribute_record_read_data(
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported record type: 0x%04" PRIx16 "\n",
 		 function,
-		 record_type );
+		 attribute_record->record_type );
 
 		goto on_error;
 	}
@@ -275,9 +274,9 @@ int libfshfs_attribute_record_read_data(
 		libcnotify_printf(
 		 "%s: record type\t\t\t: 0x%08" PRIx32 " (%s)\n",
 		 function,
-		 record_type,
+		 attribute_record->record_type,
 		 libfshfs_debug_print_attributes_record_type(
-		  record_type ) );
+		  attribute_record->record_type ) );
 
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_attribute_record_hfsplus_t *) data )->unknown1,
@@ -289,7 +288,7 @@ int libfshfs_attribute_record_read_data(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	if( record_type == 0x00000010UL )
+	if( attribute_record->record_type == 0x00000010UL )
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 &( data[ 12 ] ),
@@ -379,7 +378,7 @@ int libfshfs_attribute_record_read_data(
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 	}
-	else if( record_type == 0x00000020UL )
+	else if( attribute_record->record_type == 0x00000020UL )
 	{
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -418,7 +417,7 @@ int libfshfs_attribute_record_read_data(
 			goto on_error;
 		}
 	}
-	else if( record_type == 0x00000030UL )
+	else if( attribute_record->record_type == 0x00000030UL )
 	{
 		extent_data_offset = 8;
 

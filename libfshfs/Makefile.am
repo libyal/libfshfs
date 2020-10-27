@@ -25,6 +25,7 @@ libfshfs_la_SOURCES = \
 	fshfs_attributes_file.h \
 	fshfs_btree.h \
 	fshfs_catalog_file.h \
+	fshfs_compressed_data.h \
 	fshfs_extents_file.h \
 	fshfs_fork.h \
 	fshfs_volume.h \
@@ -43,6 +44,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_catalog_btree_file.c libfshfs_catalog_btree_file.h \
 	libfshfs_catalog_btree_key.c libfshfs_catalog_btree_key.h \
 	libfshfs_compressed_data_handle.c libfshfs_compressed_data_handle.h \
+	libfshfs_compressed_data_header.c libfshfs_compressed_data_header.h \
 	libfshfs_compression.c libfshfs_compression.h \
 	libfshfs_data_stream.c libfshfs_data_stream.h \
 	libfshfs_debug.c libfshfs_debug.h \

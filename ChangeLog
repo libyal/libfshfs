@@ -4,7 +4,8 @@ Debug info:
 ** handle file records without a data fork
 ** add support for resource fork data stream
 ** add support for compressed files
-*** create function to create data stream from attribute record
+
+* on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
 
 * ensure traditional HFS input errors for now
 

@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = subdir-objects
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
@@ -26,6 +28,7 @@ endif
 
 TESTS = \
 	test_library.sh \
+	test_tools.sh \
 	test_fshfsinfo.sh \
 	$(TESTS_PYFSHFS)
 
@@ -35,7 +38,8 @@ check_SCRIPTS = \
 	test_fshfsinfo.sh \
 	test_library.sh \
 	test_python_module.sh \
-	test_runner.sh
+	test_runner.sh \
+	test_tools.sh
 
 EXTRA_DIST = \
 	$(check_SCRIPTS)
@@ -65,6 +69,8 @@ check_PROGRAMS = \
 	fshfs_test_notify \
 	fshfs_test_support \
 	fshfs_test_thread_record \
+	fshfs_test_tools_output \
+	fshfs_test_tools_signal \
 	fshfs_test_volume \
 	fshfs_test_volume_header
 
@@ -378,6 +384,28 @@ fshfs_test_thread_record_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_thread_record_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_tools_output_SOURCES = \
+	../fshfstools/fshfstools_output.c ../fshfstools/fshfstools_output.h \
+	fshfs_test_libcerror.h \
+	fshfs_test_macros.h \
+	fshfs_test_tools_output.c \
+	fshfs_test_unused.h
+
+fshfs_test_tools_output_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_tools_signal_SOURCES = \
+	../fshfstools/fshfstools_signal.c ../fshfstools/fshfstools_signal.h \
+	fshfs_test_libcerror.h \
+	fshfs_test_macros.h \
+	fshfs_test_tools_signal.c \
+	fshfs_test_unused.h
+
+fshfs_test_tools_signal_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

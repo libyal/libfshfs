@@ -230,10 +230,11 @@ int libfshfs_file_system_read_attributes_file(
      libfshfs_file_system_t *file_system,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_fork_descriptor_t *attributes_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_file_system_read_attributes_file";
+	int result            = 0;
 
 	if( file_system == NULL )
 	{
@@ -257,6 +258,32 @@ int libfshfs_file_system_read_attributes_file(
 
 		return( -1 );
 	}
+	result = libfshfs_fork_descriptor_has_extents_overflow(
+	          fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine if fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfshfs_btree_file_initialize(
 	     &( file_system->attributes_btree_file ),
 	     error ) != 1 )
@@ -274,7 +301,7 @@ int libfshfs_file_system_read_attributes_file(
 	     file_system->attributes_btree_file,
 	     io_handle,
 	     file_io_handle,
-	     attributes_file_fork_descriptor,
+	     fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -305,10 +332,11 @@ int libfshfs_file_system_read_catalog_file(
      libfshfs_file_system_t *file_system,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_fork_descriptor_t *catalog_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_file_system_read_catalog_file";
+	int result            = 0;
 
 	if( file_system == NULL )
 	{
@@ -332,6 +360,32 @@ int libfshfs_file_system_read_catalog_file(
 
 		return( -1 );
 	}
+	result = libfshfs_fork_descriptor_has_extents_overflow(
+	          fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine if fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfshfs_btree_file_initialize(
 	     &( file_system->catalog_btree_file ),
 	     error ) != 1 )
@@ -349,7 +403,7 @@ int libfshfs_file_system_read_catalog_file(
 	     file_system->catalog_btree_file,
 	     io_handle,
 	     file_io_handle,
-	     catalog_file_fork_descriptor,
+	     fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -380,10 +434,11 @@ int libfshfs_file_system_read_extents_file(
      libfshfs_file_system_t *file_system,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_fork_descriptor_t *extents_file_fork_descriptor,
+     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_file_system_read_extents_file";
+	int result            = 0;
 
 	if( file_system == NULL )
 	{
@@ -407,6 +462,32 @@ int libfshfs_file_system_read_extents_file(
 
 		return( -1 );
 	}
+	result = libfshfs_fork_descriptor_has_extents_overflow(
+	          fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine if fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported fork descriptor has extents overflow.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfshfs_btree_file_initialize(
 	     &( file_system->extents_btree_file ),
 	     error ) != 1 )
@@ -424,7 +505,7 @@ int libfshfs_file_system_read_extents_file(
 	     file_system->extents_btree_file,
 	     io_handle,
 	     file_io_handle,
-	     extents_file_fork_descriptor,
+	     fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

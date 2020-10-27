@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "libfshfs_attribute_record.h"
+#include "libfshfs_compressed_data_header.h"
 #include "libfshfs_data_stream.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
@@ -51,10 +52,8 @@ int libfshfs_file_entry_initialize(
      libfshfs_file_system_t *file_system,
      libcerror_error_t **error )
 {
-	libfshfs_fork_descriptor_t *data_fork_descriptor    = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_initialize";
-	size64_t data_size                                  = 0;
 	uint16_t file_mode                                  = 0;
 	int result                                          = 0;
 
@@ -142,25 +141,25 @@ int libfshfs_file_entry_initialize(
 
 		goto on_error;
 	}
-	result = libfshfs_directory_entry_get_data_fork_descriptor(
-	          directory_entry,
-	          &data_fork_descriptor,
-	          error );
+	internal_file_entry->io_handle       = io_handle;
+	internal_file_entry->file_io_handle  = file_io_handle;
+	internal_file_entry->directory_entry = directory_entry;
+	internal_file_entry->file_system     = file_system;
+	internal_file_entry->file_mode       = file_mode;
 
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_data_size(
+	     internal_file_entry,
+	     directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve data fork descriptor from directory entry.",
+		 "%s: unable to retrieve data size.",
 		 function );
 
 		goto on_error;
-	}
-	else if( result != 0 ) 
-	{
-		data_size = (size64_t) data_fork_descriptor->size;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
@@ -177,13 +176,6 @@ int libfshfs_file_entry_initialize(
 		goto on_error;
 	}
 #endif
-	internal_file_entry->io_handle       = io_handle;
-	internal_file_entry->file_io_handle  = file_io_handle;
-	internal_file_entry->directory_entry = directory_entry;
-	internal_file_entry->file_system     = file_system;
-	internal_file_entry->file_mode       = file_mode;
-	internal_file_entry->data_size       = data_size;
-
 	*file_entry = (libfshfs_file_entry_t *) internal_file_entry;
 
 	return( 1 );
@@ -253,6 +245,22 @@ int libfshfs_file_entry_free(
 			 function );
 
 			result = -1;
+		}
+		if( internal_file_entry->compressed_data_header != NULL )
+		{
+			if( libfshfs_compressed_data_header_free(
+			     &( internal_file_entry->compressed_data_header ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free compressed data header.",
+				 function );
+
+				result = -1;
+			}
 		}
 		if( internal_file_entry->sub_directory_entries != NULL )
 		{
@@ -332,6 +340,307 @@ int libfshfs_file_entry_free(
 	return( result );
 }
 
+/* Retrieves the data size
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_data_size(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libfshfs_directory_entry_t *directory_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
+	static char *function                            = "libfshfs_internal_file_entry_get_data_size";
+	size64_t data_size                               = 0;
+	int result                                       = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->compressed_data_attribute_record != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - compressed data attribute record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->compressed_data_header != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - compressed data header value already set.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_directory_entry_get_data_fork_descriptor(
+	          directory_entry,
+	          &data_fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve data fork descriptor from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 ) 
+	{
+		if( data_fork_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+		          internal_file_entry,
+		          (uint8_t *) "com.apple.decmpfs",
+		          17,
+		          &( internal_file_entry->compressed_data_attribute_record ),
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.decmpfs attribute record.",
+			 function );
+
+			result = -1;
+		}
+		else if( result != 0 )
+		{
+			if( libfshfs_compressed_data_header_initialize(
+			     &( internal_file_entry->compressed_data_header ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create compressed data header.",
+				 function );
+
+				goto on_error;
+			}
+			result = 0;
+
+			if( internal_file_entry->compressed_data_attribute_record->record_type == 0x00000010UL )
+			{
+				result = libfshfs_compressed_data_header_read_data(
+				          internal_file_entry->compressed_data_header,
+				          internal_file_entry->compressed_data_attribute_record->inline_data,
+				          internal_file_entry->compressed_data_attribute_record->inline_data_size,
+				          error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read compressed data header.",
+					 function );
+
+					goto on_error;
+				}
+			}
+			else
+			{
+/* TODO add support for additional attribute record types */
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported com.apple.decmpfs attribute record type.",
+				 function );
+
+				goto on_error;
+			}
+			if( result != 0 )
+			{
+				data_size = internal_file_entry->compressed_data_header->uncompressed_data_size;
+			}
+			else
+			{
+				if( libfshfs_compressed_data_header_free(
+				     &( internal_file_entry->compressed_data_header ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create compressed data header.",
+					 function );
+
+					goto on_error;
+				}
+			}
+		}
+		if( result == 0 )
+		{
+			data_size = (size64_t) data_fork_descriptor->size;
+		}
+	}
+	internal_file_entry->data_size = data_size;
+
+	return( 1 );
+
+on_error:
+	if( internal_file_entry->compressed_data_header != NULL )
+	{
+		libfshfs_compressed_data_header_free(
+		 &( internal_file_entry->compressed_data_header ),
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Retrieves the data stream from a fork descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     uint8_t fork_type,
+     libfdata_stream_t **data_stream,
+     libcerror_error_t **error )
+{
+	libfshfs_fork_descriptor_t *fork_descriptor = NULL;
+	static char *function                       = "libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor";
+	int result                                  = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( fork_type != LIBFSHFS_FORK_TYPE_DATA )
+	 && ( fork_type != LIBFSHFS_FORK_TYPE_RESOURCE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported fork type.",
+		 function );
+
+		return( -1 );
+	}
+	if( fork_type == LIBFSHFS_FORK_TYPE_DATA )
+	{
+		result = libfshfs_directory_entry_get_data_fork_descriptor(
+		          internal_file_entry->directory_entry,
+		          &fork_descriptor,
+		          error );
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_resource_fork_descriptor(
+		          internal_file_entry->directory_entry,
+		          &fork_descriptor,
+		          error );
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve fork descriptor from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_file_system_get_extents(
+	     internal_file_entry->file_system,
+	     internal_file_entry->file_io_handle,
+	     internal_file_entry->identifier,
+	     fork_type,
+	     fork_descriptor,
+	     &( internal_file_entry->extents ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extents of fork descriptor.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_data_stream_initialize_from_extents(
+	     data_stream,
+	     internal_file_entry->io_handle,
+	     internal_file_entry->extents,
+	     (size64_t) fork_descriptor->size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create data stream.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( internal_file_entry->extents != NULL )
+	{
+		libcdata_array_free(
+		 &( internal_file_entry->extents ),
+		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Retrieves the data stream
  * Returns 1 if successful or -1 on error
  */
@@ -339,13 +648,9 @@ int libfshfs_internal_file_entry_get_data_stream(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error )
 {
-	libfdata_stream_t *compressed_data_stream             = NULL;
-	libfshfs_attribute_record_t *decmpfs_attribute_record = NULL;
-	libfshfs_fork_descriptor_t *data_fork_descriptor      = NULL;
-	static char *function                                 = "libfshfs_internal_file_entry_get_data_stream";
-	size64_t uncompressed_data_size                       = 0;
-	int compression_method                                = 0;
-	int result                                            = 0;
+	libfdata_stream_t *compressed_data_stream = NULL;
+	static char *function                     = "libfshfs_internal_file_entry_get_data_stream";
+	int compression_method                    = 0;
 
 	if( internal_file_entry == NULL )
 	{
@@ -369,85 +674,49 @@ int libfshfs_internal_file_entry_get_data_stream(
 
 		return( -1 );
 	}
-	result = libfshfs_directory_entry_get_data_fork_descriptor(
-	          internal_file_entry->directory_entry,
-	          &data_fork_descriptor,
-	          error );
-
-	if( result == -1 )
+	if( internal_file_entry->compressed_data_header != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve data fork descriptor from directory entry.",
-		 function );
-
-		goto on_error;
-	}
-	else if( result != 0 )
-	{
-		if( data_fork_descriptor == NULL )
+		switch( internal_file_entry->compressed_data_header->compression_method )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing data fork descriptor.",
-			 function );
+			case 3:
+			case 4:
+				compression_method = LIBFSHFS_COMPRESSION_METHOD_DEFLATE;
+				break;
 
-			goto on_error;
-		}
-		result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
-		          internal_file_entry,
-		          (uint8_t *) "com.apple.decmpfs",
-		          17,
-		          &decmpfs_attribute_record,
-		          error );
+			case 5:
+				compression_method = LIBFSHFS_COMPRESSION_METHOD_UNKNOWN5;
+				break;
 
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve com.apple.decmpfs attribute record.",
-			 function );
+			case 7:
+			case 8:
+				compression_method = LIBFSHFS_COMPRESSION_METHOD_LZVN;
+				break;
 
-			result = -1;
-		}
-		else if( result == 0 )
-		{
-			if( libfshfs_file_system_get_extents(
-			     internal_file_entry->file_system,
-			     internal_file_entry->file_io_handle,
-			     internal_file_entry->identifier,
-			     LIBFSHFS_FORK_TYPE_DATA,
-			     data_fork_descriptor,
-			     &( internal_file_entry->extents ),
-			     error ) != 1 )
-			{
+			default:
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve extents of data fork descriptor.",
-				 function );
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported compression method: %d.",
+				 function,
+				 internal_file_entry->compressed_data_header->compression_method );
 
 				goto on_error;
-			}
-			if( libfshfs_data_stream_initialize_from_extents(
-			     &( internal_file_entry->data_stream ),
-			     internal_file_entry->io_handle,
-			     internal_file_entry->extents,
-			     (size64_t) data_fork_descriptor->size,
+		}
+		if( ( internal_file_entry->compressed_data_header->compression_method == 4 )
+		 || ( internal_file_entry->compressed_data_header->compression_method == 8 ) )
+		{
+			if( libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
+			     internal_file_entry,
+			     LIBFSHFS_FORK_TYPE_RESOURCE,
+			     &compressed_data_stream,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create data stream.",
+				 "%s: unable to create compressed data stream from fork descriptor.",
 				 function );
 
 				goto on_error;
@@ -455,57 +724,55 @@ int libfshfs_internal_file_entry_get_data_stream(
 		}
 		else
 		{
-			if( decmpfs_attribute_record == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: missing com.apple.decmpfs attribute record.",
-				 function );
-
-				goto on_error;
-			}
-			if( data_fork_descriptor->size > 0 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-				 "%s: unsupported file entry - size of data fork is greater than 0 and has com.apple.decmpfs extended attribute.",
-				 function );
-
-				goto on_error;
-			}
-			if( decmpfs_attribute_record->record_type != 0x00000010UL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-				 "%s: unsupported com.apple.decmpfs attribute record type.",
-				 function );
-
-				goto on_error;
-			}
-/* TODO create compressed data stream */
-
-			if( libfshfs_data_stream_initialize_from_compressed_data_stream(
-			     &( internal_file_entry->data_stream ),
-			     compressed_data_stream,
-			     uncompressed_data_size,
-			     compression_method,
+			if( libfshfs_data_stream_initialize_from_data(
+			     &compressed_data_stream,
+			     internal_file_entry->compressed_data_attribute_record->inline_data,
+			     internal_file_entry->compressed_data_attribute_record->inline_data_size,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create data stream.",
+				 "%s: unable to create compressed data stream from inline data.",
 				 function );
 
 				goto on_error;
 			}
+		}
+		if( libfshfs_data_stream_initialize_from_compressed_data_stream(
+		     &( internal_file_entry->data_stream ),
+		     compressed_data_stream,
+		     internal_file_entry->compressed_data_header->uncompressed_data_size,
+		     compression_method,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create data stream.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	else
+	{
+		if( libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
+		     internal_file_entry,
+		     LIBFSHFS_FORK_TYPE_DATA,
+		     &( internal_file_entry->data_stream ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create data stream.",
+			 function );
+
+			goto on_error;
 		}
 	}
 	return( 1 );
@@ -533,8 +800,9 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_internal_file_entry_get_symbolic_link_data";
-	ssize_t read_count    = 0;
+	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
+	static char *function                            = "libfshfs_internal_file_entry_get_symbolic_link_data";
+	ssize_t read_count                               = 0;
 
 	if( internal_file_entry == NULL )
 	{
@@ -558,10 +826,48 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 
 		return( -1 );
 	}
-	if( internal_file_entry->data_stream == NULL )
+	if( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_SYMBOLIC_LINK )
 	{
-		if( libfshfs_internal_file_entry_get_data_stream(
-		     internal_file_entry,
+		if( internal_file_entry->data_stream != NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+			 "%s: invalid file entry - data stream value already set.",
+			 function );
+
+			return( -1 );
+		}
+		if( libfshfs_directory_entry_get_data_fork_descriptor(
+		     internal_file_entry->directory_entry,
+		     &data_fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data fork descriptor from directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		if( data_fork_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_data_stream_initialize_from_fork_descriptor(
+		     &( internal_file_entry->data_stream ),
+		     internal_file_entry->io_handle,
+		     data_fork_descriptor,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -573,11 +879,8 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 
 			goto on_error;
 		}
-	}
-	if( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_SYMBOLIC_LINK )
-	{
-		if( ( internal_file_entry->data_size == 0 )
-		 || ( internal_file_entry->data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+		if( ( data_fork_descriptor->size == 0 )
+		 || ( data_fork_descriptor->size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -589,7 +892,7 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 			goto on_error;
 		}
 		internal_file_entry->symbolic_link_data = (uint8_t *) memory_allocate(
-		                                                       sizeof( uint8_t ) * (size_t) internal_file_entry->data_size );
+		                                                       sizeof( uint8_t ) * (size_t) data_fork_descriptor->size );
 
 		if( internal_file_entry->symbolic_link_data == NULL )
 		{
@@ -602,18 +905,18 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 
 			goto on_error;
 		}
-		internal_file_entry->symbolic_link_data_size = (size_t) internal_file_entry->data_size;
+		internal_file_entry->symbolic_link_data_size = (size_t) data_fork_descriptor->size;
 
 		read_count = libfdata_stream_read_buffer_at_offset(
 		              internal_file_entry->data_stream,
 		              (intptr_t *) internal_file_entry->file_io_handle,
 		              internal_file_entry->symbolic_link_data,
-		              (size_t) internal_file_entry->data_size,
+		              internal_file_entry->symbolic_link_data_size,
 		              0,
 		              0,
 		              error );
 
-		if( read_count != (ssize_t) internal_file_entry->data_size )
+		if( read_count != (ssize_t) internal_file_entry->symbolic_link_data_size )
 		{
 			libcerror_error_set(
 			 error,
@@ -3597,6 +3900,7 @@ off64_t libfshfs_file_entry_seek_offset(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                                = "libfshfs_file_entry_seek_offset";
+	off64_t result_offset                                = 0;
 
 	if( file_entry == NULL )
 	{
@@ -3650,18 +3954,18 @@ off64_t libfshfs_file_entry_seek_offset(
 			 "%s: unable to retrieve data stream.",
 			 function );
 
-			offset = -1;
+			result_offset = -1;
 		}
 	}
-	if( offset != -1 )
+	if( result_offset != -1 )
 	{
-		offset = libfdata_stream_seek_offset(
-		          internal_file_entry->data_stream,
-		          offset,
-		          whence,
-		          error );
+		result_offset = libfdata_stream_seek_offset(
+		                 internal_file_entry->data_stream,
+		                 offset,
+		                 whence,
+		                 error );
 
-		if( offset == -1 )
+		if( result_offset == -1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -3670,7 +3974,7 @@ off64_t libfshfs_file_entry_seek_offset(
 			 "%s: unable to seek offset in data stream.",
 			 function );
 
-			offset = -1;
+			result_offset = -1;
 		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
@@ -3688,7 +3992,7 @@ off64_t libfshfs_file_entry_seek_offset(
 		return( -1 );
 	}
 #endif
-	return( offset );
+	return( result_offset );
 }
 
 /* Retrieves the current offset of the data

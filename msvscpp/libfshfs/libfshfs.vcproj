@@ -230,6 +230,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_compressed_data_header.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_compression.c"
 				>
 			</File>
@@ -336,6 +340,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\fshfs_compressed_data.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\fshfs_extents_file.h"
 				>
 			</File>
@@ -401,6 +409,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_compressed_data_handle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_compressed_data_header.h"
 				>
 			</File>
 			<File

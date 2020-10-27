@@ -26,9 +26,11 @@
 #include <types.h>
 
 #include "libfshfs_attribute_record.h"
+#include "libfshfs_compressed_data_header.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_extern.h"
 #include "libfshfs_file_system.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -52,6 +54,10 @@ struct libfshfs_internal_file_entry
 	 */
 	libbfio_handle_t *file_io_handle;
 
+	/* The file system
+	 */
+	libfshfs_file_system_t *file_system;
+
 	/* Directory entry
 	 */
 	libfshfs_directory_entry_t *directory_entry;
@@ -64,9 +70,13 @@ struct libfshfs_internal_file_entry
 	 */
 	uint16_t file_mode;
 
-	/* The file system
+	/* The compressed data (com.apple.decmpfs) attribute record
 	 */
-	libfshfs_file_system_t *file_system;
+	libfshfs_attribute_record_t *compressed_data_attribute_record;
+
+	/* The compressed data (com.apple.decmpfs) header
+	 */
+	libfshfs_compressed_data_header_t *compressed_data_header;
 
 	/* Sub directory entries
 	 */
@@ -114,6 +124,17 @@ int libfshfs_file_entry_initialize(
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_free(
      libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_data_size(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libfshfs_directory_entry_t *directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     uint8_t fork_type,
+     libfdata_stream_t **data_stream,
      libcerror_error_t **error );
 
 int libfshfs_internal_file_entry_get_data_stream(
