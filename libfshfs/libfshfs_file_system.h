@@ -52,6 +52,10 @@ struct libfshfs_file_system
 	 */
 	libfshfs_btree_file_t *attributes_btree_file;
 
+	/* Flag to indicate case folding should be used
+	 */
+	uint8_t use_case_folding;
+
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
 	 */
@@ -61,6 +65,7 @@ struct libfshfs_file_system
 
 int libfshfs_file_system_initialize(
      libfshfs_file_system_t **file_system,
+     uint8_t use_case_folding,
      libcerror_error_t **error );
 
 int libfshfs_file_system_free(

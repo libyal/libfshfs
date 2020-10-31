@@ -502,6 +502,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 	static char *function                       = "libfshfs_catalog_btree_file_get_thread_record_from_branch_node";
 	uint32_t sub_node_number                    = 0;
 	uint16_t record_index                       = 0;
+	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -686,32 +687,22 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 
 				goto on_error;
 			}
-			is_branch_node = libfshfs_btree_node_is_branch_node(
-			                  sub_node,
-			                  error );
-
-			if( is_branch_node == -1 )
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine if B-tree sub node: %" PRIu32 " is a branch node.",
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
-				          btree_file,
-				          sub_node,
-				          identifier,
-				          thread_record,
-				          error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 					  btree_file,
@@ -721,6 +712,15 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 					  thread_record,
 					  recursion_depth + 1,
 					  error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
+				          btree_file,
+				          sub_node,
+				          identifier,
+				          thread_record,
+				          error );
 			}
 			if( result == -1 )
 			{
@@ -766,7 +766,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 {
 	libfshfs_btree_node_t *root_node = NULL;
 	static char *function            = "libfshfs_catalog_btree_file_get_thread_record";
-	int is_branch_node               = 0;
+	uint8_t node_type                = 0;
 	int result                       = 0;
 
 	if( libfshfs_btree_file_get_root_node(
@@ -785,11 +785,10 @@ int libfshfs_catalog_btree_file_get_thread_record(
 
 		return( -1 );
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -800,16 +799,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 
 		return( -1 );
 	}
-	if( is_branch_node == 0 )
-	{
-		result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
-		          btree_file,
-		          root_node,
-		          identifier,
-		          thread_record,
-		          error );
-	}
-	else
+	if( node_type == 0x00 )
 	{
 		result = libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		          btree_file,
@@ -818,6 +808,15 @@ int libfshfs_catalog_btree_file_get_thread_record(
 		          identifier,
 		          thread_record,
 		          1,
+		          error );
+	}
+	else if( node_type == 0xff )
+	{
+		result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
+		          btree_file,
+		          root_node,
+		          identifier,
+		          thread_record,
 		          error );
 	}
 	if( result == -1 )
@@ -1295,6 +1294,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record";
 	uint32_t sub_node_number                    = 0;
 	uint16_t record_index                       = 0;
+	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -1490,32 +1490,22 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 
 				goto on_error;
 			}
-			is_branch_node = libfshfs_btree_node_is_branch_node(
-			                  sub_node,
-			                  error );
-
-			if( is_branch_node == -1 )
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine if B-tree sub node: %" PRIu32 " is a branch node.",
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
-				          btree_file,
-				          sub_node,
-				          thread_record,
-				          directory_entry,
-				          error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 				          btree_file,
@@ -1524,6 +1514,15 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 				          thread_record,
 				          directory_entry,
 				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
+				          btree_file,
+				          sub_node,
+				          thread_record,
+				          directory_entry,
 				          error );
 			}
 			if( result == -1 )
@@ -1571,7 +1570,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 	libfshfs_btree_node_t *root_node        = NULL;
 	libfshfs_thread_record_t *thread_record = NULL;
 	static char *function                   = "libfshfs_catalog_btree_file_get_directory_entry_by_identifier";
-	int is_branch_node                      = 0;
+	uint8_t node_type                       = 0;
 	int result                              = 0;
 
 	result = libfshfs_catalog_btree_file_get_thread_record(
@@ -1611,31 +1610,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 
 			goto on_error;
 		}
-		is_branch_node = libfshfs_btree_node_is_branch_node(
-		                  root_node,
-		                  error );
-
-		if( is_branch_node == -1 )
+		if( libfshfs_btree_node_get_node_type(
+		     root_node,
+		     &node_type,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to determine if B-tree root node is a branch node.",
+			 "%s: unable to determine if B-tree root node type.",
 			 function );
 
 			goto on_error;
 		}
-		else if( is_branch_node == 0 )
-		{
-			result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
-			          btree_file,
-			          root_node,
-			          thread_record,
-			          directory_entry,
-			          error );
-		}
-		else
+		if( node_type == 0x00 )
 		{
 			result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 			          btree_file,
@@ -1644,6 +1633,15 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 			          thread_record,
 			          directory_entry,
 			          1,
+			          error );
+		}
+		else if( node_type == 0xff )
+		{
+			result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
+			          btree_file,
+			          root_node,
+			          thread_record,
+			          directory_entry,
 			          error );
 		}
 		if( result == -1 )
@@ -1693,6 +1691,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
@@ -1834,6 +1833,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 					                  node_key,
 					                  utf8_string,
 					                  utf8_string_length,
+					                  use_case_folding,
 					                  error );
 
 					if( compare_result == -1 )
@@ -1901,6 +1901,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error )
@@ -1911,6 +1912,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name";
 	uint32_t sub_node_number                    = 0;
 	uint16_t record_index                       = 0;
+	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -2095,34 +2097,22 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 
 				goto on_error;
 			}
-			is_branch_node = libfshfs_btree_node_is_branch_node(
-			                  sub_node,
-			                  error );
-
-			if( is_branch_node == -1 )
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine if B-tree sub node: %" PRIu32 " is a branch node.",
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
-				          btree_file,
-				          sub_node,
-				          parent_identifier,
-				          utf8_string,
-				          utf8_string_length,
-				          directory_entry,
-				          error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 				          btree_file,
@@ -2131,8 +2121,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 				          parent_identifier,
 				          utf8_string,
 				          utf8_string_length,
+				          use_case_folding,
 				          directory_entry,
 				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
+				          btree_file,
+				          sub_node,
+				          parent_identifier,
+				          utf8_string,
+				          utf8_string_length,
+				          use_case_folding,
+				          directory_entry,
 				          error );
 			}
 			if( result == -1 )
@@ -2176,12 +2179,13 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
 	libfshfs_btree_node_t *root_node = NULL;
 	static char *function            = "libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name";
-	int is_branch_node               = 0;
+	uint8_t node_type                = 0;
 	int result                       = 0;
 
 	if( libfshfs_btree_file_get_root_node(
@@ -2200,33 +2204,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 
 		return( -1 );
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if B-tree root node is a branch node.",
+		 "%s: unable to determine if B-tree root node type.",
 		 function );
 
 		return( -1 );
 	}
-	if( is_branch_node == 0 )
-	{
-		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
-		          btree_file,
-		          root_node,
-		          parent_identifier,
-		          utf8_string,
-		          utf8_string_length,
-		          directory_entry,
-		          error );
-	}
-	else
+	if( node_type == 0x00 )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 		          btree_file,
@@ -2235,8 +2227,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 		          parent_identifier,
 		          utf8_string,
 		          utf8_string_length,
+		          use_case_folding,
 		          directory_entry,
 		          1,
+		          error );
+	}
+	else if( node_type == 0xff )
+	{
+		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
+		          btree_file,
+		          root_node,
+		          parent_identifier,
+		          utf8_string,
+		          utf8_string_length,
+		          use_case_folding,
+		          directory_entry,
 		          error );
 	}
 	if( result == -1 )
@@ -2261,6 +2266,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
      libbfio_handle_t *file_io_handle,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
@@ -2272,7 +2278,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 	size_t utf8_string_index                         = 0;
 	size_t utf8_string_segment_length                = 0;
 	uint32_t lookup_identifier                       = 0;
-	int is_branch_node                               = 0;
+	uint8_t node_type                                = 0;
 	int result                                       = 0;
 
 	if( btree_file == NULL )
@@ -2335,17 +2341,16 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 
 		goto on_error;
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if B-tree root node is a branch node.",
+		 "%s: unable to determine if B-tree root node type.",
 		 function );
 
 		goto on_error;
@@ -2439,18 +2444,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 					goto on_error;
 				}
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
-					  btree_file,
-					  root_node,
-					  lookup_identifier,
-					  utf8_string_segment,
-					  utf8_string_segment_length,
-					  &safe_directory_entry,
-					  error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 					  btree_file,
@@ -2459,8 +2453,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 					  lookup_identifier,
 					  utf8_string_segment,
 					  utf8_string_segment_length,
+					  use_case_folding,
 					  &safe_directory_entry,
 					  1,
+					  error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
+					  btree_file,
+					  root_node,
+					  lookup_identifier,
+					  utf8_string_segment,
+					  utf8_string_segment_length,
+					  use_case_folding,
+					  &safe_directory_entry,
 					  error );
 			}
 		}
@@ -2519,6 +2526,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
@@ -2660,6 +2668,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 					                  node_key,
 					                  utf16_string,
 					                  utf16_string_length,
+					                  use_case_folding,
 					                  error );
 
 					if( compare_result == -1 )
@@ -2727,6 +2736,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error )
@@ -2737,6 +2747,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name";
 	uint32_t sub_node_number                    = 0;
 	uint16_t record_index                       = 0;
+	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -2921,34 +2932,22 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 
 				goto on_error;
 			}
-			is_branch_node = libfshfs_btree_node_is_branch_node(
-			                  sub_node,
-			                  error );
-
-			if( is_branch_node == -1 )
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine if B-tree sub node: %" PRIu32 " is a branch node.",
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
-				          btree_file,
-				          sub_node,
-				          parent_identifier,
-				          utf16_string,
-				          utf16_string_length,
-				          directory_entry,
-				          error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 				          btree_file,
@@ -2957,8 +2956,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 				          parent_identifier,
 				          utf16_string,
 				          utf16_string_length,
+				          use_case_folding,
 				          directory_entry,
 				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
+				          btree_file,
+				          sub_node,
+				          parent_identifier,
+				          utf16_string,
+				          utf16_string_length,
+				          use_case_folding,
+				          directory_entry,
 				          error );
 			}
 			if( result == -1 )
@@ -3002,12 +3014,13 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
 	libfshfs_btree_node_t *root_node = NULL;
 	static char *function            = "libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name";
-	int is_branch_node               = 0;
+	uint8_t node_type                = 0;
 	int result                       = 0;
 
 	if( libfshfs_btree_file_get_root_node(
@@ -3026,33 +3039,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 
 		return( -1 );
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if B-tree root node is a branch node.",
+		 "%s: unable to determine if B-tree root node type.",
 		 function );
 
 		return( -1 );
 	}
-	if( is_branch_node == 0 )
-	{
-		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
-		          btree_file,
-		          root_node,
-		          parent_identifier,
-		          utf16_string,
-		          utf16_string_length,
-		          directory_entry,
-		          error );
-	}
-	else
+	if( node_type == 0x00 )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 		          btree_file,
@@ -3061,8 +3062,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 		          parent_identifier,
 		          utf16_string,
 		          utf16_string_length,
+		          use_case_folding,
 		          directory_entry,
 		          1,
+		          error );
+	}
+	else if( node_type == 0xff )
+	{
+		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
+		          btree_file,
+		          root_node,
+		          parent_identifier,
+		          utf16_string,
+		          utf16_string_length,
+		          use_case_folding,
+		          directory_entry,
 		          error );
 	}
 	if( result == -1 )
@@ -3087,6 +3101,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
      libbfio_handle_t *file_io_handle,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
@@ -3098,7 +3113,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 	size_t utf16_string_index                        = 0;
 	size_t utf16_string_segment_length               = 0;
 	uint32_t lookup_identifier                       = 0;
-	int is_branch_node                               = 0;
+	uint8_t node_type                                = 0;
 	int result                                       = 0;
 
 	if( btree_file == NULL )
@@ -3161,17 +3176,16 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 
 		goto on_error;
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if B-tree root node is a branch node.",
+		 "%s: unable to determine if B-tree root node type.",
 		 function );
 
 		goto on_error;
@@ -3265,18 +3279,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 					goto on_error;
 				}
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
-					  btree_file,
-					  root_node,
-					  lookup_identifier,
-					  utf16_string_segment,
-					  utf16_string_segment_length,
-					  &safe_directory_entry,
-					  error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 					  btree_file,
@@ -3285,8 +3288,21 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 					  lookup_identifier,
 					  utf16_string_segment,
 					  utf16_string_segment_length,
+					  use_case_folding,
 					  &safe_directory_entry,
 					  1,
+					  error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
+					  btree_file,
+					  root_node,
+					  lookup_identifier,
+					  utf16_string_segment,
+					  utf16_string_segment_length,
+					  use_case_folding,
+					  &safe_directory_entry,
 					  error );
 			}
 		}
@@ -3523,6 +3539,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entries_from_branch_node";
 	uint32_t sub_node_number                    = 0;
 	uint16_t record_index                       = 0;
+	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -3696,32 +3713,22 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 
 				goto on_error;
 			}
-			is_branch_node = libfshfs_btree_node_is_branch_node(
-			                  sub_node,
-			                  error );
-
-			if( is_branch_node == -1 )
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine if B-tree sub node: %" PRIu32 " is a branch node.",
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
-				          btree_file,
-				          sub_node,
-				          parent_identifier,
-				          directory_entries,
-				          error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 				          btree_file,
@@ -3730,6 +3737,15 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 				          parent_identifier,
 				          directory_entries,
 				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
+				          btree_file,
+				          sub_node,
+				          parent_identifier,
+				          directory_entries,
 				          error );
 			}
 			if( result != 1 )
@@ -3774,8 +3790,8 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 {
 	libfshfs_btree_node_t *root_node = NULL;
 	static char *function            = "libfshfs_catalog_btree_file_get_directory_entries";
-	int is_branch_node               = 0;
-	int result                       = 0;
+	uint8_t node_type                = 0;
+	int result                       = 1;
 
 	if( libfshfs_btree_file_get_root_node(
 	     btree_file,
@@ -3793,11 +3809,10 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 
 		goto on_error;
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -3808,16 +3823,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 
 		goto on_error;
 	}
-	if( is_branch_node == 0 )
-	{
-		result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
-		          btree_file,
-		          root_node,
-		          parent_identifier,
-		          directory_entries,
-		          error );
-	}
-	else
+	if( node_type == 0x00 )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		          btree_file,
@@ -3826,6 +3832,15 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 		          parent_identifier,
 		          directory_entries,
 		          1,
+		          error );
+	}
+	else if( node_type == 0xff )
+	{
+		result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
+		          btree_file,
+		          root_node,
+		          parent_identifier,
+		          directory_entries,
 		          error );
 	}
 	if( result != 1 )

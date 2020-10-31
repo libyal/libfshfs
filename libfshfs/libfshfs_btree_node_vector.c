@@ -400,6 +400,17 @@ int libfshfs_btree_node_vector_get_node_by_number(
 
 		return( -1 );
 	}
+	if( node_vector->node_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid B-tree node vector - node size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	if( node_number >= node_vector->number_of_nodes )
 	{
 		libcerror_error_set(
@@ -513,6 +524,17 @@ int libfshfs_btree_node_vector_get_node_by_number(
 
 			goto on_error;
 		}
+		if( (off64_t) node_number > ( (off64_t) INT64_MAX / node_vector->node_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid node number value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
 		node_offset = (off64_t) node_number * node_vector->node_size;
 
 		for( extent_index = 0;
@@ -551,6 +573,17 @@ int libfshfs_btree_node_vector_get_node_by_number(
 
 			if( (size64_t) node_offset < extent_size )
 			{
+				if( (off64_t) extent->block_number > ( ( (off64_t) INT64_MAX - node_offset ) / node_vector->io_handle->block_size ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: invalid extent - block number value out of bounds.",
+					 function );
+
+					goto on_error;
+				}
 				file_offset  = ( (off64_t) extent->block_number * node_vector->io_handle->block_size ) + node_offset;
 				extent_size -= node_offset;
 

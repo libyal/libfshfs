@@ -29,6 +29,7 @@
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libuna.h"
+#include "libfshfs_name.h"
 
 #include "fshfs_catalog_file.h"
 
@@ -408,6 +409,7 @@ int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_catalog_btree_key_compare_name_with_utf8_string";
@@ -424,12 +426,12 @@ int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
 
 		return( -1 );
 	}
-	result = libuna_utf8_string_compare_with_utf16_stream(
-	          utf8_string,
-	          utf8_string_length,
+	result = libfshfs_name_compare_with_utf8_string(
 	          catalog_btree_key->name_data,
 	          catalog_btree_key->name_size,
-	          LIBUNA_ENDIAN_BIG,
+	          utf8_string,
+	          utf8_string_length,
+	          use_case_folding,
 	          error );
 
 	if( result == -1 )
@@ -453,6 +455,7 @@ int libfshfs_catalog_btree_key_compare_name_with_utf16_string(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_catalog_btree_key_compare_name_with_utf16_string";
@@ -469,12 +472,12 @@ int libfshfs_catalog_btree_key_compare_name_with_utf16_string(
 
 		return( -1 );
 	}
-	result = libuna_utf16_string_compare_with_utf16_stream(
-	          utf16_string,
-	          utf16_string_length,
+	result = libfshfs_name_compare_with_utf16_string(
 	          catalog_btree_key->name_data,
 	          catalog_btree_key->name_size,
-	          LIBUNA_ENDIAN_BIG,
+	          utf16_string,
+	          utf16_string_length,
+	          use_case_folding,
 	          error );
 
 	if( result == -1 )

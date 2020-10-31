@@ -1618,7 +1618,8 @@ int libfshfs_file_entry_get_group_identifier(
 
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_utf8_name_size(
@@ -1697,7 +1698,8 @@ int libfshfs_file_entry_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_utf8_name(
@@ -1778,7 +1780,8 @@ int libfshfs_file_entry_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_utf16_name_size(
@@ -1857,7 +1860,8 @@ int libfshfs_file_entry_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_utf16_name(

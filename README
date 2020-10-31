@@ -7,12 +7,14 @@ Project information:
 
 Read-only supported HFS formats:
 
-* HFS+
-* HFSX
+* HFS+, Mac OS 10.3 and later (Unicode 3.2)
+* HFSX, Mac OS 10.3 and later (Unicode 3.2)
 
 Unsupported supported HFS formats:
 
 * (traditional) HFS
+* HFS+, Mac OS 8.1 through 10.2 (Unicode 2.1)
+* HFSX, Mac OS 8.1 through 10.2 (Unicode 2.1)
 
 Supported HFS format features:
 

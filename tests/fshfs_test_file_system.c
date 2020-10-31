@@ -57,6 +57,7 @@ int fshfs_test_file_system_initialize(
 	 */
 	result = libfshfs_file_system_initialize(
 	          &file_system,
+	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -93,6 +94,7 @@ int fshfs_test_file_system_initialize(
 	 */
 	result = libfshfs_file_system_initialize(
 	          NULL,
+	          0,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -111,6 +113,7 @@ int fshfs_test_file_system_initialize(
 
 	result = libfshfs_file_system_initialize(
 	          &file_system,
+	          0,
 	          &error );
 
 	file_system = NULL;
@@ -139,6 +142,7 @@ int fshfs_test_file_system_initialize(
 
 		result = libfshfs_file_system_initialize(
 		          &file_system,
+		          0,
 		          &error );
 
 		if( fshfs_test_malloc_attempts_before_fail != -1 )
@@ -181,6 +185,7 @@ int fshfs_test_file_system_initialize(
 
 		result = libfshfs_file_system_initialize(
 		          &file_system,
+		          0,
 		          &error );
 
 		if( fshfs_test_memset_attempts_before_fail != -1 )

@@ -84,12 +84,14 @@ int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libcerror_error_t **error );
 
 int libfshfs_catalog_btree_key_compare_name_with_utf16_string(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

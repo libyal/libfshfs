@@ -302,6 +302,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_name.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_notify.c"
 				>
 			</File>
@@ -533,6 +537,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_lzvn.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_name.h"
 				>
 			</File>
 			<File

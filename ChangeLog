@@ -1,32 +1,28 @@
 Debug info:
-* implement file entry data streams
-** add extents overflow support
-** handle file records without a data fork
-** add support for resource fork data stream
-** add support for compressed files
+* format stored U+0 in catalog key as U+2400
+* handle "\0\0\0\0HFS+ Private Data" in compare name functions
+* pyfshfs_volume handle 0-byte values in get_file_entry_by_path
+
+* handle data streams of hard links
+** determine what to do with hard links, since they have their own identifier
+
+* add support for resource fork data stream
+* add support for extended attribute (named fork) data stream
 
 * on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
 
 * ensure traditional HFS input errors for now
 
-* add support for case folding
-** determine Unicode form
-** add support for B-tree key compare type
+* add support for name in catalog B-tree key compare
 
 * what about a directory with extended attributes?
 ** what if that attribute is named com.apple.decmpfs ?
-
-* determine what to do with hard links, since they have their own identifier
 
 * file entry API: add extents functions
 
 * catalog btree file, include name in branch key check
 
 * add support to print information about special files (those without a catalog record)
-
-* bodyfile add support for symbolic link target
-* handle "\0\0\0\0HFS+ Private Data" in compare name functions
-* pyfshfs_volume handle 0-byte values in get_file_entry_by_path
 
 * can the metadata B-tree files require additional extents?
 * split HFS and HFS+ documentation?

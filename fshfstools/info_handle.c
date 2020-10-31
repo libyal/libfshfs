@@ -730,10 +730,11 @@ int info_handle_name_value_fprint(
 			goto on_error;
 		}
 		/* Replace:
-		 *   values <= 0x1f and 0x7f by \x##
+		 *   Control characters ([U+0-U+1f, U+7f-U+9f]) by \x##
 		 */
 		if( ( unicode_character <= 0x1f )
-		 || ( unicode_character == 0x7f ) )
+		 || ( ( unicode_character >= 0x7f )
+		  &&  ( unicode_character <= 0x9f ) ) )
 		{
 			print_count = system_string_sprintf(
 			               &( escaped_value_string[ escaped_value_string_index ] ),
@@ -2325,8 +2326,26 @@ int info_handle_file_entry_fprint_by_path(
 
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tPath\t\t\t: %" PRIs_SYSTEM "\n",
-	 path );
+	 "\tPath\t\t\t: " );
+
+	if( info_handle_name_value_fprint(
+	     info_handle,
+	     path,
+	     path_length,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+		 "%s: unable to print path string.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
 
 	if( info_handle_file_entry_value_with_name_fprint(
 	     info_handle,

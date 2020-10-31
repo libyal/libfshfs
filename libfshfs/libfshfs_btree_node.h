@@ -85,6 +85,11 @@ int libfshfs_btree_node_is_leaf_node(
      libfshfs_btree_node_t *node,
      libcerror_error_t **error );
 
+int libfshfs_btree_node_get_node_type(
+     libfshfs_btree_node_t *node,
+     uint8_t *node_type,
+     libcerror_error_t **error );
+
 int libfshfs_btree_node_get_record_by_index(
      libfshfs_btree_node_t *node,
      uint16_t record_index,

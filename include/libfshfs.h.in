@@ -73,7 +73,7 @@ int libfshfs_set_codepage(
      int codepage,
      libfshfs_error_t **error );
 
-/* Determines if a file contains an ext volume signature
+/* Determines if a file contains a HFS+ volume signature
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -83,7 +83,7 @@ int libfshfs_check_volume_signature(
 
 #if defined( LIBFSHFS_HAVE_WIDE_CHARACTER_TYPE )
 
-/* Determines if a file contains an ext volume signature
+/* Determines if a file contains a HFS+ volume signature
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -95,7 +95,7 @@ int libfshfs_check_volume_signature_wide(
 
 #if defined( LIBFSHFS_HAVE_BFIO )
 
-/* Determines if a file contains an ext volume signature using a Basic File IO (bfio) handle
+/* Determines if a file contains a HFS+ volume signature using a Basic File IO (bfio) handle
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -322,6 +322,7 @@ int libfshfs_volume_get_root_directory(
      libfshfs_error_t **error );
 
 /* Retrieves the file entry for an UTF-8 encoded path
+ * Since / is used as path segment separator, / characters in file names need to be replaced by :
  * Returns 1 if successful, 0 if no such file entry or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -333,6 +334,7 @@ int libfshfs_volume_get_file_entry_by_utf8_path(
      libfshfs_error_t **error );
 
 /* Retrieves the file entry for an UTF-16 encoded path
+ * Since / is used as path segment separator, / characters in file names need to be replaced by :
  * Returns 1 if successful, 0 if no such file entry or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -443,7 +445,8 @@ int libfshfs_file_entry_get_group_identifier(
 
 /* Retrieves the size of the UTF-8 encoded name
  * The returned size includes the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -454,7 +457,8 @@ int libfshfs_file_entry_get_utf8_name_size(
 
 /* Retrieves the UTF-8 encoded name
  * The size should include the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -466,7 +470,8 @@ int libfshfs_file_entry_get_utf8_name(
 
 /* Retrieves the size of the UTF-16 encoded name
  * The returned size includes the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -477,7 +482,8 @@ int libfshfs_file_entry_get_utf16_name_size(
 
 /* Retrieves the UTF-16 encoded name
  * The size should include the end of string character
- * This value is retrieved from the catalog node key of the directory record
+ * This value is retrieved from the catalog node key of the corresponding directory or file record
+ * Since / is used as path segment separator, / characters in file names are replaced by :
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -610,6 +616,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
      libfshfs_error_t **error );
 
 /* Retrieves the sub file entry for an UTF-8 encoded name
+ * Since / is used as path segment separator, / characters in file names need to be replaced by :
  * Returns 1 if successful, 0 if the file entry does not contain such value or -1 on error
  */
 LIBFSHFS_EXTERN \
@@ -621,6 +628,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
      libfshfs_error_t **error );
 
 /* Retrieves the sub file entry for an UTF-16 encoded name
+ * Since / is used as path segment separator, / characters in file names need to be replaced by :
  * Returns 1 if successful, 0 if the file entry does not contain such value or -1 on error
  */
 LIBFSHFS_EXTERN \

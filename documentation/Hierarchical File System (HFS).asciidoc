@@ -99,6 +99,29 @@ Unicode strings are stored in UTF-16 big-endian without the byte order mark (BOM
 | File attributes | none | Basic and extended
 |===
 
+[NOTE]
+Unicode strings are stored in Normalization Form Canonical Decomposition (NFD)
+according to Unicode 3.2 rules, with exclusions. Unicode values in the ranges
+U+2000 - U+2FFF, U+F900 - U+FAFF and U+2F800 - U+2FAFF are not decomposed. For
+Mac OS 8.1 through 10.2.x decomposition is based on Unicode 2.1 rules.
+
+[NOTE]
+Based on observations on Mac OS 10.15.7 the range U+1D000 - U+1D1FF appears to
+be excluded from decomposition as well.
+
+[NOTE]
+Based on observations on Mac OS 10.15.7 U+2400 appears to be replaced by U+0
+
+[NOTE]
+HFS+ allows for the `/` character in file names. On Mac OS, Finder this will be
+represented as a `/` but in Terminal it is replaced by `:` seeing the same
+character is used as path segment separator. A file name with a `:` created
+in Terminal will be shown as `/` in Finder. Finder does not allow the creation
+of a file containing `:` in the name. A symbolic link created in Terminal to a
+file with a ':' in name will not convert the ':' character in the link target
+data. The Linux HFS+ implementation appears to apply a similar conversion logic
+as Terminal.
+
 === HFSX
 
 HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow

@@ -531,6 +531,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 	static char *function                       = "libfshfs_extents_btree_file_get_extents_from_node";
 	uint32_t sub_node_number                    = 0;
 	uint16_t record_index                       = 0;
+	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -704,33 +705,22 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 
 				goto on_error;
 			}
-			is_branch_node = libfshfs_btree_node_is_branch_node(
-			                  sub_node,
-			                  error );
-
-			if( is_branch_node == -1 )
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to determine if B-tree sub node: %" PRIu32 " is a branch node.",
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
 				 function,
 				 sub_node_number );
 
 				goto on_error;
 			}
-			if( is_branch_node == 0 )
-			{
-				result = libfshfs_extents_btree_file_get_extents_from_leaf_node(
-				          btree_file,
-				          sub_node,
-				          identifier,
-				          fork_type,
-				          extents,
-				          error );
-			}
-			else
+			if( node_type == 0x00 )
 			{
 				result = libfshfs_extents_btree_file_get_extents_from_branch_node(
 				          btree_file,
@@ -740,6 +730,16 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 				          fork_type,
 				          extents,
 				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == 0xff )
+			{
+				result = libfshfs_extents_btree_file_get_extents_from_leaf_node(
+				          btree_file,
+				          sub_node,
+				          identifier,
+				          fork_type,
+				          extents,
 				          error );
 			}
 			if( result != 1 )
@@ -785,8 +785,8 @@ int libfshfs_extents_btree_file_get_extents(
 {
 	libfshfs_btree_node_t *root_node = NULL;
 	static char *function            = "libfshfs_extents_btree_file_get_extents";
-	int is_branch_node               = 0;
-	int result                       = 0;
+	uint8_t node_type                = 0;
+	int result                       = 1;
 
 	if( libfshfs_btree_file_get_root_node(
 	     btree_file,
@@ -804,32 +804,21 @@ int libfshfs_extents_btree_file_get_extents(
 
 		goto on_error;
 	}
-	is_branch_node = libfshfs_btree_node_is_branch_node(
-	                  root_node,
-	                  error );
-
-	if( is_branch_node == -1 )
+	if( libfshfs_btree_node_get_node_type(
+	     root_node,
+	     &node_type,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if B-tree root node is a branch node.",
+		 "%s: unable to determine if B-tree root node type.",
 		 function );
 
 		goto on_error;
 	}
-	if( is_branch_node == 0 )
-	{
-		result = libfshfs_extents_btree_file_get_extents_from_leaf_node(
-		          btree_file,
-		          root_node,
-		          identifier,
-		          fork_type,
-		          extents,
-		          error );
-	}
-	else
+	if( node_type == 0x00 )
 	{
 		result = libfshfs_extents_btree_file_get_extents_from_branch_node(
 		          btree_file,
@@ -839,6 +828,16 @@ int libfshfs_extents_btree_file_get_extents(
 		          fork_type,
 		          extents,
 		          1,
+		          error );
+	}
+	else if( node_type == 0xff )
+	{
+		result = libfshfs_extents_btree_file_get_extents_from_leaf_node(
+		          btree_file,
+		          root_node,
+		          identifier,
+		          fork_type,
+		          extents,
 		          error );
 	}
 	if( result != 1 )

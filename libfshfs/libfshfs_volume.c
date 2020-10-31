@@ -1056,8 +1056,10 @@ int libfshfs_internal_volume_open_read(
 	internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
 	internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
 
+/* TODO determine case folding based on volume header */
 	if( libfshfs_file_system_initialize(
 	     &( internal_volume->file_system ),
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

@@ -42,6 +42,7 @@
  */
 int libfshfs_file_system_initialize(
      libfshfs_file_system_t **file_system,
+     uint8_t use_case_folding,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_file_system_initialize";
@@ -116,6 +117,8 @@ int libfshfs_file_system_initialize(
 		goto on_error;
 	}
 #endif
+	( *file_system )->use_case_folding = use_case_folding;
+
 	return( 1 );
 
 on_error:
@@ -607,6 +610,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 	          parent_identifier,
 	          utf8_string,
 	          utf8_string_length,
+	          file_system->use_case_folding,
 	          directory_entry,
 	          error );
 
@@ -654,6 +658,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
 	          file_io_handle,
 	          utf8_string,
 	          utf8_string_length,
+	          file_system->use_case_folding,
 	          directory_entry,
 	          error );
 
@@ -703,6 +708,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 	          parent_identifier,
 	          utf16_string,
 	          utf16_string_length,
+	          file_system->use_case_folding,
 	          directory_entry,
 	          error );
 
@@ -750,6 +756,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 	          file_io_handle,
 	          utf16_string,
 	          utf16_string_length,
+	          file_system->use_case_folding,
 	          directory_entry,
 	          error );
 

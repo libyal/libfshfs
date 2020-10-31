@@ -110,6 +110,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
@@ -120,6 +121,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error );
@@ -130,6 +132,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
@@ -138,6 +141,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
      libbfio_handle_t *file_io_handle,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
@@ -147,6 +151,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
@@ -157,6 +162,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error );
@@ -167,6 +173,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 
@@ -175,6 +182,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
      libbfio_handle_t *file_io_handle,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error );
 

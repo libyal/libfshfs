@@ -627,6 +627,54 @@ int libfshfs_btree_node_is_leaf_node(
 	return( 0 );
 }
 
+/* Retrieves the node type
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_btree_node_get_node_type(
+     libfshfs_btree_node_t *node,
+     uint8_t *node_type,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_btree_node_get_node_type";
+
+	if( node == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node.",
+		 function );
+
+		return( -1 );
+	}
+	if( node->descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid B-tree node - missing descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( node_type == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid node type.",
+		 function );
+
+		return( -1 );
+	}
+	*node_type = node->descriptor->type;
+
+	return( 1 );
+}
+
 /* Retrieves a specific record
  * Returns 1 if successful or -1 on error
  */

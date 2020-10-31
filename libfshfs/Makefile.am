@@ -75,6 +75,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_libfguid.h \
 	libfshfs_libuna.h \
 	libfshfs_lzvn.c libfshfs_lzvn.h \
+	libfshfs_name.c libfshfs_name.h \
 	libfshfs_notify.c libfshfs_notify.h \
 	libfshfs_support.c libfshfs_support.h \
 	libfshfs_thread_record.c libfshfs_thread_record.h \
