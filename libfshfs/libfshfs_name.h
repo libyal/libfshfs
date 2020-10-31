@@ -134,9 +134,6 @@ LIBFSHFS_EXTERN_VARIABLE \
 libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00000f40[ 232 ];
 
 LIBFSHFS_EXTERN_VARIABLE \
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00001b00[ 72 ];
-
-LIBFSHFS_EXTERN_VARIABLE \
 libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00001e00[ 512 ];
 
 LIBFSHFS_EXTERN_VARIABLE \
@@ -152,19 +149,7 @@ LIBFSHFS_EXTERN_VARIABLE \
 libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x0000fb18[ 56 ];
 
 LIBFSHFS_EXTERN_VARIABLE \
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00011098[ 24 ];
-
-LIBFSHFS_EXTERN_VARIABLE \
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00011128[ 8 ];
-
-LIBFSHFS_EXTERN_VARIABLE \
 libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00011348[ 8 ];
-
-LIBFSHFS_EXTERN_VARIABLE \
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000114b8[ 8 ];
-
-LIBFSHFS_EXTERN_VARIABLE \
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000115b8[ 8 ];
 
 #define libfshfs_name_get_case_folding_mapping( unicode_character ) \
 	if( ( unicode_character >= 0x00000040UL ) \
@@ -314,11 +299,6 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 	{ \
 		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x00000f40[ unicode_character - 0x00000f40UL ] ); \
 	} \
-	else if( ( unicode_character >= 0x00001b00UL ) \
-	      && ( unicode_character <= 0x00001b47UL ) ) \
-	{ \
-		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x00001b00[ unicode_character - 0x00001b00UL ] ); \
-	} \
 	else if( ( unicode_character >= 0x00001e00UL ) \
 	      && ( unicode_character <= 0x00001fffUL ) ) \
 	{ \
@@ -344,31 +324,6 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 	{ \
 		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x0000fb18[ unicode_character - 0x0000fb18UL ] ); \
 	} \
-	else if( ( unicode_character >= 0x00011098UL ) \
-	      && ( unicode_character <= 0x000110afUL ) ) \
-	{ \
-		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x00011098[ unicode_character - 0x00011098UL ] ); \
-	} \
-	else if( ( unicode_character >= 0x00011128UL ) \
-	      && ( unicode_character <= 0x0001112fUL ) ) \
-	{ \
-		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x00011128[ unicode_character - 0x00011128UL ] ); \
-	} \
-	else if( ( unicode_character >= 0x00011348UL ) \
-	      && ( unicode_character <= 0x0001134fUL ) ) \
-	{ \
-		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x00011348[ unicode_character - 0x00011348UL ] ); \
-	} \
-	else if( ( unicode_character >= 0x000114b8UL ) \
-	      && ( unicode_character <= 0x000114bfUL ) ) \
-	{ \
-		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x000114b8[ unicode_character - 0x000114b8UL ] ); \
-	} \
-	else if( ( unicode_character >= 0x000115b8UL ) \
-	      && ( unicode_character <= 0x000115bfUL ) ) \
-	{ \
-		nfd_mapping = &( libfshfs_name_decomposition_mappings_0x000115b8[ unicode_character - 0x000115b8UL ] ); \
-	} \
 	else \
 	{ \
 		single_nfd_mapping.characters[ 0 ] = unicode_character; \
@@ -376,12 +331,38 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 		nfd_mapping = &single_nfd_mapping; \
 	} \
 
+int libfshfs_name_get_utf8_string_size(
+     const uint8_t *name,
+     size_t name_size,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_name_get_utf8_string(
+     const uint8_t *name,
+     size_t name_size,
+     libuna_utf8_character_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
 int libfshfs_name_compare_with_utf8_string(
      const uint8_t *name,
      size_t name_size,
      const libuna_utf8_character_t *utf8_string,
      size_t utf8_string_length,
      uint8_t use_case_folding,
+     libcerror_error_t **error );
+
+int libfshfs_name_get_utf16_string_size(
+     const uint8_t *name,
+     size_t name_size,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_name_get_utf16_string(
+     const uint8_t *name,
+     size_t name_size,
+     libuna_utf16_character_t *utf16_string,
+     size_t utf16_string_size,
      libcerror_error_t **error );
 
 int libfshfs_name_compare_with_utf16_string(

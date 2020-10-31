@@ -1,8 +1,4 @@
 Debug info:
-* format stored U+0 in catalog key as U+2400
-* handle "\0\0\0\0HFS+ Private Data" in compare name functions
-* pyfshfs_volume handle 0-byte values in get_file_entry_by_path
-
 * handle data streams of hard links
 ** determine what to do with hard links, since they have their own identifier
 

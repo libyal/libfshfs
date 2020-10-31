@@ -4541,81 +4541,6 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 	/* 0x00001027 */ { 1, { 0x00001027 } }
 };
 
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00001b00[ 72 ] = {
-	/* 0x00001b00 */ { 1, { 0x00001b00 } },
-	/* 0x00001b01 */ { 1, { 0x00001b01 } },
-	/* 0x00001b02 */ { 1, { 0x00001b02 } },
-	/* 0x00001b03 */ { 1, { 0x00001b03 } },
-	/* 0x00001b04 */ { 1, { 0x00001b04 } },
-	/* 0x00001b05 */ { 1, { 0x00001b05 } },
-	/* 0x00001b06 */ { 2, { 0x00001b05, 0x00001b35 } },
-	/* 0x00001b07 */ { 1, { 0x00001b07 } },
-	/* 0x00001b08 */ { 2, { 0x00001b07, 0x00001b35 } },
-	/* 0x00001b09 */ { 1, { 0x00001b09 } },
-	/* 0x00001b0a */ { 2, { 0x00001b09, 0x00001b35 } },
-	/* 0x00001b0b */ { 1, { 0x00001b0b } },
-	/* 0x00001b0c */ { 2, { 0x00001b0b, 0x00001b35 } },
-	/* 0x00001b0d */ { 1, { 0x00001b0d } },
-	/* 0x00001b0e */ { 2, { 0x00001b0d, 0x00001b35 } },
-	/* 0x00001b0f */ { 1, { 0x00001b0f } },
-	/* 0x00001b10 */ { 1, { 0x00001b10 } },
-	/* 0x00001b11 */ { 1, { 0x00001b11 } },
-	/* 0x00001b12 */ { 2, { 0x00001b11, 0x00001b35 } },
-	/* 0x00001b13 */ { 1, { 0x00001b13 } },
-	/* 0x00001b14 */ { 1, { 0x00001b14 } },
-	/* 0x00001b15 */ { 1, { 0x00001b15 } },
-	/* 0x00001b16 */ { 1, { 0x00001b16 } },
-	/* 0x00001b17 */ { 1, { 0x00001b17 } },
-	/* 0x00001b18 */ { 1, { 0x00001b18 } },
-	/* 0x00001b19 */ { 1, { 0x00001b19 } },
-	/* 0x00001b1a */ { 1, { 0x00001b1a } },
-	/* 0x00001b1b */ { 1, { 0x00001b1b } },
-	/* 0x00001b1c */ { 1, { 0x00001b1c } },
-	/* 0x00001b1d */ { 1, { 0x00001b1d } },
-	/* 0x00001b1e */ { 1, { 0x00001b1e } },
-	/* 0x00001b1f */ { 1, { 0x00001b1f } },
-	/* 0x00001b20 */ { 1, { 0x00001b20 } },
-	/* 0x00001b21 */ { 1, { 0x00001b21 } },
-	/* 0x00001b22 */ { 1, { 0x00001b22 } },
-	/* 0x00001b23 */ { 1, { 0x00001b23 } },
-	/* 0x00001b24 */ { 1, { 0x00001b24 } },
-	/* 0x00001b25 */ { 1, { 0x00001b25 } },
-	/* 0x00001b26 */ { 1, { 0x00001b26 } },
-	/* 0x00001b27 */ { 1, { 0x00001b27 } },
-	/* 0x00001b28 */ { 1, { 0x00001b28 } },
-	/* 0x00001b29 */ { 1, { 0x00001b29 } },
-	/* 0x00001b2a */ { 1, { 0x00001b2a } },
-	/* 0x00001b2b */ { 1, { 0x00001b2b } },
-	/* 0x00001b2c */ { 1, { 0x00001b2c } },
-	/* 0x00001b2d */ { 1, { 0x00001b2d } },
-	/* 0x00001b2e */ { 1, { 0x00001b2e } },
-	/* 0x00001b2f */ { 1, { 0x00001b2f } },
-	/* 0x00001b30 */ { 1, { 0x00001b30 } },
-	/* 0x00001b31 */ { 1, { 0x00001b31 } },
-	/* 0x00001b32 */ { 1, { 0x00001b32 } },
-	/* 0x00001b33 */ { 1, { 0x00001b33 } },
-	/* 0x00001b34 */ { 1, { 0x00001b34 } },
-	/* 0x00001b35 */ { 1, { 0x00001b35 } },
-	/* 0x00001b36 */ { 1, { 0x00001b36 } },
-	/* 0x00001b37 */ { 1, { 0x00001b37 } },
-	/* 0x00001b38 */ { 1, { 0x00001b38 } },
-	/* 0x00001b39 */ { 1, { 0x00001b39 } },
-	/* 0x00001b3a */ { 1, { 0x00001b3a } },
-	/* 0x00001b3b */ { 2, { 0x00001b3a, 0x00001b35 } },
-	/* 0x00001b3c */ { 1, { 0x00001b3c } },
-	/* 0x00001b3d */ { 2, { 0x00001b3c, 0x00001b35 } },
-	/* 0x00001b3e */ { 1, { 0x00001b3e } },
-	/* 0x00001b3f */ { 1, { 0x00001b3f } },
-	/* 0x00001b40 */ { 2, { 0x00001b3e, 0x00001b35 } },
-	/* 0x00001b41 */ { 2, { 0x00001b3f, 0x00001b35 } },
-	/* 0x00001b42 */ { 1, { 0x00001b42 } },
-	/* 0x00001b43 */ { 2, { 0x00001b42, 0x00001b35 } },
-	/* 0x00001b44 */ { 1, { 0x00001b44 } },
-	/* 0x00001b45 */ { 1, { 0x00001b45 } },
-	/* 0x00001b46 */ { 1, { 0x00001b46 } },
-	/* 0x00001b47 */ { 1, { 0x00001b47 } }
-};
-
 libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00001e00[ 512 ] = {
 	/* 0x00001e00 */ { 2, { 0x00000041, 0x00000325 } },
 	/* 0x00001e01 */ { 2, { 0x00000061, 0x00000325 } },
@@ -5399,76 +5324,262 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 	/* 0x0000fb4f */ { 1, { 0x0000fb4f } }
 };
 
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00011098[ 24 ] = {
-	/* 0x00011098 */ { 1, { 0x00011098 } },
-	/* 0x00011099 */ { 1, { 0x00011099 } },
-	/* 0x0001109a */ { 2, { 0x00011099, 0x000110ba } },
-	/* 0x0001109b */ { 1, { 0x0001109b } },
-	/* 0x0001109c */ { 2, { 0x0001109b, 0x000110ba } },
-	/* 0x0001109d */ { 1, { 0x0001109d } },
-	/* 0x0001109e */ { 1, { 0x0001109e } },
-	/* 0x0001109f */ { 1, { 0x0001109f } },
-	/* 0x000110a0 */ { 1, { 0x000110a0 } },
-	/* 0x000110a1 */ { 1, { 0x000110a1 } },
-	/* 0x000110a2 */ { 1, { 0x000110a2 } },
-	/* 0x000110a3 */ { 1, { 0x000110a3 } },
-	/* 0x000110a4 */ { 1, { 0x000110a4 } },
-	/* 0x000110a5 */ { 1, { 0x000110a5 } },
-	/* 0x000110a6 */ { 1, { 0x000110a6 } },
-	/* 0x000110a7 */ { 1, { 0x000110a7 } },
-	/* 0x000110a8 */ { 1, { 0x000110a8 } },
-	/* 0x000110a9 */ { 1, { 0x000110a9 } },
-	/* 0x000110aa */ { 1, { 0x000110aa } },
-	/* 0x000110ab */ { 2, { 0x000110a5, 0x000110ba } },
-	/* 0x000110ac */ { 1, { 0x000110ac } },
-	/* 0x000110ad */ { 1, { 0x000110ad } },
-	/* 0x000110ae */ { 1, { 0x000110ae } },
-	/* 0x000110af */ { 1, { 0x000110af } }
-};
+/* Determines the size of an UTF-8 string from an UTF-16 big-endian encoded file entry name
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_get_utf8_string_size(
+     const uint8_t *name,
+     size_t name_size,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function                        = "libfshfs_name_get_utf8_string_size";
+	libuna_unicode_character_t unicode_character = 0;
+	size_t name_index                            = 0;
 
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00011128[ 8 ] = {
-	/* 0x00011128 */ { 1, { 0x00011128 } },
-	/* 0x00011129 */ { 1, { 0x00011129 } },
-	/* 0x0001112a */ { 1, { 0x0001112a } },
-	/* 0x0001112b */ { 1, { 0x0001112b } },
-	/* 0x0001112c */ { 1, { 0x0001112c } },
-	/* 0x0001112d */ { 1, { 0x0001112d } },
-	/* 0x0001112e */ { 2, { 0x00011131, 0x00011127 } },
-	/* 0x0001112f */ { 2, { 0x00011132, 0x00011127 } }
-};
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 encoded name.",
+		 function );
 
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x00011348[ 8 ] = {
-	/* 0x00011348 */ { 1, { 0x00011348 } },
-	/* 0x00011349 */ { 1, { 0x00011349 } },
-	/* 0x0001134a */ { 1, { 0x0001134a } },
-	/* 0x0001134b */ { 2, { 0x00011347, 0x0001133e } },
-	/* 0x0001134c */ { 2, { 0x00011347, 0x00011357 } },
-	/* 0x0001134d */ { 1, { 0x0001134d } },
-	/* 0x0001134e */ { 1, { 0x0001134e } },
-	/* 0x0001134f */ { 1, { 0x0001134f } }
-};
+		return( -1 );
+	}
+	if( name_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 function );
 
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000114b8[ 8 ] = {
-	/* 0x000114b8 */ { 1, { 0x000114b8 } },
-	/* 0x000114b9 */ { 1, { 0x000114b9 } },
-	/* 0x000114ba */ { 1, { 0x000114ba } },
-	/* 0x000114bb */ { 2, { 0x000114b9, 0x000114ba } },
-	/* 0x000114bc */ { 2, { 0x000114b9, 0x000114b0 } },
-	/* 0x000114bd */ { 1, { 0x000114bd } },
-	/* 0x000114be */ { 2, { 0x000114b9, 0x000114bd } },
-	/* 0x000114bf */ { 1, { 0x000114bf } }
-};
+		return( -1 );
+	}
+	if( ( name_size % 2 ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: missing UTF-16 encoded name value.",
+		 function );
 
-libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000115b8[ 8 ] = {
-	/* 0x000115b8 */ { 1, { 0x000115b8 } },
-	/* 0x000115b9 */ { 1, { 0x000115b9 } },
-	/* 0x000115ba */ { 2, { 0x000115b8, 0x000115af } },
-	/* 0x000115bb */ { 2, { 0x000115b9, 0x000115af } },
-	/* 0x000115bc */ { 1, { 0x000115bc } },
-	/* 0x000115bd */ { 1, { 0x000115bd } },
-	/* 0x000115be */ { 1, { 0x000115be } },
-	/* 0x000115bf */ { 1, { 0x000115bf } }
-};
+		return( -1 );
+	}
+	if( utf8_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+	*utf8_string_size = 1;
+
+	if( name_size == 0 )
+	{
+		return( 1 );
+	}
+	while( ( name_index + 1 ) < name_size )
+	{
+		/* Convert the UTF-16 stream bytes into an Unicode character
+		 */
+		if( libuna_unicode_character_copy_from_utf16_stream(
+		     &unicode_character,
+		     name,
+		     name_size,
+		     &name_index,
+		     LIBUNA_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+			 function );
+
+			return( -1 );
+		}
+		/* ':' is stored as '/'
+		 */
+		if( unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		/* Determine how many UTF-8 character bytes are required
+		 */
+		if( libuna_unicode_character_size_to_utf8(
+		     unicode_character,
+		     utf8_string_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to unable to determine size of Unicode character in UTF-8.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
+}
+
+/* Copies an UTF-8 string from an UTF-16 big-endian encoded file entry name
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_get_utf8_string(
+     const uint8_t *name,
+     size_t name_size,
+     libuna_utf8_character_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function                        = "libfshfs_name_get_utf8_string";
+	libuna_unicode_character_t unicode_character = 0;
+	size_t name_index                            = 0;
+	size_t utf8_string_index                     = 0;
+
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 encoded name.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( name_size == 0 )
+	 || ( ( name_size % 2 ) != 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: missing UTF-16 encoded name value.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf8_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf8_string_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-8 string size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	while( ( name_index + 1 ) < name_size )
+	{
+		/* Convert the UTF-16 stream bytes into an Unicode character
+		 */
+		if( libuna_unicode_character_copy_from_utf16_stream(
+		     &unicode_character,
+		     name,
+		     name_size,
+		     &name_index,
+		     LIBUNA_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+			 function );
+
+			return( -1 );
+		}
+		/* ':' is stored as '/'
+		 */
+		if( unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		/* Convert the Unicode character into UTF-8 character bytes
+		 */
+		if( libuna_unicode_character_copy_to_utf8(
+		     unicode_character,
+		     utf8_string,
+		     utf8_string_size,
+		     &utf8_string_index,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_OUTPUT_FAILED,
+			 "%s: unable to copy Unicode character to UTF-8.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	/* Check if the string is terminated with an end-of-string character
+	 */
+	if( utf8_string_index >= utf8_string_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: UTF-8 string too small.",
+		 function );
+
+		return( -1 );
+	}
+	utf8_string[ utf8_string_index ] = 0;
+
+	return( 1 );
+}
 
 /* Compares an UTF-8 string with an UTF-16 big-endian encoded file entry name
  * Returns LIBUNA_COMPARE_LESS, LIBUNA_COMPARE_EQUAL, LIBUNA_COMPARE_GREATER if successful or -1 on error
@@ -5497,7 +5608,7 @@ int libfshfs_name_compare_with_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-8 encoded name.",
+		 "%s: invalid UTF-16 encoded name.",
 		 function );
 
 		return( -1 );
@@ -5508,7 +5619,7 @@ int libfshfs_name_compare_with_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-8 encoded name size value exceeds maximum.",
+		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -5519,7 +5630,7 @@ int libfshfs_name_compare_with_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: missing UTF-8 encoded name value.",
+		 "%s: missing UTF-16 encoded name value.",
 		 function );
 
 		return( -1 );
@@ -5570,11 +5681,6 @@ int libfshfs_name_compare_with_utf8_string(
 
 			return( -1 );
 		}
-		if( use_case_folding != 0 )
-		{
-			libfshfs_name_get_case_folding_mapping(
-			 utf8_unicode_character );
-		}
 		libfshfs_name_get_decomposition_mapping(
 		 utf8_unicode_character,
 		 utf8_nfd_mapping,
@@ -5601,9 +5707,17 @@ int libfshfs_name_compare_with_utf8_string(
 
 				return( -1 );
 			}
+			/* ':' is stored as '/'
+			 */
 			if( name_unicode_character == (libuna_unicode_character_t) '/' )
 			{
 				name_unicode_character = (libuna_unicode_character_t) ':';
+			}
+			/* U+2400 is stored as U+0
+			 */
+			else if( name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+			{
+				name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
 			}
 			else if( use_case_folding != 0 )
 			{
@@ -5612,11 +5726,10 @@ int libfshfs_name_compare_with_utf8_string(
 			}
 			utf8_unicode_character = utf8_nfd_mapping->characters[ nfd_character_index ];
 
-			/* U+2400 appears to be stored as U+0
-			 */
-			if( utf8_unicode_character == (libuna_unicode_character_t) 0x00002400UL )
+			if( use_case_folding != 0 )
 			{
-				utf8_unicode_character = (libuna_unicode_character_t) 0x00000000UL;
+				libfshfs_name_get_case_folding_mapping(
+				 utf8_unicode_character );
 			}
 			if( utf8_unicode_character < name_unicode_character )
 			{
@@ -5641,6 +5754,261 @@ int libfshfs_name_compare_with_utf8_string(
 		return( LIBUNA_COMPARE_LESS );
 	}
 	return( LIBUNA_COMPARE_EQUAL );
+}
+
+/* Determines the size of an UTF-16 string from an UTF-16 big-endian encoded file entry name
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_get_utf16_string_size(
+     const uint8_t *name,
+     size_t name_size,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function                        = "libfshfs_name_get_utf16_string_size";
+	libuna_unicode_character_t unicode_character = 0;
+	size_t name_index                            = 0;
+
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 encoded name.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( name_size % 2 ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: missing UTF-16 encoded name value.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+	*utf16_string_size = 1;
+
+	if( name_size == 0 )
+	{
+		return( 1 );
+	}
+	while( ( name_index + 1 ) < name_size )
+	{
+		/* Convert the UTF-16 stream bytes into an Unicode character
+		 */
+		if( libuna_unicode_character_copy_from_utf16_stream(
+		     &unicode_character,
+		     name,
+		     name_size,
+		     &name_index,
+		     LIBUNA_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+			 function );
+
+			return( -1 );
+		}
+		/* ':' is stored as '/'
+		 */
+		if( unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		/* Determine how many UTF-16 character bytes are required
+		 */
+		if( libuna_unicode_character_size_to_utf16(
+		     unicode_character,
+		     utf16_string_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to unable to determine size of Unicode character in UTF-16.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
+}
+
+/* Copies an UTF-16 string from an UTF-16 big-endian encoded file entry name
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_get_utf16_string(
+     const uint8_t *name,
+     size_t name_size,
+     libuna_utf16_character_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function                        = "libfshfs_name_get_utf16_string";
+	libuna_unicode_character_t unicode_character = 0;
+	size_t name_index                            = 0;
+	size_t utf16_string_index                    = 0;
+
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 encoded name.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( name_size == 0 )
+	 || ( ( name_size % 2 ) != 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: missing UTF-16 encoded name value.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-16 string size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	while( ( name_index + 1 ) < name_size )
+	{
+		/* Convert the UTF-16 stream bytes into an Unicode character
+		 */
+		if( libuna_unicode_character_copy_from_utf16_stream(
+		     &unicode_character,
+		     name,
+		     name_size,
+		     &name_index,
+		     LIBUNA_ENDIAN_BIG,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+			 function );
+
+			return( -1 );
+		}
+		/* ':' is stored as '/'
+		 */
+		if( unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		/* Convert the Unicode character into UTF-16 character bytes
+		 */
+		if( libuna_unicode_character_copy_to_utf16(
+		     unicode_character,
+		     utf16_string,
+		     utf16_string_size,
+		     &utf16_string_index,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_OUTPUT_FAILED,
+			 "%s: unable to copy Unicode character to UTF-16.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( utf16_string_index >= utf16_string_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: UTF-16 string too small.",
+		 function );
+
+		return( -1 );
+	}
+	utf16_string[ utf16_string_index ] = 0;
+
+	return( 1 );
 }
 
 /* Compares an UTF-16 string with an UTF-16 big-endian encoded file entry name
@@ -5743,11 +6111,6 @@ int libfshfs_name_compare_with_utf16_string(
 
 			return( -1 );
 		}
-		if( use_case_folding != 0 )
-		{
-			libfshfs_name_get_case_folding_mapping(
-			 utf16_unicode_character );
-		}
 		libfshfs_name_get_decomposition_mapping(
 		 utf16_unicode_character,
 		 utf16_nfd_mapping,
@@ -5774,9 +6137,17 @@ int libfshfs_name_compare_with_utf16_string(
 
 				return( -1 );
 			}
+			/* ':' is stored as '/'
+			 */
 			if( name_unicode_character == (libuna_unicode_character_t) '/' )
 			{
 				name_unicode_character = (libuna_unicode_character_t) ':';
+			}
+			/* U+2400 is stored as U+0
+			 */
+			else if( name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+			{
+				name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
 			}
 			else if( use_case_folding != 0 )
 			{
@@ -5785,11 +6156,10 @@ int libfshfs_name_compare_with_utf16_string(
 			}
 			utf16_unicode_character = utf16_nfd_mapping->characters[ nfd_character_index ];
 
-			/* U+2400 appears to be stored as U+0
-			 */
-			if( utf16_unicode_character == (libuna_unicode_character_t) 0x00002400UL )
+			if( use_case_folding != 0 )
 			{
-				utf16_unicode_character = (libuna_unicode_character_t) 0x00000000UL;
+				libfshfs_name_get_case_folding_mapping(
+				 utf16_unicode_character );
 			}
 			if( utf16_unicode_character < name_unicode_character )
 			{

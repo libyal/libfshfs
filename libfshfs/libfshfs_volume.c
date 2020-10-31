@@ -959,8 +959,9 @@ int libfshfs_internal_volume_open_read(
      off64_t file_offset,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_internal_volume_open_read";
-	int result            = 0;
+	static char *function    = "libfshfs_internal_volume_open_read";
+	uint8_t use_case_folding = 0;
+	int result               = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -1056,10 +1057,13 @@ int libfshfs_internal_volume_open_read(
 	internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
 	internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
 
-/* TODO determine case folding based on volume header */
+	if( internal_volume->volume_header->file_system_type == LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS_PLUS )
+	{
+		use_case_folding = 1;
+	}
 	if( libfshfs_file_system_initialize(
 	     &( internal_volume->file_system ),
-	     0,
+	     use_case_folding,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
