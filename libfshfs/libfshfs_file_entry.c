@@ -241,7 +241,7 @@ int libfshfs_file_entry_free(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free directory entry array.",
+			 "%s: unable to free directory entry.",
 			 function );
 
 			result = -1;
@@ -1023,6 +1023,174 @@ int libfshfs_file_entry_get_identifier(
 	}
 #endif
 	return( 1 );
+}
+
+/* Retrieves the parent identifier (or catalog node identifier (CNID))
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_entry_get_parent_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *parent_identifier,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_parent_identifier";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( parent_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid parent identifier.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfshfs_directory_entry_get_parent_identifier(
+	     internal_file_entry->directory_entry,
+	     parent_identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent identifier from directory entry.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves the hard link identifier (or catalog node identifier (CNID))
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_link_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *link_identifier,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_link_identifier";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( link_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid link identifier.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_directory_entry_get_link_identifier(
+	          internal_file_entry->directory_entry,
+	          link_identifier,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve link identifier from directory entry.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
 }
 
 /* Retrieves the creation date and time
@@ -3370,6 +3538,25 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 			 "%s: unable to clone sub directory entry: %d.",
 			 function,
 			 sub_file_entry_index );
+
+			result = -1;
+		}
+		else if( libfshfs_file_system_resolve_indirect_node_directory_entry(
+		          internal_file_entry->file_system,
+		          internal_file_entry->file_io_handle,
+		          safe_directory_entry,
+		          error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to resolve indirect node directory entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &safe_directory_entry,
+			 NULL );
 
 			result = -1;
 		}

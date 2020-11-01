@@ -21,6 +21,7 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
 #include <types.h>
 
 #include "libfshfs_attribute_record.h"
@@ -532,6 +533,152 @@ on_error:
 	return( -1 );
 }
 
+/* Resolves an indirect node directory entry if available
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_system_resolve_indirect_node_directory_entry(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_directory_entry_t *directory_entry,
+     libcerror_error_t **error )
+{
+	char indirect_node_path[ 64 ];
+
+	libfshfs_directory_entry_t *link_directory_entry = NULL;
+	intptr_t *catalog_record                         = NULL;
+	static char *function                            = "libfshfs_file_system_resolve_indirect_node_directory_entry";
+	size_t indirect_node_path_length                 = 0;
+	ssize_t print_count                              = 0;
+	uint32_t link_reference                          = 0;
+	int result                                       = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_directory_entry_get_link_reference(
+	          directory_entry,
+	          &link_reference,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve link reference.",
+		 function );
+
+		goto on_error;
+	}
+	else if( ( result != 0 )
+	      && ( link_reference > 2 ) )
+	{
+		print_count = narrow_string_snprintf(
+		               indirect_node_path,
+			       64,
+			       "/\xe2\x90\x80\xe2\x90\x80\xe2\x90\x80\xe2\x90\x80HFS+ Private Data/iNode%" PRIu32 "",
+			       link_reference );
+
+		if( ( print_count <= -1 )
+		 || ( print_count > 64 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set indirect node path.",
+			 function );
+
+			goto on_error;
+		}
+		indirect_node_path_length = narrow_string_length(
+		                             indirect_node_path );
+
+		result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
+		          file_system->catalog_btree_file,
+		          file_io_handle,
+		          (uint8_t *) indirect_node_path,
+		          indirect_node_path_length,
+		          file_system->use_case_folding,
+		          &link_directory_entry,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve indirect node: %" PRIu32 " directory entry by UTF-8 path.",
+			 function,
+			 link_reference );
+
+			goto on_error;
+		}
+		if( libfshfs_directory_entry_get_identifier(
+		     directory_entry,
+		     &( directory_entry->link_identifier ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry identifier.",
+			 function );
+
+			goto on_error;
+		}
+		catalog_record                       = directory_entry->catalog_record;
+		directory_entry->catalog_record      = link_directory_entry->catalog_record;
+		link_directory_entry->catalog_record = catalog_record;
+
+		if( libfshfs_directory_entry_free(
+		     &link_directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free directory entry.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( link_directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &link_directory_entry,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Retrieves a directory entry for a specific identifier
  * Returns 1 if successful, 0 if not found or -1 on error
  */
@@ -590,8 +737,9 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_file_system_get_directory_entry_by_utf8_name";
-	int result            = 0;
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	static char *function                            = "libfshfs_file_system_get_directory_entry_by_utf8_name";
+	int result                                       = 0;
 
 	if( file_system == NULL )
 	{
@@ -604,6 +752,17 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 
 		return( -1 );
 	}
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
 	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 	          file_system->catalog_btree_file,
 	          file_io_handle,
@@ -611,7 +770,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 	          utf8_string,
 	          utf8_string_length,
 	          file_system->use_case_folding,
-	          directory_entry,
+	          &safe_directory_entry,
 	          error );
 
 	if( result == -1 )
@@ -623,9 +782,37 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 		 "%s: unable to retrieve directory entry by UTF-8 name.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
+		     file_system,
+		     file_io_handle,
+		     safe_directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to resolve indirect node directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		*directory_entry = safe_directory_entry;
 	}
 	return( result );
+
+on_error:
+	if( safe_directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &safe_directory_entry,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Retrieves a directory entry for a specific identifier
@@ -639,8 +826,9 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_file_system_get_directory_entry_by_utf8_path";
-	int result            = 0;
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	static char *function                            = "libfshfs_file_system_get_directory_entry_by_utf8_path";
+	int result                                       = 0;
 
 	if( file_system == NULL )
 	{
@@ -653,13 +841,24 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
 
 		return( -1 );
 	}
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
 	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 	          file_system->catalog_btree_file,
 	          file_io_handle,
 	          utf8_string,
 	          utf8_string_length,
 	          file_system->use_case_folding,
-	          directory_entry,
+	          &safe_directory_entry,
 	          error );
 
 	if( result == -1 )
@@ -671,9 +870,37 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
 		 "%s: unable to retrieve directory entry by UTF-8 path.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
+		     file_system,
+		     file_io_handle,
+		     safe_directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to resolve indirect node directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		*directory_entry = safe_directory_entry;
 	}
 	return( result );
+
+on_error:
+	if( safe_directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &safe_directory_entry,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Retrieves a directory entry for an UTF-16 encoded name
@@ -688,8 +915,9 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_file_system_get_directory_entry_by_utf16_name";
-	int result            = 0;
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	static char *function                            = "libfshfs_file_system_get_directory_entry_by_utf16_name";
+	int result                                       = 0;
 
 	if( file_system == NULL )
 	{
@@ -702,6 +930,17 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 
 		return( -1 );
 	}
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
 	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 	          file_system->catalog_btree_file,
 	          file_io_handle,
@@ -709,7 +948,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 	          utf16_string,
 	          utf16_string_length,
 	          file_system->use_case_folding,
-	          directory_entry,
+	          &safe_directory_entry,
 	          error );
 
 	if( result == -1 )
@@ -721,9 +960,37 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 		 "%s: unable to retrieve directory entry by UTF-16 name.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
+		     file_system,
+		     file_io_handle,
+		     safe_directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to resolve indirect node directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		*directory_entry = safe_directory_entry;
 	}
 	return( result );
+
+on_error:
+	if( safe_directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &safe_directory_entry,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Retrieves a directory entry for a specific identifier
@@ -737,8 +1004,9 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_file_system_get_directory_entry_by_utf16_path";
-	int result            = 0;
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	static char *function                            = "libfshfs_file_system_get_directory_entry_by_utf16_path";
+	int result                                       = 0;
 
 	if( file_system == NULL )
 	{
@@ -751,13 +1019,24 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 
 		return( -1 );
 	}
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
 	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 	          file_system->catalog_btree_file,
 	          file_io_handle,
 	          utf16_string,
 	          utf16_string_length,
 	          file_system->use_case_folding,
-	          directory_entry,
+	          &safe_directory_entry,
 	          error );
 
 	if( result == -1 )
@@ -769,9 +1048,37 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 		 "%s: unable to retrieve directory entry by UTF-16 path.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
+		     file_system,
+		     file_io_handle,
+		     safe_directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to resolve indirect node directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		*directory_entry = safe_directory_entry;
 	}
 	return( result );
+
+on_error:
+	if( safe_directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &safe_directory_entry,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Retrieves directory entries for a specific parent identifier

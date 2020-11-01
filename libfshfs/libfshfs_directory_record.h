@@ -35,6 +35,10 @@ typedef struct libfshfs_directory_record libfshfs_directory_record_t;
 
 struct libfshfs_directory_record
 {
+	/* The flags
+	 */
+	uint16_t flags;
+
 	/* The identifier
 	 */
 	uint32_t identifier;

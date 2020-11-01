@@ -74,11 +74,12 @@ void usage_fprint(
 	                 " File System (HFS) volume.\n\n" );
 
 	fprintf( stream, "Usage: fshfsinfo [ -B bodyfile ] [ -E identifier ] [ -F file_entry ]\n"
-	                 "                 [ -o offset ] [ -hHvV ] source\n\n" );
+	                 "                 [ -o offset ] [ -dhHvV ] source\n\n" );
 
 	fprintf( stream, "\tsource: the source file or device\n\n" );
 
 	fprintf( stream, "\t-B:     output file system information as a bodyfile\n" );
+	fprintf( stream, "\t-d:     calculate a MD5 hash of a file entry to include in the bodyfile\n" );
 	fprintf( stream, "\t-E:     show information about a specific file system entry or \"all\"\n" );
 	fprintf( stream, "\t-F:     show information about a specific file entry path.\n" );
 	fprintf( stream, "\t-h:     shows this help\n" );
@@ -150,6 +151,7 @@ int main( int argc, char * const argv[] )
 	system_integer_t option                          = 0;
 	size_t string_length                             = 0;
 	uint64_t file_entry_identifier                   = 0;
+	uint8_t calculate_md5                            = 0;
 	int option_mode                                  = FSHFSINFO_MODE_VOLUME;
 	int verbose                                      = 0;
 
@@ -186,7 +188,7 @@ int main( int argc, char * const argv[] )
 	while( ( option = fshfstools_getopt(
 	                   argc,
 	                   argv,
-	                   _SYSTEM_STRING( "B:E:F:hHo:vV" ) ) ) != (system_integer_t) -1 )
+	                   _SYSTEM_STRING( "B:dE:F:hHo:vV" ) ) ) != (system_integer_t) -1 )
 	{
 		switch( option )
 		{
@@ -204,6 +206,11 @@ int main( int argc, char * const argv[] )
 
 			case (system_integer_t) 'B':
 				option_bodyfile = optarg;
+
+				break;
+
+			case (system_integer_t) 'd':
+				calculate_md5 = 1;
 
 				break;
 
@@ -270,6 +277,7 @@ int main( int argc, char * const argv[] )
 
 	if( info_handle_initialize(
 	     &fshfsinfo_info_handle,
+	     calculate_md5,
 	     &error ) != 1 )
 	{
 		fprintf(

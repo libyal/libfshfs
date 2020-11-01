@@ -172,4 +172,5 @@ stamp-h[1-9]
 /libfdata
 /libfdatetime
 /libfguid
+/libhmac
 /libuna

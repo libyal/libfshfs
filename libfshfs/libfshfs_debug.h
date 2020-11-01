@@ -37,6 +37,9 @@ extern "C" {
 void libfshfs_debug_print_btree_attribute_flags(
       uint32_t btree_attribute_flags );
 
+void libfshfs_debug_print_catalog_file_record_flags(
+      uint16_t catalog_file_record_flags );
+
 void libfshfs_debug_print_volume_attribute_flags(
       uint32_t volume_attribute_flags );
 

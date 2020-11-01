@@ -52,7 +52,8 @@ Python 3 bindings for libfshfs
 %package -n libfshfs-tools
 Summary: Several tools for reading Hierarchical File System (HFS) volumes
 Group: Applications/System
-Requires: libfshfs = %{version}-%{release}
+Requires: libfshfs = %{version}-%{release} @ax_libcrypto_spec_requires@ @ax_libhmac_spec_requires@
+@libfshfs_spec_tools_build_requires@ @ax_libcrypto_spec_build_requires@ @ax_libhmac_spec_build_requires@
 
 %description -n libfshfs-tools
 Several tools for reading Hierarchical File System (HFS) volumes

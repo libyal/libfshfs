@@ -366,6 +366,24 @@ int libfshfs_file_entry_get_identifier(
      uint32_t *identifier,
      libfshfs_error_t **error );
 
+/* Retrieves the parent identifier (or catalog node identifier (CNID))
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_parent_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *parent_identifier,
+     libfshfs_error_t **error );
+
+/* Retrieves the hard link identifier (or catalog node identifier (CNID))
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_link_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *link_identifier,
+     libfshfs_error_t **error );
+
 /* Retrieves the creation date and time
  * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
  * Returns 1 if successful or -1 on error

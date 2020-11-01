@@ -132,6 +132,9 @@ AS_IF(
     ])
   ])
 
+dnl Check if libhmac or required headers and functions are available
+AX_LIBHMAC_CHECK_ENABLE
+
 dnl Check if fshfstools required headers and functions are available
 AX_FSHFSTOOLS_CHECK_LOCAL
 
@@ -151,6 +154,13 @@ AS_IF(
  [AC_SUBST(
   [libfshfs_spec_requires],
   [Requires:])
+ ])
+
+AS_IF(
+ [test "x$ac_cv_libhmac" = xyes || test "x$ac_cv_libcrypto" != xno],
+ [AC_SUBST(
+  [libfshfs_spec_tools_build_requires],
+  [BuildRequires:])
  ])
 
 dnl Set the date for the dpkg files
@@ -185,6 +195,7 @@ AC_CONFIG_FILES([libfshfs/Makefile])
 AC_CONFIG_FILES([pyfshfs/Makefile])
 AC_CONFIG_FILES([pyfshfs-python2/Makefile])
 AC_CONFIG_FILES([pyfshfs-python3/Makefile])
+AC_CONFIG_FILES([libhmac/Makefile])
 AC_CONFIG_FILES([fshfstools/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
@@ -227,6 +238,8 @@ Building:
    libfdatetime support:                       $ac_cv_libfdatetime
    libfguid support:                           $ac_cv_libfguid
    DEFLATE compression support:                $ac_cv_uncompress
+   libhmac support:                            $ac_cv_libhmac
+   MD5 support:                                $ac_cv_libhmac_md5
 
 Features:
    Multi-threading support:                    $ac_cv_libcthreads_multi_threading

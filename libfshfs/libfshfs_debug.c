@@ -58,6 +58,73 @@ void libfshfs_debug_print_btree_attribute_flags(
 	}
 }
 
+/* Prints the catalog file record flags
+ */
+void libfshfs_debug_print_catalog_file_record_flags(
+      uint16_t catalog_file_record_flags )
+{
+	if( ( catalog_file_record_flags & 0x0001UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tFile is locked (kHFSFileLockedMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0002UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas thread record (kHFSThreadExistsMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0004UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas extended attributes (kHFSHasAttributesMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0008UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas ACLs (kHFSHasSecurityMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0010UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas sub-folder count (kHFSHasFolderCountMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0020UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas hard link target (kHFSHasLinkChainMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0040UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSHasChildLinkMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0080UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSHasDateAddedMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0100UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSFastDevPinnedMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0200UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSDoNotFastDevPinMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0400UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSFastDevCandidateMask)\n" );
+	}
+	if( ( catalog_file_record_flags & 0x0800UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSAutoCandidateMask)\n" );
+	}
+}
+
 /* Prints the volume attribute flags
  */
 void libfshfs_debug_print_volume_attribute_flags(

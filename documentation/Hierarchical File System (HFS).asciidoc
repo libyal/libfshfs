@@ -926,13 +926,16 @@ records. The value refers to a specific encoding type.
 | MacCentralEurRoman | 29 | 29
 | MacVietnamese | 30 | 30
 | MacExtArabic | 31 | 31
+3+|
 | MacSymbol | 33 | 33
 | MacDingbats | 34 | 34
 | MacTurkish | 35 | 35
 | MacCroatian | 36 | 36
 | MacIcelandic | 37 | 37
 | MacRomanian | 38 | 38
+3+|
 | MacFarsi | 140 | 49
+3+|
 | MacUkrainian | 152 | 48
 |===
 
@@ -950,101 +953,84 @@ volume use that encoding. This means that when an implementation deletes or
 renames an object, it does not have to clear the encoding bit if that was the
 last name to use the given encoding.
 
-===== Notes
-
-....
-    #define S_IFMT   0170000    /* type of file mask */
-    #define S_IFIFO  0010000    /* named pipe (fifo) */
-    #define S_IFCHR  0020000    /* character special */
-    #define S_IFDIR  0040000    /* directory */
-    #define S_IFBLK  0060000    /* block special */
-    #define S_IFREG  0100000    /* regular */
-    #define S_IFLNK  0120000    /* symbolic link */
-    #define S_IFSOCK 0140000    /* socket */
-    #define S_IFWHT  0160000    /* whiteout */
-
-    In some versions of Unix, the sticky bit, S_ISTXT, is used to indicate that an executable file's code should remain in memory after the executable finishes; this can help performance if the same executable is used again soon. Mac OS X does not use this optimization. If the sticky bit is set for a directory, then Mac OS X restricts movement, deletion, and renaming of files in that directory. Files may be removed or renamed only if the user has write access to the directory; and is the owner of the file or the directory, or is the super-user.
-special
-    This field is used only for certain special kinds of files. For directories, and most files, this field is unused and reserved. When used, this field is used as one of the following:
-iNodeNum
-    For hard link files, this field contains the link reference number. See the Hard Links section for more information.
-linkCount
-    For indirect node files, this field contains the number of hard links that point at this indirect node file. See the Hard Links section for more information.
-rawDevice
-    For block and character special devices files (when the S_IFMT field contains S_IFCHR or S_IFBLK), this field contains the device number.
-
-WARNING:
-Mac OS 8 and 9 treat the permissions as reserved.
-
-Note:
-The S_IFWHT and UF_OPAQUE values are used when the file system is mounted as part of a union mount. A union mount presents the combination (union) of several file systems as a single file system. Conceptually, these file systems are layered, one on top of another. If a file or directory appears in multiple layers, the one in the top most layer is used. All changes are made to the top most file system only; the others are read-only. To delete a file or directory that appears in a layer other than the top layer, a whiteout entry (file type S_IFWHT) is created in the top layer. If a directory that appears in a layer other than the top layer is deleted and later recreated, the contents in the lower layer must be hidden by setting the UF_OPAQUE flag in the directory in the top layer. Both S_IFWHT and UF_OPAQUE hide corresponding names in lower layers by preventing a union mount from accessing the same file or directory name in a lower layer.
-
-Note:
-If the S_IFMT field (upper 4 bits) of the fileMode field is zero, then Mac OS X assumes that the permissions structure is uninitialized, and internally uses default values for all of the fields. The default user and group IDs are 99, but can be changed at the time the volume is mounted. This default ownerID is then subject to substitution as described above.
-
-This means that files created by Mac OS 8 and 9, or any other implementation that sets the permissions fields to zeroes, will behave as if the "ignore ownership" option is enabled for those files, even if "ignore ownership" is disabled for the volume as a whole.
-....
-
 === Links
 
-[yellow-background]*TODO: add text*
+[yellow-background]*TODO: add text about traditional HFS*
+
+HFS+ supports both hard links and symbolic links.
+
+Hard links to directories are not supported (allowed).
 
 ==== Hard Links
 
+Hard links in HFS+ are represented by multiple different types of file records:
+
+* one indirect node file record, named "iNode#", where # is the link reference. This file contains the content of the file shared by the hard links.
+* one or more hard link file records, that reference the indirect node file record.
+
+Indirect node files exist in a special (invisible) directory called the metadata directory
+named "/\u2400\u2400\u2400\u2400HFS+ Private Data".
+
+[NOTE]
+TN1150 claims that a new link reference randomly chosen from the range 100 to
+1073741923. However link references that fall outside of this range have been
+observed such as "iNode20".
+
+The special permission data of the hard link file records contains the link
+reference.
+
 ===== Notes
 
 ....
-Hard links are a feature that allows multiple directory entries to refer to a single file's content. They are a way to give a single file multiple names, possibly in multiple directories. This section describes how Mac OS X implements hard links on HFS+ volumes.
+The fileType and fileCreator fields of the userInfo in the catalog record of a
+hard link file must be set to kHardLinkFileType and kHFSPlusCreator,
+respectively. The hard link file's creation date should be set to the creation
+date of the metadata directory. The hard link file's creation date may also be
+set to the creation date of the volume's root directory (if it differs from the
+creation date of the metadata directory), though this is deprecated.
 
-The Mac OS X implementation of hard links on HFS+ volumes was done using the existing metadata fields of the catalog records. This makes it possible to back up and restore a volume using hard links, by backing up and restoring individual files, without having to understand or interpret the hard links. An HFS+ implementation may choose to automatically follow hard links, or not.
-
-Hard links in HFS+ are represented by a set of several files. The actual file content (which is shared by each of the hard links) is stored in a special indirect node file. This indirect node file is the equivalent of an inode in a traditional UNIX file system.
-
-HFS+ uses special hard link files (or links) to refer (or point) to an indirect node file. There is one hard link file for each directory entry or name that refers to the file content.
-
-Indirect node files exist in a special directory called the metadata directory. This directory exists in the volume's root directory. The name of the metadata directory is four null characters followed by the string "HFS+ Private Data". The directory's creation date is set to the creation date of the volume's root directory. The kIsInvisible and kNameLocked bits are set in the directory's Finder information. The icon location in the Finder info is set to the point (22460, 22460). These Finder info settings are not mandatory, but they tend to reduce accidental changes to the metadata directory. An implementation that automatically follows hard links should make the metadata directory inaccessable from its normal file system interface.
-
-Note:
-The case-insensitive Unicode string comparison used by HFS+ and case-insensitive HFSX sorts null characters after all other characters, so the metadata directory will typically be the last item in the root directory. On case-sensitive HFSX volumes, null characters sort before other characters, so the metadata directory will typically be the first item in the root directory.
-
-Indirect node files have a special identifying number called a link reference. The link reference is unique among indirect node files on a given volume. The link reference is not related to catalog node IDs. When a new indirect node file is created, it is assigned a new link reference randomly chosen from the range 100 to 1073741923.
-
-The file name of an indirect node file is the string "iNode" immediately followed by the link reference converted to decimal text, with no leading zeroes. For example, an indirect node file with link reference 123 would have the name "iNode123".
-
-An indirect node file must be a file, not a directory. Hard links to directories are not allowed because they could cause cycles in the directory hierarchy if a hard link pointed to one of its ancestor directories.
-
-The linkCount field in the permissions is an estimate of the number of links referring to this indirect node file. An implementation that understands hard links should increment this value when creating an additional link, and decrement the value when removing a link. However, some implementations (such as traditional Mac OS) do not understand hard links and may make changes that cause the linkCount to be inaccurate. Similarly, it is possible for a link to refer to an indirect node file that does not exist. When removing a link, an implementation should not allow the linkCount to underflow; if it is already zero, do not change it.
-
-Note:
-The inode number returned by the POSIX stat or lstat routines in the st_ino field of the stat structure is actually the catalog node ID of the indirect node file, not the link reference mentioned above.
-
-The reason for using a separate link reference number, instead of a catalog node ID, is to allow hard links to be backed up and restored by utilities that are not specifically aware of hard links. As long as they preserve filenames, Finder info, and permissions, then the hard links will be preserved.
-
-Hard link files are ordinary files in the catalog. The catalog node ID of a hard link file is different from the catalog node ID of the indirect node file it refers to, and different from the catalog node ID of any other hard link file.
-
-The fileType and fileCreator fields of the userInfo in the catalog record of a hard link file must be set to kHardLinkFileType and kHFSPlusCreator, respectively. The hard link file's creation date should be set to the creation date of the metadata directory. The hard link file's creation date may also be set to the creation date of the volume's root directory (if it differs from the creation date of the metadata directory), though this is deprecated. The iNodeNum field in the permissions is set to the link reference of the indirect node file that the link refers to. For better compatibility with older versions of the Mac OS Finder, the kHasBeenInited flag should be set in the Finder flags. The other Finder information, and other dates in the catalog record are reserved.
+For better compatibility with older versions of the Mac OS Finder, the
+kHasBeenInited flag should be set in the Finder flags. The other Finder
+information, and other dates in the catalog record are reserved.
 
 enum {
     kHardLinkFileType = 0x686C6E6B,  /* 'hlnk' */
     kHFSPlusCreator   = 0x6866732B   /* 'hfs+' */
 };
 
-POSIX semantics allow an open file to be unlinked (deleted). These open but unlinked files are stored on HFS+ volumes much like a hard link. When the open file is deleted, it is renamed and moved into the metadata directory. The new name is the string "temp" followed by the catalog node ID converted to decimal text. When the file is eventually closed, this temporary file may be removed. All such temporary files may be removed when repairing an unmounted HFS+ volume.
+POSIX semantics allow an open file to be unlinked (deleted). These open but
+unlinked files are stored on HFS+ volumes much like a hard link. When the open
+file is deleted, it is renamed and moved into the metadata directory. The new
+name is the string "temp" followed by the catalog node ID converted to decimal
+text. When the file is eventually closed, this temporary file may be removed.
+All such temporary files may be removed when repairing an unmounted HFS+ volume.
 Repairing the Metadata Directory
 
-When repairing an HFS+ volume with hard links or a metadata directory, there are several conditions that might need to be repaired:
+When repairing an HFS+ volume with hard links or a metadata directory, there
+are several conditions that might need to be repaired:
 
-    * Opened but deleted files (which are now orphaned).
-    * Orphaned indirect node files (no hard links refer to them).
-    * Broken hard link (hard link exists, but indirect node file does not).
-    * Incorrect link count.
-    * Link reference was 0.
+* Opened but deleted files (which are now orphaned).
+* Orphaned indirect node files (no hard links refer to them).
+* Broken hard link (hard link exists, but indirect node file does not).
+* Incorrect link count.
+* Link reference was 0.
 
-Opened but deleted files are files whose names start with "temp", and are in the metadata directory. If the volume is not in use (not mounted, and not being used by any other utility), then these files can be deleted. Volumes with a journal, even one with no active transactions, may have opened but undeleted files that need to be deleted.
+Opened but deleted files are files whose names start with "temp", and are in
+the metadata directory. If the volume is not in use (not mounted, and not being
+used by any other utility), then these files can be deleted. Volumes with a
+journal, even one with no active transactions, may have opened but undeleted
+files that need to be deleted.
 
-Detecting an orphaned indirect node file, broken hard link, or incorrect link count requires finding all hard link files in the catalog, and comparing the number of found hard links for each link reference with the link count of the corresponding indirect node file.
+Detecting an orphaned indirect node file, broken hard link, or incorrect link
+count requires finding all hard link files in the catalog, and comparing the
+number of found hard links for each link reference with the link count of the
+corresponding indirect node file.
 
-A hard link with a link reference equal to 0 is invalid. Such a hard link may be the result of a hard link being copied or restored by an implementation or utility that does not use the permissions in catalog records. It may be possible to repair the hard link by determining the proper link reference. Otherwise, the hard link should be deleted.
+A hard link with a link reference equal to 0 is invalid. Such a hard link may
+be the result of a hard link being copied or restored by an implementation or
+utility that does not use the permissions in catalog records. It may be
+possible to repair the hard link by determining the proper link reference.
+Otherwise, the hard link should be deleted.
 ....
 
 ==== Symbolic Links
@@ -1319,7 +1305,7 @@ consists of:
 | Offset | Size | Value | Description
 | 0 | 2 | 0x0100 | The record type
 | 2 | 2 | | Directory (folder) flags +
-[yellow-background]*No bits are currently defined for folder records.*
+See section: <<catalog_file_record_flags,file record flags>>
 | 4 | 2 | | Number of directory entries (valence)
 | 6 | 4 | | The identifier +
 Contains a CNID
@@ -1347,7 +1333,7 @@ and consists of:
 | Offset | Size | Value | Description
 | 0 | 2 | 0x0001 | The record type
 | 2 | 2 | | Directory (folder) flags +
-No bits are currently defined for folder records.
+See section: <<catalog_file_record_flags,file record flags>>
 | 4 | 4 | | Number of directory entries (valence)
 | 8 | 4 | | The identifier +
 Contains a CNID
@@ -1372,8 +1358,7 @@ BSD like flags settable by the owner +
 Also see: <<owner_flags,Owner flags>>
 | 42 | 2 | | File mode +
 Also see: <<file_mode,File mode>>
-| 44 | 4 | | Special permission data. +
-Consist of either: hard link inode number, hard link count, raw device number
+| 44 | 4 | | Special permission data
 4+| _Folder information_
 | 48 | 16 | | Folder information +
 See section: <<hfs_plus_folder_information,HFS+ folder information>>
@@ -1463,8 +1448,8 @@ BSD like flags settable by the owner +
 Also see: <<owner_flags,Owner flags>>
 | 42 | 2 | | File mode +
 Also see: <<file_mode,File mode>>
-| 44 | 4 | | Special permission data. +
-Consist of either: hard link inode number, hard link count, raw device number
+| 44 | 4 | | Special permission data +
+Consist of either: hard link reference, hard link count, raw device number
 4+| _File information_
 | 48 | 16 | | File information (or user information) +
 See section: <<hfs_plus_file_information,HFS+ file information>>
@@ -1481,33 +1466,29 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
 
-===== [[catalog_file_record_flags]]The HFS catalog file record flags
+===== [[catalog_file_record_flags]]The catalog file record flags
 
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
 | 0x0001 | kHFSFileLockedMask | File is locked and cannot be written to
-| 0x0002 | kHFSThreadExistsMask | Has file thread record
-| 0x0004 | | [yellow-background]*Unknown*
-| 0x0008 | | File record is used, otherwise the file record should be considered empty +
-[yellow-background]*Removed in HFS+?*
-3+|
-| 0x0080 | | [yellow-background]*Unknown (compressed?)*
+| 0x0002 | kHFSThreadExistsMask | Has thread record
+| 0x0004 | kHFSHasAttributesMask | Has extended attributes
+| 0x0008 | kHFSHasSecurityMask | Has ACLs
+| 0x0010 | kHFSHasFolderCountMask | Has sub-folder count
+| 0x0020 | kHFSHasLinkChainMask | Has a hard link target (link chain) +
+The CNID of the hard link target is stored in the special permission data
+| 0x0040 | kHFSHasChildLinkMask | Has a child that is a directory link
+| 0x0080 | kHFSHasDateAddedMask | Had added date and time +
+The extended folder of file information contains the added date and time
+| 0x0100 | kHFSFastDevPinnedMask | [yellow-background]*Unknown*
+| 0x0200 | kHFSDoNotFastDevPinMask | [yellow-background]*Unknown*
+| 0x0400 | kHFSFastDevCandidateMask | [yellow-background]*Unknown*
+| 0x0800 | kHFSAutoCandidateMask | [yellow-background]*Unknown*
 |===
 
-[yellow-background]*TODO: determine if the following values are related*
-
 ....
-0x0004 kHFSHasAttributesMask
-0x0008 kHFSHasSecurityMask
-0x0010 kHFSHasFolderCountMask
-0x0020 kHFSHasLinkChainMask
-0x0040 kHFSHasChildLinkMask
-0x0080 kHFSHasDateAddedMask
-0x0100 kHFSFastDevPinnedMask
-0x0200 kHFSDoNotFastDevPinMask
-0x0400 kHFSFastDevCandidateMask
-0x0800 kHFSAutoCandidateMask
+Does 0x0008 in HFS have a different meaning? File record is used, otherwise the file record should be considered empty
 ....
 
 ==== The catalog thread record
@@ -1600,6 +1581,21 @@ substitution of group IDs in Mac OS X.
 
 ==== [[file_mode]]File mode
 
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0xf000 (0170000) | S_IFMT | File type bitmask
+| 0x1000 (0010000) | S_IFIFO | Named pipe
+| 0x2000 (0020000) | S_IFCHR | Character-special file (Character device)
+| 0x4000 (0040000) | S_IFDIR | Directory
+| 0x6000 (0060000) | S_IFBLK | Block-special file (Block device)
+| 0x8000 (0100000) | S_IFREG | Regular file
+| 0xa000 (0120000) | S_IFLNK | Symbolic link
+| 0xc000 (0140000) | S_IFSOCK | Socket
+| 0xe000 (0160000) | S_IFWHT | Whiteout +
+A whiteout is a file entry that covers up all entries of a particular name from lower branches
+|===
+
 HFS+ uses the BSD file type and mode bits. Note that the constants from the
 header shown below are in octal (base eight), not hexadecimal.
 
@@ -1625,6 +1621,55 @@ header shown below are in octal (base eight), not hexadecimal.
 | 0000002 | S_IWOTH | Write access for other
 | 0000001 | S_IXOTH | Execute access for other
 |===
+
+[NOTE]
+If the sticky bit is set for a directory, then Mac OS restricts movement,
+deletion, and renaming of files in that directory. Files may be removed or
+renamed only if the user has write access to the directory; and is the owner of
+the file or the directory, or is the super-user.
+
+===== Notes
+
+....
+special
+    This field is used only for certain special kinds of files. For directories, and most files, this field is unused and reserved. When used, this field is used as one of the following:
+iNodeNum
+    For hard link files, this field contains the link reference number. See the Hard Links section for more information.
+linkCount
+    For indirect node files, this field contains the number of hard links that point at this indirect node file. See the Hard Links section for more information.
+rawDevice
+    For block and character special devices files (when the S_IFMT field contains S_IFCHR or S_IFBLK), this field contains the device number.
+
+WARNING:
+Mac OS 8 and 9 treat the permissions as reserved.
+
+Note:
+The S_IFWHT and UF_OPAQUE values are used when the file system is mounted as
+part of a union mount. A union mount presents the combination (union) of
+several file systems as a single file system. Conceptually, these file systems
+are layered, one on top of another. If a file or directory appears in multiple
+layers, the one in the top most layer is used. All changes are made to the top
+most file system only; the others are read-only. To delete a file or directory
+that appears in a layer other than the top layer, a whiteout entry (file type
+S_IFWHT) is created in the top layer. If a directory that appears in a layer
+other than the top layer is deleted and later recreated, the contents in the
+lower layer must be hidden by setting the UF_OPAQUE flag in the directory in
+the top layer. Both S_IFWHT and UF_OPAQUE hide corresponding names in lower
+layers by preventing a union mount from accessing the same file or directory
+name in a lower layer.
+
+Note:
+If the S_IFMT field (upper 4 bits) of the fileMode field is zero, then Mac OS X
+assumes that the permissions structure is uninitialized, and internally uses
+default values for all of the fields. The default user and group IDs are 99,
+but can be changed at the time the volume is mounted. This default ownerID is
+then subject to substitution as described above.
+
+This means that files created by Mac OS 8 and 9, or any other implementation
+that sets the permissions fields to zeroes, will behave as if the "ignore
+ownership" option is enabled for those files, even if "ignore ownership" is
+disabled for the volume as a whole.
+....
 
 === File system hierarchy
 
@@ -2470,8 +2515,13 @@ consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | ( 4 x 2 ) = 8 | | [yellow-background]*Unknown (Reserved)* +
-Array of signed 16-bit integers
+| 0 | 4 | | [yellow-background]*Unknown (Reserved)*
+4+| _If kHFSHasDateAddedMask is not set_
+| 4 | 4 | | [yellow-background]*Unknown (Reserved)*
+4+| _If kHFSHasDateAddedMask is set_
+| 4 | 4 | | Added date and time +
+Contains a POSIX timestamp in UTC
+4+| _Common_
 | 8 | 2 | | Extended Finder flags +
 See section: <<extended_finder_flags,Extended finder flags>>
 | 10 | 2 | | [yellow-background]*Unknown (Reserved)* +
@@ -2511,9 +2561,14 @@ The HFS extended folder information is 16 bytes of size and consists of:
 | 0 | 4 | | Scroll position +
 The scroll position for icon views +
 Contains x and y-coordinate values
+4+| _If kHFSHasDateAddedMask is not set_
 | 4 | 4 | | Open directory identifier chain +
 Signed 32-bit integer +
 Chain of directory identifiers for open folders.
+4+| _If kHFSHasDateAddedMask is set_
+| 4 | 4 | | Added date and time +
+Contains a POSIX timestamp in UTC
+4+| _Common_
 | 8 | 1 | | Extended finder script code flags +
 These flags are used if the script code flag is set.
 | 9 | 1 | | Extended Finder flags +

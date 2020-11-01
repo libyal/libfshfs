@@ -1,4 +1,4 @@
-.Dd October 25, 2020
+.Dd November  1, 2020
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -90,6 +90,10 @@ File entry functions
 .Fn libfshfs_file_entry_free "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *identifier" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_parent_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *parent_identifier" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_link_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *link_identifier" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_creation_time "libfshfs_file_entry_t *file_entry" "uint32_t *hfs_time" "libfshfs_error_t **error"
 .Ft int

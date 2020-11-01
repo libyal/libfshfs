@@ -36,6 +36,10 @@ typedef struct libfshfs_file_record libfshfs_file_record_t;
 
 struct libfshfs_file_record
 {
+	/* The flags
+	 */
+	uint16_t flags;
+
 	/* The identifier
 	 */
 	uint32_t identifier;
@@ -71,6 +75,10 @@ struct libfshfs_file_record
 	/* The file mode
 	 */
 	uint16_t file_mode;
+
+	/* The link reference
+	 */
+	uint32_t link_reference;
 
 	/* The data fork descriptor
 	 */
@@ -153,6 +161,11 @@ int libfshfs_file_record_get_owner_identifier(
 int libfshfs_file_record_get_group_identifier(
      libfshfs_file_record_t *file_record,
      uint32_t *group_identifier,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_link_reference(
+     libfshfs_file_record_t *file_record,
+     uint32_t *link_reference,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

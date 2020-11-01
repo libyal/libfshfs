@@ -1,34 +1,34 @@
 Debug info:
-* handle data streams of hard links
-** determine what to do with hard links, since they have their own identifier
-
 * add support for resource fork data stream
 * add support for extended attribute (named fork) data stream
-
+* add added date and time support (POSIX timestamp)
 * on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
+* catalog B-tree file, include name in branch key check
+* file entry API: add extents functions
+
+* check flags to see if file entry has extended attributes
+
+* look at how case folding is stored
 
 * ensure traditional HFS input errors for now
 
-* add support for name in catalog B-tree key compare
+* add support to print information about special files (those without a catalog record)
 
 * what about a directory with extended attributes?
 ** what if that attribute is named com.apple.decmpfs ?
+* what about a symbolic link to HFS+ Private data directory?
 
-* file entry API: add extents functions
-
-* catalog btree file, include name in branch key check
-
-* add support to print information about special files (those without a catalog record)
+* pyfshfs
+** add get_parent_identifier support
+** add get_link_identifier support
 
 * can the metadata B-tree files require additional extents?
-* split HFS and HFS+ documentation?
 
 Format support:
-* implement traditional HFS support
-* implement support for file information
-* implement support for extended file information
-* implement support for folder information
-* implement support for extended folder information
+* implement support for traditional HFS
+* implement support for HFS+/HFX Unicode 2.1 version
+* implement support for folder and file information
+* implement support for extended folder and file information
 
 20160605
 * see `git log' for more recent change log

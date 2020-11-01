@@ -93,6 +93,12 @@ int libfshfs_file_system_read_extents_file(
      libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error );
 
+int libfshfs_file_system_resolve_indirect_node_directory_entry(
+     libfshfs_file_system_t *file_system,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_directory_entry_t *directory_entry,
+     libcerror_error_t **error );
+
 int libfshfs_file_system_get_directory_entry_by_identifier(
      libfshfs_file_system_t *file_system,
      libbfio_handle_t *file_io_handle,

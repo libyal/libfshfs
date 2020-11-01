@@ -42,6 +42,7 @@ MSVSCPP_FILES = \
 	libfdatetime/libfdatetime.vcproj \
 	libfguid/libfguid.vcproj \
 	libfshfs/libfshfs.vcproj \
+	libhmac/libhmac.vcproj \
 	libuna/libuna.vcproj \
 	pyfshfs/pyfshfs.vcproj \
 	zlib/zlib.vcproj \

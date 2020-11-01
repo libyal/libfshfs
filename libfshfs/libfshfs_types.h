@@ -34,10 +34,12 @@
 /* The following type definitions hide internal data structures
  */
 #if defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI )
-typedef struct libfshfs_file_entry {}	libfshfs_file_entry_t;
-typedef struct libfshfs_volume {}	libfshfs_volume_t;
+typedef struct libfshfs_extended_attribute {}	libfshfs_extended_attribute_t;
+typedef struct libfshfs_file_entry {}		libfshfs_file_entry_t;
+typedef struct libfshfs_volume {}		libfshfs_volume_t;
 
 #else
+typedef intptr_t libfshfs_extended_attribute_t;
 typedef intptr_t libfshfs_file_entry_t;
 typedef intptr_t libfshfs_volume_t;
 

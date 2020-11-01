@@ -27,12 +27,14 @@
 #include <types.h>
 #include <wide_string.h>
 
+#include "digest_hash.h"
 #include "fshfstools_libbfio.h"
 #include "fshfstools_libcerror.h"
 #include "fshfstools_libclocale.h"
 #include "fshfstools_libcnotify.h"
 #include "fshfstools_libfdatetime.h"
 #include "fshfstools_libfguid.h"
+#include "fshfstools_libhmac.h"
 #include "fshfstools_libfshfs.h"
 #include "fshfstools_libuna.h"
 #include "info_handle.h"
@@ -53,6 +55,7 @@ int libfshfs_volume_open_file_io_handle(
 
 #endif /* !defined( LIBFSHFS_HAVE_BFIO ) */
 
+#define DIGEST_HASH_STRING_SIZE_MD5	33
 #define INFO_HANDLE_NOTIFY_STREAM	stdout
 
 /* Copies a string of a decimal value to a 64-bit value
@@ -171,6 +174,7 @@ int fshfstools_system_string_copy_from_64_bit_in_decimal(
  */
 int info_handle_initialize(
      info_handle_t **info_handle,
+     uint8_t calculate_md5,
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_initialize";
@@ -238,6 +242,7 @@ int info_handle_initialize(
 
 		goto on_error;
 	}
+	( *info_handle )->calculate_md5 = calculate_md5;
 	( *info_handle )->notify_stream = INFO_HANDLE_NOTIFY_STREAM;
 
 	return( 1 );
@@ -630,6 +635,177 @@ int info_handle_close_input(
 	return( 0 );
 }
 
+/* Calculates the MD5 of the contents of a file entry
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_file_entry_calculate_md5(
+     info_handle_t *info_handle,
+     libfshfs_file_entry_t *file_entry,
+     char *md5_string,
+     size_t md5_string_size,
+     libcerror_error_t **error )
+{
+	uint8_t md5_hash[ LIBHMAC_MD5_HASH_SIZE ];
+	uint8_t read_buffer[ 4096 ];
+
+	libhmac_md5_context_t *md5_context = NULL;
+	static char *function              = "info_handle_file_entry_calculate_md5";
+	size64_t data_size                 = 0;
+	size_t read_size                   = 0;
+	ssize_t read_count                 = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_file_entry_get_size(
+	     file_entry,
+	     &data_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve size.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_file_entry_seek_offset(
+	     file_entry,
+	     0,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek offset: 0 in file entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( libhmac_md5_initialize(
+	     &md5_context,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize MD5 context.",
+		 function );
+
+		goto on_error;
+	}
+	while( data_size > 0 )
+	{
+		read_size = 4096;
+
+		if( (size64_t) read_size > data_size )
+		{
+			read_size = (size_t) data_size;
+		}
+		read_count = libfshfs_file_entry_read_buffer(
+		              file_entry,
+		              read_buffer,
+		              read_size,
+		              error );
+
+		if( read_count != (ssize_t) read_size )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read from file entry.",
+			 function );
+
+			goto on_error;
+		}
+		data_size -= read_size;
+
+		if( libhmac_md5_update(
+		     md5_context,
+		     read_buffer,
+		     read_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to update MD5 hash.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( libhmac_md5_finalize(
+	     md5_context,
+	     md5_hash,
+	     LIBHMAC_MD5_HASH_SIZE,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to finalize MD5 hash.",
+		 function );
+
+		goto on_error;
+	}
+	if( libhmac_md5_free(
+	     &md5_context,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free MD5 context.",
+		 function );
+
+		goto on_error;
+	}
+	if( digest_hash_copy_to_string(
+	     md5_hash,
+	     LIBHMAC_MD5_HASH_SIZE,
+	     md5_string,
+	     md5_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set MD5 hash string.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( md5_context != NULL )
+	{
+		libhmac_md5_free(
+		 &md5_context,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Prints a file entry or data stream name
  * Returns 1 if successful or -1 on error
  */
@@ -948,6 +1124,11 @@ int info_handle_file_entry_value_with_name_fprint(
      size_t file_entry_name_length,
      libcerror_error_t **error )
 {
+	char md5_string[ DIGEST_HASH_STRING_SIZE_MD5 ]    = {
+		'0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+		'0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+		0 };
+
 	char file_mode_string[ 11 ]                       = { '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 0 };
 
 	libfshfs_extended_attribute_t *extended_attribute = NULL;
@@ -963,8 +1144,10 @@ int info_handle_file_entry_value_with_name_fprint(
 	uint32_t entry_modification_time                  = 0;
 	uint32_t file_entry_identifier                    = 0;
 	uint32_t group_identifier                         = 0;
+	uint32_t link_identifier                          = 0;
 	uint32_t modification_time                        = 0;
 	uint32_t owner_identifier                         = 0;
+	uint32_t parent_identifier                        = 0;
 	uint16_t file_mode                                = 0;
 	int extended_attribute_index                      = 0;
 	int number_of_extended_attributes                 = 0;
@@ -1238,12 +1421,36 @@ int info_handle_file_entry_value_with_name_fprint(
 	}
 	if( info_handle->bodyfile_stream != NULL )
 	{
+		if( info_handle->calculate_md5 == 0 )
+		{
+			md5_string[ 1 ] = 0;
+		}
+		else if( ( file_mode & 0xf000 ) == 0x8000 )
+		{
+			if( info_handle_file_entry_calculate_md5(
+			     info_handle,
+			     file_entry,
+			     md5_string,
+			     DIGEST_HASH_STRING_SIZE_MD5,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retreive MD5 string.",
+				 function );
+
+				goto on_error;
+			}
+		}
 		/* Colums in a Sleuthkit 3.x and later bodyfile
 		 * MD5|name|inode|mode_as_string|UID|GID|size|atime|mtime|ctime|crtime
 		 */
 		fprintf(
 		 info_handle->bodyfile_stream,
-		 "0|" );
+		 "%s|",
+		 md5_string );
 
 		if( path != NULL )
 		{
@@ -1309,6 +1516,48 @@ int info_handle_file_entry_value_with_name_fprint(
 		 "\tIdentifier\t\t: %" PRIu32 "\n",
 		 file_entry_identifier );
 
+		if( libfshfs_file_entry_get_parent_identifier(
+		     file_entry,
+		     &parent_identifier,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent identifier.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tParent identifier\t: %" PRIu32 "\n",
+		 parent_identifier );
+
+		result = libfshfs_file_entry_get_link_identifier(
+		          file_entry,
+		          &link_identifier,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve link identifier.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "\tLink identifier\t\t: %" PRIu32 "\n",
+			 link_identifier );
+		}
 		if( file_entry_name != NULL )
 		{
 			fprintf(

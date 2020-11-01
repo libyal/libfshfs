@@ -393,6 +393,10 @@ int libfshfs_file_record_read_data(
 #endif
 	if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 	{
+		byte_stream_copy_to_uint16_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->flags,
+		 file_record->flags );
+
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->identifier,
 		 file_record->identifier );
@@ -428,9 +432,18 @@ int libfshfs_file_record_read_data(
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->file_mode,
 		 file_record->file_mode );
+
+		if( ( file_record->flags & 0x0020 ) != 0 )
+		{
+			byte_stream_copy_to_uint32_big_endian(
+			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->special_permissions,
+			 file_record->link_reference );
+		}
 	}
 	else
 	{
+		file_record->flags = ( (fshfs_catalog_file_record_hfs_t *) data )->flags;
+
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_file_record_hfs_t *) data )->identifier,
 		 file_record->identifier );
@@ -474,20 +487,14 @@ int libfshfs_file_record_read_data(
 			 function,
 			 ( (fshfs_catalog_file_record_hfs_t *) data )->unknown1 );
 		}
-		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->flags,
-			 value_16bit );
-		}
-		else
-		{
-			value_16bit = ( (fshfs_catalog_file_record_hfs_t *) data )->flags;
-		}
 		libcnotify_printf(
 		 "%s: flags\t\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
-		 value_16bit );
+		 file_record->flags );
+		libfshfs_debug_print_catalog_file_record_flags(
+		 file_record->flags );
+		libcnotify_printf(
+		 "\n" );
 
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 		{
@@ -705,13 +712,23 @@ int libfshfs_file_record_read_data(
 			 function,
 			 file_record->file_mode );
 
-			libcnotify_printf(
-			 "%s: special permissions:\n",
-			 function );
-			libcnotify_print_data(
-			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->special_permissions,
-			 4,
-			 0 );
+			if( ( file_record->flags & 0x0020 ) != 0 )
+			{
+				libcnotify_printf(
+				 "%s: link reference\t\t\t\t: %" PRIu32 "\n",
+				 function,
+				 file_record->link_reference );
+			}
+			else
+			{
+				libcnotify_printf(
+				 "%s: special permissions:\n",
+				 function );
+				libcnotify_print_data(
+				 ( (fshfs_catalog_file_record_hfsplus_t *) data )->special_permissions,
+				 4,
+				 0 );
+			}
 		}
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
@@ -1282,5 +1299,46 @@ int libfshfs_file_record_get_group_identifier(
 	*group_identifier = file_record->group_identifier;
 
 	return( 1 );
+}
+
+/* Retrieves the link reference
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_record_get_link_reference(
+     libfshfs_file_record_t *file_record,
+     uint32_t *link_reference,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_link_reference";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( link_reference == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid link reference.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( file_record->flags & 0x0020 ) != 0 )
+	{
+		*link_reference = file_record->link_reference;
+
+		return( 1 );
+	}
+	return( 0 );
 }
 

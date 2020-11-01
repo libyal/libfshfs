@@ -14,6 +14,9 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@LIBHMAC_CPPFLAGS@ \
+	@LIBCRYPTO_CPPFLAGS@ \
+	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_IMPORT@
 
 AM_LDFLAGS = @STATIC_LDFLAGS@
@@ -22,6 +25,7 @@ bin_PROGRAMS = \
 	fshfsinfo
 
 fshfsinfo_SOURCES = \
+	digest_hash.c digest_hash.h \
 	fshfsinfo.c \
 	fshfstools_getopt.c fshfstools_getopt.h \
 	fshfstools_i18n.h \
@@ -33,6 +37,7 @@ fshfsinfo_SOURCES = \
 	fshfstools_libfdata.h \
 	fshfstools_libfdatetime.h \
 	fshfstools_libfguid.h \
+	fshfstools_libhmac.h \
 	fshfstools_libfshfs.h \
 	fshfstools_libuna.h \
 	fshfstools_output.c fshfstools_output.h \
@@ -41,6 +46,9 @@ fshfsinfo_SOURCES = \
 	info_handle.c info_handle.h
 
 fshfsinfo_LDADD = \
+	@LIBHMAC_LIBADD@ \
+	@LIBCRYPTO_LIBADD@ \
+	@LIBDL_LIBADD@ \
 	@LIBFGUID_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
@@ -53,7 +61,8 @@ fshfsinfo_LDADD = \
 	@LIBCLOCALE_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@ \
-	@LIBINTL@
+	@LIBINTL@ \
+	@PTHREAD_LIBADD@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

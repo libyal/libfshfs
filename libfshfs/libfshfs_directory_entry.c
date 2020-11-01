@@ -569,6 +569,84 @@ int libfshfs_directory_entry_get_identifier(
 	return( 1 );
 }
 
+/* Retrieves the parent identifier
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_entry_get_parent_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *parent_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_parent_identifier";
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( parent_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid link identifier.",
+		 function );
+
+		return( -1 );
+	}
+	*parent_identifier = directory_entry->parent_identifier;
+
+	return( 1 );
+}
+
+/* Retrieves the link identifier
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_link_identifier(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *link_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_link_identifier";
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( link_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid link identifier.",
+		 function );
+
+		return( -1 );
+	}
+	if( directory_entry->link_identifier != 0 )
+	{
+		*link_identifier = directory_entry->link_identifier;
+
+		return( 1 );
+	}
+	return( 0 );
+}
+
 /* Retrieves the creation date and time
  * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
  * Returns 1 if successful or -1 on error
@@ -973,7 +1051,7 @@ int libfshfs_directory_entry_get_file_mode(
 			return( -1 );
 		}
 	}
-	return( 1 );
+	return( result );
 }
 
 /* Retrieves the owner identifier
@@ -1041,7 +1119,7 @@ int libfshfs_directory_entry_get_owner_identifier(
 			return( -1 );
 		}
 	}
-	return( 1 );
+	return( result );
 }
 
 /* Retrieves the group identifier
@@ -1109,7 +1187,66 @@ int libfshfs_directory_entry_get_group_identifier(
 			return( -1 );
 		}
 	}
-	return( 1 );
+	return( result );
+}
+
+/* Retrieves the link reference
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_link_reference(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *link_reference,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_link_reference";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_link_reference(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          link_reference,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve link reference from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
 }
 
 /* Retrieves the size of the UTF-8 encoded name
