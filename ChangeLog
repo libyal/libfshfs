@@ -1,4 +1,5 @@
-Debug info:
+To do:
+* complete name case folding and decomposition tests
 * add support for resource fork data stream
 * add support for extended attribute (named fork) data stream
 * add added date and time support (POSIX timestamp)

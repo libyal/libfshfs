@@ -66,6 +66,7 @@ check_PROGRAMS = \
 	fshfs_test_file_system \
 	fshfs_test_fork_descriptor \
 	fshfs_test_io_handle \
+	fshfs_test_name \
 	fshfs_test_notify \
 	fshfs_test_support \
 	fshfs_test_thread_record \
@@ -335,6 +336,21 @@ fshfs_test_io_handle_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_io_handle_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_name_SOURCES = \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_libuna.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_name.c \
+	fshfs_test_types.h \
+	fshfs_test_unicode_case_folding_mappings.h \
+	fshfs_test_unicode_decomposition_mappings.h \
+	fshfs_test_unused.h
+
+fshfs_test_name_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

@@ -221,14 +221,14 @@ int libfshfs_fork_descriptor_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function              = "libfshfs_fork_descriptor_read_data";
-	size_t extent_data_offset          = 0;
-	uint32_t extent_number_of_blocks   = 0;
-	uint32_t extent_start_block_number = 0;
-	int extent_index                   = 0;
+	static char *function            = "libfshfs_fork_descriptor_read_data";
+	size_t extent_data_offset        = 0;
+	uint32_t extent_block_number     = 0;
+	uint32_t extent_number_of_blocks = 0;
+	int extent_index                 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint32_t value_32bit               = 0;
+	uint32_t value_32bit             = 0;
 #endif
 
 	if( fork_descriptor == NULL )
@@ -323,7 +323,7 @@ int libfshfs_fork_descriptor_read_data(
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 &( ( ( (fshfs_fork_descriptor_t *) data )->extents )[ extent_data_offset ] ),
-		 extent_start_block_number );
+		 extent_block_number );
 
 		extent_data_offset += 4;
 
@@ -337,10 +337,10 @@ int libfshfs_fork_descriptor_read_data(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: extent: %d start block number\t: %" PRIu32 "\n",
+			 "%s: extent: %d block number\t\t: %" PRIu32 "\n",
 			 function,
 			 extent_index,
-			 extent_start_block_number );
+			 extent_block_number );
 
 			libcnotify_printf(
 			 "%s: extent: %d number of blocks\t\t: %" PRIu32 "\n",
@@ -350,7 +350,7 @@ int libfshfs_fork_descriptor_read_data(
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-		fork_descriptor->extents[ extent_index ][ 0 ] = extent_start_block_number;
+		fork_descriptor->extents[ extent_index ][ 0 ] = extent_block_number;
 		fork_descriptor->extents[ extent_index ][ 1 ] = extent_number_of_blocks;
 
 		fork_descriptor->number_of_blocks_in_extents += extent_number_of_blocks;

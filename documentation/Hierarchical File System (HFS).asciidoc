@@ -977,7 +977,17 @@ TN1150 claims that a new link reference randomly chosen from the range 100 to
 observed such as "iNode20".
 
 The special permission data of the hard link file records contains the link
-reference.
+reference if:
+
+* the catalog file record flag kHFSHasLinkChainMask is set;
+* and the first 8 bytes of the file information contains "hlnkhfs+"
+
+....
+enum {
+    kHardLinkFileType = 0x686C6E6B,  /* 'hlnk' */
+    kHFSPlusCreator   = 0x6866732B   /* 'hfs+' */
+};
+....
 
 ===== Notes
 
@@ -992,11 +1002,6 @@ creation date of the metadata directory), though this is deprecated.
 For better compatibility with older versions of the Mac OS Finder, the
 kHasBeenInited flag should be set in the Finder flags. The other Finder
 information, and other dates in the catalog record are reserved.
-
-enum {
-    kHardLinkFileType = 0x686C6E6B,  /* 'hlnk' */
-    kHFSPlusCreator   = 0x6866732B   /* 'hfs+' */
-};
 
 POSIX semantics allow an open file to be unlinked (deleted). These open but
 unlinked files are stored on HFS+ volumes much like a hard link. When the open
@@ -1044,6 +1049,15 @@ path is stored as an UTF-8 encoded string without an end-of-string character.
 The length of the path should be 1024 bytes or less. The path may be full or
 partial, with or without a leading forward slash.
 
+The first 8 bytes of the file information should contain "slnkrhap".
+
+....
+enum {
+    kSymLinkFileType  = 0x736C6E6B, /* 'slnk' */
+    kSymLinkCreator   = 0x72686170  /* 'rhap' */
+};
+....
+
 ===== Notes
 
 ....
@@ -1054,11 +1068,6 @@ field of the permissions is set to S_IFLNK. For compatibility with Carbon and
 Classic applications, the file type of a symbolic link is set to
 kSymLinkFileType, and the creator code is set to kSymLinkCreator. The resource
 fork of the symbolic link has zero length and is reserved.
-
-enum {
-    kSymLinkFileType  = 0x736C6E6B, /* 'slnk' */
-    kSymLinkCreator   = 0x72686170  /* 'rhap' */
-};
 ....
 
 == The HFS wrapper
@@ -1075,10 +1084,12 @@ itself.
 === Notes
 
 ....
-An HFS+ volume may be contained within an HFS volume in a way that makes the volume look like an HFS volume to systems without HFS+ support. This has a two important advantages:
+An HFS+ volume may be contained within an HFS volume in a way that makes the
+volume look like an HFS volume to systems without HFS+ support. This has a two
+important advantages:
 
-   1. It allows a computer with HFS (but no HFS+) support in ROM to start up from an HFS+ volume. When creating the wrapper, Mac OS includes a System file containing the minimum code to locate and mount the embedded HFS+ volume and continue booting from its System file.
-   2. It improves the user experience when an HFS+ volume is inserted in a computer that has HFS support but no HFS+ support. On such a computer, the HFS wrapper will be mounted as a volume, which prevents error dialogs that might confuse the user into thinking the volume is empty, damaged, or unreadable. The HFS wrapper may also contain a Read Me document to explain the steps the user should take to access their files.
+1. It allows a computer with HFS (but no HFS+) support in ROM to start up from an HFS+ volume. When creating the wrapper, Mac OS includes a System file containing the minimum code to locate and mount the embedded HFS+ volume and continue booting from its System file.
+2. It improves the user experience when an HFS+ volume is inserted in a computer that has HFS support but no HFS+ support. On such a computer, the HFS wrapper will be mounted as a volume, which prevents error dialogs that might confuse the user into thinking the volume is empty, damaged, or unreadable. The HFS wrapper may also contain a Read Me document to explain the steps the user should take to access their files.
 
 The rest of this section describes how the HFS wrapper is laid out and how the HFS+ volume is embedded within the wrapper.
 

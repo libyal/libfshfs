@@ -303,6 +303,7 @@ int libfshfs_file_record_read_data(
 	static char *function = "libfshfs_file_record_read_data";
 	size_t record_size    = 0;
 	uint16_t record_type  = 0;
+	uint8_t is_hard_link  = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint32_t value_32bit  = 0;
@@ -433,7 +434,15 @@ int libfshfs_file_record_read_data(
 		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->file_mode,
 		 file_record->file_mode );
 
-		if( ( file_record->flags & 0x0020 ) != 0 )
+		if( ( ( file_record->flags & 0x0020 ) != 0 )
+		 && ( memory_compare(
+		       ( (fshfs_catalog_file_record_hfsplus_t *) data )->file_information,
+		       "hlnkhfs+",
+		       8 ) == 0 ) )
+		{
+			is_hard_link = 1;
+		}
+		if( is_hard_link != 0 )
 		{
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->special_permissions,
@@ -712,7 +721,7 @@ int libfshfs_file_record_read_data(
 			 function,
 			 file_record->file_mode );
 
-			if( ( file_record->flags & 0x0020 ) != 0 )
+			if( is_hard_link != 0 )
 			{
 				libcnotify_printf(
 				 "%s: link reference\t\t\t\t: %" PRIu32 "\n",
@@ -1333,7 +1342,7 @@ int libfshfs_file_record_get_link_reference(
 
 		return( -1 );
 	}
-	if( ( file_record->flags & 0x0020 ) != 0 )
+	if( file_record->link_reference > 0 )
 	{
 		*link_reference = file_record->link_reference;
 

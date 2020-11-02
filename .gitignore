@@ -148,6 +148,7 @@ stamp-h[1-9]
 /tests/fshfs_test_file_system
 /tests/fshfs_test_fork_descriptor
 /tests/fshfs_test_io_handle
+/tests/fshfs_test_name
 /tests/fshfs_test_notify
 /tests/fshfs_test_support
 /tests/fshfs_test_thread_record

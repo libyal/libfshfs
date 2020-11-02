@@ -20,6 +20,7 @@ MSVSCPP_FILES = \
 	fshfs_test_file_system/fshfs_test_file_system.vcproj \
 	fshfs_test_fork_descriptor/fshfs_test_fork_descriptor.vcproj \
 	fshfs_test_io_handle/fshfs_test_io_handle.vcproj \
+	fshfs_test_name/fshfs_test_name.vcproj \
 	fshfs_test_notify/fshfs_test_notify.vcproj \
 	fshfs_test_support/fshfs_test_support.vcproj \
 	fshfs_test_thread_record/fshfs_test_thread_record.vcproj \

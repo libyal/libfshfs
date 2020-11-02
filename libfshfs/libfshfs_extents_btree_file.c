@@ -291,11 +291,13 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 			 &( node_key->record_data[ record_data_offset ] ),
 			 extent_block_number );
 
+			record_data_offset += 4;
+
 			byte_stream_copy_to_uint32_big_endian(
 			 &( node_key->record_data[ record_data_offset ] ),
 			 extent_number_of_blocks );
 
-			record_data_offset += 8;
+			record_data_offset += 4;
 		}
 		else
 		{
@@ -303,11 +305,13 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 			 &( node_key->record_data[ record_data_offset ] ),
 			 extent_block_number );
 
+			record_data_offset += 2;
+
 			byte_stream_copy_to_uint16_big_endian(
 			 &( node_key->record_data[ record_data_offset ] ),
 			 extent_number_of_blocks );
 
-			record_data_offset += 4;
+			record_data_offset += 2;
 		}
 		if( ( extent_block_number == 0 )
 		 || ( extent_number_of_blocks == 0 ) )
@@ -327,6 +331,23 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: extent: %d block number\t: %" PRIu32 "\n",
+			 function,
+			 extent_index,
+			 extent_block_number );
+
+			libcnotify_printf(
+			 "%s: extent: %d number of blocks\t: %" PRIu32 "\n",
+			 function,
+			 extent_index,
+			 extent_number_of_blocks );
+		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		extent->block_number     = extent_block_number;
 		extent->number_of_blocks = extent_number_of_blocks;
 
