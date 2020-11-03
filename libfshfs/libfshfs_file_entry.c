@@ -1562,6 +1562,81 @@ int libfshfs_file_entry_get_backup_time(
 	return( result );
 }
 
+/* Retrieves the added date and time
+ * The timestamp is a signed 32-bit POSIX date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_added_time(
+     libfshfs_file_entry_t *file_entry,
+     int32_t *posix_time,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_added_time";
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_directory_entry_get_added_time(
+	          internal_file_entry->directory_entry,
+	          posix_time,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve added time from directory entry.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Retrieves the file mode
  * Returns 1 if successful, 0 if not available or -1 on error
  */

@@ -986,6 +986,75 @@ int libfshfs_directory_entry_get_backup_time(
 	return( 1 );
 }
 
+/* Retrieves the added date and time
+ * The timestamp is a signed 32-bit POSIX date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_added_time(
+     libfshfs_directory_entry_t *directory_entry,
+     int32_t *posix_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_added_time";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD ) )
+	{
+		if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+		{
+			result = libfshfs_directory_record_get_added_time(
+				  (libfshfs_directory_record_t *) directory_entry->catalog_record,
+				  posix_time,
+				  error );
+		}
+		else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+		{
+			result = libfshfs_file_record_get_added_time(
+				  (libfshfs_file_record_t *) directory_entry->catalog_record,
+				  posix_time,
+				  error );
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve added time from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
+}
+
 /* Retrieves the file mode
  * Returns 1 if successful, 0 if not available or -1 on error
  */

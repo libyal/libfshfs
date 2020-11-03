@@ -64,6 +64,16 @@ int libfshfs_debug_print_hfs_time_value(
      uint32_t string_format_flags,
      libcerror_error_t **error );
 
+int libfshfs_debug_print_posix_time_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int byte_order,
+     uint8_t value_type,
+     uint32_t string_format_flags,
+     libcerror_error_t **error );
+
 int libfshfs_debug_print_utf16_string_value(
      const char *function_name,
      const char *value_name,

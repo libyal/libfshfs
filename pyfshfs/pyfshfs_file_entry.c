@@ -46,6 +46,20 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  "\n"
 	  "Retrieves the identifier (or catalog node identifier (CNID))." },
 
+	{ "get_parent_identifier",
+	  (PyCFunction) pyfshfs_file_entry_get_parent_identifier,
+	  METH_NOARGS,
+	  "get_parent_identifier() -> Integer\n"
+	  "\n"
+	  "Retrieves the parent identifier (or catalog node identifier (CNID))." },
+
+	{ "get_link_identifier",
+	  (PyCFunction) pyfshfs_file_entry_get_link_identifier,
+	  METH_NOARGS,
+	  "get_link_identifier() -> Integer or None\n"
+	  "\n"
+	  "Retrieves the link identifier (or catalog node identifier (CNID))." },
+
 	{ "get_creation_time",
 	  (PyCFunction) pyfshfs_file_entry_get_creation_time,
 	  METH_NOARGS,
@@ -115,6 +129,20 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  "get_backup_time_as_integer() -> Integer or None\n"
 	  "\n"
 	  "Retrieves the backup date and time as a 32-bit integer containing a HFS timestamp value." },
+
+	{ "get_added_time",
+	  (PyCFunction) pyfshfs_file_entry_get_added_time,
+	  METH_NOARGS,
+	  "get_added_time() -> Datetime or None\n"
+	  "\n"
+	  "Retrieves the added date and time." },
+
+	{ "get_added_time_as_integer",
+	  (PyCFunction) pyfshfs_file_entry_get_added_time_as_integer,
+	  METH_NOARGS,
+	  "get_added_time_as_integer() -> Integer or None\n"
+	  "\n"
+	  "Retrieves the added date and time as a 32-bit integer containing a POSIX timestamp value." },
 
 	{ "get_file_mode",
 	  (PyCFunction) pyfshfs_file_entry_get_file_mode,
@@ -240,6 +268,18 @@ PyGetSetDef pyfshfs_file_entry_object_get_set_definitions[] = {
 	  "The identifier (or catalog node identifier (CNID)).",
 	  NULL },
 
+	{ "parent_identifier",
+	  (getter) pyfshfs_file_entry_get_parent_identifier,
+	  (setter) 0,
+	  "The parent identifier (or catalog node identifier (CNID)).",
+	  NULL },
+
+	{ "identifier",
+	  (getter) pyfshfs_file_entry_get_link_identifier,
+	  (setter) 0,
+	  "The link identifier (or catalog node identifier (CNID)).",
+	  NULL },
+
 	{ "creation_time",
 	  (getter) pyfshfs_file_entry_get_creation_time,
 	  (setter) 0,
@@ -268,6 +308,12 @@ PyGetSetDef pyfshfs_file_entry_object_get_set_definitions[] = {
 	  (getter) pyfshfs_file_entry_get_backup_time,
 	  (setter) 0,
 	  "The backup date and time.",
+	  NULL },
+
+	{ "added_time",
+	  (getter) pyfshfs_file_entry_get_added_time,
+	  (setter) 0,
+	  "The added date and time.",
 	  NULL },
 
 	{ "file_mode",
@@ -615,6 +661,117 @@ PyObject *pyfshfs_file_entry_get_identifier(
 		 &error );
 
 		return( NULL );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) value_32bit );
+
+	return( integer_object );
+}
+
+/* Retrieves the parent identifier (or catalog node identifier (CNID))
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_parent_identifier(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_get_parent_identifier";
+	uint32_t value_32bit     = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_parent_identifier(
+	          pyfshfs_file_entry->file_entry,
+	          &value_32bit,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve parent identifier.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) value_32bit );
+
+	return( integer_object );
+}
+
+/* Retrieves the link identifier (or catalog node identifier (CNID))
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_link_identifier(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_get_link_identifier";
+	uint32_t value_32bit     = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_link_identifier(
+	          pyfshfs_file_entry->file_entry,
+	          &value_32bit,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve link identifier.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
 	}
 	integer_object = PyLong_FromUnsignedLong(
 	                  (unsigned long) value_32bit );
@@ -1166,6 +1323,124 @@ PyObject *pyfshfs_file_entry_get_backup_time_as_integer(
 	}
 	integer_object = PyLong_FromUnsignedLong(
 	                  (unsigned long) hfs_time );
+
+	return( integer_object );
+}
+
+/* Retrieves the added date and time
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_added_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *datetime_object = NULL;
+	libcerror_error_t *error  = NULL;
+	static char *function     = "pyfshfs_file_entry_get_added_time";
+	int32_t posix_time        = 0;
+	int result                = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_added_time(
+	          pyfshfs_file_entry->file_entry,
+	          &posix_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve added date and time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	datetime_object = pyfshfs_datetime_new_from_posix_time(
+	                   posix_time );
+
+	return( datetime_object );
+}
+
+/* Retrieves the added date and time as an integer
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_added_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_get_added_time_as_integer";
+	int32_t posix_time       = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_added_time(
+	          pyfshfs_file_entry->file_entry,
+	          &posix_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve added date and time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	integer_object = PyLong_FromLong(
+	                  (long) posix_time );
 
 	return( integer_object );
 }

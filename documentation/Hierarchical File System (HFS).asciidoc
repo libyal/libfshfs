@@ -1491,7 +1491,7 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 The CNID of the hard link target is stored in the special permission data
 | 0x0040 | kHFSHasChildLinkMask | Has a child that is a directory link
 | 0x0080 | kHFSHasDateAddedMask | Had added date and time +
-The extended folder of file information contains the added date and time
+The extended folder of file information contains the date and time the folder or file was added (date_added)
 | 0x0100 | kHFSFastDevPinnedMask | [yellow-background]*Unknown*
 | 0x0200 | kHFSDoNotFastDevPinMask | [yellow-background]*Unknown*
 | 0x0400 | kHFSFastDevCandidateMask | [yellow-background]*Unknown*

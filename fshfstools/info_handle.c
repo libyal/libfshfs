@@ -61,13 +61,13 @@ int libfshfs_volume_open_file_io_handle(
 /* Copies a string of a decimal value to a 64-bit value
  * Returns 1 if successful or -1 on error
  */
-int fshfstools_system_string_copy_from_64_bit_in_decimal(
+int info_handle_system_string_copy_from_64_bit_in_decimal(
      const system_character_t *string,
      size_t string_size,
      uint64_t *value_64bit,
      libcerror_error_t **error )
 {
-	static char *function              = "fshfstools_system_string_copy_from_64_bit_in_decimal";
+	static char *function              = "info_handle_system_string_copy_from_64_bit_in_decimal";
 	size_t string_index                = 0;
 	system_character_t character_value = 0;
 	uint8_t maximum_string_index       = 20;
@@ -473,7 +473,7 @@ int info_handle_set_volume_offset(
 	string_length = system_string_length(
 	                 string );
 
-	if( fshfstools_system_string_copy_from_64_bit_in_decimal(
+	if( info_handle_system_string_copy_from_64_bit_in_decimal(
 	     string,
 	     string_length + 1,
 	     &value_64bit,
@@ -1112,6 +1112,127 @@ on_error:
 	return( -1 );
 }
 
+/* Prints a seconds POSIX time value
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_posix_time_seconds_value_fprint(
+     info_handle_t *info_handle,
+     const char *value_name,
+     int32_t value_32bit,
+     libcerror_error_t **error )
+{
+	system_character_t date_time_string[ 32 ];
+
+	libfdatetime_posix_time_t *posix_time = NULL;
+	static char *function                 = "info_handle_posix_time_seconds_value_fprint";
+	int result                            = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( value_32bit == 0 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "%s: Not set (0)\n",
+		 value_name );
+	}
+	else
+	{
+		if( libfdatetime_posix_time_initialize(
+		     &posix_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create POSIX time.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfdatetime_posix_time_copy_from_32bit(
+		     posix_time,
+		     (uint32_t) value_32bit,
+		     LIBFDATETIME_POSIX_TIME_VALUE_TYPE_SECONDS_32BIT_SIGNED,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy POSIX time from 32-bit.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfdatetime_posix_time_copy_to_utf16_string(
+			  posix_time,
+			  (uint16_t *) date_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#else
+		result = libfdatetime_posix_time_copy_to_utf8_string(
+			  posix_time,
+			  (uint8_t *) date_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy POSIX time to string.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "%s: %" PRIs_SYSTEM " UTC\n",
+		 value_name,
+		 date_time_string );
+
+		if( libfdatetime_posix_time_free(
+		     &posix_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free POSIX time.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( posix_time != NULL )
+	{
+		libfdatetime_posix_time_free(
+		 &posix_time,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Prints a file entry value with name
  * Returns 1 if successful, 0 if not or -1 on error
  */
@@ -1148,8 +1269,11 @@ int info_handle_file_entry_value_with_name_fprint(
 	uint32_t modification_time                        = 0;
 	uint32_t owner_identifier                         = 0;
 	uint32_t parent_identifier                        = 0;
+	int32_t added_time                                = 0;
 	uint16_t file_mode                                = 0;
 	int extended_attribute_index                      = 0;
+	int has_access_time                               = 0;
+	int has_entry_modification_time                   = 0;
 	int number_of_extended_attributes                 = 0;
 	int result                                        = 0;
 
@@ -1192,10 +1316,12 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		goto on_error;
 	}
-	if( libfshfs_file_entry_get_entry_modification_time(
-	     file_entry,
-	     &entry_modification_time,
-	     error ) != 1 )
+	result = libfshfs_file_entry_get_entry_modification_time(
+	          file_entry,
+	          &entry_modification_time,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1206,10 +1332,14 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		goto on_error;
 	}
-	if( libfshfs_file_entry_get_access_time(
-	     file_entry,
-	     &access_time,
-	     error ) != 1 )
+	has_entry_modification_time = result;
+
+	result = libfshfs_file_entry_get_access_time(
+	          file_entry,
+	          &access_time,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1220,6 +1350,8 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		goto on_error;
 	}
+	has_access_time = result;
+
 	if( libfshfs_file_entry_get_creation_time(
 	     file_entry,
 	     &creation_time,
@@ -1625,35 +1757,41 @@ int info_handle_file_entry_value_with_name_fprint(
 
 			goto on_error;
 		}
-		if( info_handle_hfs_time_value_fprint(
-		     info_handle,
-		     "\tEntry modification time\t",
-		     entry_modification_time,
-		     error ) != 1 )
+		if( has_entry_modification_time != 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
-			 "%s: unable to print HFS time value.",
-			 function );
+			if( info_handle_hfs_time_value_fprint(
+			     info_handle,
+			     "\tEntry modification time\t",
+			     entry_modification_time,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print HFS time value.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
 		}
-		if( info_handle_hfs_time_value_fprint(
-		     info_handle,
-		     "\tAccess time\t\t",
-		     access_time,
-		     error ) != 1 )
+		if( has_access_time != 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
-			 "%s: unable to print HFS time value.",
-			 function );
+			if( info_handle_hfs_time_value_fprint(
+			     info_handle,
+			     "\tAccess time\t\t",
+			     access_time,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print HFS time value.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
 		}
 		if( info_handle_hfs_time_value_fprint(
 		     info_handle,
@@ -1698,6 +1836,40 @@ int info_handle_file_entry_value_with_name_fprint(
 			 function );
 
 			goto on_error;
+		}
+		result = libfshfs_file_entry_get_added_time(
+		          file_entry,
+		          &added_time,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve added time.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			if( info_handle_posix_time_seconds_value_fprint(
+			     info_handle,
+			     "\tAdded time\t\t",
+			     added_time,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print POSIX time value.",
+				 function );
+
+				goto on_error;
+			}
 		}
 		fprintf(
 		 info_handle->notify_stream,

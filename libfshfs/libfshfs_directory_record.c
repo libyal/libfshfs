@@ -356,6 +356,13 @@ int libfshfs_directory_record_read_data(
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->file_mode,
 		 directory_record->file_mode );
+
+		if( ( directory_record->flags & 0x0080 ) != 0 )
+		{
+			byte_stream_copy_to_uint32_big_endian(
+			 &( ( ( (fshfs_catalog_directory_record_hfsplus_t *) data )->extended_folder_information )[ 4 ] ),
+			 directory_record->added_time );
+		}
 	}
 	else
 	{
@@ -655,6 +662,28 @@ int libfshfs_directory_record_read_data(
 		}
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
 		{
+			if( ( directory_record->flags & 0x0080 ) != 0 )
+			{
+				if( libfshfs_debug_print_posix_time_value(
+				     function,
+				     "added time\t\t\t\t",
+				     &( ( ( (fshfs_catalog_directory_record_hfsplus_t *) data )->extended_folder_information )[ 4 ] ),
+				     4,
+				     LIBFDATETIME_ENDIAN_LITTLE,
+				     LIBFDATETIME_POSIX_TIME_VALUE_TYPE_SECONDS_32BIT_SIGNED,
+				     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print POSIX time value.",
+					 function );
+
+					return( -1 );
+				}
+			}
 			byte_stream_copy_to_uint32_big_endian(
 			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->text_encoding_hint,
 			 value_32bit );
@@ -917,6 +946,48 @@ int libfshfs_directory_record_get_backup_time(
 	*hfs_time = directory_record->backup_time;
 
 	return( 1 );
+}
+
+/* Retrieves the added date and time
+ * The timestamp is a signed 32-bit POSIX date and time value in number of seconds
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_record_get_added_time(
+     libfshfs_directory_record_t *directory_record,
+     int32_t *posix_time,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_added_time";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( posix_time == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid POSIX time.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_record->flags & 0x0080 ) != 0 )
+	{
+		*posix_time = (int32_t) directory_record->added_time;
+
+		return( 1 );
+	}
+	return( 0 );
 }
 
 /* Retrieves the file mode

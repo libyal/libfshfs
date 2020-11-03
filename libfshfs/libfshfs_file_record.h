@@ -64,6 +64,10 @@ struct libfshfs_file_record
 	 */
 	uint32_t backup_time;
 
+	/* The added time
+	 */
+	uint32_t added_time;
+
 	/* The owner identifier
 	 */
 	uint32_t owner_identifier;
@@ -136,6 +140,11 @@ int libfshfs_file_record_get_access_time(
 int libfshfs_file_record_get_backup_time(
      libfshfs_file_record_t *file_record,
      uint32_t *hfs_time,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_added_time(
+     libfshfs_file_record_t *file_record,
+     int32_t *posix_time,
      libcerror_error_t **error );
 
 int libfshfs_file_record_get_data_fork_descriptor(

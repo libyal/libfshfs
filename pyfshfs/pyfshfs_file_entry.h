@@ -66,6 +66,14 @@ PyObject *pyfshfs_file_entry_get_identifier(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 
+PyObject *pyfshfs_file_entry_get_parent_identifier(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_link_identifier(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
 PyObject *pyfshfs_file_entry_get_creation_time(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
@@ -103,6 +111,14 @@ PyObject *pyfshfs_file_entry_get_backup_time(
            PyObject *arguments );
 
 PyObject *pyfshfs_file_entry_get_backup_time_as_integer(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_added_time(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_added_time_as_integer(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 

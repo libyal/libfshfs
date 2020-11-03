@@ -480,6 +480,101 @@ on_error:
 	return( -1 );
 }
 
+/* Prints a POSIX value
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_debug_print_posix_time_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int byte_order,
+     uint8_t value_type,
+     uint32_t string_format_flags,
+     libcerror_error_t **error )
+{
+	char date_time_string[ 32 ];
+
+	libfdatetime_posix_time_t *posix_time = NULL;
+	static char *function                 = "libfshfs_debug_print_posix_time_value";
+
+	if( libfdatetime_posix_time_initialize(
+	     &posix_time,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create posix time.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfdatetime_posix_time_copy_from_byte_stream(
+	     posix_time,
+	     byte_stream,
+	     byte_stream_size,
+	     byte_order,
+	     value_type,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy byte stream to posix time.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfdatetime_posix_time_copy_to_utf8_string(
+	     posix_time,
+	     (uint8_t *) date_time_string,
+	     32,
+	     string_format_flags,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy posix_time to string.",
+		 function );
+
+		goto on_error;
+	}
+	libcnotify_printf(
+	 "%s: %s: %s UTC\n",
+	 function_name,
+	 value_name,
+	 date_time_string );
+
+	if( libfdatetime_posix_time_free(
+	     &posix_time,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free posix time.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( posix_time != NULL )
+	{
+		libfdatetime_posix_time_free(
+		 &posix_time,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Prints an UTF-16 string value
  * Returns 1 if successful or -1 on error
  */

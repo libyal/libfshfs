@@ -194,6 +194,12 @@ int libfshfs_file_entry_get_backup_time(
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_added_time(
+     libfshfs_file_entry_t *file_entry,
+     int32_t *posix_time,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_file_mode(
      libfshfs_file_entry_t *file_entry,
      uint16_t *file_mode,

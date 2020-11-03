@@ -126,6 +126,11 @@ int libfshfs_directory_entry_get_backup_time(
      uint32_t *hfs_time,
      libcerror_error_t **error );
 
+int libfshfs_directory_entry_get_added_time(
+     libfshfs_directory_entry_t *directory_entry,
+     int32_t *posix_time,
+     libcerror_error_t **error );
+
 int libfshfs_directory_entry_get_file_mode(
      libfshfs_directory_entry_t *directory_entry,
      uint16_t *file_mode,

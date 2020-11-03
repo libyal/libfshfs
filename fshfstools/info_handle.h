@@ -67,7 +67,7 @@ struct info_handle
 	int abort;
 };
 
-int fshfstools_system_string_copy_from_64_bit_in_decimal(
+int info_handle_system_string_copy_from_64_bit_in_decimal(
      const system_character_t *string,
      size_t string_size,
      uint64_t *value_64bit,
@@ -122,6 +122,12 @@ int info_handle_hfs_time_value_fprint(
      info_handle_t *info_handle,
      const char *value_name,
      uint32_t value_32bit,
+     libcerror_error_t **error );
+
+int info_handle_posix_time_seconds_value_fprint(
+     info_handle_t *info_handle,
+     const char *value_name,
+     int32_t value_32bit,
      libcerror_error_t **error );
 
 int info_handle_file_entry_value_with_name_fprint(

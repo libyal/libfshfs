@@ -2,7 +2,6 @@ To do:
 * complete name case folding and decomposition tests
 * add support for resource fork data stream
 * add support for extended attribute (named fork) data stream
-* add added date and time support (POSIX timestamp)
 * on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
 * catalog B-tree file, include name in branch key check
 * file entry API: add extents functions
@@ -18,10 +17,6 @@ To do:
 * what about a directory with extended attributes?
 ** what if that attribute is named com.apple.decmpfs ?
 * what about a symbolic link to HFS+ Private data directory?
-
-* pyfshfs
-** add get_parent_identifier support
-** add get_link_identifier support
 
 * can the metadata B-tree files require additional extents?
 
