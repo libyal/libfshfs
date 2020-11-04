@@ -28,6 +28,7 @@
 #include "libfshfs_attributes_btree_file.h"
 #include "libfshfs_btree_file.h"
 #include "libfshfs_catalog_btree_file.h"
+#include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_extent.h"
 #include "libfshfs_extents_btree_file.h"
@@ -262,6 +263,44 @@ int libfshfs_file_system_read_attributes_file(
 
 		return( -1 );
 	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_file_initialize(
+	     &( file_system->attributes_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_get_extents(
+	     fork_descriptor,
+	     file_system->attributes_btree_file->extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extents of attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
 	result = libfshfs_fork_descriptor_has_extents_overflow(
 	          fork_descriptor,
 	          error );
@@ -279,33 +318,31 @@ int libfshfs_file_system_read_attributes_file(
 	}
 	else if( result != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported fork descriptor has extents overflow.",
-		 function );
+		if( libfshfs_extents_btree_file_get_extents(
+		     file_system->extents_btree_file,
+		     file_io_handle,
+		     LIBFSHFS_ATTRIBUTES_FILE_IDENTIFIER,
+		     LIBFSHFS_FORK_TYPE_DATA,
+		     file_system->attributes_btree_file->extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extents for attributes B-tree file entry: %" PRIu32 " from extents (overflow) B-tree file.",
+			 function,
+			 LIBFSHFS_ATTRIBUTES_FILE_IDENTIFIER );
 
-		goto on_error;
+			goto on_error;
+		}
 	}
-	if( libfshfs_btree_file_initialize(
-	     &( file_system->attributes_btree_file ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create attributes B-tree file.",
-		 function );
+	file_system->attributes_btree_file->size = fork_descriptor->size;
 
-		goto on_error;
-	}
 	if( libfshfs_btree_file_read_file_io_handle(
 	     file_system->attributes_btree_file,
 	     io_handle,
 	     file_io_handle,
-	     fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -320,10 +357,10 @@ int libfshfs_file_system_read_attributes_file(
 	return( 1 );
 
 on_error:
-	if( file_system->extents_btree_file != NULL )
+	if( file_system->attributes_btree_file != NULL )
 	{
 		libfshfs_btree_file_free(
-		 &( file_system->extents_btree_file ),
+		 &( file_system->attributes_btree_file ),
 		 NULL );
 	}
 	return( -1 );
@@ -364,6 +401,44 @@ int libfshfs_file_system_read_catalog_file(
 
 		return( -1 );
 	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_btree_file_initialize(
+	     &( file_system->catalog_btree_file ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create catalog B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_fork_descriptor_get_extents(
+	     fork_descriptor,
+	     file_system->catalog_btree_file->extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extents of catalog B-tree file.",
+		 function );
+
+		goto on_error;
+	}
 	result = libfshfs_fork_descriptor_has_extents_overflow(
 	          fork_descriptor,
 	          error );
@@ -381,33 +456,31 @@ int libfshfs_file_system_read_catalog_file(
 	}
 	else if( result != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported fork descriptor has extents overflow.",
-		 function );
+		if( libfshfs_extents_btree_file_get_extents(
+		     file_system->extents_btree_file,
+		     file_io_handle,
+		     LIBFSHFS_CATALOG_FILE_IDENTIFIER,
+		     LIBFSHFS_FORK_TYPE_DATA,
+		     file_system->catalog_btree_file->extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extents for catalog B-tree file entry: %" PRIu32 " from extents (overflow) B-tree file.",
+			 function,
+			 LIBFSHFS_CATALOG_FILE_IDENTIFIER );
 
-		goto on_error;
+			goto on_error;
+		}
 	}
-	if( libfshfs_btree_file_initialize(
-	     &( file_system->catalog_btree_file ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create catalog B-tree file.",
-		 function );
+	file_system->catalog_btree_file->size = fork_descriptor->size;
 
-		goto on_error;
-	}
 	if( libfshfs_btree_file_read_file_io_handle(
 	     file_system->catalog_btree_file,
 	     io_handle,
 	     file_io_handle,
-	     fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -422,10 +495,10 @@ int libfshfs_file_system_read_catalog_file(
 	return( 1 );
 
 on_error:
-	if( file_system->extents_btree_file != NULL )
+	if( file_system->catalog_btree_file != NULL )
 	{
 		libfshfs_btree_file_free(
-		 &( file_system->extents_btree_file ),
+		 &( file_system->catalog_btree_file ),
 		 NULL );
 	}
 	return( -1 );
@@ -462,6 +535,17 @@ int libfshfs_file_system_read_extents_file(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid file system - extents B-tree file value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
 		 function );
 
 		return( -1 );
@@ -505,11 +589,26 @@ int libfshfs_file_system_read_extents_file(
 
 		goto on_error;
 	}
+	if( libfshfs_fork_descriptor_get_extents(
+	     fork_descriptor,
+	     file_system->extents_btree_file->extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extents of extents B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	file_system->extents_btree_file->size = fork_descriptor->size;
+
 	if( libfshfs_btree_file_read_file_io_handle(
 	     file_system->extents_btree_file,
 	     io_handle,
 	     file_io_handle,
-	     fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1171,13 +1270,8 @@ int libfshfs_file_system_get_extents(
      libcdata_array_t **extents,
      libcerror_error_t **error )
 {
-	libfshfs_extent_t *extent        = NULL;
-	static char *function            = "libfshfs_file_system_get_extents";
-	uint32_t extent_block_number     = 0;
-	uint32_t extent_number_of_blocks = 0;
-	int entry_index                  = 0;
-	int extent_index                 = 0;
-	int result                       = 0;
+	static char *function = "libfshfs_file_system_get_extents";
+	int result            = 0;
 
 	if( file_system == NULL )
 	{
@@ -1186,17 +1280,6 @@ int libfshfs_file_system_get_extents(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid file system.",
-		 function );
-
-		return( -1 );
-	}
-	if( fork_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid fork descriptor.",
 		 function );
 
 		return( -1 );
@@ -1226,50 +1309,20 @@ int libfshfs_file_system_get_extents(
 
 		goto on_error;
 	}
-	for( extent_index = 0;
-	     extent_index < 8;
-	     extent_index++ )
+	if( libfshfs_fork_descriptor_get_extents(
+	     fork_descriptor,
+	     *extents,
+	     error ) != 1 )
 	{
-		extent_block_number     = fork_descriptor->extents[ extent_index ][ 0 ];
-		extent_number_of_blocks = fork_descriptor->extents[ extent_index ][ 1 ];
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extents for entry: %" PRIu32 " from fork descriptor.",
+		 function,
+		 identifier );
 
-		if( ( extent_block_number == 0 )
-		 || ( extent_number_of_blocks == 0 ) )
-		{
-			break;
-		}
-		if( libfshfs_extent_initialize(
-		     &extent,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extent.",
-			 function );
-
-			goto on_error;
-		}
-		extent->block_number     = extent_block_number;
-		extent->number_of_blocks = extent_number_of_blocks;
-
-		if( libcdata_array_append_entry(
-		     *extents,
-		     &entry_index,
-		     (intptr_t *) extent,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append extent to array.",
-			 function );
-
-			goto on_error;
-		}
-		extent = NULL;
+		goto on_error;
 	}
 	result = libfshfs_fork_descriptor_has_extents_overflow(
 	          fork_descriptor,
@@ -1310,12 +1363,6 @@ int libfshfs_file_system_get_extents(
 	return( 1 );
 
 on_error:
-	if( extent != NULL )
-	{
-		libfshfs_extent_free(
-		 &extent,
-		 NULL );
-	}
 	if( *extents != NULL )
 	{
 		libcdata_array_free(

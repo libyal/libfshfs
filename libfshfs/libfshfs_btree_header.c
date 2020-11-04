@@ -64,7 +64,7 @@ int libfshfs_btree_header_initialize(
 		return( -1 );
 	}
 	*btree_header = memory_allocate_structure(
-	                     libfshfs_btree_header_t );
+	                 libfshfs_btree_header_t );
 
 	if( *btree_header == NULL )
 	{

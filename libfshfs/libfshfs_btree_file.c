@@ -31,7 +31,8 @@
 #include "libfshfs_btree_node_vector.h"
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
-#include "libfshfs_fork_descriptor.h"
+#include "libfshfs_extent.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libfcache.h"
@@ -104,6 +105,20 @@ int libfshfs_btree_file_initialize(
 
 		return( -1 );
 	}
+	if( libcdata_array_initialize(
+	     &( ( *btree_file )->extents ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents array.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfshfs_btree_header_initialize(
 	     &( ( *btree_file )->header ),
 	     error ) != 1 )
@@ -122,6 +137,13 @@ int libfshfs_btree_file_initialize(
 on_error:
 	if( *btree_file != NULL )
 	{
+		if( ( *btree_file )->extents != NULL )
+		{
+			libcdata_array_free(
+			 &( ( *btree_file )->extents ),
+			 NULL,
+			 NULL );
+		}
 		memory_free(
 		 *btree_file );
 
@@ -153,6 +175,20 @@ int libfshfs_btree_file_free(
 	}
 	if( *btree_file != NULL )
 	{
+		if( libcdata_array_free(
+		     &( ( *btree_file )->extents ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extents array.",
+			 function );
+
+			result = -1;
+		}
 		if( libfshfs_btree_header_free(
 		     &( ( *btree_file )->header ),
 		     error ) != 1 )
@@ -213,12 +249,12 @@ int libfshfs_btree_file_read_file_io_handle(
      libfshfs_btree_file_t *btree_file,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error )
 {
 	uint8_t header_node_data[ 512 ];
 
 	libfshfs_btree_node_descriptor_t *header_node_descriptor = NULL;
+	libfshfs_extent_t *extent                                = NULL;
 	static char *function                                    = "libfshfs_btree_file_read_file_io_handle";
 	ssize_t read_count                                       = 0;
 	off64_t file_offset                                      = 0;
@@ -256,20 +292,57 @@ int libfshfs_btree_file_read_file_io_handle(
 
 		return( -1 );
 	}
-	if( fork_descriptor == NULL )
+	if( io_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid fork descriptor.",
+		 "%s: invalid IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle->block_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid IO handle - block size value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
 	/* Read the header record first to determine the B-tree node size.
 	 */
-	file_offset = fork_descriptor->extents[ 0 ][ 0 ] * io_handle->block_size;
+	if( libcdata_array_get_entry_by_index(
+	     btree_file->extents,
+	     0,
+	     (intptr_t **) &extent,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extent: 0.",
+		 function );
+
+		goto on_error;
+	}
+	if( extent == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing extent: 0.",
+		 function );
+
+		goto on_error;
+	}
+	file_offset = extent->block_number * io_handle->block_size;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -385,8 +458,9 @@ int libfshfs_btree_file_read_file_io_handle(
 	if( libfshfs_btree_node_vector_initialize(
 	     &( btree_file->nodes_vector ),
 	     io_handle,
+	     btree_file->size,
 	     btree_file->header->node_size,
-	     fork_descriptor,
+	     btree_file->extents,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

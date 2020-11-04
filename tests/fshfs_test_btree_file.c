@@ -334,7 +334,6 @@ int fshfs_test_btree_file_read_file_io_handle(
 	result = libfshfs_btree_file_read_file_io_handle(
 	          NULL,
 	          NULL,
-	          NULL,
 	          0,
 	          &error );
 
@@ -352,7 +351,6 @@ int fshfs_test_btree_file_read_file_io_handle(
 
 	result = libfshfs_btree_file_read_file_io_handle(
 	          btree_file,
-	          NULL,
 	          NULL,
 	          0,
 	          &error );

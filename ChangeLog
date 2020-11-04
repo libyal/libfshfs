@@ -18,8 +18,6 @@ To do:
 ** what if that attribute is named com.apple.decmpfs ?
 * what about a symbolic link to HFS+ Private data directory?
 
-* can the metadata B-tree files require additional extents?
-
 Format support:
 * implement support for traditional HFS
 * implement support for HFS+/HFX Unicode 2.1 version

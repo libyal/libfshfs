@@ -607,7 +607,7 @@ int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extents of fork descriptor.",
+		 "%s: unable to retrieve extents of data stream.",
 		 function );
 
 		goto on_error;

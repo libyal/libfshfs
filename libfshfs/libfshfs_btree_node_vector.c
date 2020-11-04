@@ -27,7 +27,6 @@
 #include "libfshfs_btree_node_vector.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_extent.h"
-#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -42,18 +41,13 @@
 int libfshfs_btree_node_vector_initialize(
      libfshfs_btree_node_vector_t **node_vector,
      libfshfs_io_handle_t *io_handle,
+     uint64_t size,
      uint16_t node_size,
-     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcdata_array_t *extents,
      libcerror_error_t **error )
 {
-	libfshfs_extent_t *extent        = NULL;
-	static char *function            = "libfshfs_btree_node_vector_initialize";
-	uint64_t total_number_of_blocks  = 0;
-	uint32_t extent_block_number     = 0;
-	uint32_t extent_number_of_blocks = 0;
-	int entry_index                  = 0;
-	int extent_index                 = 0;
-	int result                       = 0;
+	static char *function          = "libfshfs_btree_node_vector_initialize";
+	uint64_t total_number_of_nodes = 0;
 
 	if( node_vector == NULL )
 	{
@@ -88,17 +82,6 @@ int libfshfs_btree_node_vector_initialize(
 
 		return( -1 );
 	}
-	if( io_handle->block_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid B-tree node vector - invalid IO handle - block size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
 	if( node_size == 0 )
 	{
 		libcerror_error_set(
@@ -106,17 +89,6 @@ int libfshfs_btree_node_vector_initialize(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
 		 "%s: invalid node size value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	if( fork_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid fork descriptor.",
 		 function );
 
 		return( -1 );
@@ -154,68 +126,7 @@ int libfshfs_btree_node_vector_initialize(
 
 		return( -1 );
 	}
-	if( libcdata_array_initialize(
-	     &( ( *node_vector )->extents ),
-	     0,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create extents array.",
-		 function );
-
-		goto on_error;
-	}
-	for( extent_index = 0;
-	     extent_index < 8;
-	     extent_index++ )
-	{
-		extent_block_number     = fork_descriptor->extents[ extent_index ][ 0 ];
-		extent_number_of_blocks = fork_descriptor->extents[ extent_index ][ 1 ];
-
-		if( ( extent_block_number == 0 )
-		 || ( extent_number_of_blocks == 0 ) )
-		{
-			break;
-		}
-		if( libfshfs_extent_initialize(
-		     &extent,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extent.",
-			 function );
-
-			goto on_error;
-		}
-		extent->block_number     = extent_block_number;
-		extent->number_of_blocks = extent_number_of_blocks;
-
-		if( libcdata_array_append_entry(
-		     ( *node_vector )->extents,
-		     &entry_index,
-		     (intptr_t *) extent,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append extent to array.",
-			 function );
-
-			goto on_error;
-		}
-		extent = NULL;
-
-		total_number_of_blocks += extent_number_of_blocks;
-	}
-	if( total_number_of_blocks > ( (uint64_t) UINT64_MAX / io_handle->block_size ) )
+	if( size > ( ( (uint64_t) UINT64_MAX / node_size ) - 1 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -226,10 +137,13 @@ int libfshfs_btree_node_vector_initialize(
 
 		return( -1 );
 	}
-	total_number_of_blocks *= io_handle->block_size;
-	total_number_of_blocks /= node_size;
+	total_number_of_nodes = size / node_size;
 
-	if( total_number_of_blocks > (uint64_t) UINT32_MAX )
+	if( ( size % node_size ) != 0 )
+	{
+		total_number_of_nodes += 1;
+	}
+	if( total_number_of_nodes > (uint64_t) UINT32_MAX )
 	{
 		libcerror_error_set(
 		 error,
@@ -240,50 +154,16 @@ int libfshfs_btree_node_vector_initialize(
 
 		return( -1 );
 	}
-	( *node_vector )->number_of_nodes = (uint32_t) total_number_of_blocks;
-
-	result = libfshfs_fork_descriptor_has_extents_overflow(
-	          fork_descriptor,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine if fork descriptor has extents overflow.",
-		 function );
-
-		goto on_error;
-	}
-	else if( result != 0 )
-	{
-/* TODO add extents overflow support */
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: fork descriptor with extents overflow not supported.",
-		 function );
-
-		goto on_error;
-	}
-	( *node_vector )->io_handle = io_handle;
-	( *node_vector )->node_size = node_size;
+	( *node_vector )->number_of_nodes = (uint32_t) total_number_of_nodes;
+	( *node_vector )->io_handle       = io_handle;
+	( *node_vector )->node_size       = node_size;
+	( *node_vector )->extents         = extents;
 
 	return( 1 );
 
 on_error:
 	if( *node_vector != NULL )
 	{
-		if( ( *node_vector )->extents != NULL )
-		{
-			libcdata_array_free(
-			 &( ( *node_vector )->extents ),
-			 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
-			 NULL );
-		}
 		memory_free(
 		 *node_vector );
 
@@ -315,20 +195,8 @@ int libfshfs_btree_node_vector_free(
 	}
 	if( *node_vector != NULL )
 	{
-		if( libcdata_array_free(
-		     &( ( *node_vector )->extents ),
-		     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free extents array.",
-			 function );
-
-			result = -1;
-		}
+		/* The extents reference is freed elsewhere
+		 */
 		memory_free(
 		 *node_vector );
 

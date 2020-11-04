@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
@@ -73,6 +74,11 @@ int libfshfs_fork_descriptor_read_data(
 
 int libfshfs_fork_descriptor_has_extents_overflow(
      libfshfs_fork_descriptor_t *fork_descriptor,
+     libcerror_error_t **error );
+
+int libfshfs_fork_descriptor_get_extents(
+     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcdata_array_t *extents,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

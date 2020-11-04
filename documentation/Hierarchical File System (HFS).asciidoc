@@ -853,13 +853,32 @@ stored there.
 ==== Notes
 
 ....
-Mac OS X version 10.3 introduced a new policy for determining where to allocate space for files, which improves performance for most users. This policy places the volume metadata and frequently used small files ("hot files") near each other on disk, which reduces the seek time for typical accesses. This area on disk is known as the metadata zone.
+Mac OS X version 10.3 introduced a new policy for determining where to allocate
+space for files, which improves performance for most users. This policy places
+the volume metadata and frequently used small files ("hot files") near each
+other on disk, which reduces the seek time for typical accesses. This area on
+disk is known as the metadata zone.
 
-The volume metadata are the structures that let the file system manage the contents of the volume. It includes the allocation bitmap file, extents (overflow) file, and the catalog file, and the journal file. The volume header and alternate volume header are also metadata, but they have fixed locations within the volume, so they are not located in the hot file area. Mac OS X may use a quota users file and quota groups file to manage disk space quotas on a volume. These files aren't strictly metadata, but they are included in the metadata zone because of their heavy use by the OS and they are too large to be considered ordinary hot files.
+The volume metadata are the structures that let the file system manage the
+contents of the volume. It includes the allocation bitmap file, extents
+(overflow) file, and the catalog file, and the journal file. The volume header
+and alternate volume header are also metadata, but they have fixed locations
+within the volume, so they are not located in the hot file area. Mac OS X may
+use a quota users file and quota groups file to manage disk space quotas on a
+volume. These files aren't strictly metadata, but they are included in the
+metadata zone because of their heavy use by the OS and they are too large to be
+considered ordinary hot files.
 
-Implementations are encouraged not to interfere with the metadata zone policy. For example, a disk optimizer should avoid moving files into the metadata zone unless that file is known to be frequently accessed, in which case it may be added to the "hot file" list. Similarly, files in the metadata zone should not be moved elsewhere on disk unless they are also removed from the hot file list.
+Implementations are encouraged not to interfere with the metadata zone policy.
+For example, a disk optimizer should avoid moving files into the metadata zone
+unless that file is known to be frequently accessed, in which case it may be
+added to the "hot file" list. Similarly, files in the metadata zone should not
+be moved elsewhere on disk unless they are also removed from the hot file list.
 
-This policy is only applied to volumes whose size is at least 10GB, and which have journaling enabled. The metadata zone is established when the volume is mounted. The size of the zone is based upon the following sizes:
+This policy is only applied to volumes whose size is at least 10GB, and which
+have journaling enabled. The metadata zone is established when the volume is
+mounted. The size of the zone is based upon the following sizes:
+
 Item 	Contribution to the Metadata Zone size
 Allocation Bitmap File 	Physical size (totalBlocks times the volume's allocation block size) of the allocation bitmap file.
 Extents Overflow File 	4MB, plus 4MB per 100GB (up to 128MB maximum)
@@ -869,19 +888,56 @@ Hot Files 	5 bytes per KB (10MB minimum; 512MB maximum)
 Quota Users File 	Described below
 Quota Groups File 	Described below
 
-In Mac OS X version 10.3, the amount of space reserved for the allocation file is actually the minimum allocation file size for the volume (the total number of allocation blocks, divided by 8, rounded up to a multiple of the allocation block size). If the allocation file is larger than that (which is sometimes done to allow a volume to be more easily grown at a later time), then there will be less space available for other metadata or hot files in the metadata zone. This is a bug (r. 3522516).
+In Mac OS X version 10.3, the amount of space reserved for the allocation file
+is actually the minimum allocation file size for the volume (the total number
+of allocation blocks, divided by 8, rounded up to a multiple of the allocation
+block size). If the allocation file is larger than that (which is sometimes
+done to allow a volume to be more easily grown at a later time), then there
+will be less space available for other metadata or hot files in the metadata
+zone. This is a bug (r. 3522516).
 
-The amount of space reserved for each type of metadata (except for the allocation bitmap file) is based on the total size of the volume. For the purposes of these computations, the total size of the volume is the allocation block size multiplied by the total number of allocation blocks.
+The amount of space reserved for each type of metadata (except for the
+allocation bitmap file) is based on the total size of the volume. For the
+purposes of these computations, the total size of the volume is the allocation
+block size multiplied by the total number of allocation blocks.
 
-The sizes reserved for quota users and groups files are the result of complex calculations. In each case, the size reserved is a value of the form (items + 1) * 64 bytes, where items is based on the size of the volume in gigabytes, rounded down. For the quota users file, items is 256 per gigabyte, rounded up to a power of 2, with a minimum of 2048, and a maximum of 2097152 (2M). For the quota groups file, items is 32 per gigabyte, rounded up to a power of 2, with a minimum of 2048, and a maximum of 262144 (256K). The quota files are considered hot files, and occupy the hot file area, even though they are larger than the maximum file size normally eligible to be a hot file.
+The sizes reserved for quota users and groups files are the result of complex
+calculations. In each case, the size reserved is a value of the form (items +
+1) * 64 bytes, where items is based on the size of the volume in gigabytes,
+rounded down. For the quota users file, items is 256 per gigabyte, rounded up
+to a power of 2, with a minimum of 2048, and a maximum of 2097152 (2M). For the
+quota groups file, items is 32 per gigabyte, rounded up to a power of 2, with a
+minimum of 2048, and a maximum of 262144 (256K). The quota files are considered
+hot files, and occupy the hot file area, even though they are larger than the
+maximum file size normally eligible to be a hot file.
 
-The total size of the metadata zone is the sum of the above sizes, rounded up so that the metadata zone is represented by a whole number of allocation blocks within the volume bitmap. That is, the start and end of the metadata zone fall on allocation block boundaries in the volume bitmap. That means that the size of the metadata zone is rounded up to a multiple of 8 times the square of the allocation block size. In Mac OS X version 10.3, the extra space due to the round up of the metadata zone is split up between the catalog and the hot file area (2/3 and 1/3, respectively).
+The total size of the metadata zone is the sum of the above sizes, rounded up
+so that the metadata zone is represented by a whole number of allocation blocks
+within the volume bitmap. That is, the start and end of the metadata zone fall
+on allocation block boundaries in the volume bitmap. That means that the size
+of the metadata zone is rounded up to a multiple of 8 times the square of the
+allocation block size. In Mac OS X version 10.3, the extra space due to the
+round up of the metadata zone is split up between the catalog and the hot file
+area (2/3 and 1/3, respectively).
 
-The calculations for the extents (overflow) file and journal file divide the total size of the volume by 100GB, rounding down. Then they add one (to compensate for any remainder lost as part of the rounding). The result is then multiplied by 4MB or 8MB, respectively. If the volume's total size is not a multiple of 100GB, this is equivalent to 4MB (or 8MB) per 100GB, rounded up.
+The calculations for the extents (overflow) file and journal file divide the
+total size of the volume by 100GB, rounding down. Then they add one (to
+compensate for any remainder lost as part of the rounding). The result is then
+multiplied by 4MB or 8MB, respectively. If the volume's total size is not a
+multiple of 100GB, this is equivalent to 4MB (or 8MB) per 100GB, rounded up.
 
-In Mac OS X version 10.3, the metadata zone is located at the start of the volume, following the volume header. The hot file area is located towards the end of the metadata zone.
+In Mac OS X version 10.3, the metadata zone is located at the start of the
+volume, following the volume header. The hot file area is located towards the
+end of the metadata zone.
 
-When performing normal file allocations, the allocator will skip over the metadata zone. This ensures that the metadata will be less fragmented, and all of the metadata will be located in the same area on the disk. If the area outside the metadata zone is exhausted, the allocator will then use space inside the metadata zone for normal file allocations. Similarly, when allocating space for metadata, the allocator will use space inside the metadata zone first. If all of the metadata zone is in use, then metadata allocations will use space outside the metadata zone.
+When performing normal file allocations, the allocator will skip over the
+metadata zone. This ensures that the metadata will be less fragmented, and all
+of the metadata will be located in the same area on the disk. If the area
+outside the metadata zone is exhausted, the allocator will then use space
+inside the metadata zone for normal file allocations. Similarly, when
+allocating space for metadata, the allocator will use space inside the metadata
+zone first. If all of the metadata zone is in use, then metadata allocations
+will use space outside the metadata zone.
 ....
 
 === [[text_encoding]]Text encoding
@@ -1741,6 +1797,12 @@ of a catalog file. The function of the extents (overflow) file is to store those
 file extents that are not contained in the master directory block (MDB) or
 volume header and the catalog file.
 
+[NOTE]
+The file system B-tree files can have additional extents in the extents
+(overflow) file. This has been observed with the attributes file. It is
+currently unknown if the extents (overflow) file itself can have overflow
+extents.
+
 === The extent key (record)
 
 [yellow-background]*Disks initialized using the enhanced Disk Initialization
@@ -2102,13 +2164,26 @@ extents, but in doing so the purpose of the startup file is defeated.
 ....
 Hot Files
 
-Most files on a disk are rarely, if ever, accessed. Most frequently accessed (hot) files are small. To improve performance of these small, frequently access files, they are moved near the volume's metadata, into the metadata zone. This reduces seek times for most accesses. As files are moved into the metadata zone, they are also defragmented (allocated in a single extent), which further improves performance. This process is known as adaptive hot file clustering.
+Most files on a disk are rarely, if ever, accessed. Most frequently accessed
+(hot) files are small. To improve performance of these small, frequently access
+files, they are moved near the volume's metadata, into the metadata zone. This
+reduces seek times for most accesses. As files are moved into the metadata
+zone, they are also defragmented (allocated in a single extent), which further
+improves performance. This process is known as adaptive hot file clustering.
 
-The relative importance of a frequently used (hot) file is called its temperature. Files with the hottest (largest) temperatures are the ones actually moved into the metadata zone. In Mac OS X version 10.3, a file's temperature is computed as the number of bytes read from the file during the recording period divided by the file's size in bytes. This is a measure of how often the file is read.
+The relative importance of a frequently used (hot) file is called its
+temperature. Files with the hottest (largest) temperatures are the ones
+actually moved into the metadata zone. In Mac OS X version 10.3, a file's
+temperature is computed as the number of bytes read from the file during the
+recording period divided by the file's size in bytes. This is a measure of how
+often the file is read.
 
-This section describes the on-disk structures used for tracking hot files. The algorithms used at run-time are subject to change, and are not documented here.
+This section describes the on-disk structures used for tracking hot files. The
+algorithms used at run-time are subject to change, and are not documented here.
 
-Migration of files into or out of the hot file area of the metadata zone is a gradual process, based upon the user's actual file access patterns. The migration happens in several phases:
+Migration of files into or out of the hot file area of the metadata zone is a
+gradual process, based upon the user's actual file access patterns. The
+migration happens in several phases:
 
 Recording
     Watch file accesses to determine which files are used most
@@ -2121,11 +2196,21 @@ Adoption
 
 Hot File B-tree
 
-A B-tree is used to keep track of the files that currently occupy the hot file area of the metadata zone. The hot file B-tree is an ordinary file on the volume (that is, it has records in the catalog). It is a file named ".hotfiles.btree" in the root directory. To avoid accidental manipulation of this file, the kIsInvisible and kNameLocked bits in the finderFlags field of the Finder info should be set.
+A B-tree is used to keep track of the files that currently occupy the hot file
+area of the metadata zone. The hot file B-tree is an ordinary file on the
+volume (that is, it has records in the catalog). It is a file named
+".hotfiles.btree" in the root directory. To avoid accidental manipulation of
+this file, the kIsInvisible and kNameLocked bits in the finderFlags field of
+the Finder info should be set.
 
-The node size of the hot file B-tree is at least 512 bytes, and is typically the same as the the volume's allocation block size. Like other B-trees on an HFS+ volume, the key length field is 16 bits, and kBTBigKeysMask is set in the B-tree header's attributes. The btreeType in the header record must be set to kUserBTreeType.
+The node size of the hot file B-tree is at least 512 bytes, and is typically
+the same as the the volume's allocation block size. Like other B-trees on an
+HFS+ volume, the key length field is 16 bits, and kBTBigKeysMask is set in the
+B-tree header's attributes. The btreeType in the header record must be set to
+kUserBTreeType.
 
-The B-tree's user data record contains information about hot file recording. The format of the user data is described by the HotFilesInfo structure:
+The B-tree's user data record contains information about hot file recording.
+The format of the user data is described by the HotFilesInfo structure:
 
 #define HFC_MAGIC   0xFF28FF26
 #define HFC_VERSION 1
@@ -2200,18 +2285,40 @@ fileID
 Hot file keys are compared first by temperature, then fileID, and lastly by forkType. All of these comparisons are unsigned.
 Hot File Records
 
-Much like the catalog file, the hot file B-tree stores two kinds of records: hot file records and thread records. Every fork in the hot file area has both a hot file record and a thread record in the hot file B-tree. Hot file records are used to find hot files based on their temperature. Thread records are used to find hot files based on their catalog node ID and fork type.
+Much like the catalog file, the hot file B-tree stores two kinds of records:
+hot file records and thread records. Every fork in the hot file area has both a
+hot file record and a thread record in the hot file B-tree. Hot file records
+are used to find hot files based on their temperature. Thread records are used
+to find hot files based on their catalog node ID and fork type.
 
-Thread records in the hot file B-tree use a special value (HFC_LOOKUPTAG) in the temperature field of the key. The data for a thread record is the temperature of that fork, stored as a UInt32. So, given a catalog node ID and fork type, it is possible to construct a key for the fork's thread record. If a thread record exists, you can get the temperature from the thread's data to construct the key for the hot file record. If a thread record does not exist, then the fork is not being tracked as a hot file.
+Thread records in the hot file B-tree use a special value (HFC_LOOKUPTAG) in
+the temperature field of the key. The data for a thread record is the
+temperature of that fork, stored as a UInt32. So, given a catalog node ID and
+fork type, it is possible to construct a key for the fork's thread record. If a
+thread record exists, you can get the temperature from the thread's data to
+construct the key for the hot file record. If a thread record does not exist,
+then the fork is not being tracked as a hot file.
 
-Hot file records use all of the key fields as described above. The data for a hot file record is 4 bytes. The data in a hot file record is not meaningful. To aid in debugging, Mac OS X version 10.3 typically stores the first four bytes of the file name (encoded in UTF-8), or the ASCII text "????".
+Hot file records use all of the key fields as described above. The data for a
+hot file record is 4 bytes. The data in a hot file record is not meaningful. To
+aid in debugging, Mac OS X version 10.3 typically stores the first four bytes
+of the file name (encoded in UTF-8), or the ASCII text "????".
 
-When an implementation changes a hot file's temperature, the old hot file record must be removed, a new hot file with the new temperature must be inserted, and the thread record's data must be changed to contain the new temperature.
+When an implementation changes a hot file's temperature, the old hot file
+record must be removed, a new hot file with the new temperature must be
+inserted, and the thread record's data must be changed to contain the new
+temperature.
 Recording Hot File Temperatures
 
-The recording phase gathers information about file usage over time. In order to gather useful statistics, the recording phase may last longer than the duration of a single mount. Therefore, information about file usage is stored on disk so that it can accumulate over time.
+The recording phase gathers information about file usage over time. In order to
+gather useful statistics, the recording phase may last longer than the duration
+of a single mount. Therefore, information about file usage is stored on disk so
+that it can accumulate over time.
 
-The clumpSize field of the fork descriptor structure is used to record the amount of data actually read from a fork. Since the field is only 32 bits long, it stores the number of allocation blocks read from the file. The fork's temperature can be computed by dividing its clumpSize by its totalBlocks.
+The clumpSize field of the fork descriptor structure is used to record the
+amount of data actually read from a fork. Since the field is only 32 bits long,
+it stores the number of allocation blocks read from the file. The fork's
+temperature can be computed by dividing its clumpSize by its totalBlocks.
 ....
 
 == The HFS+ journal
@@ -2715,7 +2822,8 @@ HFS supports multiple ways to store file content:
 The file content size is stored in the data fork descriptor of the
 <<catalog_file_record,catalog file record>>.
 
-[yellow-background]*TODO: descibe extents overflow.*
+The extents of the file content are stored in the fork descriptor and extents
+(overflow) file.
 
 === Compressed data extended attribute
 

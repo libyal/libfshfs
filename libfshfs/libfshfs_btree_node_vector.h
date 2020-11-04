@@ -26,7 +26,6 @@
 #include <types.h>
 
 #include "libfshfs_btree_node.h"
-#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
@@ -61,8 +60,9 @@ struct libfshfs_btree_node_vector
 int libfshfs_btree_node_vector_initialize(
      libfshfs_btree_node_vector_t **node_vector,
      libfshfs_io_handle_t *io_handle,
+     uint64_t size,
      uint16_t node_size,
-     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcdata_array_t *extents,
      libcerror_error_t **error );
 
 int libfshfs_btree_node_vector_free(

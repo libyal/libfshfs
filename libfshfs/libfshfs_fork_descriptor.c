@@ -24,6 +24,7 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_extent.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
@@ -392,5 +393,93 @@ int libfshfs_fork_descriptor_has_extents_overflow(
 		return( 1 );
 	}
 	return( 0 );
+}
+
+/* Retrieves the extents
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_fork_descriptor_get_extents(
+     libfshfs_fork_descriptor_t *fork_descriptor,
+     libcdata_array_t *extents,
+     libcerror_error_t **error )
+{
+	libfshfs_extent_t *extent        = NULL;
+	static char *function            = "libfshfs_fork_descriptor_get_extents";
+	uint32_t extent_block_number     = 0;
+	uint32_t extent_number_of_blocks = 0;
+	int entry_index                  = 0;
+	int extent_index                 = 0;
+
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	for( extent_index = 0;
+	     extent_index < 8;
+	     extent_index++ )
+	{
+		extent_block_number     = fork_descriptor->extents[ extent_index ][ 0 ];
+		extent_number_of_blocks = fork_descriptor->extents[ extent_index ][ 1 ];
+
+		if( ( extent_block_number == 0 )
+		 || ( extent_number_of_blocks == 0 ) )
+		{
+			break;
+		}
+		if( libfshfs_extent_initialize(
+		     &extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extent.",
+			 function );
+
+			goto on_error;
+		}
+		extent->block_number     = extent_block_number;
+		extent->number_of_blocks = extent_number_of_blocks;
+
+		if( libcdata_array_append_entry(
+		     extents,
+		     &entry_index,
+		     (intptr_t *) extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append extent to array.",
+			 function );
+
+			goto on_error;
+		}
+		extent = NULL;
+	}
+	return( 1 );
+
+on_error:
+	if( extent != NULL )
+	{
+		libfshfs_extent_free(
+		 &extent,
+		 NULL );
+	}
+	libcdata_array_empty(
+	 extents,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
+	 NULL );
+
+	return( -1 );
 }
 

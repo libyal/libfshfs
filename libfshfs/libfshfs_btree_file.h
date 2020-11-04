@@ -28,9 +28,9 @@
 #include "libfshfs_btree_header.h"
 #include "libfshfs_btree_node.h"
 #include "libfshfs_btree_node_vector.h"
-#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libfcache.h"
 #include "libfshfs_libfdata.h"
@@ -43,6 +43,14 @@ typedef struct libfshfs_btree_file libfshfs_btree_file_t;
 
 struct libfshfs_btree_file
 {
+	/* The size
+	 */
+	uint64_t size;
+
+	/* Extents
+	 */
+	libcdata_array_t *extents;
+
 	/* The header
 	 */
 	libfshfs_btree_header_t *header;
@@ -68,7 +76,6 @@ int libfshfs_btree_file_read_file_io_handle(
      libfshfs_btree_file_t *btree_file,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_fork_descriptor_t *fork_descriptor,
      libcerror_error_t **error );
 
 int libfshfs_btree_file_get_node_by_number(
