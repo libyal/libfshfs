@@ -990,7 +990,7 @@ int libfshfs_file_entry_get_identifier(
 
 		return( -1 );
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1007,7 +1007,7 @@ int libfshfs_file_entry_get_identifier(
 #endif
 	*identifier = internal_file_entry->identifier;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1061,7 +1061,7 @@ int libfshfs_file_entry_get_parent_identifier(
 
 		return( -1 );
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1090,7 +1090,7 @@ int libfshfs_file_entry_get_parent_identifier(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1144,7 +1144,7 @@ int libfshfs_file_entry_get_link_identifier(
 
 		return( -1 );
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1175,7 +1175,7 @@ int libfshfs_file_entry_get_link_identifier(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1219,7 +1219,7 @@ int libfshfs_file_entry_get_creation_time(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1248,7 +1248,7 @@ int libfshfs_file_entry_get_creation_time(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1292,7 +1292,7 @@ int libfshfs_file_entry_get_modification_time(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1321,7 +1321,7 @@ int libfshfs_file_entry_get_modification_time(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1365,7 +1365,7 @@ int libfshfs_file_entry_get_entry_modification_time(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1396,7 +1396,7 @@ int libfshfs_file_entry_get_entry_modification_time(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1440,7 +1440,7 @@ int libfshfs_file_entry_get_access_time(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1471,7 +1471,7 @@ int libfshfs_file_entry_get_access_time(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1515,7 +1515,7 @@ int libfshfs_file_entry_get_backup_time(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1544,7 +1544,7 @@ int libfshfs_file_entry_get_backup_time(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1588,7 +1588,7 @@ int libfshfs_file_entry_get_added_time(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1619,7 +1619,7 @@ int libfshfs_file_entry_get_added_time(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1662,7 +1662,7 @@ int libfshfs_file_entry_get_file_mode(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1693,7 +1693,7 @@ int libfshfs_file_entry_get_file_mode(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1736,7 +1736,7 @@ int libfshfs_file_entry_get_owner_identifier(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1767,7 +1767,7 @@ int libfshfs_file_entry_get_owner_identifier(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1810,7 +1810,7 @@ int libfshfs_file_entry_get_group_identifier(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1841,7 +1841,7 @@ int libfshfs_file_entry_get_group_identifier(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1887,7 +1887,7 @@ int libfshfs_file_entry_get_utf8_name_size(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1921,7 +1921,7 @@ int libfshfs_file_entry_get_utf8_name_size(
 			result = -1;
 		}
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -1968,7 +1968,7 @@ int libfshfs_file_entry_get_utf8_name(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -2003,7 +2003,7 @@ int libfshfs_file_entry_get_utf8_name(
 			result = -1;
 		}
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -2049,7 +2049,7 @@ int libfshfs_file_entry_get_utf16_name_size(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -2083,7 +2083,7 @@ int libfshfs_file_entry_get_utf16_name_size(
 			result = -1;
 		}
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -2130,7 +2130,7 @@ int libfshfs_file_entry_get_utf16_name(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -2165,7 +2165,7 @@ int libfshfs_file_entry_get_utf16_name(
 			result = -1;
 		}
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -3428,7 +3428,7 @@ int libfshfs_file_entry_get_number_of_sub_file_entries(
 	}
 	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
 
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -3480,7 +3480,7 @@ int libfshfs_file_entry_get_number_of_sub_file_entries(
 			result = -1;
 		}
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -3548,7 +3548,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 
 		return( -1 );
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )
@@ -3659,7 +3659,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 			result = -1;
 		}
 	}
-#if defined( HAVE_LIBFSNTFS_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_file_entry->read_write_lock,
 	     error ) != 1 )

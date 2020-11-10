@@ -627,8 +627,7 @@ int libfshfs_debug_print_utf16_string_value(
 
 		goto on_error;
 	}
-	if( ( string_size > (size_t) SSIZE_MAX )
-	 || ( ( sizeof( system_character_t ) * string_size ) > (size_t) SSIZE_MAX ) )
+	if( string_size > (size_t) ( SSIZE_MAX / sizeof( system_character_t ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -682,7 +681,7 @@ int libfshfs_debug_print_utf16_string_value(
 		goto on_error;
 	}
 	libcnotify_printf(
-	 "%s: %s: %s\n",
+	 "%s: %s: %" PRIs_SYSTEM "\n",
 	 function_name,
 	 value_name,
 	 string );
@@ -745,7 +744,7 @@ int libfshfs_debug_print_utf16_name_value(
 			break;
 		}
 		libcnotify_printf(
-		 "\\x00" );
+		 "\\u2400" );
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libuna_utf16_string_size_from_utf16_stream(
@@ -773,8 +772,7 @@ int libfshfs_debug_print_utf16_name_value(
 
 		goto on_error;
 	}
-	if( ( string_size > (size_t) SSIZE_MAX )
-	 || ( ( sizeof( system_character_t ) * string_size ) > (size_t) SSIZE_MAX ) )
+	if( string_size > (size_t) ( SSIZE_MAX / sizeof( system_character_t ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -828,7 +826,7 @@ int libfshfs_debug_print_utf16_name_value(
 		goto on_error;
 	}
 	libcnotify_printf(
-	 "%s\n",
+	 "%" PRIs_SYSTEM "\n",
 	 string );
 
 	memory_free(
