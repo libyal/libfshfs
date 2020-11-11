@@ -1115,7 +1115,7 @@ on_error:
 /* Prints a seconds POSIX time value
  * Returns 1 if successful or -1 on error
  */
-int info_handle_posix_time_seconds_value_fprint(
+int info_handle_posix_time_in_seconds_value_fprint(
      info_handle_t *info_handle,
      const char *value_name,
      int32_t value_32bit,
@@ -1124,7 +1124,7 @@ int info_handle_posix_time_seconds_value_fprint(
 	system_character_t date_time_string[ 32 ];
 
 	libfdatetime_posix_time_t *posix_time = NULL;
-	static char *function                 = "info_handle_posix_time_seconds_value_fprint";
+	static char *function                 = "info_handle_posix_time_in_seconds_value_fprint";
 	int result                            = 0;
 
 	if( info_handle == NULL )
@@ -1855,7 +1855,7 @@ int info_handle_file_entry_value_with_name_fprint(
 		}
 		else if( result != 0 )
 		{
-			if( info_handle_posix_time_seconds_value_fprint(
+			if( info_handle_posix_time_in_seconds_value_fprint(
 			     info_handle,
 			     "\tAdded time\t\t",
 			     added_time,

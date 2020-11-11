@@ -58,13 +58,13 @@ struct libfshfs_internal_file_entry
 	 */
 	libfshfs_file_system_t *file_system;
 
-	/* Directory entry
-	 */
-	libfshfs_directory_entry_t *directory_entry;
-
 	/* Identifier
 	 */
 	uint32_t identifier;
+
+	/* Directory entry
+	 */
+	libfshfs_directory_entry_t *directory_entry;
 
 	/* File mode
 	 */
@@ -117,8 +117,8 @@ int libfshfs_file_entry_initialize(
      libfshfs_file_entry_t **file_entry,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_directory_entry_t *directory_entry,
      libfshfs_file_system_t *file_system,
+     libfshfs_directory_entry_t *directory_entry,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

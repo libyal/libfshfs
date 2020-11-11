@@ -48,8 +48,8 @@ int libfshfs_file_entry_initialize(
      libfshfs_file_entry_t **file_entry,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
-     libfshfs_directory_entry_t *directory_entry,
      libfshfs_file_system_t *file_system,
+     libfshfs_directory_entry_t *directory_entry,
      libcerror_error_t **error )
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
@@ -3641,8 +3641,8 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 		          sub_file_entry,
 		          internal_file_entry->io_handle,
 		          internal_file_entry->file_io_handle,
-		          safe_directory_entry,
 		          internal_file_entry->file_system,
+		          safe_directory_entry,
 		          error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3770,8 +3770,8 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
 		     sub_file_entry,
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
-		     sub_directory_entry,
 		     internal_file_entry->file_system,
+		     sub_directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3899,8 +3899,8 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
 		     sub_file_entry,
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
-		     sub_directory_entry,
 		     internal_file_entry->file_system,
+		     sub_directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

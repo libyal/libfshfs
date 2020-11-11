@@ -1580,8 +1580,8 @@ int libfshfs_volume_get_file_entry_by_identifier(
 		     file_entry,
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
-		     directory_entry,
 		     internal_volume->file_system,
+		     directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1701,8 +1701,8 @@ int libfshfs_volume_get_root_directory(
 		     file_entry,
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
-		     safe_directory_entry,
 		     internal_volume->file_system,
+		     safe_directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1829,8 +1829,8 @@ int libfshfs_volume_get_file_entry_by_utf8_path(
 		     file_entry,
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
-		     directory_entry,
 		     internal_volume->file_system,
+		     directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1961,8 +1961,8 @@ int libfshfs_volume_get_file_entry_by_utf16_path(
 		     file_entry,
 		     internal_volume->io_handle,
 		     internal_volume->file_io_handle,
-		     directory_entry,
 		     internal_volume->file_system,
+		     directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

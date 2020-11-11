@@ -124,7 +124,7 @@ int info_handle_hfs_time_value_fprint(
      uint32_t value_32bit,
      libcerror_error_t **error );
 
-int info_handle_posix_time_seconds_value_fprint(
+int info_handle_posix_time_in_seconds_value_fprint(
      info_handle_t *info_handle,
      const char *value_name,
      int32_t value_32bit,
