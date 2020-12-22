@@ -350,29 +350,15 @@ int libfshfs_btree_file_read_file_io_handle(
 		libcnotify_printf(
 		 "%s: reading B-tree header node at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
 		 function,
+		 file_offset,
 		 file_offset );
 	}
 #endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek B-tree header node offset: %" PRIi64 ".",
-		 function,
-		 file_offset );
-
-		goto on_error;
-	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              header_node_data,
 	              512,
+	              file_offset,
 	              error );
 
 	if( read_count != (ssize_t) 512 )
@@ -381,8 +367,10 @@ int libfshfs_btree_file_read_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree header node data.",
-		 function );
+		 "%s: unable to read B-tree header node data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
 
 		goto on_error;
 	}
