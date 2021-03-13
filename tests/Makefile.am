@@ -17,6 +17,8 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@LIBCRYPTO_CPPFLAGS@ \
+	@LIBHMAC_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_IMPORT@
@@ -70,6 +72,7 @@ check_PROGRAMS = \
 	fshfs_test_notify \
 	fshfs_test_support \
 	fshfs_test_thread_record \
+	fshfs_test_tools_info_handle \
 	fshfs_test_tools_output \
 	fshfs_test_tools_signal \
 	fshfs_test_volume \
@@ -402,6 +405,32 @@ fshfs_test_thread_record_SOURCES = \
 fshfs_test_thread_record_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
+
+fshfs_test_tools_info_handle_SOURCES = \
+	../fshfstools/digest_hash.c ../fshfstools/digest_hash.h \
+	../fshfstools/info_handle.c ../fshfstools/info_handle.h \
+	fshfs_test_libcerror.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_tools_info_handle.c \
+	fshfs_test_unused.h
+
+fshfs_test_tools_info_handle_LDADD = \
+	@LIBHMAC_LIBADD@ \
+	@LIBFGUID_LIBADD@ \
+	@LIBFDATETIME_LIBADD@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCRYPTO_LIBADD@ \
+	@LIBDL_LIBADD@
 
 fshfs_test_tools_output_SOURCES = \
 	../fshfstools/fshfstools_output.c ../fshfstools/fshfstools_output.h \

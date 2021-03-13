@@ -39,7 +39,7 @@
 
 #include "../fshfstools/fshfstools_output.h"
 
-/* Tests the fshfstools_output_initialize and function
+/* Tests the fshfstools_output_initialize function
  * Returns 1 if successful or 0 if not
  */
 int fshfs_test_tools_output_initialize(
