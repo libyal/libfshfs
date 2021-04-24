@@ -157,7 +157,8 @@ class VolumeTypeTests(unittest.TestCase):
 
   def test_open(self):
     """Tests the open function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     if unittest.offset:
@@ -165,10 +166,10 @@ class VolumeTypeTests(unittest.TestCase):
 
     fshfs_volume = pyfshfs.volume()
 
-    fshfs_volume.open(unittest.source)
+    fshfs_volume.open(test_source)
 
     with self.assertRaises(IOError):
-      fshfs_volume.open(unittest.source)
+      fshfs_volume.open(test_source)
 
     fshfs_volume.close()
 
@@ -176,18 +177,19 @@ class VolumeTypeTests(unittest.TestCase):
       fshfs_volume.open(None)
 
     with self.assertRaises(ValueError):
-      fshfs_volume.open(unittest.source, mode="w")
+      fshfs_volume.open(test_source, mode="w")
 
   def test_open_file_object(self):
     """Tests the open_file_object function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    if not os.path.isfile(unittest.source):
+    if not os.path.isfile(test_source):
       raise unittest.SkipTest("source not a regular file")
 
     with DataRangeFileObject(
-        unittest.source, unittest.offset or 0, None) as file_object:
+        test_source, unittest.offset or 0, None) as file_object:
 
       fshfs_volume = pyfshfs.volume()
       fshfs_volume.open_file_object(file_object)
@@ -205,7 +207,8 @@ class VolumeTypeTests(unittest.TestCase):
 
   def test_close(self):
     """Tests the close function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     fshfs_volume = pyfshfs.volume()
@@ -215,7 +218,8 @@ class VolumeTypeTests(unittest.TestCase):
 
   def test_open_close(self):
     """Tests the open and close functions."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       return
 
     if unittest.offset:
@@ -224,15 +228,15 @@ class VolumeTypeTests(unittest.TestCase):
     fshfs_volume = pyfshfs.volume()
 
     # Test open and close.
-    fshfs_volume.open(unittest.source)
+    fshfs_volume.open(test_source)
     fshfs_volume.close()
 
     # Test open and close a second time to validate clean up on close.
-    fshfs_volume.open(unittest.source)
+    fshfs_volume.open(test_source)
     fshfs_volume.close()
 
-    if os.path.isfile(unittest.source):
-      with open(unittest.source, "rb") as file_object:
+    if os.path.isfile(test_source):
+      with open(test_source, "rb") as file_object:
 
         # Test open_file_object and close.
         fshfs_volume.open_file_object(file_object)
@@ -249,11 +253,12 @@ class VolumeTypeTests(unittest.TestCase):
 
   def test_get_name(self):
     """Tests the get_name function and name property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     with DataRangeFileObject(
-        unittest.source, unittest.offset or 0, None) as file_object:
+        test_source, unittest.offset or 0, None) as file_object:
 
       fshfs_volume = pyfshfs.volume()
       fshfs_volume.open_file_object(file_object)
@@ -267,11 +272,12 @@ class VolumeTypeTests(unittest.TestCase):
 
   def test_get_root_directory(self):
     """Tests the get_root_directory function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     with DataRangeFileObject(
-        unittest.source, unittest.offset or 0, None) as file_object:
+        test_source, unittest.offset or 0, None) as file_object:
 
       fshfs_volume = pyfshfs.volume()
       fshfs_volume.open_file_object(file_object)
