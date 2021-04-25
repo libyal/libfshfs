@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libfshfs],
- [20210424],
+ [20210425],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -111,7 +111,7 @@ AX_LIBFGUID_CHECK_ENABLE
 
 dnl Check if zlib or required headers and functions are available
 AX_ZLIB_CHECK_ENABLE
-AX_ZLIB_CHECK_INFLATE
+AX_ZLIB_CHECK_UNCOMPRESS
 
 dnl Check if libfshfs required headers and functions are available
 AX_LIBFSHFS_CHECK_LOCAL
@@ -157,7 +157,7 @@ AS_IF(
  ])
 
 AS_IF(
- [test "x$ac_cv_libhmac" = xyes],
+ [test "x$ac_cv_libhmac" = xyes || test "x$ac_cv_libcrypto" != xno],
  [AC_SUBST(
   [libfshfs_spec_tools_build_requires],
   [BuildRequires:])
@@ -237,8 +237,9 @@ Building:
    libfdata support:                           $ac_cv_libfdata
    libfdatetime support:                       $ac_cv_libfdatetime
    libfguid support:                           $ac_cv_libfguid
+   DEFLATE compression support:                $ac_cv_uncompress
    libhmac support:                            $ac_cv_libhmac
-   DEFLATE compression support:                $ac_cv_inflate
+   MD5 support:                                $ac_cv_libhmac_md5
 
 Features:
    Multi-threading support:                    $ac_cv_libcthreads_multi_threading

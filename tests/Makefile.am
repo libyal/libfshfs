@@ -68,6 +68,7 @@ check_PROGRAMS = \
 	fshfs_test_file_system \
 	fshfs_test_fork_descriptor \
 	fshfs_test_io_handle \
+	fshfs_test_lzvn \
 	fshfs_test_name \
 	fshfs_test_notify \
 	fshfs_test_support \
@@ -339,6 +340,19 @@ fshfs_test_io_handle_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_io_handle_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_lzvn_SOURCES = \
+	fshfs_test_libcerror.h \
+	fshfs_test_libcnotify.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_lzvn.c \
+	fshfs_test_macros.h \
+	fshfs_test_unused.h
+
+fshfs_test_lzvn_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 
