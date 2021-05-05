@@ -456,6 +456,18 @@ int libfshfs_attribute_record_read_data(
 			attribute_record->extents[ extent_index ][ 1 ] = extent_number_of_blocks;
 
 			extent_index++;
+
+			if( extent_index >= 8 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid extent index value out of bounds.",
+				 function );
+
+				goto on_error;
+			}
 		}
 	}
 	return( 1 );
