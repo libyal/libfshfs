@@ -24,8 +24,8 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libfshfs_lzvn.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_lzvn.h"
 
 enum LIBFSHFS_LZVN_OPPCODE_TYPES
 {
@@ -44,7 +44,7 @@ enum LIBFSHFS_LZVN_OPPCODE_TYPES
 
 /* Lookup table to map an oppcode to its type
  */
-uint8_t lzvn_oppcode_types[ 256 ] = {
+uint8_t libfshfs_lzvn_oppcode_types[ 256 ] = {
 	LIBFSHFS_LZVN_OPPCODE_TYPE_DISTANCE_SMALL,	/* 0x00 */
 	LIBFSHFS_LZVN_OPPCODE_TYPE_DISTANCE_SMALL,	/* 0x01 */
 	LIBFSHFS_LZVN_OPPCODE_TYPE_DISTANCE_SMALL,	/* 0x02 */
@@ -413,7 +413,7 @@ int libfshfs_lzvn_decompress(
 		}
 		oppcode = compressed_data[ compressed_data_offset++ ];
 
-		oppcode_type = lzvn_oppcode_types[ oppcode ];
+		oppcode_type = libfshfs_lzvn_oppcode_types[ oppcode ];
 
 		literal_size = 0;
 		match_size   = 0;
