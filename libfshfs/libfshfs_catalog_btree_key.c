@@ -342,7 +342,7 @@ int libfshfs_catalog_btree_key_read_data(
 					return( -1 );
 				}
 			}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )

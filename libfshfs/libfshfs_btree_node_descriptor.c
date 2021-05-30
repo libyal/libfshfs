@@ -252,7 +252,19 @@ int libfshfs_btree_node_descriptor_read_data(
 		 "\n",
 		 function );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+	if( btree_node_descriptor->level > 8 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid node level value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	return( 1 );
 }
 

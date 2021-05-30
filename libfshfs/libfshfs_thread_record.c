@@ -173,6 +173,17 @@ int libfshfs_thread_record_read_data(
 
 		return( -1 );
 	}
+	if( thread_record->name != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid thread record - name value already set.",
+		 function );
+
+		return( -1 );
+	}
 	if( data == NULL )
 	{
 		libcerror_error_set(
@@ -409,7 +420,7 @@ int libfshfs_thread_record_read_data(
 				goto on_error;
 			}
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -421,6 +432,15 @@ int libfshfs_thread_record_read_data(
 	return( 1 );
 
 on_error:
+	if( thread_record->name != NULL )
+	{
+		memory_free(
+		 thread_record->name );
+
+		thread_record->name = NULL;
+	}
+	thread_record->name_size = 0;
+
 	return( -1 );
 }
 
