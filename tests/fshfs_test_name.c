@@ -123,18 +123,23 @@ on_error:
 int fshfs_test_name_compare_with_utf8_string(
      void )
 {
-        uint8_t utf8_string_equal[ 6 ]   = { 'e', 'q', 'u', 'a', 'l', 0 };
-        uint8_t utf8_string_greater[ 7 ] = { 'g', 'r', 'e', 'a', 't', 'e', 'r' };
-        uint8_t utf8_string_less[ 4 ]    = { 'l', 'e', 's', 's' };
-        uint8_t utf8_string_more[ 4 ]    = { 'm', 'o', 'r', 'e' };
-	libcerror_error_t *error         = NULL;
-	int result                       = 0;
+        uint8_t utf8_string_equal[ 6 ]         = { 'e', 'q', 'u', 'a', 'l', 0 };
+        uint8_t utf8_string_greater[ 7 ]       = { 'g', 'r', 'e', 'a', 't', 'e', 'r' };
+        uint8_t utf8_string_less[ 4 ]          = { 'l', 'e', 's', 's' };
+        uint8_t utf8_string_more[ 4 ]          = { 'm', 'o', 'r', 'e' };
+        uint8_t name_utf16_stream_equal[ 10 ]  = { 0, 'e', 0, 'q', 0, 'u', 0, 'a', 0, 'l' };
+        uint8_t name_utf16_stream_great[ 10 ]  = { 0, 'g', 0, 'r', 0, 'e', 0, 'a', 0, 't' };
+        uint8_t name_utf16_stream_less[ 8 ]    = { 0, 'l', 0, 'e', 0, 's', 0, 's' };
+        uint8_t name_utf16_stream_lesser[ 12 ] = { 0, 'l', 0, 'e', 0, 's', 0, 's', 0, 'e', 0, 'r' };
+        uint8_t name_utf16_stream_more[ 8 ]    = { 0, 'm', 0, 'o', 0, 'r', 0, 'e' };
+	libcerror_error_t *error               = NULL;
+	int result                             = 0;
 
 	/* Test regular cases
 	 */
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          utf8_string_equal,
 	          5,
 	          0,
@@ -150,8 +155,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          utf8_string_equal,
 	          6,
 	          0,
@@ -167,8 +172,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "great",
-	          6,
+	          name_utf16_stream_great,
+	          10,
 	          utf8_string_greater,
 	          7,
 	          0,
@@ -184,8 +189,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "less",
-	          5,
+	          name_utf16_stream_less,
+	          8,
 	          utf8_string_more,
 	          4,
 	          0,
@@ -201,8 +206,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "more",
-	          5,
+	          name_utf16_stream_more,
+	          8,
 	          utf8_string_less,
 	          4,
 	          0,
@@ -218,8 +223,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "lesser",
-	          7,
+	          name_utf16_stream_lesser,
+	          12,
 	          utf8_string_less,
 	          4,
 	          0,
@@ -257,7 +262,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	 &error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "equal",
+	          name_utf16_stream_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          utf8_string_equal,
 	          5,
@@ -277,8 +282,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 &error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          NULL,
 	          5,
 	          0,
@@ -297,8 +302,8 @@ int fshfs_test_name_compare_with_utf8_string(
 	 &error );
 
 	result = libfshfs_name_compare_with_utf8_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          utf8_string_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          0,
@@ -333,18 +338,23 @@ on_error:
 int fshfs_test_name_compare_with_utf16_string(
      void )
 {
-        uint16_t utf16_string_equal[ 6 ]   = { 'e', 'q', 'u', 'a', 'l', 0 };
-        uint16_t utf16_string_greater[ 7 ] = { 'g', 'r', 'e', 'a', 't', 'e', 'r' };
-        uint16_t utf16_string_less[ 4 ]    = { 'l', 'e', 's', 's' };
-        uint16_t utf16_string_more[ 4 ]    = { 'm', 'o', 'r', 'e' };
-	libcerror_error_t *error           = NULL;
-	int result                         = 0;
+        uint16_t utf16_string_equal[ 6 ]       = { 'e', 'q', 'u', 'a', 'l', 0 };
+        uint16_t utf16_string_greater[ 7 ]     = { 'g', 'r', 'e', 'a', 't', 'e', 'r' };
+        uint16_t utf16_string_less[ 4 ]        = { 'l', 'e', 's', 's' };
+        uint16_t utf16_string_more[ 4 ]        = { 'm', 'o', 'r', 'e' };
+        uint8_t name_utf16_stream_equal[ 10 ]  = { 0, 'e', 0, 'q', 0, 'u', 0, 'a', 0, 'l' };
+        uint8_t name_utf16_stream_great[ 10 ]  = { 0, 'g', 0, 'r', 0, 'e', 0, 'a', 0, 't' };
+        uint8_t name_utf16_stream_less[ 10 ]   = { 0, 'l', 0, 'e', 0, 's', 0, 's' };
+        uint8_t name_utf16_stream_lesser[ 12 ] = { 0, 'l', 0, 'e', 0, 's', 0, 's', 0, 'e', 0, 'r' };
+        uint8_t name_utf16_stream_more[ 10 ]   = { 0, 'm', 0, 'o', 0, 'r', 0, 'e' };
+	libcerror_error_t *error               = NULL;
+	int result                             = 0;
 
 	/* Test regular cases
 	 */
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          utf16_string_equal,
 	          5,
 	          0,
@@ -360,8 +370,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          utf16_string_equal,
 	          6,
 	          0,
@@ -377,8 +387,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "great",
-	          6,
+	          name_utf16_stream_great,
+	          10,
 	          utf16_string_greater,
 	          7,
 	          0,
@@ -394,8 +404,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "less",
-	          5,
+	          name_utf16_stream_less,
+	          8,
 	          utf16_string_more,
 	          4,
 	          0,
@@ -411,8 +421,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "more",
-	          5,
+	          name_utf16_stream_more,
+	          8,
 	          utf16_string_less,
 	          4,
 	          0,
@@ -428,8 +438,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "lesser",
-	          7,
+	          name_utf16_stream_lesser,
+	          12,
 	          utf16_string_less,
 	          4,
 	          0,
@@ -467,7 +477,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	 &error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "equal",
+	          name_utf16_stream_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          utf16_string_equal,
 	          5,
@@ -487,8 +497,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 &error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          NULL,
 	          5,
 	          0,
@@ -507,8 +517,8 @@ int fshfs_test_name_compare_with_utf16_string(
 	 &error );
 
 	result = libfshfs_name_compare_with_utf16_string(
-	          (uint8_t *) "equal",
-	          6,
+	          name_utf16_stream_equal,
+	          10,
 	          utf16_string_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          0,
@@ -557,7 +567,6 @@ int main(
 #if defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT )
 
 /* TODO complete tests
-
 	FSHFS_TEST_RUN(
 	 "libfshfs_name_case_folding_mappings",
 	 fshfs_test_name_case_folding_mappings );
@@ -565,6 +574,7 @@ int main(
 	FSHFS_TEST_RUN(
 	 "libfshfs_name_decomposition_mappings",
 	 fshfs_test_name_decomposition_mappings );
+*/
 
 	FSHFS_TEST_RUN(
 	 "libfshfs_name_compare_with_utf8_string",
@@ -573,7 +583,6 @@ int main(
 	FSHFS_TEST_RUN(
 	 "libfshfs_name_compare_with_utf16_string",
 	 fshfs_test_name_compare_with_utf16_string );
-*/
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
