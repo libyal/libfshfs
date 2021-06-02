@@ -1040,7 +1040,7 @@ int libfshfs_directory_entry_get_added_time(
 				  posix_time,
 				  error );
 		}
-		if( result != 1 )
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
