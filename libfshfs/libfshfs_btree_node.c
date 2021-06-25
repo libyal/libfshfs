@@ -149,7 +149,20 @@ int libfshfs_btree_node_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create node records array.",
+		 "%s: unable to create records array.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcdata_range_list_initialize(
+	     &( ( *node )->records_range_list ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create records range list.",
 		 function );
 
 		goto on_error;
@@ -159,6 +172,13 @@ int libfshfs_btree_node_initialize(
 on_error:
 	if( *node != NULL )
 	{
+		if( ( *node )->records_array != NULL )
+		{
+			libcdata_array_free(
+			 &( ( *node )->records_array ),
+			 NULL,
+			 NULL );
+		}
 		if( ( *node )->data != NULL )
 		{
 			memory_free(
@@ -223,7 +243,21 @@ int libfshfs_btree_node_free(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free the node records array.",
+			 "%s: unable to free the records array.",
+			 function );
+
+			result = -1;
+		}
+		if( libcdata_range_list_free(
+		     &( ( *node )->records_range_list ),
+		     NULL,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free the records range list.",
 			 function );
 
 			result = -1;
@@ -256,6 +290,7 @@ int libfshfs_btree_node_read_data(
 	size_t records_data_size                  = 0;
 	uint16_t record_offset                    = 0;
 	int record_index                          = 0;
+	int result                                = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint16_t value_16bit                      = 0;
@@ -357,7 +392,7 @@ int libfshfs_btree_node_read_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
-		 "%s: unable to resize node records array.",
+		 "%s: unable to resize records array.",
 		 function );
 
 		goto on_error;
@@ -392,9 +427,10 @@ int libfshfs_btree_node_read_data(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: record: % 2d offset\t\t\t: 0x%04" PRIx16 "\n",
+			 "%s: record: % 2d offset\t\t\t: %" PRIu16 " (0x%04" PRIx16 ")\n",
 			 function,
 			 record_index,
+			 record_offset,
 			 record_offset );
 		}
 #endif
@@ -411,6 +447,38 @@ int libfshfs_btree_node_read_data(
 
 			goto on_error;
 		}
+		result = libcdata_range_list_range_has_overlapping_range(
+		          node->records_range_list,
+		          (uint64_t) record_offset,
+		          1,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine if there is an overlapping node record range in the range list.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record offset: %" PRIu32 " (0x%08" PRIu32 ") value already added.",
+			 function,
+			 record_offset,
+			 record_offset );
+
+			goto on_error;
+		}
+		/* Note that record->data_size here is an approximation
+		 */
 		node_record->offset    = record_offset;
 		node_record->data      = &( data[ record_offset ] );
 		node_record->data_size = data_size - record_offset;
@@ -432,6 +500,26 @@ int libfshfs_btree_node_read_data(
 			goto on_error;
 		}
 		node_record = NULL;
+
+		if( libcdata_range_list_insert_range(
+		     node->records_range_list,
+		     (uint64_t) record_offset,
+		     1,
+		     NULL,
+		     NULL,
+		     NULL,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to insert node record: %d range into records range list.",
+			 function,
+			 record_index );
+
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )

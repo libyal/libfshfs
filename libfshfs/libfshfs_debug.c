@@ -746,91 +746,96 @@ int libfshfs_debug_print_utf16_name_value(
 		libcnotify_printf(
 		 "\\u2400" );
 	}
+	if( byte_stream_index < byte_stream_size )
+	{
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	result = libuna_utf16_string_size_from_utf16_stream(
-		  &( byte_stream[ byte_stream_index ] ),
-		  byte_stream_size - byte_stream_index,
-		  byte_order,
-		  &string_size,
-		  error );
+		result = libuna_utf16_string_size_from_utf16_stream(
+			  &( byte_stream[ byte_stream_index ] ),
+			  byte_stream_size - byte_stream_index,
+			  byte_order,
+			  &string_size,
+			  error );
 #else
-	result = libuna_utf8_string_size_from_utf16_stream(
-		  &( byte_stream[ byte_stream_index ] ),
-		  byte_stream_size - byte_stream_index,
-		  byte_order,
-		  &string_size,
-		  error );
+		result = libuna_utf8_string_size_from_utf16_stream(
+			  &( byte_stream[ byte_stream_index ] ),
+			  byte_stream_size - byte_stream_index,
+			  byte_order,
+			  &string_size,
+			  error );
 #endif
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine size of string.",
-		 function );
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine size of string.",
+			 function );
 
-		goto on_error;
-	}
-	if( string_size > (size_t) ( SSIZE_MAX / sizeof( system_character_t ) ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid string size value exceeds maximum.",
-		 function );
+			goto on_error;
+		}
+		if( string_size > (size_t) ( SSIZE_MAX / sizeof( system_character_t ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+			 "%s: invalid string size value exceeds maximum.",
+			 function );
 
-		goto on_error;
-	}
-	string = system_string_allocate(
-	          string_size );
+			goto on_error;
+		}
+		string = system_string_allocate(
+		          string_size );
 
-	if( string == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create string.",
-		 function );
+		if( string == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create string.",
+			 function );
 
-		goto on_error;
-	}
+			goto on_error;
+		}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	result = libuna_utf16_string_copy_from_utf16_stream(
-		  (libuna_utf16_character_t *) string,
-		  string_size,
-		  &( byte_stream[ byte_stream_index ] ),
-		  byte_stream_size - byte_stream_index,
-		  byte_order,
-		  error );
+		result = libuna_utf16_string_copy_from_utf16_stream(
+			  (libuna_utf16_character_t *) string,
+			  string_size,
+			  &( byte_stream[ byte_stream_index ] ),
+			  byte_stream_size - byte_stream_index,
+			  byte_order,
+			  error );
 #else
-	result = libuna_utf8_string_copy_from_utf16_stream(
-		  (libuna_utf8_character_t *) string,
-		  string_size,
-		  &( byte_stream[ byte_stream_index ] ),
-		  byte_stream_size - byte_stream_index,
-		  byte_order,
-		  error );
+		result = libuna_utf8_string_copy_from_utf16_stream(
+			  (libuna_utf8_character_t *) string,
+			  string_size,
+			  &( byte_stream[ byte_stream_index ] ),
+			  byte_stream_size - byte_stream_index,
+			  byte_order,
+			  error );
 #endif
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set string.",
-		 function );
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set string.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "%" PRIs_SYSTEM "",
+		 string );
+
+		memory_free(
+		 string );
 	}
 	libcnotify_printf(
-	 "%" PRIs_SYSTEM "\n",
-	 string );
-
-	memory_free(
-	 string );
+	 "\n" );
 
 	return( 1 );
 
