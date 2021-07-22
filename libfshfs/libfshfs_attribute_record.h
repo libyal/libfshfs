@@ -119,6 +119,11 @@ int libfshfs_attribute_record_compare_name_with_utf16_string(
      size_t utf16_string_length,
      libcerror_error_t **error );
 
+int libfshfs_attribute_record_get_fork_descriptor(
+     libfshfs_attribute_record_t *attribute_record,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

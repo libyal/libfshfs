@@ -770,6 +770,55 @@ int libfshfs_extended_attribute_get_utf16_name(
      size_t utf16_string_size,
      libfshfs_error_t **error );
 
+/* Reads data at the current offset into a buffer
+ * Returns the number of bytes read or -1 on error
+ */
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_extended_attribute_read_buffer(
+         libfshfs_extended_attribute_t *extended_attribute,
+         void *buffer,
+         size_t buffer_size,
+         libfshfs_error_t **error );
+
+/* Reads data at a specific offset
+ * Returns the number of bytes read or -1 on error
+ */
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_extended_attribute_read_buffer_at_offset(
+         libfshfs_extended_attribute_t *extended_attribute,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libfshfs_error_t **error );
+
+/* Seeks a certain offset
+ * Returns the offset if seek is successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+off64_t libfshfs_extended_attribute_seek_offset(
+         libfshfs_extended_attribute_t *extended_attribute,
+         off64_t offset,
+         int whence,
+         libfshfs_error_t **error );
+
+/* Retrieves the current offset
+ * Returns the offset if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_offset(
+     libfshfs_extended_attribute_t *extended_attribute,
+     off64_t *offset,
+     libfshfs_error_t **error );
+
+/* Retrieves the size of the data stream object
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_size(
+     libfshfs_extended_attribute_t *extended_attribute,
+     size64_t *size,
+     libfshfs_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

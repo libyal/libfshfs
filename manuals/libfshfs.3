@@ -1,4 +1,4 @@
-.Dd November  4, 2020
+.Dd July 22, 2021
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -170,6 +170,16 @@ Extended attribute functions
 .Fn libfshfs_extended_attribute_get_utf16_name_size "libfshfs_extended_attribute_t *extended_attribute" "size_t *utf16_string_size" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_extended_attribute_get_utf16_name "libfshfs_extended_attribute_t *extended_attribute" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
+.Ft ssize_t
+.Fn libfshfs_extended_attribute_read_buffer "libfshfs_extended_attribute_t *extended_attribute" "void *buffer" "size_t buffer_size" "libfshfs_error_t **error"
+.Ft ssize_t
+.Fn libfshfs_extended_attribute_read_buffer_at_offset "libfshfs_extended_attribute_t *extended_attribute" "void *buffer" "size_t buffer_size" "off64_t offset" "libfshfs_error_t **error"
+.Ft off64_t
+.Fn libfshfs_extended_attribute_seek_offset "libfshfs_extended_attribute_t *extended_attribute" "off64_t offset" "int whence" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_offset "libfshfs_extended_attribute_t *extended_attribute" "off64_t *offset" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_size "libfshfs_extended_attribute_t *extended_attribute" "size64_t *size" "libfshfs_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version

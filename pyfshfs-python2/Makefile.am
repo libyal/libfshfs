@@ -25,6 +25,8 @@ BUILT_SOURCES = \
 	pyfshfs.c pyfshfs.h \
 	pyfshfs_datetime.c pyfshfs_datetime.h \
 	pyfshfs_error.c pyfshfs_error.h \
+	pyfshfs_extended_attribute.c pyfshfs_extended_attribute.h \
+	pyfshfs_extended_attributes.c pyfshfs_extended_attributes.h \
 	pyfshfs_file_entry.c pyfshfs_file_entry.h \
 	pyfshfs_file_entries.c pyfshfs_file_entries.h \
 	pyfshfs_file_object_io_handle.c pyfshfs_file_object_io_handle.h \

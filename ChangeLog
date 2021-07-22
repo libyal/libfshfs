@@ -1,20 +1,21 @@
 To do:
+* add support for extended attribute (named fork) data stream
+** add support for LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
+* check kHFSHasAttributesMask flag to see if file entry has extended attributes
+
+* what about a symbolic link to HFS+ Private data directory?
+
+* add support for hard link count
+
 * complete name case folding and decomposition tests
 * add support for resource fork data stream
-* add support for extended attribute (named fork) data stream
 * on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
 * catalog B-tree file, include name in branch key check
 * file entry API: add extents functions
 
-* check flags to see if file entry has extended attributes
-
 * ensure traditional HFS input errors for now
 
 * add support to print information about special files (those without a catalog record)
-
-* what about a directory with extended attributes?
-** what if that attribute is named com.apple.decmpfs ?
-* what about a symbolic link to HFS+ Private data directory?
 
 Format support:
 * implement support for traditional HFS

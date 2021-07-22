@@ -27,8 +27,13 @@
 
 #include "libfshfs_attribute_record.h"
 #include "libfshfs_extern.h"
+#include "libfshfs_file_system.h"
+#include "libfshfs_io_handle.h"
+#include "libfshfs_libbfio.h"
+#include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
+#include "libfshfs_libfdata.h"
 #include "libfshfs_types.h"
 
 #if defined( __cplusplus )
@@ -39,9 +44,33 @@ typedef struct libfshfs_internal_extended_attribute libfshfs_internal_extended_a
 
 struct libfshfs_internal_extended_attribute
 {
+	/* The IO handle
+	 */
+	libfshfs_io_handle_t *io_handle;
+
+	/* The file IO handle
+	 */
+	libbfio_handle_t *file_io_handle;
+
+	/* The file system
+	 */
+	libfshfs_file_system_t *file_system;
+
+	/* Identifier
+	 */
+	uint32_t identifier;
+
 	/* The attribute record
 	 */
 	libfshfs_attribute_record_t *attribute_record;
+
+	/* Extents
+	 */
+	libcdata_array_t *extents;
+
+	/* The data stream
+	 */
+	libfdata_stream_t *data_stream;
 
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
@@ -52,6 +81,10 @@ struct libfshfs_internal_extended_attribute
 
 int libfshfs_extended_attribute_initialize(
      libfshfs_extended_attribute_t **extended_attribute,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libfshfs_file_system_t *file_system,
+     uint32_t identifier,
      libfshfs_attribute_record_t *attribute_record,
      libcerror_error_t **error );
 
@@ -84,6 +117,44 @@ int libfshfs_extended_attribute_get_utf16_name(
      libfshfs_extended_attribute_t *extended_attribute,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_internal_extended_attribute_get_data_stream(
+     libfshfs_internal_extended_attribute_t *internal_extended_attribute,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_extended_attribute_read_buffer(
+         libfshfs_extended_attribute_t *extended_attribute,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+ssize_t libfshfs_extended_attribute_read_buffer_at_offset(
+         libfshfs_extended_attribute_t *extended_attribute,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+off64_t libfshfs_extended_attribute_seek_offset(
+         libfshfs_extended_attribute_t *extended_attribute,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_offset(
+     libfshfs_extended_attribute_t *extended_attribute,
+     off64_t *offset,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_size(
+     libfshfs_extended_attribute_t *extended_attribute,
+     size64_t *size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

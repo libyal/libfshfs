@@ -450,7 +450,7 @@ int libfshfs_internal_file_entry_get_data_size(
 			}
 			result = 0;
 
-			if( internal_file_entry->compressed_data_attribute_record->record_type == 0x00000010UL )
+			if( internal_file_entry->compressed_data_attribute_record->record_type == LIBFSHFS_ATTRIBUTE_RECORD_TYPE_INLINE_DATA )
 			{
 				result = libfshfs_compressed_data_header_read_data(
 				          internal_file_entry->compressed_data_header,
@@ -2765,6 +2765,10 @@ int libfshfs_file_entry_get_extended_attribute_by_index(
 		}
 		else if( libfshfs_extended_attribute_initialize(
 		          extended_attribute,
+		          internal_file_entry->io_handle,
+		          internal_file_entry->file_io_handle,
+		          internal_file_entry->file_system,
+		          internal_file_entry->identifier,
 		          attribute_record,
 		          error ) != 1 )
 		{
@@ -3254,6 +3258,10 @@ int libfshfs_file_entry_get_extended_attribute_by_utf8_name(
 	{
 		if( libfshfs_extended_attribute_initialize(
 		     extended_attribute,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->file_system,
+		     internal_file_entry->identifier,
 		     attribute_record,
 		     error ) != 1 )
 		{
@@ -3372,6 +3380,10 @@ int libfshfs_file_entry_get_extended_attribute_by_utf16_name(
 	{
 		if( libfshfs_extended_attribute_initialize(
 		     extended_attribute,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->file_system,
+		     internal_file_entry->identifier,
 		     attribute_record,
 		     error ) != 1 )
 		{

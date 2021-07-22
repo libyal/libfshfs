@@ -29,6 +29,8 @@
 
 #include "pyfshfs.h"
 #include "pyfshfs_error.h"
+#include "pyfshfs_extended_attribute.h"
+#include "pyfshfs_extended_attributes.h"
 #include "pyfshfs_file_entries.h"
 #include "pyfshfs_file_entry.h"
 #include "pyfshfs_file_object_io_handle.h"
@@ -594,6 +596,40 @@ PyMODINIT_FUNC initpyfshfs(
 	PyEval_InitThreads();
 #endif
 	gil_state = PyGILState_Ensure();
+
+	/* Setup the extended_attribute type object
+	 */
+	pyfshfs_extended_attribute_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfshfs_extended_attribute_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfshfs_extended_attribute_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "extended_attribute",
+	 (PyObject *) &pyfshfs_extended_attribute_type_object );
+
+	/* Setup the extended_attributes type object
+	 */
+	pyfshfs_extended_attributes_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfshfs_extended_attributes_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfshfs_extended_attributes_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "extended_attributes",
+	 (PyObject *) &pyfshfs_extended_attributes_type_object );
 
 	/* Setup the file_entries type object
 	 */

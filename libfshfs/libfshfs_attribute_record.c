@@ -843,3 +843,40 @@ int libfshfs_attribute_record_compare_name_with_utf16_string(
 	return( result );
 }
 
+/* Retrieves the fork descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_attribute_record_get_fork_descriptor(
+     libfshfs_attribute_record_t *attribute_record,
+     libfshfs_fork_descriptor_t **fork_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_attribute_record_get_fork_descriptor";
+
+	if( attribute_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( fork_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fork descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	*fork_descriptor = attribute_record->fork_descriptor;
+
+	return( 1 );
+}
+

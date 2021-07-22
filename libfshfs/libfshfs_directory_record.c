@@ -385,10 +385,6 @@ int libfshfs_directory_record_read_data(
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_directory_record_hfs_t *) data )->backup_time,
 		 directory_record->backup_time );
-
-		byte_stream_copy_to_uint32_big_endian(
-		 ( (fshfs_catalog_directory_record_hfs_t *) data )->backup_time,
-		 directory_record->backup_time );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )

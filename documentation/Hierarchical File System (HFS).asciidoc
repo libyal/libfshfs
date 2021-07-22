@@ -1516,7 +1516,7 @@ Also see: <<owner_flags,Owner flags>>
 | 42 | 2 | | File mode +
 Also see: <<file_mode,File mode>>
 | 44 | 4 | | Special permission data +
-Consist of either: hard link reference, hard link count, raw device number
+Consist of either: hard link reference, number of (hard) links, raw device number
 4+| _File information_
 | 48 | 16 | | File information (or user information) +
 See section: <<hfs_plus_file_information,HFS+ file information>>
@@ -1542,7 +1542,7 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 | 0x0002 | kHFSThreadExistsMask | Has thread record
 | 0x0004 | kHFSHasAttributesMask | Has extended attributes
 | 0x0008 | kHFSHasSecurityMask | Has ACLs
-| 0x0010 | kHFSHasFolderCountMask | Has sub-folder count
+| 0x0010 | kHFSHasFolderCountMask | Has number of sub-folder
 | 0x0020 | kHFSHasLinkChainMask | Has a hard link target (link chain) +
 The CNID of the hard link target is stored in the special permission data
 | 0x0040 | kHFSHasChildLinkMask | Has a child that is a directory link

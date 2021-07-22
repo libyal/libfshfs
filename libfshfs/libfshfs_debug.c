@@ -86,7 +86,7 @@ void libfshfs_debug_print_catalog_file_record_flags(
 	if( ( catalog_file_record_flags & 0x0010UL ) != 0 )
 	{
 		libcnotify_printf(
-		 "\tHas sub-folder count (kHFSHasFolderCountMask)\n" );
+		 "\tHas number of sub-folders (kHFSHasFolderCountMask)\n" );
 	}
 	if( ( catalog_file_record_flags & 0x0020UL ) != 0 )
 	{
@@ -101,7 +101,7 @@ void libfshfs_debug_print_catalog_file_record_flags(
 	if( ( catalog_file_record_flags & 0x0080UL ) != 0 )
 	{
 		libcnotify_printf(
-		 "\t(kHFSHasDateAddedMask)\n" );
+		 "\tHas added date and time (kHFSHasDateAddedMask)\n" );
 	}
 	if( ( catalog_file_record_flags & 0x0100UL ) != 0 )
 	{
