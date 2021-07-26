@@ -3,6 +3,8 @@ To do:
 ** add support for LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
 * check kHFSHasAttributesMask flag to see if file entry has extended attributes
 
+* for extended attributes by name look up use native B-tree structures
+
 * what about a symbolic link to HFS+ Private data directory?
 
 * add support for hard link count
