@@ -127,6 +127,7 @@ stamp-h[1-9]
 /fshfstools/*.exe
 /fshfstools/fshfsinfo
 /tests/*.exe
+/tests/fshfs_test_attribute_record
 /tests/fshfs_test_attributes_btree_key
 /tests/fshfs_test_btree_file
 /tests/fshfs_test_btree_header

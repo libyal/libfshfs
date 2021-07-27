@@ -1,4 +1,5 @@
 MSVSCPP_FILES = \
+	fshfs_test_attribute_record/fshfs_test_attribute_record.vcproj \
 	fshfs_test_attributes_btree_key/fshfs_test_attributes_btree_key.vcproj \
 	fshfs_test_btree_file/fshfs_test_btree_file.vcproj \
 	fshfs_test_btree_header/fshfs_test_btree_header.vcproj \

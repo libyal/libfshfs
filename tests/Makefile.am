@@ -47,6 +47,7 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	fshfs_test_attribute_record \
 	fshfs_test_attributes_btree_key \
 	fshfs_test_btree_file \
 	fshfs_test_btree_header \
@@ -78,6 +79,18 @@ check_PROGRAMS = \
 	fshfs_test_tools_signal \
 	fshfs_test_volume \
 	fshfs_test_volume_header
+
+fshfs_test_attribute_record_SOURCES = \
+	fshfs_test_attribute_record.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_attribute_record_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
 
 fshfs_test_attributes_btree_key_SOURCES = \
 	fshfs_test_attributes_btree_key.c \
