@@ -20,6 +20,7 @@ Supported HFS format features:
 
 * ZLIB (DEFLATE) compression
 * LZVN compression
+* extended attributes
 
 Unsupported HFS format features:
 
