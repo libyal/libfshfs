@@ -32,6 +32,7 @@ MSVSCPP_FILES = \
 	fshfs_test_volume/fshfs_test_volume.vcproj \
 	fshfs_test_volume_header/fshfs_test_volume_header.vcproj \
 	fshfsinfo/fshfsinfo.vcproj \
+	fshfsmount/fshfsmount.vcproj \
 	libbfio/libbfio.vcproj \
 	libcdata/libcdata.vcproj \
 	libcerror/libcerror.vcproj \

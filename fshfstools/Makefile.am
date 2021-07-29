@@ -16,13 +16,15 @@ AM_CPPFLAGS = \
 	@LIBFGUID_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@LIBCRYPTO_CPPFLAGS@ \
+	@LIBFUSE_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_IMPORT@
 
 AM_LDFLAGS = @STATIC_LDFLAGS@
 
 bin_PROGRAMS = \
-	fshfsinfo
+	fshfsinfo \
+	fshfsmount
 
 fshfsinfo_SOURCES = \
 	digest_hash.c digest_hash.h \
@@ -63,6 +65,41 @@ fshfsinfo_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBINTL@ \
 	@PTHREAD_LIBADD@
+
+fshfsmount_SOURCES = \
+	fshfsmount.c \
+	fshfstools_getopt.c fshfstools_getopt.h \
+	fshfstools_i18n.h \
+	fshfstools_libbfio.h \
+	fshfstools_libcdata.h \
+	fshfstools_libcerror.h \
+	fshfstools_libclocale.h \
+	fshfstools_libcnotify.h \
+	fshfstools_libcpath.h \
+	fshfstools_libfshfs.h \
+	fshfstools_libuna.h \
+	fshfstools_output.c fshfstools_output.h \
+	fshfstools_signal.c fshfstools_signal.h \
+	fshfstools_unused.h \
+	mount_dokan.c mount_dokan.h \
+	mount_file_entry.c mount_file_entry.h \
+	mount_file_system.c mount_file_system.h \
+	mount_fuse.c mount_fuse.h \
+	mount_handle.c mount_handle.h
+
+fshfsmount_LDADD = \
+	@LIBFUSE_LIBADD@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

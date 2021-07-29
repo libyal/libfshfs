@@ -1,0 +1,61 @@
+.Dd July 29, 2021
+.Dt fshfsmount
+.Os libfshfs
+.Sh NAME
+.Nm fshfsmount
+.Nd mounts a Hierarchical File System (HFS) volume
+.Sh SYNOPSIS
+.Nm fshfsmount
+.Op Fl o Ar offset
+.Op Fl hvV
+.Ar source
+.Sh DESCRIPTION
+.Nm fshfsmount
+is a utility to mount a Hierarchical File System (HFS) volume
+.Pp
+.Nm fshfsmount
+is part of the
+.Nm libfshfs
+package.
+.Nm libfshfs
+is a library to access the Hierarchical File System (HFS) format
+.Pp
+.Ar source
+is the source file.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl h
+shows this help
+.It Fl o Ar offset
+specify the volume offset in bytes
+.It Fl v
+verbose output to stderr
+.It Fl V
+print version
+.It Fl X Ar extended_options
+extended options to pass to sub system
+.El
+.Sh ENVIRONMENT
+None
+.Sh FILES
+None
+.Sh EXAMPLES
+.Bd -literal
+# fshfsmount /dev/sda1
+fshfsmount 20210729
+.sp
+.Ed
+.Sh DIAGNOSTICS
+Errors, verbose and debug output are printed to stderr when verbose output \-v is enabled.
+Verbose and debug output are only printed when enabled at compilation.
+.Sh BUGS
+Please report bugs of any kind to <joachim.metz@gmail.com> or on the project website:
+https://github.com/libyal/libfshfs/
+.Sh AUTHOR
+These man pages were written by Joachim Metz.
+.Sh COPYRIGHT
+Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>.
+This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+.Sh SEE ALSO
+.Xr fshfsinfo 1

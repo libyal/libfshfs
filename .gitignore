@@ -126,6 +126,7 @@ stamp-h[1-9]
 /pyfshfs-python[23]/*.[ch]
 /fshfstools/*.exe
 /fshfstools/fshfsinfo
+/fshfstools/fshfsmount
 /tests/*.exe
 /tests/fshfs_test_attribute_record
 /tests/fshfs_test_attributes_btree_key

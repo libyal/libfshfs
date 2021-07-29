@@ -1,4 +1,6 @@
 To do:
+* fshfsmount add parent file entry support
+
 * add support for extended attribute (named fork) data stream
 ** add support for LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
 * check kHFSHasAttributesMask flag to see if file entry has extended attributes
