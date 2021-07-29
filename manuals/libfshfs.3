@@ -1,4 +1,4 @@
-.Dd July 22, 2021
+.Dd July 29, 2021
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -92,6 +92,8 @@ File entry functions
 .Fn libfshfs_file_entry_get_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *identifier" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_parent_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *parent_identifier" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_parent_file_entry "libfshfs_file_entry_t *file_entry" "libfshfs_file_entry_t **parent_file_entry" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_link_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *link_identifier" "libfshfs_error_t **error"
 .Ft int

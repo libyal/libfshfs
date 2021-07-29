@@ -1108,6 +1108,171 @@ int libfshfs_file_entry_get_parent_identifier(
 	return( result );
 }
 
+/* Retrieves the parent file entry
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int libfshfs_file_entry_get_parent_file_entry(
+     libfshfs_file_entry_t *file_entry,
+     libfshfs_file_entry_t **parent_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry         = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_parent_file_entry";
+	uint32_t identifier                                 = 0;
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( parent_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid parent file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *parent_file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid parent file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfshfs_directory_entry_get_identifier(
+	     internal_file_entry->directory_entry,
+	     &identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve identifier from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( identifier > LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER )
+	{
+		if( libfshfs_directory_entry_get_parent_identifier(
+		     internal_file_entry->directory_entry,
+		     &identifier,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent identifier from directory entry.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_file_system_get_directory_entry_by_identifier(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     identifier,
+		     &directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent directory entry: %" PRIu32 ".",
+			 function,
+			 identifier );
+
+			goto on_error;
+		}
+		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     parent_file_entry,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->file_system,
+		     directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create parent file entry.",
+			 function );
+
+			goto on_error;
+		}
+		directory_entry = NULL;
+		result          = 1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+
+on_error:
+	if( directory_entry != NULL )
+	{
+		libfshfs_directory_entry_free(
+		 &directory_entry,
+		 NULL );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	libcthreads_read_write_lock_release_for_write(
+	 internal_file_entry->read_write_lock,
+	 NULL );
+#endif
+	return( -1 );
+}
+
 /* Retrieves the hard link identifier (or catalog node identifier (CNID))
  * Returns 1 if successful, 0 if not available or -1 on error
  */

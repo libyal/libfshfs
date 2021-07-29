@@ -1145,15 +1145,16 @@ int mount_fuse_readdir(
      off_t offset FSHFSTOOLS_ATTRIBUTE_UNUSED,
      struct fuse_file_info *file_info FSHFSTOOLS_ATTRIBUTE_UNUSED )
 {
-	struct stat *stat_info             = NULL;
-	libcerror_error_t *error           = NULL;
-	mount_file_entry_t *sub_file_entry = NULL;
-	static char *function              = "mount_fuse_readdir";
-	char *name                         = NULL;
-	size_t name_size                   = 0;
-	int number_of_sub_file_entries     = 0;
-	int result                         = 0;
-	int sub_file_entry_index           = 0;
+	struct stat *stat_info                = NULL;
+	libcerror_error_t *error              = NULL;
+	mount_file_entry_t *parent_file_entry = NULL;
+	mount_file_entry_t *sub_file_entry    = NULL;
+	static char *function                 = "mount_fuse_readdir";
+	char *name                            = NULL;
+	size_t name_size                      = 0;
+	int number_of_sub_file_entries        = 0;
+	int result                            = 0;
+	int sub_file_entry_index              = 0;
 
 	FSHFSTOOLS_UNREFERENCED_PARAMETER( offset )
 
@@ -1240,12 +1241,30 @@ int mount_fuse_readdir(
 
 		goto on_error;
 	}
+	result = mount_file_entry_get_parent_file_entry(
+	          (mount_file_entry_t *) file_info->fh,
+	          &parent_file_entry,
+	          &error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent file entry.",
+		 function );
+
+		result = -EIO;
+
+		goto on_error;
+	}
 	if( mount_fuse_filldir(
 	     buffer,
 	     filler,
 	     "..",
 	     stat_info,
-	     NULL,
+	     parent_file_entry,
 	     &error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1253,6 +1272,21 @@ int mount_fuse_readdir(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to set parent directory entry.",
+		 function );
+
+		result = -EIO;
+
+		goto on_error;
+	}
+	if( mount_file_entry_free(
+	     &parent_file_entry,
+	     &error ) != 1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free parent file entry.",
 		 function );
 
 		result = -EIO;
@@ -1411,6 +1445,12 @@ on_error:
 	{
 		mount_file_entry_free(
 		 &sub_file_entry,
+		 NULL );
+	}
+	if( parent_file_entry != NULL )
+	{
+		mount_file_entry_free(
+		 &parent_file_entry,
 		 NULL );
 	}
 	if( stat_info != NULL )

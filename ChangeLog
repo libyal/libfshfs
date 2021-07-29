@@ -1,15 +1,15 @@
 To do:
-* fshfsmount add parent file entry support
-
 * add support for extended attribute (named fork) data stream
 ** add support for LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
 * check kHFSHasAttributesMask flag to see if file entry has extended attributes
 
+* info handle implement is_empty ?
+
+* add support for hard link count
+
 * for extended attributes by name look up use native B-tree structures
 
 * what about a symbolic link to HFS+ Private data directory?
-
-* add support for hard link count
 
 * complete name case folding and decomposition tests
 * add support for resource fork data stream

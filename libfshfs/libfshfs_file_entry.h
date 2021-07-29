@@ -158,6 +158,12 @@ int libfshfs_file_entry_get_parent_identifier(
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_parent_file_entry(
+     libfshfs_file_entry_t *file_entry,
+     libfshfs_file_entry_t **parent_file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_link_identifier(
      libfshfs_file_entry_t *file_entry,
      uint32_t *link_identifier,

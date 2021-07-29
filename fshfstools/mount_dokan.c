@@ -945,15 +945,16 @@ NTSTATUS __stdcall mount_dokan_FindFiles(
 {
 	WIN32_FIND_DATAW find_data;
 
-	libcerror_error_t *error           = NULL;
-	mount_file_entry_t *file_entry     = NULL;
-	mount_file_entry_t *sub_file_entry = NULL;
-	wchar_t *name                      = NULL;
-	static char *function              = "mount_dokan_FindFiles";
-	size_t name_size                   = 0;
-	int number_of_sub_file_entries     = 0;
-	int result                         = 0;
-	int sub_file_entry_index           = 0;
+	libcerror_error_t *error              = NULL;
+	mount_file_entry_t *file_entry        = NULL;
+	mount_file_entry_t *parent_file_entry = NULL;
+	mount_file_entry_t *sub_file_entry    = NULL;
+	wchar_t *name                         = NULL;
+	static char *function                 = "mount_dokan_FindFiles";
+	size_t name_size                      = 0;
+	int number_of_sub_file_entries        = 0;
+	int result                            = 0;
+	int sub_file_entry_index              = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1015,13 +1016,31 @@ NTSTATUS __stdcall mount_dokan_FindFiles(
 
 		goto on_error;
 	}
+	result = mount_file_entry_get_parent_file_entry(
+	          file_entry,
+	          &parent_file_entry,
+	          &error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent file entry.",
+		 function );
+
+		result = MOUNT_DOKAN_ERROR_GENERIC_FAILURE;
+
+		goto on_error;
+	}
 	if( mount_dokan_filldir(
 	     fill_find_data,
 	     file_info,
 	     L"..",
 	     3,
 	     &find_data,
-	     NULL,
+	     parent_file_entry,
 	     &error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1029,6 +1048,21 @@ NTSTATUS __stdcall mount_dokan_FindFiles(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to set parent find data.",
+		 function );
+
+		result = MOUNT_DOKAN_ERROR_GENERIC_FAILURE;
+
+		goto on_error;
+	}
+	if( mount_file_entry_free(
+	     &parent_file_entry,
+	     &error ) != 1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free parent file entry.",
 		 function );
 
 		result = MOUNT_DOKAN_ERROR_GENERIC_FAILURE;
@@ -1201,6 +1235,12 @@ on_error:
 	{
 		mount_file_entry_free(
 		 &sub_file_entry,
+		 NULL );
+	}
+	if( parent_file_entry != NULL )
+	{
+		mount_file_entry_free(
+		 &parent_file_entry,
 		 NULL );
 	}
 	if( file_entry != NULL )

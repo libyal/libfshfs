@@ -242,6 +242,127 @@ int mount_file_entry_free(
 	return( result );
 }
 
+/* Retrieves the parent file entry
+ * Returns 1 if successful, 0 if no such file entry or -1 on error
+ */
+int mount_file_entry_get_parent_file_entry(
+     mount_file_entry_t *file_entry,
+     mount_file_entry_t **parent_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_file_entry_t *parent_fshfs_file_entry = NULL;
+	system_character_t *filename                   = NULL;
+	static char *function                          = "mount_file_entry_get_parent_file_entry";
+	size_t filename_size                           = 0;
+	int result                                     = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( parent_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid parent file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *parent_file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid parent file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_file_entry_get_parent_file_entry(
+	          file_entry->fshfs_file_entry,
+	          &parent_fshfs_file_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent file entry.",
+		 function );
+
+		return( -1 );
+	}
+	else if( result != 0 )
+	{
+		if( mount_file_system_get_filename_from_file_entry(
+		     file_entry->file_system,
+		     parent_fshfs_file_entry,
+		     &filename,
+		     &filename_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve filename of parent file entry.",
+			 function );
+
+			goto on_error;
+		}
+		if( mount_file_entry_initialize(
+		     parent_file_entry,
+		     file_entry->file_system,
+		     filename,
+		     filename_size - 1,
+		     parent_fshfs_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to initialize parent file entry.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( filename != NULL )
+	{
+		memory_free(
+		 filename );
+	}
+	return( result );
+
+on_error:
+	if( filename != NULL )
+	{
+		memory_free(
+		 filename );
+	}
+	if( parent_fshfs_file_entry != NULL )
+	{
+		libfshfs_file_entry_free(
+		 &parent_fshfs_file_entry,
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Retrieves the creation date and time
  * On Windows the timestamp is an unsigned 64-bit FILETIME timestamp
  * otherwise the timestamp is a signed 64-bit POSIX date and time value in number of nanoseconds
@@ -588,7 +709,7 @@ int mount_file_entry_get_file_mode(
 
 		return( -1 );
 	}
-	/* The APFS file mode matches that of POSIX, with the exception of S_IFWHT
+	/* The HFS file mode matches that of POSIX
 	 */
 	if( ( *file_mode & 0xf000 ) == 0xe000 )
 	{

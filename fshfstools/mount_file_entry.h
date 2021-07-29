@@ -66,6 +66,11 @@ int mount_file_entry_free(
      mount_file_entry_t **file_entry,
      libcerror_error_t **error );
 
+int mount_file_entry_get_parent_file_entry(
+     mount_file_entry_t *file_entry,
+     mount_file_entry_t **parent_file_entry,
+     libcerror_error_t **error );
+
 int mount_file_entry_get_creation_time(
      mount_file_entry_t *file_entry,
      uint64_t *creation_time,
