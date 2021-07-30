@@ -494,11 +494,11 @@ int mount_file_entry_get_access_time(
 		return( -1 );
 	}
 #if defined( WINAPI )
-	if( posix_time != 0 )
+	if( hfs_time != 0 )
 	{
 		/* Convert the POSIX nanoseconds timestamp into a FILETIME timestamp
 		 */
-		filetime = (uint64_t) ( ( posix_time / 100 ) + 116444733917155200L );
+		filetime = ( (uint64_t) hfs_time * 10000000 ) + 116444733917155200L;
 	}
 	*access_time = filetime;
 #else
@@ -569,11 +569,11 @@ int mount_file_entry_get_modification_time(
 		return( -1 );
 	}
 #if defined( WINAPI )
-	if( posix_time != 0 )
+	if( hfs_time != 0 )
 	{
 		/* Convert the POSIX nanoseconds timestamp into a FILETIME timestamp
 		 */
-		filetime = (uint64_t) ( ( posix_time / 100 ) + 116444733917155200L );
+		filetime = ( (uint64_t) hfs_time * 10000000 ) + 116444733917155200L;
 	}
 	*modification_time = filetime;
 #else
@@ -644,11 +644,11 @@ int mount_file_entry_get_inode_change_time(
 		return( -1 );
 	}
 #if defined( WINAPI )
-	if( posix_time != 0 )
+	if( hfs_time != 0 )
 	{
 		/* Convert the POSIX nanoseconds timestamp into a FILETIME timestamp
 		 */
-		filetime = (uint64_t) ( ( posix_time / 100 ) + 116444733917155200L );
+		filetime = ( (uint64_t) hfs_time * 10000000 ) + 116444733917155200L;
 	}
 	*inode_change_time = filetime;
 #else
