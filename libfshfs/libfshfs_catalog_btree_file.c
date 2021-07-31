@@ -31,6 +31,7 @@
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_directory_record.h"
 #include "libfshfs_file_record.h"
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -45,6 +46,7 @@
  */
 int libfshfs_catalog_btree_file_get_key_from_node_by_index(
      libfshfs_btree_node_t *node,
+     libfshfs_io_handle_t *io_handle,
      uint16_t record_index,
      libfshfs_catalog_btree_key_t **node_key,
      libcerror_error_t **error )
@@ -109,6 +111,7 @@ int libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		}
 		if( libfshfs_catalog_btree_key_read_data(
 		     safe_node_key,
+		     io_handle,
 		     node_record->data,
 		     node_record->data_size,
 		     error ) != 1 )
@@ -333,6 +336,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      libfshfs_thread_record_t **thread_record,
@@ -420,6 +424,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 	{
 		if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		     node,
+		     io_handle,
 		     record_index,
 		     &node_key,
 		     error ) == -1 )
@@ -489,6 +494,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
@@ -590,6 +596,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 	}
 	if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 	     node,
+	     io_handle,
 	     0,
 	     &last_node_key,
 	     error ) == -1 )
@@ -613,6 +620,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 			     node,
+			     io_handle,
 			     record_index,
 			     &node_key,
 			     error ) == -1 )
@@ -706,6 +714,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			{
 				result = libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 					  btree_file,
+					  io_handle,
 					  file_io_handle,
 					  sub_node,
 					  identifier,
@@ -717,6 +726,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			{
 				result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 				          btree_file,
+				          io_handle,
 				          sub_node,
 				          identifier,
 				          thread_record,
@@ -759,6 +769,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_thread_record(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
      libfshfs_thread_record_t **thread_record,
@@ -803,6 +814,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 	{
 		result = libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		          btree_file,
+		          io_handle,
 		          file_io_handle,
 		          root_node,
 		          identifier,
@@ -814,6 +826,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 	{
 		result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 		          btree_file,
+		          io_handle,
 		          root_node,
 		          identifier,
 		          thread_record,
@@ -1065,6 +1078,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libfshfs_btree_node_t *node,
      libfshfs_thread_record_t *thread_record,
      libfshfs_directory_entry_t **directory_entry,
@@ -1165,6 +1179,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 	{
 		if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		     node,
+		     io_handle,
 		     record_index,
 		     &node_key,
 		     error ) == -1 )
@@ -1281,6 +1296,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      libfshfs_thread_record_t *thread_record,
@@ -1393,6 +1409,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 	}
 	if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 	     node,
+	     io_handle,
 	     0,
 	     &last_node_key,
 	     error ) == -1 )
@@ -1416,6 +1433,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 			     node,
+			     io_handle,
 			     record_index,
 			     &node_key,
 			     error ) == -1 )
@@ -1509,6 +1527,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 				          btree_file,
+				          io_handle,
 				          file_io_handle,
 				          sub_node,
 				          thread_record,
@@ -1520,6 +1539,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
 				          btree_file,
+				          io_handle,
 				          sub_node,
 				          thread_record,
 				          directory_entry,
@@ -1562,6 +1582,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
      libfshfs_directory_entry_t **directory_entry,
@@ -1575,6 +1596,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 
 	result = libfshfs_catalog_btree_file_get_thread_record(
 	          btree_file,
+	          io_handle,
 	          file_io_handle,
 	          identifier,
 	          &thread_record,
@@ -1628,6 +1650,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		{
 			result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 			          btree_file,
+			          io_handle,
 			          file_io_handle,
 			          root_node,
 			          thread_record,
@@ -1639,6 +1662,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		{
 			result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
 			          btree_file,
+			          io_handle,
 			          root_node,
 			          thread_record,
 			          directory_entry,
@@ -1687,6 +1711,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
@@ -1779,6 +1804,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 	{
 		if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		     node,
+		     io_handle,
 		     record_index,
 		     &node_key,
 		     error ) == -1 )
@@ -1896,6 +1922,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
@@ -2000,6 +2027,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 	}
 	if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 	     node,
+	     io_handle,
 	     0,
 	     &last_node_key,
 	     error ) == -1 )
@@ -2023,6 +2051,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 			     node,
+			     io_handle,
 			     record_index,
 			     &node_key,
 			     error ) == -1 )
@@ -2116,6 +2145,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 				          btree_file,
+				          io_handle,
 				          file_io_handle,
 				          sub_node,
 				          parent_identifier,
@@ -2130,6 +2160,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 				          btree_file,
+				          io_handle,
 				          sub_node,
 				          parent_identifier,
 				          utf8_string,
@@ -2175,6 +2206,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
@@ -2222,6 +2254,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 		          btree_file,
+		          io_handle,
 		          file_io_handle,
 		          root_node,
 		          parent_identifier,
@@ -2236,6 +2269,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 		          btree_file,
+		          io_handle,
 		          root_node,
 		          parent_identifier,
 		          utf8_string,
@@ -2263,6 +2297,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
  */
 int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
@@ -2372,6 +2407,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 /* TODO optimize this */
 		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		          btree_file,
+		          io_handle,
 		          file_io_handle,
 		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
 		          &safe_directory_entry,
@@ -2448,6 +2484,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 					  btree_file,
+					  io_handle,
 					  file_io_handle,
 					  root_node,
 					  lookup_identifier,
@@ -2462,6 +2499,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 					  btree_file,
+					  io_handle,
 					  root_node,
 					  lookup_identifier,
 					  utf8_string_segment,
@@ -2522,6 +2560,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
@@ -2614,6 +2653,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 	{
 		if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		     node,
+		     io_handle,
 		     record_index,
 		     &node_key,
 		     error ) == -1 )
@@ -2731,6 +2771,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
@@ -2835,6 +2876,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 	}
 	if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 	     node,
+	     io_handle,
 	     0,
 	     &last_node_key,
 	     error ) == -1 )
@@ -2858,6 +2900,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 			     node,
+			     io_handle,
 			     record_index,
 			     &node_key,
 			     error ) == -1 )
@@ -2951,6 +2994,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 				          btree_file,
+				          io_handle,
 				          file_io_handle,
 				          sub_node,
 				          parent_identifier,
@@ -2965,6 +3009,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
 				          btree_file,
+				          io_handle,
 				          sub_node,
 				          parent_identifier,
 				          utf16_string,
@@ -3010,6 +3055,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
@@ -3057,6 +3103,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 		          btree_file,
+		          io_handle,
 		          file_io_handle,
 		          root_node,
 		          parent_identifier,
@@ -3071,6 +3118,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
 		          btree_file,
+		          io_handle,
 		          root_node,
 		          parent_identifier,
 		          utf16_string,
@@ -3098,6 +3146,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
  */
 int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
@@ -3207,6 +3256,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 /* TODO optimize this */
 		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		          btree_file,
+		          io_handle,
 		          file_io_handle,
 		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
 		          &safe_directory_entry,
@@ -3283,6 +3333,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 					  btree_file,
+					  io_handle,
 					  file_io_handle,
 					  root_node,
 					  lookup_identifier,
@@ -3297,6 +3348,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
 					  btree_file,
+					  io_handle,
 					  root_node,
 					  lookup_identifier,
 					  utf16_string_segment,
@@ -3357,6 +3409,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
      libcdata_array_t *directory_entries,
@@ -3435,6 +3488,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 	{
 		if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		     node,
+		     io_handle,
 		     record_index,
 		     &node_key,
 		     error ) == -1 )
@@ -3526,6 +3580,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_t *node,
      uint32_t parent_identifier,
@@ -3616,6 +3671,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 	}
 	if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 	     node,
+	     io_handle,
 	     0,
 	     &last_node_key,
 	     error ) == -1 )
@@ -3639,6 +3695,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 			     node,
+			     io_handle,
 			     record_index,
 			     &node_key,
 			     error ) == -1 )
@@ -3732,6 +3789,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 				          btree_file,
+				          io_handle,
 				          file_io_handle,
 				          sub_node,
 				          parent_identifier,
@@ -3743,6 +3801,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 				          btree_file,
+				          io_handle,
 				          sub_node,
 				          parent_identifier,
 				          directory_entries,
@@ -3783,6 +3842,7 @@ on_error:
  */
 int libfshfs_catalog_btree_file_get_directory_entries(
      libfshfs_btree_file_t *btree_file,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      libcdata_array_t *directory_entries,
@@ -3827,6 +3887,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		          btree_file,
+		          io_handle,
 		          file_io_handle,
 		          root_node,
 		          parent_identifier,
@@ -3838,6 +3899,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 		          btree_file,
+		          io_handle,
 		          root_node,
 		          parent_identifier,
 		          directory_entries,

@@ -86,11 +86,11 @@ Though technically maybe incorrect, this document will use term (extended) ASCII
 Unicode strings are stored in UTF-16 big-endian without the byte order mark (BOM).
 |===
 
-=== HFS and HFS+
+=== HFS and HFS+/HFSX
 
 [cols="1,1,1",options="header"]
 |===
-| Feature | HFS | HFS+
+| Feature | HFS | HFS+/HFSX
 | Maximum file size | 231 (2 GiB) | 263 (8 EiB)
 | Maximum filename length | 31 characters | 255 characters
 | Maximum allocation blocks | 216 (65535 bytes) | 232 (4294967296 bytes)
@@ -126,10 +126,10 @@ as Terminal.
 === HFSX
 
 HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow
-additional features that are incompatible with HFS+. An HFSX volume cannot be
+additional features that are incompatible with HFS+. A HFSX volume cannot be
 wrapped in an HFS volume.
 
-One of such features is case-sensitive filenames. An HFSX volume may be either
+One of such features is case-sensitive filenames. A HFSX volume may be either
 case-sensitive or case-insensitive. Case sensitivity (or lack thereof) is
 global to the volume; the setting applies to all file and directory names on
 the volume.
@@ -273,14 +273,6 @@ contains 3 records:
 
 [NOTE]
 The records in the B-tree header node do not have keys.
-
-[yellow-background]*TODO: reword*
-
-....
-For both the extents (overflow) and the catalog file the location of the header
-node is stored in the first 2 bytes (first record) of the corresponding extent
-data records of the MDB. The location is stored as the allocation block index.
-....
 
 ==== The B-tree header record
 
@@ -590,7 +582,7 @@ The date and time when the volume was last modified. This is not necessarily the
 See section: <<volume_attribute_flags,Volume attribute flags>>
 | 12 | 2 | | The number of files in the root directory
 | 14 | 2 | | Volume bitmap block number +
-Contains a block number relative from the start of the volume, where 0 is the first block number. +
+Contains an allocation block number relative from the start of the volume, where 0 is the first block number. +
 Typically has a value of 3
 | 16 | 2 | | [yellow-background]*Unknown (Start of the next allocation search)* +
 The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
@@ -599,14 +591,14 @@ A volume can contain at most 65535 blocks.
 | 20 | 4 | | Allocation block size +
 Contains number of bytes an must be a multitude of 512 bytes.
 | 24 | 4 | | Default clump size
-| 28 | 2 | | Allocation block number +
-Contains a block number relative from the start of the volume, where 0 is the first block number.
+| 28 | 2 | | Extents start block number +
+Contains an allocation block number relative from the start of the volume, where 0 is the first block number.
 | 30 | 4 | | Next available catalog node identifier (CNID) +
 Can be a directory or file record identifier.
 | 34 | 2 | | Number of unused (allocation) blocks
-| 36 | 1 | | The volume name size +
+| 36 | 1 | | The volume label size +
 The maximum size is 27
-| 37 | 27 | | The volume name +
+| 37 | 27 | | The volume label +
 Contains an ASCII string
 | 64 | 4 | | Backup date and time +
 Contains a HFS timestamp in local time +
@@ -624,8 +616,8 @@ The value does not include the root folder. +
 It should equal the number of folder records in the catalog file minus one.
 | 92 | 32 | | Finder information +
 See section: <<finder_information,Finder information>>
-| 124 | 2 | | [yellow-background]*Unknown (drEmbedSigWord formerly drVCSize)*
-| 126 | 4 | | [yellow-background]*Unknown (drEmbedExtent formerly drVBMCSize and drCtlCSize)* +
+| 124 | 2 | | Embedded volume signagure [yellow-background]*(formerly drVCSize)*
+| 126 | 4 | | Embedded volume extent descriptor [yellow-background]*(formerly drVBMCSize and drCtlCSize)* +
 Contains a single HFS extent descriptor
 | 130 | 4 | | Extents (overflow) file size
 | 134 | ( 3 x 4 ) = 12 | | Extents (overflow) extents record +
@@ -634,6 +626,14 @@ See section: <<hfs_extents_record,The HFS extents record>>
 | 150 | ( 3 x 4 ) = 12 | | Catalog file extents record +
 See section: <<hfs_extents_record,The HFS extents record>>
 |===
+
+[NOTE]
+The extents in the extents (overflow) extents record and catalog file extents
+record are relative to the extents start block number.
+
+....
+offset = ( extents start block number + extent block number ) x allocation block size;
+....
 
 ....
 Notes:
@@ -1688,8 +1688,8 @@ header shown below are in octal (base eight), not hexadecimal.
 [NOTE]
 If the sticky bit is set for a directory, then Mac OS restricts movement,
 deletion, and renaming of files in that directory. Files may be removed or
-renamed only if the user has write access to the directory; and is the owner of
-the file or the directory, or is the super-user.
+renamed only if the user has write access to the directory; and is the owner
+of the file or the directory, or is the super-user.
 
 ===== Notes
 
@@ -2958,7 +2958,7 @@ Extended attributes, also referred to as named forks, are stored in
 
 == Notes
 
-=== MDB and Volume header
+=== Master directory block and volume header
 
 ==== Start of next allocation search
 

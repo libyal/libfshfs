@@ -379,7 +379,7 @@ int libfshfs_volume_header_read_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported volume system signature.",
+		 "%s: unsupported volume header signature.",
 		 function );
 
 		return( -1 );

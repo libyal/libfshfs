@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
@@ -70,6 +71,7 @@ int libfshfs_catalog_btree_key_free(
 
 int libfshfs_catalog_btree_key_read_data(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
+     libfshfs_io_handle_t *io_handle,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error );

@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
@@ -36,9 +37,21 @@ typedef struct libfshfs_master_directory_block libfshfs_master_directory_block_t
 
 struct libfshfs_master_directory_block
 {
-	/* Dummy
+	/* The allocation block size
 	 */
-	int dummy;
+	uint16_t allocation_block_size;
+
+	/* The extents start block number
+	 */
+	uint16_t extents_start_block_number;
+
+	/* Extents file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *extents_file_fork_descriptor;
+
+	/* Catalog file fork descriptor
+	 */
+	libfshfs_fork_descriptor_t *catalog_file_fork_descriptor;
 };
 
 int libfshfs_master_directory_block_initialize(

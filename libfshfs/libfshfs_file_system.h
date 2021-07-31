@@ -28,6 +28,7 @@
 #include "libfshfs_btree_file.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_fork_descriptor.h"
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
@@ -95,12 +96,14 @@ int libfshfs_file_system_read_extents_file(
 
 int libfshfs_file_system_resolve_indirect_node_directory_entry(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      libfshfs_directory_entry_t *directory_entry,
      libcerror_error_t **error );
 
 int libfshfs_file_system_get_directory_entry_by_identifier(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t identifier,
      libfshfs_directory_entry_t **directory_entry,
@@ -108,6 +111,7 @@ int libfshfs_file_system_get_directory_entry_by_identifier(
 
 int libfshfs_file_system_get_directory_entry_by_utf8_name(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      const uint8_t *utf8_string,
@@ -117,6 +121,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 
 int libfshfs_file_system_get_directory_entry_by_utf8_path(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      const uint8_t *utf8_string,
      size_t utf8_string_length,
@@ -125,6 +130,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
 
 int libfshfs_file_system_get_directory_entry_by_utf16_name(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      const uint16_t *utf16_string,
@@ -134,6 +140,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 
 int libfshfs_file_system_get_directory_entry_by_utf16_path(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      const uint16_t *utf16_string,
      size_t utf16_string_length,
@@ -142,6 +149,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 
 int libfshfs_file_system_get_directory_entries(
      libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
      uint32_t parent_identifier,
      libcdata_array_t **directory_entries,

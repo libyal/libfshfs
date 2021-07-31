@@ -1,5 +1,5 @@
 /*
- * The HFS fork definitions
+ * The HFS+/HFSX fork descriptor definition
  *
  * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FSHFS_FORK_H )
-#define _FSHFS_FORK_H
+#if !defined( _FSHFS_FORK_DESCRIPTOR_H )
+#define _FSHFS_FORK_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
@@ -58,5 +58,5 @@ struct fshfs_fork_descriptor
 }
 #endif
 
-#endif /* !defined( _FSHFS_FORK_H ) */
+#endif /* !defined( _FSHFS_FORK_DESCRIPTOR_H ) */
 

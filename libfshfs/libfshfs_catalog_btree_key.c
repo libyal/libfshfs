@@ -26,6 +26,8 @@
 
 #include "libfshfs_catalog_btree_key.h"
 #include "libfshfs_debug.h"
+#include "libfshfs_definitions.h"
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libuna.h"
@@ -143,6 +145,7 @@ int libfshfs_catalog_btree_key_free(
  */
 int libfshfs_catalog_btree_key_read_data(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
+     libfshfs_io_handle_t *io_handle,
      const uint8_t *data,
      size_t data_size,
      libcerror_error_t **error )
@@ -158,6 +161,17 @@ int libfshfs_catalog_btree_key_read_data(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
 		 function );
 
 		return( -1 );
@@ -185,6 +199,13 @@ int libfshfs_catalog_btree_key_read_data(
 
 		return( -1 );
 	}
+	if( io_handle->file_system_type == LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS )
+	{
+		additional_size = 1;
+
+		key_data_size = (int8_t) ( (fshfs_catalog_index_key_hfs_t *) data )->data_size;
+	}
+	else
 	{
 		additional_size = 2;
 
@@ -192,14 +213,6 @@ int libfshfs_catalog_btree_key_read_data(
 		 ( (fshfs_catalog_index_key_hfsplus_t *) data )->data_size,
 		 key_data_size );
 	}
-/* TODO add legacy HFS name size support
-	else
-	{
-		additional_size = 1;
-
-		key_data_size = (int8_t) ( (fshfs_catalog_index_key_hfs_t *) data )->data_size;
-	}
-*/
 	if( (size_t) key_data_size > ( data_size - additional_size ) )
 	{
 		libcerror_error_set(

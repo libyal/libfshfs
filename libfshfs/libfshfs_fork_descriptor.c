@@ -29,7 +29,7 @@
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 
-#include "fshfs_fork.h"
+#include "fshfs_fork_descriptor.h"
 
 /* Creates a fork descriptor
  * Make sure the value fork_descriptor is referencing, is set to NULL

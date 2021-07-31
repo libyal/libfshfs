@@ -356,7 +356,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libfshfs\fshfs_fork.h"
+				RelativePath="..\..\libfshfs\fshfs_fork_descriptor.h"
 				>
 			</File>
 			<File

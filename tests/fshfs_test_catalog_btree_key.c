@@ -34,6 +34,7 @@
 #include "fshfs_test_unused.h"
 
 #include "../libfshfs/libfshfs_catalog_btree_key.h"
+#include "../libfshfs/libfshfs_io_handle.h"
 
 uint8_t fshfs_test_catalog_btree_key_data1[ 14 ] = {
 	0x00, 0x0c, 0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x00, 0x6f, 0x00, 0x73, 0x00, 0x78 };
@@ -281,10 +282,28 @@ int fshfs_test_catalog_btree_key_read_data(
 {
 	libcerror_error_t *error                        = NULL;
 	libfshfs_catalog_btree_key_t *catalog_btree_key = NULL;
+	libfshfs_io_handle_t *io_handle                 = NULL;
 	int result                                      = 0;
 
 	/* Initialize test
 	 */
+	result = libfshfs_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = libfshfs_catalog_btree_key_initialize(
 	          &catalog_btree_key,
 	          &error );
@@ -306,6 +325,7 @@ int fshfs_test_catalog_btree_key_read_data(
 	 */
 	result = libfshfs_catalog_btree_key_read_data(
 	          catalog_btree_key,
+	          io_handle,
 	          fshfs_test_catalog_btree_key_data1,
 	          14,
 	          &error );
@@ -323,6 +343,7 @@ int fshfs_test_catalog_btree_key_read_data(
 	 */
 	result = libfshfs_catalog_btree_key_read_data(
 	          NULL,
+	          io_handle,
 	          fshfs_test_catalog_btree_key_data1,
 	          14,
 	          &error );
@@ -342,6 +363,7 @@ int fshfs_test_catalog_btree_key_read_data(
 	result = libfshfs_catalog_btree_key_read_data(
 	          catalog_btree_key,
 	          NULL,
+	          fshfs_test_catalog_btree_key_data1,
 	          14,
 	          &error );
 
@@ -359,6 +381,26 @@ int fshfs_test_catalog_btree_key_read_data(
 
 	result = libfshfs_catalog_btree_key_read_data(
 	          catalog_btree_key,
+	          io_handle,
+	          NULL,
+	          14,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_catalog_btree_key_read_data(
+	          catalog_btree_key,
+	          io_handle,
 	          fshfs_test_catalog_btree_key_data1,
 	          (size_t) SSIZE_MAX + 1,
 	          &error );
@@ -377,6 +419,7 @@ int fshfs_test_catalog_btree_key_read_data(
 
 	result = libfshfs_catalog_btree_key_read_data(
 	          catalog_btree_key,
+	          io_handle,
 	          fshfs_test_catalog_btree_key_data1,
 	          0,
 	          &error );
@@ -412,6 +455,23 @@ int fshfs_test_catalog_btree_key_read_data(
 	 "error",
 	 error );
 
+	result = libfshfs_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	return( 1 );
 
 on_error:
@@ -424,6 +484,12 @@ on_error:
 	{
 		libfshfs_catalog_btree_key_free(
 		 &catalog_btree_key,
+		 NULL );
+	}
+	if( io_handle != NULL )
+	{
+		libfshfs_io_handle_free(
+		 &io_handle,
 		 NULL );
 	}
 	return( 0 );

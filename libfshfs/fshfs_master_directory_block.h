@@ -83,10 +83,10 @@ struct fshfs_master_directory_block
 	 */
 	uint8_t default_clump_size[ 4 ];
 
-	/* The allocation block number
+	/* The extents start block number
 	 * Consists of 2 bytes
 	 */
-	uint8_t allocation_block_number[ 2 ];
+	uint8_t extents_start_block_number[ 2 ];
 
 	/* The next available catalog node identifier (CNID)
 	 * Consists of 4 bytes
@@ -98,15 +98,15 @@ struct fshfs_master_directory_block
 	 */
 	uint8_t number_of_unused_blocks[ 2 ];
 
-	/* The (volume) name sizes
+	/* The (volume) label sizes
 	 * Consists of 1 byte
 	 */
-	uint8_t name_size;
+	uint8_t label_size;
 
-	/* The (volume) name
+	/* The (volume) label
 	 * Consists of 27 bytes
 	 */
-	uint8_t name[ 27 ];
+	uint8_t label[ 27 ];
 
 	/* The backup time
 	 * Consists of 4 bytes
@@ -153,15 +153,15 @@ struct fshfs_master_directory_block
 	 */
 	uint8_t finder_information[ 32 ];
 
-	/* Unknown
+	/* The embedded volume signature
 	 * Consists of 2 bytes
 	 */
-	uint8_t unknown2[ 2 ];
+	uint8_t embedded_volume_sigature[ 2 ];
 
-	/* Unknown
+	/* The embedded volume extent descriptor
 	 * Consists of 4 bytes
 	 */
-	uint8_t unknown3[ 4 ];
+	uint8_t embedded_volume_extent[ 4 ];
 
 	/* The extents (overflow) file size
 	 * Consists of 4 bytes

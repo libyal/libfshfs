@@ -27,7 +27,7 @@ libfshfs_la_SOURCES = \
 	fshfs_catalog_file.h \
 	fshfs_compressed_data.h \
 	fshfs_extents_file.h \
-	fshfs_fork.h \
+	fshfs_fork_descriptor.h \
 	fshfs_master_directory_block.h \
 	fshfs_volume_header.h \
 	libfshfs.c \

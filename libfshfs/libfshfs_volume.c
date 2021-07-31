@@ -29,6 +29,7 @@
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_file_entry.h"
+#include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -981,10 +982,13 @@ int libfshfs_internal_volume_open_read(
 {
 	uint8_t signature[ 2 ];
 
-	static char *function    = "libfshfs_internal_volume_open_read";
-	uint8_t use_case_folding = 0;
-	ssize_t read_count       = 0;
-	int result               = 0;
+	libfshfs_fork_descriptor_t *attributes_file_fork_descriptor = NULL;
+	libfshfs_fork_descriptor_t *catalog_file_fork_descriptor    = NULL;
+	libfshfs_fork_descriptor_t *extents_file_fork_descriptor    = NULL;
+	static char *function                                       = "libfshfs_internal_volume_open_read";
+	ssize_t read_count                                          = 0;
+	uint8_t use_case_folding                                    = 0;
+	int result                                                  = 0;
 
 	if( internal_volume == NULL )
 	{
@@ -1114,6 +1118,14 @@ int libfshfs_internal_volume_open_read(
 
 			goto on_error;
 		}
+		internal_volume->io_handle->file_system_type = LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS;
+		internal_volume->io_handle->block_size       = 512;
+
+		use_case_folding = 1;
+
+		extents_file_fork_descriptor = internal_volume->master_directory_block->extents_file_fork_descriptor;
+		catalog_file_fork_descriptor = internal_volume->master_directory_block->catalog_file_fork_descriptor;
+
 /* TODO impement traditional HFS support */
 		libcerror_error_set(
 		 error,
@@ -1170,6 +1182,9 @@ int libfshfs_internal_volume_open_read(
 		{
 			use_case_folding = 1;
 		}
+		extents_file_fork_descriptor    = internal_volume->volume_header->extents_file_fork_descriptor;
+		catalog_file_fork_descriptor    = internal_volume->volume_header->catalog_file_fork_descriptor;
+		attributes_file_fork_descriptor = internal_volume->volume_header->attributes_file_fork_descriptor;
 	}
 	if( libfshfs_file_system_initialize(
 	     &( internal_volume->file_system ),
@@ -1196,7 +1211,7 @@ int libfshfs_internal_volume_open_read(
 	     internal_volume->file_system,
 	     internal_volume->io_handle,
 	     file_io_handle,
-	     internal_volume->volume_header->extents_file_fork_descriptor,
+	     extents_file_fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1219,7 +1234,7 @@ int libfshfs_internal_volume_open_read(
 	     internal_volume->file_system,
 	     internal_volume->io_handle,
 	     file_io_handle,
-	     internal_volume->volume_header->catalog_file_fork_descriptor,
+	     catalog_file_fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1231,28 +1246,31 @@ int libfshfs_internal_volume_open_read(
 
 		goto on_error;
 	}
+	if( attributes_file_fork_descriptor != NULL )
+	{
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "Reading attributes B-tree file:\n" );
-	}
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "Reading attributes B-tree file:\n" );
+		}
 #endif
-	if( libfshfs_file_system_read_attributes_file(
-	     internal_volume->file_system,
-	     internal_volume->io_handle,
-	     file_io_handle,
-	     internal_volume->volume_header->attributes_file_fork_descriptor,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to read attributes B-tree file.",
-		 function );
+		if( libfshfs_file_system_read_attributes_file(
+		     internal_volume->file_system,
+		     internal_volume->io_handle,
+		     file_io_handle,
+		     attributes_file_fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to read attributes B-tree file.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1263,6 +1281,7 @@ int libfshfs_internal_volume_open_read(
 #endif
 	result = libfshfs_file_system_get_directory_entry_by_identifier(
 	          internal_volume->file_system,
+	          internal_volume->io_handle,
 	          file_io_handle,
 	          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
 	          &( internal_volume->root_directory_entry ),
@@ -1671,6 +1690,7 @@ int libfshfs_volume_get_file_entry_by_identifier(
 #endif
 	result = libfshfs_file_system_get_directory_entry_by_identifier(
 	          internal_volume->file_system,
+	          internal_volume->io_handle,
 	          internal_volume->file_io_handle,
 	          identifier,
 	          &directory_entry,
@@ -1920,6 +1940,7 @@ int libfshfs_volume_get_file_entry_by_utf8_path(
 #endif
 	result = libfshfs_file_system_get_directory_entry_by_utf8_path(
 	          internal_volume->file_system,
+	          internal_volume->io_handle,
 	          internal_volume->file_io_handle,
 	          utf8_string,
 	          utf8_string_length,
@@ -2052,6 +2073,7 @@ int libfshfs_volume_get_file_entry_by_utf16_path(
 #endif
 	result = libfshfs_file_system_get_directory_entry_by_utf16_path(
 	          internal_volume->file_system,
+	          internal_volume->io_handle,
 	          internal_volume->file_io_handle,
 	          utf16_string,
 	          utf16_string_length,

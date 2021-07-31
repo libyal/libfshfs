@@ -1204,6 +1204,7 @@ int libfshfs_file_entry_get_parent_file_entry(
 		}
 		if( libfshfs_file_system_get_directory_entry_by_identifier(
 		     internal_file_entry->file_system,
+		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
 		     identifier,
 		     &directory_entry,
@@ -3624,6 +3625,7 @@ int libfshfs_file_entry_get_number_of_sub_file_entries(
 	{
 		if( libfshfs_file_system_get_directory_entries(
 		     internal_file_entry->file_system,
+		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
 		     internal_file_entry->identifier,
 		     &( internal_file_entry->sub_directory_entries ),
@@ -3744,6 +3746,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 	{
 		if( libfshfs_file_system_get_directory_entries(
 		     internal_file_entry->file_system,
+		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
 		     internal_file_entry->identifier,
 		     &( internal_file_entry->sub_directory_entries ),
@@ -3795,6 +3798,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 		}
 		else if( libfshfs_file_system_resolve_indirect_node_directory_entry(
 		          internal_file_entry->file_system,
+		          internal_file_entry->io_handle,
 		          internal_file_entry->file_io_handle,
 		          safe_directory_entry,
 		          error ) != 1 )
@@ -3921,6 +3925,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
 #endif
 	result = libfshfs_file_system_get_directory_entry_by_utf8_name(
 	          internal_file_entry->file_system,
+	          internal_file_entry->io_handle,
 	          internal_file_entry->file_io_handle,
 	          internal_file_entry->directory_entry->parent_identifier,
 	          utf8_string,
@@ -4050,6 +4055,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
 #endif
 	result = libfshfs_file_system_get_directory_entry_by_utf16_name(
 	          internal_file_entry->file_system,
+	          internal_file_entry->io_handle,
 	          internal_file_entry->file_io_handle,
 	          internal_file_entry->directory_entry->parent_identifier,
 	          utf16_string,

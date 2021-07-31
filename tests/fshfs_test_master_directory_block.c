@@ -79,14 +79,14 @@ uint8_t fshfs_test_master_directory_block_data1[ 512 ] = {
 int fshfs_test_master_directory_block_initialize(
      void )
 {
-	libcerror_error_t *error                = NULL;
+	libcerror_error_t *error                                  = NULL;
 	libfshfs_master_directory_block_t *master_directory_block = NULL;
-	int result                              = 0;
+	int result                                                = 0;
 
 #if defined( HAVE_FSHFS_TEST_MEMORY )
-	int number_of_malloc_fail_tests         = 6;
-	int number_of_memset_fail_tests         = 1;
-	int test_number                         = 0;
+	int number_of_malloc_fail_tests                           = 6;
+	int number_of_memset_fail_tests                           = 1;
+	int test_number                                           = 0;
 #endif
 
 	/* Test regular cases
@@ -312,9 +312,9 @@ on_error:
 int fshfs_test_master_directory_block_read_data(
      void )
 {
-	libcerror_error_t *error                = NULL;
+	libcerror_error_t *error                                  = NULL;
 	libfshfs_master_directory_block_t *master_directory_block = NULL;
-	int result                              = 0;
+	int result                                                = 0;
 
 	/* Initialize test
 	 */
@@ -468,10 +468,10 @@ on_error:
 int fshfs_test_master_directory_block_read_file_io_handle(
      void )
 {
-	libbfio_handle_t *file_io_handle        = NULL;
-	libcerror_error_t *error                = NULL;
+	libbfio_handle_t *file_io_handle                          = NULL;
+	libcerror_error_t *error                                  = NULL;
 	libfshfs_master_directory_block_t *master_directory_block = NULL;
-	int result                              = 0;
+	int result                                                = 0;
 
 	/* Initialize test
 	 */
