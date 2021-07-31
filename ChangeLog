@@ -17,8 +17,6 @@ To do:
 * catalog B-tree file, include name in branch key check
 * file entry API: add extents functions
 
-* ensure traditional HFS input errors for now
-
 * add support to print information about special files (those without a catalog record)
 
 Format support:

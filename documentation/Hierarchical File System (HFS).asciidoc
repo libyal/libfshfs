@@ -11,8 +11,7 @@ Analysis of MFS, HFS, HFS+ and HFSX
 The Hierarchical File System (HFS) is mainly used on the Apple Macintosh
 platform. It has evolved from the Mactintosh File System (MFS). The current
 variant of HFS is known as HFS+. This document is based on the Apple
-documentation of HFS `[APPLE96]` and HFS+ `[APPLE04]` and was enhanced by
-analyzing test data.
+documentation of HFS and HFS+ and was enhanced by analyzing test data.
 
 This document is intended as a working document for the HFS and HFS+
 specification.
@@ -574,12 +573,12 @@ The master directory block (MDB), also known as the volume information block
 (VIB), contains information about the data in the volume. The master directory
 block starts at offset 1024 of the volume.
 
-The master directory block is 161 bytes of size and consists of:
+The master directory block is 162 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | "BD" ("\x42\x44") | The volume signature +
+| 0 | 2 | "BD" ("\x42\x44") | The volume signature (kHFSSigWord) +
 For Mactintosh File System (MFS) volumes the signature contains "\xd2\xd7".
 | 2 | 4 | | Volume creation date and time +
 Contains a HFS timestamp in local time +
@@ -625,16 +624,24 @@ The value does not include the root folder. +
 It should equal the number of folder records in the catalog file minus one.
 | 92 | 32 | | Finder information +
 See section: <<finder_information,Finder information>>
-| 124 | 2 | | Allocation block size of the volume cache
-| 126 | 2 | | Allocation block size of the volume bitmap cache
-| 128 | 2 | | Allocation block size of the common volume cache
-| 130 | 4 | | Allocation block size of the extents (overflow) file
-| 134 | 12 | | The extent data record for the extents (overflow) file +
-See section: <<hfs_extent_data,The HFS extent data>>
-| 146 | 4 | | Allocation block size of the catalog file
-| 150 | 12 | | The extent data record for the catalog file +
-See section: <<hfs_extent_data,The HFS extent data>>
+| 124 | 2 | | [yellow-background]*Unknown (drEmbedSigWord formerly drVCSize)*
+| 126 | 4 | | [yellow-background]*Unknown (drEmbedExtent formerly drVBMCSize and drCtlCSize)* +
+Contains a single HFS extent descriptor
+| 130 | 4 | | Extents (overflow) file size
+| 134 | ( 3 x 4 ) = 12 | | Extents (overflow) extents record +
+See section: <<hfs_extents_record,The HFS extents record>>
+| 146 | 4 | | Catalog file size
+| 150 | ( 3 x 4 ) = 12 | | Catalog file extents record +
+See section: <<hfs_extents_record,The HFS extents record>>
 |===
+
+....
+Notes:
+
+drVCSize => Volume cache (allocation) block size (16-bit)
+drVBMCSize => Volume bitmap cache (allocation) block size (16-bit)
+drCtlCSize => Common volume cache (allocation) block size (16-bit)
+....
 
 ==== Alternate master directory block (MDB)
 
@@ -708,20 +715,18 @@ The volume header is 512 bytes of size and consists of:
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 | "\x48\x2b" +
-"\x48\x58" | The volume signature +
-"H+" => HFS+ +
-"HX" => HFSX
+| 0 | 2 | "H+" ("\x48\x2b") +
+"HX" ("\x48\x58") | The volume signature +
+Where "H+" (kHFSPlusSigWord) is used for HFS+ and "HX" (kHFSXSigWord) for HFSX
 | 2 | 2 | | The volume version +
-4 => HFS+ +
-5 => HFSX
+Where 4 (kHFSPlusVersion) is used for HFS+ and 5 (kHFSXVersion) for HFSX
 | 4 | 4 | | The volume attribute flags +
 See section: <<volume_attribute_flags,Volume attribute flags>>
 | 8 | 4 | | Last mounted version +
-'8.10' => used by Mac OS 8.1 to 9.2.2 +
-'10.0' => used by Mac OS X +
-'HFSJ' => used by journaled HFS+/HFSX +
-'fsck' => used by fsck_hfs on Mac OS X
+"8.10" => used by Mac OS 8.1 to 9.2.2 +
+"10.0" (kHFSPlusMountVersion) => used by Mac OS X +
+"HFSJ" (kHFSJMountVersion) => used by journaled HFS+/HFSX +
+"fsck", "FSK!" => used by fsck_hfs on Mac OS X
 | 12 | 4 | | Journal information block number +
 This field is used if the volume journaled bit has been set in the volumes attribute flags. +
 The allocation block number of the allocation block which contains the journal information block of the volume's journal.
@@ -1464,10 +1469,10 @@ Contains a HFS timestamp in local time
 Contains a HFS timestamp in local time
 | 56 | 16 | | Extended file information
 | 72 | 2 | | The clump size
-| 74 | ( 3 x 4 ) = 12 | | The first data fork extent record +
-See section: <<hfs_extent_data,The HFS extent data>>
-| 86 | ( 3 x 4 ) = 12 | | The first resource fork extent record +
-See section: <<hfs_extent_data,The HFS extent data>>
+| 74 | ( 3 x 4 ) = 12 | | The first data fork extents record +
+See section: <<hfs_extents_record,The HFS extents record>>
+| 86 | ( 3 x 4 ) = 12 | | The first resource fork extents record +
+See section: <<hfs_extents_record,The HFS extents record>>
 | 98 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 |===
 
@@ -1766,7 +1771,7 @@ Contains number of bytes
 | 12 | 4 | | Number of (allocation) blocks +
 The total number of allocation blocks used by all the extents in this fork.
 | 16 | ( 8 x ( 4 + 4 ) ) = 64 | | The extent (data) record +
-See section: <<hfs_plus_extents_array,The HFS+ extents array>>
+See section: <<hfs_plus_extents_record,The HFS+ extents record>>
 |===
 
 ===== Clump size
@@ -1878,41 +1883,34 @@ to some file. An extent is represented by an extent descriptor.
 An unused extent descriptor in an extent record would have both the start block
 and number of blocks set to zero.
 
-==== [[hfs_extent_data]]The HFS extent data
+==== [[hfs_extents_record]]The HFS extents record
 
-The HFS extent data consist of an array of three HFS extent descriptors. The
-size of the HFS extent data is:
+The HFS extents record (HFSExtentRecord) consist of an array of 3 HFS extent
+descriptors. The size of the HFS extents records is 3 x 4 = 12 bytes.
 
-....
-3 x 4 = 12
-....
-
-The HFS extent descriptor is 4 bytes of size and consists of:
-
-[cols="1,1,1,5",options="header"]
-|===
-| Offset | Size | Value | Description
-| 0 | 2 | | The start allocation block of the extent
-| 2 | 2 | | The number of allocation blocks in the extent
-|===
-
-==== [[hfs_plus_extents_array]]The HFS+ extents array
-
-The HFS+ extents array (HFSPlusExtentRecord) consist of an array of eight HFS+
-extent descriptors. The size of the HFS+ extent data is:
-
-....
-8 x 8 = 64
-....
-
-The HFS+ extent descriptor (HFSPlusExtentDescriptor) is 8 bytes of size and
+An individual HFS extent descriptor (HFSExtentDescriptor) is 4 bytes of size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 4 | | The start allocation block of the extent
-| 4 | 4 | | The number of allocation blocks in the extent
+| 0 | 2 | | The start (allocation) block of the extent
+| 2 | 2 | | The number of (allocation) blocks in the extent
+|===
+
+==== [[hfs_plus_extents_record]]The HFS+ extents record
+
+The HFS+ extents record (HFSPlusExtentRecord) consist of an array of 8 HFS+
+extent descriptors. The size of the HFS+ extents record is 8 x 8 = 64 bytes.
+
+An individaul HFS+ extent descriptor (HFSPlusExtentDescriptor) is 8 bytes of
+size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 4 | | The start (allocation) block of the extent
+| 4 | 4 | | The number of (allocation) blocks in the extent
 |===
 
 === Bad Block File
@@ -2081,7 +2079,7 @@ consists of:
 | 0 | 4 | 0x00000030 | The record type
 | 4 | 4 | 0 | [yellow-background]*Unknown (Reserved)*
 | 8 | ( 8 x 8 ) = 64 | | Attribute extent data +
-See section: <<hfs_plus_extents_array,The HFS+ extents array>>
+See section: <<hfs_plus_extents_record,The HFS+ extents record>>
 |===
 
 === [[compressed_data_extended_attribute]]Compressed data extended attribute
@@ -3025,12 +3023,10 @@ http://sourceforge.net/projects/linux-hfsplus
 [appendix]
 == References
 
-`[APPLE96]`
-
 [cols="1,5",options="header"]
 |===
-| Title: | Inside Macintosh: Files
-| URL: | http://developer.apple.com/documentation/mac/Files/Files-2.html
+| Title: | hfs_format.h
+| URL: | https://opensource.apple.com/source/xnu/xnu-2050.18.24/bsd/hfs/hfs_format.h
 |===
 
 `[APPLE04]`
@@ -3038,7 +3034,7 @@ http://sourceforge.net/projects/linux-hfsplus
 [cols="1,5",options="header"]
 |===
 | Title: | Technical Note TN1150: HFS plus volume format
-| URL: | http://developer.apple.com/technotes/tn/tn1150.html
+| URL: | https://developer.apple.com/library/archive/technotes/tn/tn1150.html
 |===
 
 [appendix]

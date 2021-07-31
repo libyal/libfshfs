@@ -433,13 +433,56 @@ int libfshfs_master_directory_block_read_data(
 		 function );
 		libcnotify_print_data(
 		 ( (fshfs_master_directory_block_t *) data )->finder_information,
-		 16,
+		 32,
 		 0 );
 
-/* TODO implement */
+		byte_stream_copy_to_uint16_big_endian(
+		 ( (fshfs_master_directory_block_t *) data )->unknown2,
+		 value_16bit );
+		libcnotify_printf(
+		 "%s: unknown2\t\t\t\t: 0x%04" PRIx16 "\n",
+		 function,
+		 value_16bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_master_directory_block_t *) data )->unknown3,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: unknown3\t\t\t\t: 0x%08" PRIx32 "\n",
+		 function,
+		 value_32bit );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_master_directory_block_t *) data )->extents_file_size,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: extents file size\t\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
 
 		libcnotify_printf(
-		 "\n" );
+		 "%s: extents file extents record:\n",
+		 function );
+		libcnotify_print_data(
+		 ( (fshfs_master_directory_block_t *) data )->extents_file_extents_record,
+		 12,
+		 0 );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_master_directory_block_t *) data )->catalog_file_size,
+		 value_32bit );
+		libcnotify_printf(
+		 "%s: catalog file size\t\t\t: %" PRIu32 "\n",
+		 function,
+		 value_32bit );
+
+		libcnotify_printf(
+		 "%s: catalog file extents record:\n",
+		 function );
+		libcnotify_print_data(
+		 ( (fshfs_master_directory_block_t *) data )->catalog_file_extents_record,
+		 12,
+		 0 );
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 

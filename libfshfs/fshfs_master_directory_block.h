@@ -149,11 +149,39 @@ struct fshfs_master_directory_block
 	uint8_t number_of_directories[ 4 ];
 
 	/* The finder information
-	 * Consists of 16 bytes
+	 * Consists of 32 bytes
 	 */
-	uint8_t finder_information[ 16 ];
+	uint8_t finder_information[ 32 ];
 
-/* TODO implement */
+	/* Unknown
+	 * Consists of 2 bytes
+	 */
+	uint8_t unknown2[ 2 ];
+
+	/* Unknown
+	 * Consists of 4 bytes
+	 */
+	uint8_t unknown3[ 4 ];
+
+	/* The extents (overflow) file size
+	 * Consists of 4 bytes
+	 */
+	uint8_t extents_file_size[ 4 ];
+
+	/* The extents (overflow) file extents record
+	 * Consists of 12 bytes
+	 */
+	uint8_t extents_file_extents_record[ 12 ];
+
+	/* The catalog file size
+	 * Consists of 4 bytes
+	 */
+	uint8_t catalog_file_size[ 4 ];
+
+	/* The catalog file extents record
+	 * Consists of 12 bytes
+	 */
+	uint8_t catalog_file_extents_record[ 12 ];
 };
 
 #if defined( __cplusplus )
