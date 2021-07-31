@@ -70,6 +70,7 @@ check_PROGRAMS = \
 	fshfs_test_fork_descriptor \
 	fshfs_test_io_handle \
 	fshfs_test_lzvn \
+	fshfs_test_master_directory_block \
 	fshfs_test_name \
 	fshfs_test_notify \
 	fshfs_test_support \
@@ -366,6 +367,28 @@ fshfs_test_lzvn_SOURCES = \
 
 fshfs_test_lzvn_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_master_directory_block_SOURCES = \
+	fshfs_test_functions.c fshfs_test_functions.h \
+	fshfs_test_libbfio.h \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_master_directory_block.c \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_master_directory_block_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

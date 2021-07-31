@@ -28,7 +28,8 @@ libfshfs_la_SOURCES = \
 	fshfs_compressed_data.h \
 	fshfs_extents_file.h \
 	fshfs_fork.h \
-	fshfs_volume.h \
+	fshfs_master_directory_block.h \
+	fshfs_volume_header.h \
 	libfshfs.c \
 	libfshfs_attribute_record.c libfshfs_attribute_record.h \
 	libfshfs_attributes_btree_file.c libfshfs_attributes_btree_file.h \
@@ -75,6 +76,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_libfguid.h \
 	libfshfs_libuna.h \
 	libfshfs_lzvn.c libfshfs_lzvn.h \
+	libfshfs_master_directory_block.c libfshfs_master_directory_block.h \
 	libfshfs_name.c libfshfs_name.h \
 	libfshfs_notify.c libfshfs_notify.h \
 	libfshfs_support.c libfshfs_support.h \

@@ -62,6 +62,7 @@ int libfshfs_debug_print_hfs_time_value(
      size_t byte_stream_size,
      int byte_order,
      uint32_t string_format_flags,
+     int8_t is_local_time,
      libcerror_error_t **error );
 
 int libfshfs_debug_print_posix_time_value(

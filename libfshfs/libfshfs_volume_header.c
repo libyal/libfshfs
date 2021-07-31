@@ -26,14 +26,13 @@
 
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
-#include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libfdatetime.h"
 #include "libfshfs_volume_header.h"
 
-#include "fshfs_volume.h"
+#include "fshfs_volume_header.h"
 
 /* Creates a volume header
  * Make sure the value volume_header is referencing, is set to NULL
@@ -362,14 +361,14 @@ int libfshfs_volume_header_read_data(
 #endif
 	if( memory_compare(
 	     ( (fshfs_volume_header_t *) data )->signature,
-	     fshfs_volume_signature_hfsplus,
+	     "H+",
 	     2 ) == 0 )
 	{
 		volume_header->file_system_type = LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS_PLUS;
 	}
 	else if( memory_compare(
 	          ( (fshfs_volume_header_t *) data )->signature,
-	          fshfs_volume_signature_hfsx,
+	          "HX",
 	          2 ) == 0 )
 	{
 		volume_header->file_system_type = LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFSX;
@@ -380,7 +379,7 @@ int libfshfs_volume_header_read_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid volume system signature.",
+		 "%s: unsupported volume system signature.",
 		 function );
 
 		return( -1 );
@@ -441,6 +440,7 @@ int libfshfs_volume_header_read_data(
 		     4,
 		     LIBFDATETIME_ENDIAN_BIG,
 		     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+		     0,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -459,6 +459,7 @@ int libfshfs_volume_header_read_data(
 		     4,
 		     LIBFDATETIME_ENDIAN_BIG,
 		     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+		     0,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -477,6 +478,7 @@ int libfshfs_volume_header_read_data(
 		     4,
 		     LIBFDATETIME_ENDIAN_BIG,
 		     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+		     0,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -495,6 +497,7 @@ int libfshfs_volume_header_read_data(
 		     4,
 		     LIBFDATETIME_ENDIAN_BIG,
 		     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+		     0,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -507,10 +510,10 @@ int libfshfs_volume_header_read_data(
 			return( -1 );
 		}
 		byte_stream_copy_to_uint32_big_endian(
-		 ( (fshfs_volume_header_t *) data )->number_of_special_files,
+		 ( (fshfs_volume_header_t *) data )->number_of_files,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: number of special files\t\t: %" PRIu32 "\n",
+		 "%s: number of files\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -552,18 +555,18 @@ int libfshfs_volume_header_read_data(
 		 value_32bit );
 
 		byte_stream_copy_to_uint32_big_endian(
-		 ( (fshfs_volume_header_t *) data )->resource_clump_size,
+		 ( (fshfs_volume_header_t *) data )->resource_fork_clump_size,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: resource clump size\t\t\t: %" PRIu32 "\n",
+		 "%s: resource fork clump size\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
 		byte_stream_copy_to_uint32_big_endian(
-		 ( (fshfs_volume_header_t *) data )->data_clump_size,
+		 ( (fshfs_volume_header_t *) data )->data_fork_clump_size,
 		 value_32bit );
 		libcnotify_printf(
-		 "%s: data clump size\t\t\t: %" PRIu32 "\n",
+		 "%s: data fork clump size\t\t\t: %" PRIu32 "\n",
 		 function,
 		 value_32bit );
 
@@ -587,11 +590,12 @@ int libfshfs_volume_header_read_data(
 		 "%s: finder information:\n",
 		 function );
 		libcnotify_print_data(
-		 ( (fshfs_volume_header_t *) data )->encodings_bitmap,
+		 ( (fshfs_volume_header_t *) data )->finder_information,
 		 32,
 		 0 );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{

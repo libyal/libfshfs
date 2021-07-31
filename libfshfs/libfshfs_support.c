@@ -26,7 +26,6 @@
 #include <wide_string.h>
 
 #include "libfshfs_definitions.h"
-#include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libclocale.h"
@@ -410,20 +409,27 @@ int libfshfs_check_volume_signature_file_io_handle(
 		}
 	}
 	if( memory_compare(
-	     fshfs_volume_signature_hfsplus,
+	     "BD",
 	     signature,
 	     2 ) == 0 )
 	{
 		return( 1 );
 	}
 	else if( memory_compare(
-	          fshfs_volume_signature_hfsx,
+	          "H+",
 	          signature,
 	          2 ) == 0 )
 	{
 		return( 1 );
 	}
-	/* TODO also check major version? */
+	else if( memory_compare(
+	          "HX",
+	          signature,
+	          2 ) == 0 )
+	{
+		return( 1 );
+	}
+	/* TODO also check HFS+/HFSX major version? */
 
 	return( 0 );
 

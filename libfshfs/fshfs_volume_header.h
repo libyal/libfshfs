@@ -1,5 +1,5 @@
 /*
- * The HFS volume header definition
+ * The HFS+/HFSX volume header definition
  *
  * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _FSHFS_VOLUME_H )
-#define _FSHFS_VOLUME_H
+#if !defined( _FSHFS_VOLUME_HEADER_H )
+#define _FSHFS_VOLUME_HEADER_H
 
 #include <common.h>
 #include <types.h>
@@ -43,7 +43,7 @@ struct fshfs_volume_header
 	 */
 	uint8_t version[ 2 ];
 
-	/* The attribute flags
+	/* The (volume) attribute flags
 	 * Consists of 4 bytes
 	 */
 	uint8_t attribute_flags[ 4 ];
@@ -78,10 +78,10 @@ struct fshfs_volume_header
 	 */
 	uint8_t checked_time[ 4 ];
 
-	/* The number of special files
+	/* The number of files
 	 * Consists of 4 bytes
 	 */
-	uint8_t number_of_special_files[ 4 ];
+	uint8_t number_of_files[ 4 ];
 
 	/* The number of directories
 	 * Consists of 4 bytes
@@ -108,15 +108,15 @@ struct fshfs_volume_header
 	 */
 	uint8_t next_available_block_number[ 4 ];
 
-	/* The resource clump size
+	/* The resource fork clump size
 	 * Consists of 4 bytes
 	 */
-	uint8_t resource_clump_size[ 4 ];
+	uint8_t resource_fork_clump_size[ 4 ];
 
-	/* The data clump size
+	/* The data fork clump size
 	 * Consists of 4 bytes
 	 */
-	uint8_t data_clump_size[ 4 ];
+	uint8_t data_fork_clump_size[ 4 ];
 
 	/* The next available catalog node identifier (CNID)
 	 * Consists of 4 bytes
@@ -133,7 +133,7 @@ struct fshfs_volume_header
 	 */
 	uint8_t encodings_bitmap[ 8 ];
 
-	/* The finder infomation
+	/* The finder information
 	 * Consists of 32 bytes
 	 */
 	uint8_t finder_information[ 32 ];
@@ -168,5 +168,5 @@ struct fshfs_volume_header
 }
 #endif
 
-#endif /* !defined( _FSHFS_VOLUME_H ) */
+#endif /* !defined( _FSHFS_VOLUME_HEADER_H ) */
 

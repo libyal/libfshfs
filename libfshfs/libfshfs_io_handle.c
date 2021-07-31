@@ -27,9 +27,6 @@
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
 
-const char fshfs_volume_signature_hfsplus[ 2 ] = "H+";
-const char fshfs_volume_signature_hfsx[ 2 ]    = "HX";
-
 /* Creates an IO handle
  * Make sure the value io_handle is referencing, is set to NULL
  * Returns 1 if successful or -1 on error

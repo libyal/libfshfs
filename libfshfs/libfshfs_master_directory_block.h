@@ -1,5 +1,5 @@
 /*
- * Input/Output (IO) handle functions
+ * Master directory block functions
  *
  * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,50 +19,51 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_IO_HANDLE_H )
-#define _LIBFSHFS_IO_HANDLE_H
+#if !defined( _LIBFSHFS_MASTER_DIRECTORY_BLOCK_H )
+#define _LIBFSHFS_MASTER_DIRECTORY_BLOCK_H
 
 #include <common.h>
 #include <types.h>
 
+#include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfshfs_io_handle libfshfs_io_handle_t;
+typedef struct libfshfs_master_directory_block libfshfs_master_directory_block_t;
 
-struct libfshfs_io_handle
+struct libfshfs_master_directory_block
 {
-	/* The file system type
+	/* Dummy
 	 */
-	uint8_t file_system_type;
-
-	/* The block size
-	 */
-	uint32_t block_size;
-
-	/* Value to indicate if abort was signalled
-	 */
-	int abort;
+	int dummy;
 };
 
-int libfshfs_io_handle_initialize(
-     libfshfs_io_handle_t **io_handle,
+int libfshfs_master_directory_block_initialize(
+     libfshfs_master_directory_block_t **master_directory_block,
      libcerror_error_t **error );
 
-int libfshfs_io_handle_free(
-     libfshfs_io_handle_t **io_handle,
+int libfshfs_master_directory_block_free(
+     libfshfs_master_directory_block_t **master_directory_block,
      libcerror_error_t **error );
 
-int libfshfs_io_handle_clear(
-     libfshfs_io_handle_t *io_handle,
+int libfshfs_master_directory_block_read_data(
+     libfshfs_master_directory_block_t *master_directory_block,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
+int libfshfs_master_directory_block_read_file_io_handle(
+     libfshfs_master_directory_block_t *master_directory_block,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_IO_HANDLE_H ) */
+#endif /* !defined( _LIBFSHFS_MASTER_DIRECTORY_BLOCK_H ) */
 

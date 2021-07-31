@@ -36,6 +36,7 @@
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
+#include "libfshfs_master_directory_block.h"
 #include "libfshfs_types.h"
 #include "libfshfs_volume_header.h"
 
@@ -63,9 +64,13 @@ struct libfshfs_internal_volume
 	 */
 	uint8_t file_io_handle_opened_in_library;
 
-	/* The volume header
+	/* The HFS+/HFSX volume header
 	 */
 	libfshfs_volume_header_t *volume_header;
+
+	/* The HFS master directory block
+	 */
+	libfshfs_master_directory_block_t *master_directory_block;
 
 	/* The file system
 	 */

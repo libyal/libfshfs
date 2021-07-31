@@ -130,43 +130,47 @@ void libfshfs_debug_print_catalog_file_record_flags(
 void libfshfs_debug_print_volume_attribute_flags(
       uint32_t volume_attribute_flags )
 {
-	if( ( volume_attribute_flags & 0x00000040UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00000080UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tVolume hardware lock (kHFSVolumeHardwareLockBit)\n" );
 	}
-	if( ( volume_attribute_flags & 0x00000080UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00000100UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tVolume unmounted (kHFSVolumeUnmountedBit)\n" );
 	}
-	if( ( volume_attribute_flags & 0x00000100UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00000200UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tVolume spared blocks (kHFSVolumeSparedBlocksBit)\n" );
 	}
-	if( ( volume_attribute_flags & 0x00000200UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00000400UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tVolume no cache required (kHFSVolumeNoCacheRequiredBit)\n" );
 	}
-	if( ( volume_attribute_flags & 0x00000400UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00000800UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tBoot volume inconsistent (kHFSBootVolumeInconsistentBit)\n" );
 	}
-	if( ( volume_attribute_flags & 0x00000800UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00001000UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tCatalog node identifiers reused (kHFSCatalogNodeIDsReusedBit)\n" );
 	}
-	if( ( volume_attribute_flags & 0x00001000UL ) != 0 )
+	if( ( volume_attribute_flags & 0x00002000UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tVolume journaled (kHFSVolumeJournaledBit)\n" );
 	}
-
 	if( ( volume_attribute_flags & 0x00004000UL ) != 0 )
+	{
+		libcnotify_printf(
+		 "\t(kHFSVolumeInconsistentBit)\n" );
+	}
+	if( ( volume_attribute_flags & 0x00008000UL ) != 0 )
 	{
 		libcnotify_printf(
 		 "\tVolume software lock (kHFSVolumeSoftwareLockBit)\n" );
@@ -396,6 +400,7 @@ int libfshfs_debug_print_hfs_time_value(
      size_t byte_stream_size,
      int byte_order,
      uint32_t string_format_flags,
+     int8_t is_local_time,
      libcerror_error_t **error )
 {
 	char date_time_string[ 32 ];
@@ -448,13 +453,22 @@ int libfshfs_debug_print_hfs_time_value(
 
 		goto on_error;
 	}
-/* TODO handle local time */
-	libcnotify_printf(
-	 "%s: %s: %s UTC\n",
-	 function_name,
-	 value_name,
-	 date_time_string );
-
+	if( is_local_time == 0 )
+	{
+		libcnotify_printf(
+		 "%s: %s: %s UTC\n",
+		 function_name,
+		 value_name,
+		 date_time_string );
+	}
+	else
+	{
+		libcnotify_printf(
+		 "%s: %s: %s (local time)\n",
+		 function_name,
+		 value_name,
+		 date_time_string );
+	}
 	if( libfdatetime_hfs_time_free(
 	     &hfs_time,
 	     error ) != 1 )

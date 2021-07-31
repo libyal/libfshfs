@@ -571,6 +571,7 @@ int libfshfs_file_record_read_data(
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
 			          LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			          0,
 			          error );
 		}
 		else
@@ -582,6 +583,7 @@ int libfshfs_file_record_read_data(
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
 			          LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			          1,
 			          error );
 		}
 		if( result != 1 )
@@ -604,6 +606,7 @@ int libfshfs_file_record_read_data(
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
 			          LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			          0,
 			          error );
 		}
 		else
@@ -615,6 +618,7 @@ int libfshfs_file_record_read_data(
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
 			          LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			          1,
 			          error );
 		}
 		if( result != 1 )
@@ -637,6 +641,7 @@ int libfshfs_file_record_read_data(
 			     4,
 			     LIBFDATETIME_ENDIAN_BIG,
 			     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			     0,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -655,6 +660,7 @@ int libfshfs_file_record_read_data(
 			     4,
 			     LIBFDATETIME_ENDIAN_BIG,
 			     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			     0,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -676,6 +682,7 @@ int libfshfs_file_record_read_data(
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
 			          LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			          0,
 			          error );
 		}
 		else
@@ -687,6 +694,7 @@ int libfshfs_file_record_read_data(
 			          4,
 			          LIBFDATETIME_ENDIAN_BIG,
 			          LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			          1,
 			          error );
 		}
 		if( result != 1 )

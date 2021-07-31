@@ -302,6 +302,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_master_directory_block.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_name.c"
 				>
 			</File>
@@ -356,7 +360,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libfshfs\fshfs_volume.h"
+				RelativePath="..\..\libfshfs\fshfs_master_directory_block.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\fshfs_volume_header.h"
 				>
 			</File>
 			<File
@@ -537,6 +545,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_lzvn.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_master_directory_block.h"
 				>
 			</File>
 			<File

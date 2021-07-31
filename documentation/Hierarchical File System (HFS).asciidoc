@@ -58,6 +58,7 @@ Email change
 | 0.0.9 | J.B. Metz | August 2020 | Changes to formatting.
 | 0.0.10 | J.B. Metz | October 2020 | Textual changes and changes to formatting.
 | 0.0.11 | J.B. Metz | July 2021 | Additional information about extended attributes.
+| 0.0.12 | J.B. Metz | July 2021 | Additional information about traditional HFS.
 |===
 
 :numbered:
@@ -129,12 +130,10 @@ HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow
 additional features that are incompatible with HFS+. An HFSX volume cannot be
 wrapped in an HFS volume.
 
-Currently the only such feature defined is case-sensitive filenames. An HFSX
-volume may be either case-sensitive or case-insensitive. Case sensitivity (or
-lack thereof) is global to the volume; the setting applies to all file and
-directory names on the volume.
-
-The Apple iPhone OS (iOS) e.g. uses the HFSX.
+One of such features is case-sensitive filenames. An HFSX volume may be either
+case-sensitive or case-insensitive. Case sensitivity (or lack thereof) is
+global to the volume; the setting applies to all file and directory names on
+the volume.
 
 == [[hfs_timestamp]]HFS timestamp
 
@@ -181,8 +180,6 @@ HFS+ uses the following default node sizes:
 | attributes file | N/A | 4 KiB
 |===
 
-[yellow-background]*TODO: determine what TN1150 means with "in Mac OS X"*
-
 The size of a B-tree file can be calculated in the following manner:
 
 ....
@@ -190,7 +187,8 @@ size = number of nodes x node size
 ....
 
 [NOTE]
-The data fork of the B-tree is used. The resource fork of a B-tree file is unused.
+The data fork of the B-tree is used. The resource fork of a B-tree file
+is unused.
 
 === The B-tree (file) node
 
@@ -573,83 +571,79 @@ If bit 7 of the flag byte is set
 === Master directory block (MDB)
 
 The master directory block (MDB), also known as the volume information block
-(VIB), contains information about the data in the volume. This information is
-written into the MDB when the volume is initialized.
+(VIB), contains information about the data in the volume. The master directory
+block starts at offset 1024 of the volume.
 
-The MDB is 161 bytes of size and consists of:
+The master directory block is 161 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
-| 0 | 2 |"BD" ("\x42\x44") | The volume signature +
+| 0 | 2 | "BD" ("\x42\x44") | The volume signature +
 For Mactintosh File System (MFS) volumes the signature contains "\xd2\xd7".
 | 2 | 4 | | Volume creation date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time +
+The date and time when the volume was created.
 | 6 | 4 | | Volume modification date and time +
-Contains an HFS timestamp +
-This is not necessarily the data and time when the volume was last flushed.
-| 10 | 2 | | Volume attributes
-| 12 | 2 | | Number of files in the root directory
-| 14 | 2 | | The volume bitmap first volume block index +
-Typically 3 in the current implementation.
-| 16 | 2 | | Start of the next allocation search +
+Contains a HFS timestamp in local time +
+The date and time when the volume was last modified. This is not necessarily the data and time when the volume was last flushed.
+| 10 | 2 | | Volume attribute flags +
+See section: <<volume_attribute_flags,Volume attribute flags>>
+| 12 | 2 | | The number of files in the root directory
+| 14 | 2 | | Volume bitmap block number +
+Contains a block number relative from the start of the volume, where 0 is the first block number. +
+Typically has a value of 3
+| 16 | 2 | | [yellow-background]*Unknown (Start of the next allocation search)* +
 The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
-| 18 | 2 | | Number of allocation blocks in the volume +
-Unsigned 16-bit integer. +
-A volume can contain at most 65535 allocation blocks.
-| 20 | 4 | | The byte size of the allocation blocks in the volume +
-This value must always be a multitude of 512 bytes.
+| 18 | 2 | | Number of (allocation) blocks +
+A volume can contain at most 65535 blocks.
+| 20 | 4 | | Allocation block size +
+Contains number of bytes an must be a multitude of 512 bytes.
 | 24 | 4 | | Default clump size
-| 28 | 2 | | Allocation block first volume block index
-| 30 | 4 | | The next unused catalog node identifier +
-Can be a directory or file identifier.
-| 34 | 2 | | The number of unused allocation blocks +
-Unsigned 16-bit integer
-| 36 | 27 | | The volume name +
-ASCII string +
-[yellow-background]*This field consists of a length byte followed by 27 bytes. Note that the volume name can occupy at most 27 characters; this is an exception to the normal file and directory name limit of 31 characters.*
-| 63 | 4 | | Last backup date and time
-| 67 | 2 | | Volume backup sequence number
-| 69 | 4 | | Volume write count +
+| 28 | 2 | | Allocation block number +
+Contains a block number relative from the start of the volume, where 0 is the first block number.
+| 30 | 4 | | Next available catalog node identifier (CNID) +
+Can be a directory or file record identifier.
+| 34 | 2 | | Number of unused (allocation) blocks
+| 36 | 1 | | The volume name size +
+The maximum size is 27
+| 37 | 27 | | The volume name +
+Contains an ASCII string
+| 64 | 4 | | Backup date and time +
+Contains a HFS timestamp in local time +
+The date and time when the volume was last backed up.
+| 68 | 2 | | Backup sequence number
+| 70 | 4 | | Volume write count +
 Contains the number of times the volume has been written to.
-| 73 | 4 | | Clump size for extents (overflow) file
-| 77 | 4 | | Clump size for catalog file
-| 81 | 2 | | The number of sub directories in the root directory
-| 83 | 4 | | The number of files in the volume
-| 87 | 4 | | The number of directories in the volume
-| 91 | 32 | | Finder information +
+| 74 | 4 | | Clump size for extents (overflow) file
+| 78 | 4 | | Clump size for catalog file
+| 82 | 2 | | The number of sub directories in the root directory
+| 84 | 4 | | Total number of files +
+It should equal the number of file records found in the catalog file.
+| 88 | 4 | | Total number of directories (folders) +
+The value does not include the root folder. +
+It should equal the number of folder records in the catalog file minus one.
+| 92 | 32 | | Finder information +
 See section: <<finder_information,Finder information>>
-| 123 | 2 | | Allocation block size of the volume cache
-| 125 | 2 | | Allocation block size of the volume bitmap cache
-| 127 | 2 | | Allocation block size of the common volume cache
-| 129 | 4 | | Allocation block size of the extents (overflow) file
-| 133 | 12 | | The extent data record for the extents (overflow) file +
+| 124 | 2 | | Allocation block size of the volume cache
+| 126 | 2 | | Allocation block size of the volume bitmap cache
+| 128 | 2 | | Allocation block size of the common volume cache
+| 130 | 4 | | Allocation block size of the extents (overflow) file
+| 134 | 12 | | The extent data record for the extents (overflow) file +
 See section: <<hfs_extent_data,The HFS extent data>>
-| 145 | 4 | | Allocation block size of the catalog file
-| 149 | 12 | | The extent data record for the catalog file +
+| 146 | 4 | | Allocation block size of the catalog file
+| 150 | 12 | | The extent data record for the catalog file +
 See section: <<hfs_extent_data,The HFS extent data>>
 |===
 
-==== Volume attributes
+==== Alternate master directory block (MDB)
 
-The volume attributes uses the following bit flags:
+A copy of the master directory block (MDB) is maintained in the Alternate
+aster directory block (MDB). This copy is updated when the extents (overflow)
+or the catalog file grows larger. The Alternate MBD is intended solely for use
+by disk utilities.
 
-[cols="1,5",options="header"]
-|===
-| Bit(s) | Description
-| 7 | Set if the volume is locked by hardware
-| 8 | Set if the volume was successfully unmounted
-| 9 | Set if the volume has had its bad blocks spared
-| 15 | Set if the volume is locked by software
-|===
-
-==== Alternate MDB
-
-A copy of the MDB is maintained in the Alternate MDB. This copy is updated when
-the extents (overflow) or the catalog file grows larger. The Alternate MBD is
-intended for use solely by disk utilities.
-
-=== Volume bitmaps
+=== Volume bitmap
 
 The volume bitmap is used to keep track of block allocation. The bitmap
 contains one bit for each allocation block in the volume. If a bit is set, the
@@ -732,13 +726,16 @@ See section: <<volume_attribute_flags,Volume attribute flags>>
 This field is used if the volume journaled bit has been set in the volumes attribute flags. +
 The allocation block number of the allocation block which contains the journal information block of the volume's journal.
 | 16 | 4 | | Creation date and time +
-In local time instead of UTC (GMT) +
+Contains a HFS timestamp in UTC +
 The date and time when the volume was created.
 | 20 | 4 | | Modification date and time +
+Contains a HFS timestamp in UTC +
 The date and time when the volume was last modified.
 | 24 | 4 | | Backup date and time +
+Contains a HFS timestamp in UTC +
 The date and time when the volume was last backed up.
 | 28 | 4 | | Checked date and time +
+Contains a HFS timestamp in UTC +
 The date and time when the volume was last checked for consistency.
 | 32 | 4 | | Total number of files +
 The value does not include the special files. +
@@ -752,14 +749,14 @@ Contains number of bytes
 | 48 | 4 | | Number of unused (allocation) blocks
 | 52 | 4 | | Next available (allocation) block number +
 The ([yellow-background]*allocation or volume block*) index of the allocation block at which the next allocation search will begin.
-| 56 | 4 | | Default resource clump size +
+| 56 | 4 | | Default resource fork clump size +
 The default clump size for resource forks. +
 Contains number of bytes
-| 60 | 4 | | Default data clump size +
+| 60 | 4 | | Default data fork clump size +
 The default clump size for data forks. +
 Contains number of bytes
-| 64 | 4 | | Next available catalog node identifier +
-Can be a directory or file identifier.
+| 64 | 4 | | Next available catalog node identifier (CNID) +
+Can be a directory or file record identifier.
 | 68 | 4 | | Volume write count +
 Contains the number of times the volume has been written to.
 | 72 | 8 | | Encodings bitmap +
@@ -796,41 +793,34 @@ header, as described above).
 
 ==== [[volume_attribute_flags]]Volume attribute flags
 
-The value attributes flags are specified as following.
+The volume attributes flags are specified as following.
 
 [yellow-background]*TODO: determine MSB and LSB*
 
 [cols="1,1,5",options="header"]
 |===
-| Bit(s) | Identifier | Description
-| 0 - 6 | | [yellow-background]*Unknown (Reserved)*, must be 0
-| 7 | kHFSVolumeHardwareLockBit | Volume hardware lock +
+| Value | Identifier | Description
+| 0x00000080 | kHFSVolumeHardwareLockBit | Volume hardware lock +
 This bit is set if the volume is write-protected due to a hardware setting.
-| 8 | kHFSVolumeUnmountedBit | Volume unmounted +
+| 0x00000100 | kHFSVolumeUnmountedBit | Volume unmounted +
 This bit is set if the volume was correctly flushed before being unmounted or ejected.
-| 9 | kHFSVolumeSparedBlocksBit | Volume spared blocks +
+| 0x00000200 | kHFSVolumeSparedBlocksBit | Volume spared blocks +
 This bit is set if there are any records in the extents (overflow) file for bad blocks.
-| 10 | kHFSVolumeNoCacheRequiredBit | Volume no cache required +
+| 0x00000400 | kHFSVolumeNoCacheRequiredBit | Volume no cache required +
 This bit is set if the blocks from this volume should not be cached.
-| 11 | kHFSBootVolumeInconsistentBit | Boot volume inconsistent +
+| 0x00000800 | kHFSBootVolumeInconsistentBit | Boot volume inconsistent +
 This bit is set if the volume was mounted for writing.
-| 12 | kHFSCatalogNodeIDsReusedBit | Catalog node identifiers reused +
+| 0x00001000 | kHFSCatalogNodeIDsReusedBit | Catalog node identifiers reused +
 This bit is set when the next catalog identifier value overflows 32 bits, forcing smaller catalog node identifiers to be reused.
-| 13 | kHFSVolumeJournaledBit | Volume journaled +
+| 0x00002000 | kHFSVolumeJournaledBit | Volume journaled +
 If this bit is set, the volume has a journal.
-| 14 | kHFSVolumeInconsistentBit | [yellow-background]*Unknown (Reserved)*
-| 15 | kHFSVolumeSoftwareLockBit | Volume software lock +
+| 0x00004000 | kHFSVolumeInconsistentBit | [yellow-background]*Unknown (Reserved)*
+| 0x00008000 | kHFSVolumeSoftwareLockBit | Volume software lock +
 This bit is set if the volume is write-protected due to a software setting.
-| 16 - 29 | | [yellow-background]*Unknown (Reserved)*
-| 30 | kHFSContentProtectionBit | [yellow-background]*Unknown (Reserved)*
-| 31 | kHFSUnusedNodeFixBit | [yellow-background]*Unknown (Reserved)*
+3+|
+| 0x40000000 | kHFSContentProtectionBit | [yellow-background]*Unknown (Reserved)*
+| 0x80000000 | kHFSUnusedNodeFixBit | [yellow-background]*Unknown (Reserved)*
 |===
-
-....
-Notes:
-
-kHFSMDBAttributesMask = 0x8380
-....
 
 ==== Alternate volume header
 
@@ -1378,11 +1368,11 @@ See section: <<catalog_file_record_flags,file record flags>>
 | 6 | 4 | | The identifier +
 Contains a CNID
 | 10 | 4 | | Creation date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time
 | 14 | 4 | | (content) modification date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time
 | 18 | 4 | | Backup date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time
 | 22 | 16 | | Folder information +
 See section: <<hfs_folder_information,HFS folder information>>
 | 38 | 16 | | Extended folder information +
@@ -1406,15 +1396,15 @@ See section: <<catalog_file_record_flags,file record flags>>
 | 8 | 4 | | The identifier +
 Contains a CNID
 | 12 | 4 | | Creation date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 16 | 4 | | (content) modification date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 20 | 4 | | Entry (or attribute) modification date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 24 | 4 | | Access date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 28 | 4 | | Backup date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 4+| _Permissions_
 | 32 | 4 | | Owner identifier
 | 36 | 4 | | Group identifier
@@ -1467,11 +1457,11 @@ Contains a CNID
 | 36 | 4 | | Logical end of file (EOF) of resource fork
 | 40 | 4 | | Physical end of file (EOF) of resource fork
 | 44 | 4 | | Creation date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time
 | 48 | 4 | | (content) modification date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time
 | 52 | 4 | | Backup date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in local time
 | 56 | 16 | | Extended file information
 | 72 | 2 | | The clump size
 | 74 | ( 3 x 4 ) = 12 | | The first data fork extent record +
@@ -1496,15 +1486,15 @@ See section: <<catalog_file_record_flags,file record flags>>
 | 8 | 4 | | The identifier +
 Contains a CNID
 | 12 | 4 | | Creation date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 16 | 4 | | (content) modification date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 20 | 4 | | Entry (or attribute) modification date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 24 | 4 | | Access date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 | 28 | 4 | | Backup date and time +
-Contains an HFS timestamp
+Contains a HFS timestamp in UTC
 4+| _Permissions_
 | 32 | 4 | | Owner identifier
 | 36 | 4 | | Group identifier

@@ -34,6 +34,7 @@
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libcthreads.h"
+#include "libfshfs_master_directory_block.h"
 #include "libfshfs_thread_record.h"
 #include "libfshfs_volume.h"
 #include "libfshfs_volume_header.h"
@@ -887,18 +888,37 @@ int libfshfs_volume_close(
 
 		result = -1;
 	}
-	if( libfshfs_volume_header_free(
-	     &( internal_volume->volume_header ),
-	     error ) != 1 )
+	if( internal_volume->volume_header != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free volume header.",
-		 function );
+		if( libfshfs_volume_header_free(
+		     &( internal_volume->volume_header ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free volume header.",
+			 function );
 
-		result = -1;
+			result = -1;
+		}
+	}
+	if( internal_volume->master_directory_block != NULL )
+	{
+		if( libfshfs_master_directory_block_free(
+		     &( internal_volume->master_directory_block ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free master directory block.",
+			 function );
+
+			result = -1;
+		}
 	}
 	if( internal_volume->file_system != NULL )
 	{
@@ -959,8 +979,11 @@ int libfshfs_internal_volume_open_read(
      off64_t file_offset,
      libcerror_error_t **error )
 {
+	uint8_t signature[ 2 ];
+
 	static char *function    = "libfshfs_internal_volume_open_read";
 	uint8_t use_case_folding = 0;
+	ssize_t read_count       = 0;
 	int result               = 0;
 
 	if( internal_volume == NULL )
@@ -996,6 +1019,17 @@ int libfshfs_internal_volume_open_read(
 
 		return( -1 );
 	}
+	if( internal_volume->master_directory_block != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid volume - master directory block value already set.",
+		 function );
+
+		return( -1 );
+	}
 	if( internal_volume->file_system != NULL )
 	{
 		libcerror_error_set(
@@ -1018,48 +1052,124 @@ int libfshfs_internal_volume_open_read(
 
 		return( -1 );
 	}
-	if( libfshfs_volume_header_initialize(
-	     &( internal_volume->volume_header ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create volume header.",
-		 function );
+	read_count = libbfio_handle_read_buffer_at_offset(
+	              file_io_handle,
+	              signature,
+	              2,
+	              file_offset,
+	              error );
 
-		goto on_error;
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "Reading volume header:\n" );
-	}
-#endif
-	if( libfshfs_volume_header_read_file_io_handle(
-	     internal_volume->volume_header,
-	     file_io_handle,
-	     file_offset,
-	     error ) != 1 )
+	if( read_count != 2 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read volume header at offset: %" PRIi64 ".",
+		 "%s: unable to read signature at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
+		 file_offset,
 		 file_offset );
 
 		goto on_error;
 	}
-	internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
-	internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
-
-	if( internal_volume->volume_header->file_system_type == LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS_PLUS )
+	if( memory_compare(
+	     "BD",
+	     signature,
+	     2 ) == 0 )
 	{
-		use_case_folding = 1;
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "Reading master directory block:\n" );
+		}
+#endif
+		if( libfshfs_master_directory_block_initialize(
+		     &( internal_volume->master_directory_block ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create master directory block.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_master_directory_block_read_file_io_handle(
+		     internal_volume->master_directory_block,
+		     file_io_handle,
+		     file_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read master directory block at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
+
+			goto on_error;
+		}
+/* TODO impement traditional HFS support */
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: traditional HFS not supported.",
+		 function );
+
+		goto on_error;
+	}
+	else
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "Reading volume header:\n" );
+		}
+#endif
+		if( libfshfs_volume_header_initialize(
+		     &( internal_volume->volume_header ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create volume header.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfshfs_volume_header_read_file_io_handle(
+		     internal_volume->volume_header,
+		     file_io_handle,
+		     file_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read volume header at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
+
+			goto on_error;
+		}
+		internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
+		internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
+
+		if( internal_volume->volume_header->file_system_type == LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS_PLUS )
+		{
+			use_case_folding = 1;
+		}
 	}
 	if( libfshfs_file_system_initialize(
 	     &( internal_volume->file_system ),
@@ -1182,6 +1292,12 @@ on_error:
 	{
 		libfshfs_file_system_free(
 		 &( internal_volume->file_system ),
+		 NULL );
+	}
+	if( internal_volume->master_directory_block != NULL )
+	{
+		libfshfs_master_directory_block_free(
+		 &( internal_volume->master_directory_block ),
 		 NULL );
 	}
 	if( internal_volume->volume_header != NULL )
