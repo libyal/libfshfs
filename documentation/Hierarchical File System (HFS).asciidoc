@@ -57,7 +57,7 @@ Email change
 | 0.0.9 | J.B. Metz | August 2020 | Changes to formatting.
 | 0.0.10 | J.B. Metz | October 2020 | Textual changes and changes to formatting.
 | 0.0.11 | J.B. Metz | July 2021 | Additional information about extended attributes.
-| 0.0.12 | J.B. Metz | July 2021 | Additional information about traditional HFS.
+| 0.0.12 | J.B. Metz | August 2021 | Additional information about traditional HFS.
 |===
 
 :numbered:
@@ -127,7 +127,7 @@ as Terminal.
 
 HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow
 additional features that are incompatible with HFS+. A HFSX volume cannot be
-wrapped in an HFS volume.
+wrapped in a HFS volume.
 
 One of such features is case-sensitive filenames. A HFSX volume may be either
 case-sensitive or case-insensitive. Case sensitivity (or lack thereof) is
@@ -159,7 +159,7 @@ Both HFS and HFS+ use B-trees files. A B-tree file consists of fixed sized nodes
 * leaf nodes
 
 [NOTE]
-The node size is determined when the B-tree is created. In an HFS+ B-tree the
+The node size is determined when the B-tree is created. In a HFS+ B-tree the
 node size is determined by the header node.
 
 [cols="1,1,1",options="header"]
@@ -197,6 +197,15 @@ of three main parts:
 * the node descriptor
 * the node records
 * the node record offsets
+
+The first node in the file is referenced by node number 0.
+
+The node offset relative to the start of the file given a node number can be
+calculated in the following manner:
+
+....
+node offset = node number x node size
+....
 
 ==== The B-tree node descriptor
 
@@ -236,17 +245,8 @@ Should contain 0-byte values
 
 ==== The B-tree node record
 
-The B-tree node record contains either data or a reference to some other node
-in the tree.
-
-[yellow-background]*TODO: reword*
-
-* In an HFS B-tree the keys in an index node occupy a fixed amount of space: the maximum key size for that B-tree.
-* In an HFS+ B-tree the keys in an index node are variable in size.
-
-Each B-tree node record contains a key, which is used to search through the
-B-tree to locate the information. This also referred to as the search key. The
-B-tree node record is variable of size and consists of:
+The B-tree node record contains (leaf) data or a reference to an index node.
+The B-tree node record consists of:
 
 * key data
 * record data
@@ -274,7 +274,7 @@ contains 3 records:
 [NOTE]
 The records in the B-tree header node do not have keys.
 
-==== The B-tree header record
+==== [[btree_header_record]]The B-tree header record
 
 The B-tree header record (BTHeaderRec) contains information about the beginning
 of the tree, as well as the size of the tree.
@@ -307,18 +307,6 @@ See section: <<btree_header_record_key_compare_type,Key compare type>>
 See section: <<btree_header_record_attributes,Attributes>>
 | 42 | ( 16 x 4 ) = 64 | | [yellow-background]*Unknown (Reserved)*
 |===
-
-The root node is the start of the B-tree structure; usually the root node is
-an index node, but it might be a leaf node if there are no index nodes.
-
-The first node in the file is referenced by node number 0.
-
-The node offset relative to the start of the file given a node number can be
-calculated in the following manner:
-
-....
-node offset = node number x node size
-....
 
 ===== [[btree_header_record_file_type]]File type
 
@@ -386,12 +374,14 @@ descriptor of the first map node is used to refer to the second. If more map
 nodes are required, each additional map node is similarly linked to the
 previous one.
 
-=== The index node
+=== The root node
 
-The index node contains records that point to other nodes in the B-tree
-hierarchy. These nodes are used to navigate through the tree structure. The
-first index node in a B-tree is called the root node, of which the node number
-is found in the header node.
+The root node is the start of the B-tree structure; usually the root node is
+an index node, but it might be a leaf node if there are no index nodes.
+
+The root node number is stored in the <<btree_header_record,B-tree header record>>.
+
+=== The index node
 
 The records stored in an index node are called pointer records. A pointer
 record consists of a key followed by the node number of the corresponding node.
@@ -408,7 +398,6 @@ the pointer records that the index node contains.
 
 === The leaf node
 
-The bottom level of a B-tree structure is occupied exclusively by leaf nodes.
 The leaf nodes contain data records. The structure of the leaf node data
 records varies according to the type of B-tree.
 
@@ -559,13 +548,13 @@ If bit 7 of the flag byte is set
 ** clear the value in system heap size on all machines should be used.
 ** is set the System heap is extended by the value in the additional system heap space plus the fraction of available RAM for the system heap.
 
-=== Master directory block (MDB)
+=== [[hfs_master_directory_block]]Master directory block (MDB)
 
 The master directory block (MDB), also known as the volume information block
-(VIB), contains information about the data in the volume. The master directory
-block starts at offset 1024 of the volume.
+(VIB), contains information about the data in the volume. The MDB starts at
+offset 1024 of the volume.
 
-The master directory block is 162 bytes of size and consists of:
+The MDB is 162 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -627,17 +616,8 @@ See section: <<hfs_extents_record,The HFS extents record>>
 See section: <<hfs_extents_record,The HFS extents record>>
 |===
 
-[NOTE]
-The extents in the extents (overflow) extents record and catalog file extents
-record are relative to the extents start block number.
-
-....
-offset = ( extents start block number + extent block number ) x allocation block size;
-....
-
-....
 Notes:
-
+....
 drVCSize => Volume cache (allocation) block size (16-bit)
 drVBMCSize => Volume bitmap cache (allocation) block size (16-bit)
 drCtlCSize => Common volume cache (allocation) block size (16-bit)
@@ -645,10 +625,9 @@ drCtlCSize => Common volume cache (allocation) block size (16-bit)
 
 ==== Alternate master directory block (MDB)
 
-A copy of the master directory block (MDB) is maintained in the Alternate
-aster directory block (MDB). This copy is updated when the extents (overflow)
-or the catalog file grows larger. The Alternate MBD is intended solely for use
-by disk utilities.
+A copy of the master directory block (MDB) is maintained in the Alternate MDB.
+This copy is updated when the extents (overflow) or the catalog file grow
+larger. The Alternate MBD is intended solely for use by disk utilities.
 
 === Volume bitmap
 
@@ -1063,7 +1042,7 @@ text. When the file is eventually closed, this temporary file may be removed.
 All such temporary files may be removed when repairing an unmounted HFS+ volume.
 Repairing the Metadata Directory
 
-When repairing an HFS+ volume with hard links or a metadata directory, there
+When repairing a HFS+ volume with hard links or a metadata directory, there
 are several conditions that might need to be repaired:
 
 * Opened but deleted files (which are now orphaned).
@@ -1113,7 +1092,7 @@ enum {
 ===== Notes
 
 ....
-On an HFS+ volume, a symbolic link is stored as an ordinary file with special
+On a HFS+ volume, a symbolic link is stored as an ordinary file with special
 values in some of the fields of its catalog record. The pathname of the file
 being referred to is stored in the data fork. The file type in the fileMode
 field of the permissions is set to S_IFLNK. For compatibility with Carbon and
@@ -1124,37 +1103,37 @@ fork of the symbolic link has zero length and is reserved.
 
 == The HFS wrapper
 
-An HFS+ volume can be wrapped in an HFS volume.
+An HFS+ volume can be wrapped in a HFS volume.
 
 Mac OS does not use the startup file to boot from HFS+ disks. Instead, it uses
 the HFS wrapper, as described later in this document.
 
-When an HFS+ volume is embedded within an HFS wrapper the space used by the
+When a HFS+ volume is embedded within a HFS wrapper the space used by the
 HFS+ volume is marked as part of the bad block file within the HFS wrapper
 itself.
 
 === Notes
 
 ....
-An HFS+ volume may be contained within an HFS volume in a way that makes the
-volume look like an HFS volume to systems without HFS+ support. This has a two
+An HFS+ volume may be contained within a HFS volume in a way that makes the
+volume look like a HFS volume to systems without HFS+ support. This has a two
 important advantages:
 
-1. It allows a computer with HFS (but no HFS+) support in ROM to start up from an HFS+ volume. When creating the wrapper, Mac OS includes a System file containing the minimum code to locate and mount the embedded HFS+ volume and continue booting from its System file.
-2. It improves the user experience when an HFS+ volume is inserted in a computer that has HFS support but no HFS+ support. On such a computer, the HFS wrapper will be mounted as a volume, which prevents error dialogs that might confuse the user into thinking the volume is empty, damaged, or unreadable. The HFS wrapper may also contain a Read Me document to explain the steps the user should take to access their files.
+1. It allows a computer with HFS (but no HFS+) support in ROM to start up from a HFS+ volume. When creating the wrapper, Mac OS includes a System file containing the minimum code to locate and mount the embedded HFS+ volume and continue booting from its System file.
+2. It improves the user experience when a HFS+ volume is inserted in a computer that has HFS support but no HFS+ support. On such a computer, the HFS wrapper will be mounted as a volume, which prevents error dialogs that might confuse the user into thinking the volume is empty, damaged, or unreadable. The HFS wrapper may also contain a Read Me document to explain the steps the user should take to access their files.
 
 The rest of this section describes how the HFS wrapper is laid out and how the HFS+ volume is embedded within the wrapper.
 
 IMPORTANT:
-This section does not describe the HFS+ volume format; instead, it describes additions to the HFS volume format that allow an HFS+ volume (or some other volume) to be embedded in an HFS volume. However, as all Mac OS volumes are formatted with an HFS wrapper, all implementations should be able to parse the wrapper to find the embedded HFS+ volume.
+This section does not describe the HFS+ volume format; instead, it describes additions to the HFS volume format that allow a HFS+ volume (or some other volume) to be embedded in a HFS volume. However, as all Mac OS volumes are formatted with a HFS wrapper, all implementations should be able to parse the wrapper to find the embedded HFS+ volume.
 
 Note:
-An HFS+ volume is not required to have an HFS wrapper. In that case, the volume will start at the beginning of the disk, and the volume header will be at offset 1024 bytes. However, Apple software currently initializes all HFS+ volumes with an HFS wrapper.
+An HFS+ volume is not required to have a HFS wrapper. In that case, the volume will start at the beginning of the disk, and the volume header will be at offset 1024 bytes. However, Apple software currently initializes all HFS+ volumes with a HFS wrapper.
 HFS Master Directory Block
 
-An HFS volume always contains a Master Directory Block (MDB), at offset 1024 bytes. The MDB is similar to an HFS+ volume header. In order to support volumes embedded within an HFS volume, several unused fields of the MDB have been changed, and are now used to indicate the type, location, and size of the embedded volume.
+An HFS volume always contains a Master Directory Block (MDB), at offset 1024 bytes. The MDB is similar to a HFS+ volume header. In order to support volumes embedded within a HFS volume, several unused fields of the MDB have been changed, and are now used to indicate the type, location, and size of the embedded volume.
 
-What was formerly the drVCSize field (at offset 0x7C) is now named drEmbedSigWord. This two-byte field contains a unique value that identifies the type of embedded volume. When an HFS+ volume is embedded, drEmbedSigWord must be kHFSPlusSigWord ('H+'), the same value stored in the signature field of an HFS+ volume header.
+What was formerly the drVCSize field (at offset 0x7C) is now named drEmbedSigWord. This two-byte field contains a unique value that identifies the type of embedded volume. When a HFS+ volume is embedded, drEmbedSigWord must be kHFSPlusSigWord ('H+'), the same value stored in the signature field of a HFS+ volume header.
 
 What were formerly the drVBMCSize and drCtlCSize fields (at offset 0x7E) have been combined into a single field occupying four bytes. The new structure is named drEmbedExtent and is of type HFSExtentDescriptor. It contains the starting allocation block number (startBlock) where the embedded volume begins and number of allocation blocks (blockCount ) the embedded volume occupies. The embedded volume must be contiguous. Both of these values are in terms of the HFS wrapper's allocation blocks, not HFS+ allocation blocks.
 
@@ -1164,7 +1143,7 @@ The description of the HFS volume format in Inside Macintosh: Files describes th
 To actually find the embedded volume's location on disk, an implementation must use the drAlBlkSiz and drAlBlSt fields of the MDB. The drAlBlkSiz field contains the size (in bytes) of the HFS allocation blocks. The drAlBlSt field contains the offset, in 512-byte blocks, of the wrapper's allocation block 0 relative to the start of the volume.
 
 IMPORTANT:
-This embedding introduces a transform between HFS+ volume offsets and disk offsets. The HFS+ volume exists on a virtual disk embedded within the real disk. When accessing an HFS+ structure on an embedded disk, an implementation must add the offset of the embedded disk to the HFS+ location. Listing 2 shows how one might do this, assuming 512-byte sectors.
+This embedding introduces a transform between HFS+ volume offsets and disk offsets. The HFS+ volume exists on a virtual disk embedded within the real disk. When accessing a HFS+ structure on an embedded disk, an implementation must add the offset of the embedded disk to the HFS+ location. Listing 2 shows how one might do this, assuming 512-byte sectors.
 
 static UInt32 HFSPlusSectorToDiskSector(UInt32 hfsPlusSector)
 {
@@ -1192,7 +1171,7 @@ This section is not part of the HFS+ volume format. It describes how the existin
 
 As initialized by the Mac OS Disk Initialization Package, the HFS wrapper volume contains five files in the root folder.
 
-    * Read Me -- The Read Me file, whose name is actually "Where_have_all_my_files_gone?", contains text explaining that this volume is really an HFS+ volume but the contents cannot be accessed because HFS+ is not currently installed on the computer. It also describes the steps needed to install HFS+ support. Localized system software will also create a localized version of the file with localized file name and text content.
+    * Read Me -- The Read Me file, whose name is actually "Where_have_all_my_files_gone?", contains text explaining that this volume is really a HFS+ volume but the contents cannot be accessed because HFS+ is not currently installed on the computer. It also describes the steps needed to install HFS+ support. Localized system software will also create a localized version of the file with localized file name and text content.
     * System and Finder (invisible) -- The System file contains the minimum code to locate and mount the embedded HFS+ volume, and to continue booting from the System file in the embedded volume. The Finder file is empty; it is there to prevent older versions of the Finder from de-blessing the wrapper's root directory, which would prevent booting from the volume.
     * Desktop DB and Desktop DF (invisible) -- The Desktop DB and Desktop DF files are an artifact of the way the files on the wrapper volume are created.
 
@@ -1256,20 +1235,23 @@ Contains number of bytes
 | 1 | 1 | | [yellow-background]*Unknown (Reserved)*
 | 2 | 4 | | The parent identifier +
 Contains a CNID
-| 6 | ... | | Name string +
-Contains an ASCII string +
+| 6 | 1 | | Number of characters in the name string +
+The end-of-string character is not included
+| 7 | ... | | Name string +
+Contains an ASCII string with end-of-string character +
 Contains the name of the file or directory
+| ... | ... | | [yellow-background]*Unknown (Padding)*
 |===
 
-A deleted record is indicated by a key data size of 0.
+The key data size may contain values from 7 to 37. A deleted record is indicated
+by a key data size of 0.
 
-[yellow-background]*Maximum name string length 32 characters?*
+In an index node, the catalog node name always is stored as 32 bytes and
+therefore the maximum key size should be 37. In a leaf node the catalog
+node name varies in size.
 
-The catalog key slightly differs when it is used in an index or leaf node. If
-the key is used:
-
-* in a pointer record (an index node), the catalog node name always occupies the full 32 bytes and the key (byte) size always contains the value 37 (0x25).
-* in a data record (a leaf node), then the catalog node name varies in length; it only uses the number of bytes required to hold the file or directory name. The key is padded with null characters so that the data following it begins on a word boundary. The key (byte) size may contain values from 7 to 37.
+HFS catalog index keys in a leaf node must be stored 16-bit aligned. The size
+of the alignment padding is not included in the key data size.
 
 ==== HFS+ catalog index key
 
@@ -1455,12 +1437,12 @@ This field should always contain 0.
 See section: <<hfs_file_information,HFS file information>>
 | 20 | 4 | | The identifier +
 Contains a CNID
-| 24 | 2 | | First allocation block of data fork
-| 26 | 4 | | Logical end of file (EOF) of data fork
-| 30 | 4 | | Physical end of file (EOF) of data fork
-| 34 | 2 | | First allocation block of resource fork
-| 36 | 4 | | Logical end of file (EOF) of resource fork
-| 40 | 4 | | Physical end of file (EOF) of resource fork
+| 24 | 2 | | Data fork block number ([yellow-background]*not used?*)
+| 26 | 4 | | Data fork size
+| 30 | 4 | | Data fork allocated size
+| 34 | 2 | | Resource fork block number ([yellow-background]*not used?*)
+| 36 | 4 | | Resource fork size
+| 40 | 4 | | Resource fork allocated size
 | 44 | 4 | | Creation date and time +
 Contains a HFS timestamp in local time
 | 48 | 4 | | (content) modification date and time +
@@ -1573,7 +1555,8 @@ consists of:
 Array of 32-bit integer values
 | 10 | 4 | | The parent identifier +
 Contains a CNID
-| 14 | 32 | | Name string
+| 14 | 1 | | Number of characters in the name string
+| 15 | ... | | Name string
 ASCII string +
 Contains the name of the associated file or directory
 |===
@@ -1897,6 +1880,13 @@ consists of:
 | 0 | 2 | | The start (allocation) block of the extent
 | 2 | 2 | | The number of (allocation) blocks in the extent
 |===
+
+The extents in a HFS extents record are relative to the extents start block
+number defined in the <<hfs_master_directory_block,master directory block (MDB)>>.
+
+....
+offset = ( extents start block number + extent block number ) x allocation block size;
+....
 
 ==== [[hfs_plus_extents_record]]The HFS+ extents record
 

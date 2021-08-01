@@ -25,6 +25,7 @@
 #include <types.h>
 
 #include "libfshfs_debug.h"
+#include "libfshfs_extents_record.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
@@ -210,16 +211,12 @@ int libfshfs_master_directory_block_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function             = "libfshfs_master_directory_block_read_data";
-	size_t extent_data_offset         = 0;
-	uint16_t embedded_volume_sigature = 0;
-	uint16_t extent_block_number      = 0;
-	uint16_t extent_number_of_blocks  = 0;
-	int extent_index                  = 0;
+	static char *function              = "libfshfs_master_directory_block_read_data";
+	uint16_t embedded_volume_signature = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint32_t value_32bit              = 0;
-	uint16_t value_16bit              = 0;
+	uint32_t value_32bit               = 0;
+	uint16_t value_16bit               = 0;
 #endif
 
 	if( master_directory_block == NULL )
@@ -291,8 +288,8 @@ int libfshfs_master_directory_block_read_data(
 	 master_directory_block->extents_start_block_number );
 
 	byte_stream_copy_to_uint16_big_endian(
-	 ( (fshfs_master_directory_block_t *) data )->embedded_volume_sigature,
-	 embedded_volume_sigature );
+	 ( (fshfs_master_directory_block_t *) data )->embedded_volume_signature,
+	 embedded_volume_signature );
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -401,7 +398,7 @@ int libfshfs_master_directory_block_read_data(
 		libcnotify_printf(
 		 "%s: extents start block number\t\t: %" PRIu16 "\n",
 		 function,
-		 value_16bit );
+		 master_directory_block->extents_start_block_number );
 
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_master_directory_block_t *) data )->number_of_unused_blocks,
@@ -508,9 +505,9 @@ int libfshfs_master_directory_block_read_data(
 		 0 );
 
 		libcnotify_printf(
-		 "%s: embedded volume sigature\t\t: 0x%04" PRIx16 "\n",
+		 "%s: embedded volume signature\t\t: 0x%04" PRIx16 "\n",
 		 function,
-		 embedded_volume_sigature );
+		 embedded_volume_signature );
 
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_master_directory_block_t *) data )->embedded_volume_extent,
@@ -536,48 +533,33 @@ int libfshfs_master_directory_block_read_data(
 		 "%s: extents file size\t\t\t: %" PRIu32 "\n",
 		 function,
 		 master_directory_block->extents_file_fork_descriptor->size );
+
+		libcnotify_printf(
+		 "%s: extents file extents record:\n",
+		 function );
 	}
 #endif
-	extent_data_offset = 0;
-	extent_index       = 0;
+	master_directory_block->extents_file_fork_descriptor->number_of_blocks = master_directory_block->extents_file_fork_descriptor->size / 512;
 
-	while( extent_data_offset < 12 )
+	if( ( master_directory_block->extents_file_fork_descriptor->size % 512 ) != 0 )
 	{
-		byte_stream_copy_to_uint16_big_endian(
-		 &( ( ( (fshfs_master_directory_block_t *) data )->extents_file_extents_record )[ extent_data_offset ] ),
-		 extent_block_number );
+		master_directory_block->extents_file_fork_descriptor->number_of_blocks += 1;
+	}
+	if( libfshfs_extents_record_read_data(
+	     master_directory_block->extents_file_fork_descriptor,
+	     master_directory_block->extents_start_block_number,
+	     ( (fshfs_master_directory_block_t *) data )->extents_file_extents_record,
+	     12,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read extents file extents record.",
+		 function );
 
-		extent_data_offset += 2;
-
-		byte_stream_copy_to_uint16_big_endian(
-		 &( ( ( (fshfs_master_directory_block_t *) data )->extents_file_extents_record )[ extent_data_offset ] ),
-		 extent_number_of_blocks );
-
-		extent_data_offset += 2;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: extents file: %d block number\t\t: %" PRIu16 "\n",
-			 function,
-			 extent_index,
-			 extent_block_number );
-
-			libcnotify_printf(
-			 "%s: extents file: %d number of blocks\t: %" PRIu16 "\n",
-			 function,
-			 extent_index,
-			 extent_number_of_blocks );
-		}
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
-		master_directory_block->extents_file_fork_descriptor->extents[ extent_index ][ 0 ] = (uint32_t) extent_block_number + master_directory_block->extents_start_block_number;
-		master_directory_block->extents_file_fork_descriptor->extents[ extent_index ][ 1 ] = extent_number_of_blocks;
-
-		master_directory_block->extents_file_fork_descriptor->number_of_blocks_in_extents += extent_number_of_blocks;
-
-		extent_index++;
+		return( -1 );
 	}
 	byte_stream_copy_to_uint32_big_endian(
 	 ( (fshfs_master_directory_block_t *) data )->catalog_file_size,
@@ -590,56 +572,34 @@ int libfshfs_master_directory_block_read_data(
 		 "%s: catalog file size\t\t\t: %" PRIu32 "\n",
 		 function,
 		 master_directory_block->catalog_file_fork_descriptor->size );
-	}
-#endif
-	extent_data_offset = 0;
-	extent_index       = 0;
 
-	while( extent_data_offset < 12 )
-	{
-		byte_stream_copy_to_uint16_big_endian(
-		 &( ( ( (fshfs_master_directory_block_t *) data )->catalog_file_extents_record )[ extent_data_offset ] ),
-		 extent_block_number );
-
-		extent_data_offset += 2;
-
-		byte_stream_copy_to_uint16_big_endian(
-		 &( ( ( (fshfs_master_directory_block_t *) data )->catalog_file_extents_record )[ extent_data_offset ] ),
-		 extent_number_of_blocks );
-
-		extent_data_offset += 2;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: catalog file: %d block number\t\t: %" PRIu16 "\n",
-			 function,
-			 extent_index,
-			 extent_block_number );
-
-			libcnotify_printf(
-			 "%s: catalog file: %d number of blocks\t: %" PRIu16 "\n",
-			 function,
-			 extent_index,
-			 extent_number_of_blocks );
-		}
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
-		master_directory_block->catalog_file_fork_descriptor->extents[ extent_index ][ 0 ] = (uint32_t) extent_block_number + master_directory_block->extents_start_block_number;
-		master_directory_block->catalog_file_fork_descriptor->extents[ extent_index ][ 1 ] = extent_number_of_blocks;
-
-		master_directory_block->catalog_file_fork_descriptor->number_of_blocks_in_extents += extent_number_of_blocks;
-
-		extent_index++;
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
 		libcnotify_printf(
-		 "\n" );
+		 "%s: catalog file extents record:\n",
+		 function );
 	}
 #endif
+	master_directory_block->catalog_file_fork_descriptor->number_of_blocks = master_directory_block->catalog_file_fork_descriptor->size / 512;
+
+	if( ( master_directory_block->catalog_file_fork_descriptor->size % 512 ) != 0 )
+	{
+		master_directory_block->catalog_file_fork_descriptor->number_of_blocks += 1;
+	}
+	if( libfshfs_extents_record_read_data(
+	     master_directory_block->catalog_file_fork_descriptor,
+	     master_directory_block->extents_start_block_number,
+	     ( (fshfs_master_directory_block_t *) data )->catalog_file_extents_record,
+	     12,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read catalog file extents record.",
+		 function );
+
+		return( -1 );
+	}
 	if( master_directory_block->allocation_block_size != 512 )
 	{
 		libcerror_error_set(
@@ -652,29 +612,17 @@ int libfshfs_master_directory_block_read_data(
 
 		return( -1 );
 	}
-	if( embedded_volume_sigature != 0 )
+	if( embedded_volume_signature != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported embedded volume sigature: 0x%04" PRIx16 "\n",
+		 "%s: unsupported embedded volume signature: 0x%04" PRIx16 "\n",
 		 function,
-		 embedded_volume_sigature );
+		 embedded_volume_signature );
 
 		return( -1 );
-	}
-	master_directory_block->extents_file_fork_descriptor->number_of_blocks = master_directory_block->extents_file_fork_descriptor->size / 512;
-
-	if( ( master_directory_block->extents_file_fork_descriptor->size % 512 ) > 0 )
-	{
-		master_directory_block->extents_file_fork_descriptor->number_of_blocks += 1;
-	}
-	master_directory_block->catalog_file_fork_descriptor->number_of_blocks = master_directory_block->catalog_file_fork_descriptor->size / 512;
-
-	if( ( master_directory_block->catalog_file_fork_descriptor->size % 512 ) > 0 )
-	{
-		master_directory_block->catalog_file_fork_descriptor->number_of_blocks += 1;
 	}
 	return( 1 );
 }

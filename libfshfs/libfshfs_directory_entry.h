@@ -44,6 +44,10 @@ struct libfshfs_directory_entry
 	 */
 	uint16_t name_size;
 
+	/* Codepage of the name
+	 */
+	int codepage;
+
 	/* Record type
 	 */
 	uint16_t record_type;
@@ -78,6 +82,7 @@ int libfshfs_directory_entry_set_name(
      libfshfs_directory_entry_t *directory_entry,
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      libcerror_error_t **error );
 
 int libfshfs_directory_entry_set_catalog_record(

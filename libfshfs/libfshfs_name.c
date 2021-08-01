@@ -5330,6 +5330,7 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 int libfshfs_name_get_utf8_string_size(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      size_t *utf8_string_size,
      libcerror_error_t **error )
 {
@@ -5343,7 +5344,7 @@ int libfshfs_name_get_utf8_string_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 encoded name.",
+		 "%s: invalid name.",
 		 function );
 
 		return( -1 );
@@ -5354,21 +5355,24 @@ int libfshfs_name_get_utf8_string_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 "%s: invalid name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( name_size % 2 ) != 0 )
+	if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: missing UTF-16 encoded name value.",
-		 function );
+		if( ( name_size % 2 ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid UTF-16 encoded name - size value not a multitude of 2.",
+			 function );
 
-		return( -1 );
+			return( -1 );
+		}
 	}
 	if( utf8_string_size == NULL )
 	{
@@ -5387,26 +5391,47 @@ int libfshfs_name_get_utf8_string_size(
 	{
 		return( 1 );
 	}
-	while( ( name_index + 1 ) < name_size )
+	while( name_index < name_size )
 	{
-		/* Convert the UTF-16 stream bytes into an Unicode character
-		 */
-		if( libuna_unicode_character_copy_from_utf16_stream(
-		     &unicode_character,
-		     name,
-		     name_size,
-		     &name_index,
-		     LIBUNA_ENDIAN_BIG,
-		     error ) != 1 )
+		if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
-			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
-			 function );
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+				 function );
 
-			return( -1 );
+				return( -1 );
+			}
+		}
+		else
+		{
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
 		}
 		/* ':' is stored as '/'
 		 */
@@ -5446,6 +5471,7 @@ int libfshfs_name_get_utf8_string_size(
 int libfshfs_name_get_utf8_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      libuna_utf8_character_t *utf8_string,
      size_t utf8_string_size,
      libcerror_error_t **error )
@@ -5461,7 +5487,7 @@ int libfshfs_name_get_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 encoded name.",
+		 "%s: invalid name.",
 		 function );
 
 		return( -1 );
@@ -5472,22 +5498,35 @@ int libfshfs_name_get_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 "%s: invalid name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( name_size == 0 )
-	 || ( ( name_size % 2 ) != 0 ) )
+	if( name_size == 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: missing UTF-16 encoded name value.",
+		 "%s: missing name value.",
 		 function );
 
 		return( -1 );
+	}
+	if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
+	{
+		if( ( name_size % 2 ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid UTF-16 encoded name - size value not a multitude of 2.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( utf8_string == NULL )
 	{
@@ -5511,26 +5550,47 @@ int libfshfs_name_get_utf8_string(
 
 		return( -1 );
 	}
-	while( ( name_index + 1 ) < name_size )
+	while( name_index < name_size )
 	{
-		/* Convert the UTF-16 stream bytes into an Unicode character
-		 */
-		if( libuna_unicode_character_copy_from_utf16_stream(
-		     &unicode_character,
-		     name,
-		     name_size,
-		     &name_index,
-		     LIBUNA_ENDIAN_BIG,
-		     error ) != 1 )
+		if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
-			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
-			 function );
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+				 function );
 
-			return( -1 );
+				return( -1 );
+			}
+		}
+		else
+		{
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
 		}
 		/* ':' is stored as '/'
 		 */
@@ -5587,6 +5647,7 @@ int libfshfs_name_get_utf8_string(
 int libfshfs_name_compare_with_utf8_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      const libuna_utf8_character_t *utf8_string,
      size_t utf8_string_length,
      uint8_t use_case_folding,
@@ -5608,7 +5669,7 @@ int libfshfs_name_compare_with_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 encoded name.",
+		 "%s: invalid name.",
 		 function );
 
 		return( -1 );
@@ -5619,7 +5680,7 @@ int libfshfs_name_compare_with_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 "%s: invalid name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -5630,7 +5691,7 @@ int libfshfs_name_compare_with_utf8_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: missing UTF-16 encoded name value.",
+		 "%s: missing name value.",
 		 function );
 
 		return( -1 );
@@ -5690,22 +5751,45 @@ int libfshfs_name_compare_with_utf8_string(
 		     nfd_character_index < utf8_nfd_mapping->number_of_characters;
 		     nfd_character_index++ )
 		{
-			if( libuna_unicode_character_copy_from_utf16_stream(
-			     &name_unicode_character,
-			     name,
-			     name_size,
-			     &name_index,
-			     LIBUNA_ENDIAN_BIG,
-			     error ) != 1 )
+			if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
-				 "%s: unable to copy Unicode character from UTF-16 big-endian encoded name.",
-				 function );
+				if( libuna_unicode_character_copy_from_utf16_stream(
+				     &name_unicode_character,
+				     name,
+				     name_size,
+				     &name_index,
+				     LIBUNA_ENDIAN_BIG,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+					 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+					 "%s: unable to copy Unicode character from UTF-16 big-endian encoded name.",
+					 function );
 
-				return( -1 );
+					return( -1 );
+				}
+			}
+			else
+			{
+				if( libuna_unicode_character_copy_from_byte_stream(
+				     &name_unicode_character,
+				     name,
+				     name_size,
+				     &name_index,
+				     codepage,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+					 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+					 "%s: unable to copy Unicode character from ASCII encoded name.",
+					 function );
+
+					return( -1 );
+				}
 			}
 			/* ':' is stored as '/'
 			 */
@@ -5762,6 +5846,7 @@ int libfshfs_name_compare_with_utf8_string(
 int libfshfs_name_get_utf16_string_size(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      size_t *utf16_string_size,
      libcerror_error_t **error )
 {
@@ -5775,7 +5860,7 @@ int libfshfs_name_get_utf16_string_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 encoded name.",
+		 "%s: invalid name.",
 		 function );
 
 		return( -1 );
@@ -5786,21 +5871,24 @@ int libfshfs_name_get_utf16_string_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 "%s: invalid name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( name_size % 2 ) != 0 )
+	if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: missing UTF-16 encoded name value.",
-		 function );
+		if( ( name_size % 2 ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid UTF-16 encoded name - size value not a multitude of 2.",
+			 function );
 
-		return( -1 );
+			return( -1 );
+		}
 	}
 	if( utf16_string_size == NULL )
 	{
@@ -5819,26 +5907,47 @@ int libfshfs_name_get_utf16_string_size(
 	{
 		return( 1 );
 	}
-	while( ( name_index + 1 ) < name_size )
+	while( name_index < name_size )
 	{
-		/* Convert the UTF-16 stream bytes into an Unicode character
-		 */
-		if( libuna_unicode_character_copy_from_utf16_stream(
-		     &unicode_character,
-		     name,
-		     name_size,
-		     &name_index,
-		     LIBUNA_ENDIAN_BIG,
-		     error ) != 1 )
+		if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
-			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
-			 function );
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+				 function );
 
-			return( -1 );
+				return( -1 );
+			}
+		}
+		else
+		{
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
 		}
 		/* ':' is stored as '/'
 		 */
@@ -5878,6 +5987,7 @@ int libfshfs_name_get_utf16_string_size(
 int libfshfs_name_get_utf16_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      libuna_utf16_character_t *utf16_string,
      size_t utf16_string_size,
      libcerror_error_t **error )
@@ -5893,7 +6003,7 @@ int libfshfs_name_get_utf16_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 encoded name.",
+		 "%s: invalid name.",
 		 function );
 
 		return( -1 );
@@ -5904,22 +6014,35 @@ int libfshfs_name_get_utf16_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 "%s: invalid name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( name_size == 0 )
-	 || ( ( name_size % 2 ) != 0 ) )
+	if( name_size == 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: missing UTF-16 encoded name value.",
+		 "%s: missing name value.",
 		 function );
 
 		return( -1 );
+	}
+	if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
+	{
+		if( ( name_size % 2 ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid UTF-16 encoded name - size value not a multitude of 2.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( utf16_string == NULL )
 	{
@@ -5943,26 +6066,47 @@ int libfshfs_name_get_utf16_string(
 
 		return( -1 );
 	}
-	while( ( name_index + 1 ) < name_size )
+	while( name_index < name_size )
 	{
-		/* Convert the UTF-16 stream bytes into an Unicode character
-		 */
-		if( libuna_unicode_character_copy_from_utf16_stream(
-		     &unicode_character,
-		     name,
-		     name_size,
-		     &name_index,
-		     LIBUNA_ENDIAN_BIG,
-		     error ) != 1 )
+		if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-			 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
-			 "%s: unable to copy Unicode character from UTF-16 encoded name.",
-			 function );
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+				 function );
 
-			return( -1 );
+				return( -1 );
+			}
+		}
+		else
+		{
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
 		}
 		/* ':' is stored as '/'
 		 */
@@ -6017,6 +6161,7 @@ int libfshfs_name_get_utf16_string(
 int libfshfs_name_compare_with_utf16_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      const libuna_utf16_character_t *utf16_string,
      size_t utf16_string_length,
      uint8_t use_case_folding,
@@ -6038,7 +6183,7 @@ int libfshfs_name_compare_with_utf16_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 encoded name.",
+		 "%s: invalid name.",
 		 function );
 
 		return( -1 );
@@ -6049,7 +6194,7 @@ int libfshfs_name_compare_with_utf16_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 encoded name size value exceeds maximum.",
+		 "%s: invalid name size value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -6060,7 +6205,7 @@ int libfshfs_name_compare_with_utf16_string(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: missing UTF-16 encoded name value.",
+		 "%s: missing name value.",
 		 function );
 
 		return( -1 );
@@ -6120,22 +6265,45 @@ int libfshfs_name_compare_with_utf16_string(
 		     nfd_character_index < utf16_nfd_mapping->number_of_characters;
 		     nfd_character_index++ )
 		{
-			if( libuna_unicode_character_copy_from_utf16_stream(
-			     &name_unicode_character,
-			     name,
-			     name_size,
-			     &name_index,
-			     LIBUNA_ENDIAN_BIG,
-			     error ) != 1 )
+			if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
-				 "%s: unable to copy Unicode character from UTF-16 big-endian encoded name.",
-				 function );
+				if( libuna_unicode_character_copy_from_utf16_stream(
+				     &name_unicode_character,
+				     name,
+				     name_size,
+				     &name_index,
+				     LIBUNA_ENDIAN_BIG,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+					 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+					 "%s: unable to copy Unicode character from UTF-16 big-endian encoded name.",
+					 function );
 
-				return( -1 );
+					return( -1 );
+				}
+			}
+			else
+			{
+				if( libuna_unicode_character_copy_from_byte_stream(
+				     &name_unicode_character,
+				     name,
+				     name_size,
+				     &name_index,
+				     codepage,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+					 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+					 "%s: unable to copy Unicode character from ASCII encoded name.",
+					 function );
+
+					return( -1 );
+				}
 			}
 			/* ':' is stored as '/'
 			 */

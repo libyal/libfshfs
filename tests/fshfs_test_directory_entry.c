@@ -29,6 +29,7 @@
 
 #include "fshfs_test_libcerror.h"
 #include "fshfs_test_libfshfs.h"
+#include "fshfs_test_libuna.h"
 #include "fshfs_test_macros.h"
 #include "fshfs_test_memory.h"
 #include "fshfs_test_unused.h"
@@ -1891,6 +1892,7 @@ int main(
 	          directory_entry,
 	          name_data,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(

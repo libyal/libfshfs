@@ -29,6 +29,7 @@
 #include "libfshfs_file_record.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
+#include "libfshfs_libuna.h"
 #include "libfshfs_name.h"
 
 /* Creates a directory entry
@@ -343,6 +344,7 @@ int libfshfs_directory_entry_set_name(
      libfshfs_directory_entry_t *directory_entry,
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_directory_entry_set_name";
@@ -391,6 +393,18 @@ int libfshfs_directory_entry_set_name(
 
 		return( -1 );
 	}
+	if( ( codepage != LIBUNA_CODEPAGE_ASCII )
+	 && ( codepage != LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported codepage.",
+		 function );
+
+		return( -1 );
+	}
 	if( name_size > 0 )
 	{
 		directory_entry->name = (uint8_t *) memory_allocate(
@@ -423,6 +437,7 @@ int libfshfs_directory_entry_set_name(
 		}
 	}
 	directory_entry->name_size = name_size;
+	directory_entry->codepage  = codepage;
 
 	return( 1 );
 
@@ -1296,7 +1311,7 @@ int libfshfs_directory_entry_get_link_reference(
 		return( -1 );
 	}
 	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
 	{
 		result = libfshfs_file_record_get_link_reference(
 		          (libfshfs_file_record_t *) directory_entry->catalog_record,
@@ -1340,9 +1355,24 @@ int libfshfs_directory_entry_get_utf8_name_size(
 
 		return( -1 );
 	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
 	if( libfshfs_name_get_utf8_string_size(
 	     directory_entry->name,
 	     (size_t) directory_entry->name_size,
+	     directory_entry->codepage,
 	     utf8_string_size,
 	     error ) != 1 )
 	{
@@ -1384,6 +1414,7 @@ int libfshfs_directory_entry_get_utf8_name(
 	if( libfshfs_name_get_utf8_string(
 	     directory_entry->name,
 	     (size_t) directory_entry->name_size,
+	     directory_entry->codepage,
 	     utf8_string,
 	     utf8_string_size,
 	     error ) != 1 )
@@ -1425,6 +1456,7 @@ int libfshfs_directory_entry_get_utf16_name_size(
 	if( libfshfs_name_get_utf16_string_size(
 	     directory_entry->name,
 	     (size_t) directory_entry->name_size,
+	     directory_entry->codepage,
 	     utf16_string_size,
 	     error ) != 1 )
 	{
@@ -1466,6 +1498,7 @@ int libfshfs_directory_entry_get_utf16_name(
 	if( libfshfs_name_get_utf16_string(
 	     directory_entry->name,
 	     (size_t) directory_entry->name_size,
+	     directory_entry->codepage,
 	     utf16_string,
 	     utf16_string_size,
 	     error ) != 1 )

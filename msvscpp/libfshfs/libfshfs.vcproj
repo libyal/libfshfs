@@ -278,6 +278,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_extents_record.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_file_entry.c"
 				>
 			</File>
@@ -473,6 +477,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_extents_btree_key.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_extents_record.h"
 				>
 			</File>
 			<File

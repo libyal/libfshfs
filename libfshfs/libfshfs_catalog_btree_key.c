@@ -151,6 +151,7 @@ int libfshfs_catalog_btree_key_read_data(
      libcerror_error_t **error )
 {
 	static char *function    = "libfshfs_catalog_btree_key_read_data";
+	size_t data_offset       = 0;
 	uint16_t additional_size = 0;
 	uint16_t key_data_size   = 0;
 
@@ -204,6 +205,8 @@ int libfshfs_catalog_btree_key_read_data(
 		additional_size = 1;
 
 		key_data_size = (int8_t) ( (fshfs_catalog_index_key_hfs_t *) data )->data_size;
+
+		data_offset = 1;
 	}
 	else
 	{
@@ -212,6 +215,8 @@ int libfshfs_catalog_btree_key_read_data(
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_index_key_hfsplus_t *) data )->data_size,
 		 key_data_size );
+
+		data_offset = 2;
 	}
 	if( (size_t) key_data_size > ( data_size - additional_size ) )
 	{
@@ -245,11 +250,8 @@ int libfshfs_catalog_btree_key_read_data(
 		 key_data_size );
 	}
 #endif
-	/* The key data size can be 0 if the node is no longer used
-	 */
-	catalog_btree_key->data_size = key_data_size + additional_size;
-
-	if( additional_size == 1 )
+	if( ( additional_size == 1 )
+	 && ( key_data_size >= 2 ) )
 	{
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -260,9 +262,9 @@ int libfshfs_catalog_btree_key_read_data(
 			 ( (fshfs_catalog_index_key_hfs_t *) data )->unknown1 );
 		}
 #endif
-		key_data_size -= 1;
+		data_offset += 1;
 	}
-	if( key_data_size >= 4 )
+	if( key_data_size >= 6 )
 	{
 		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_index_key_hfsplus_t *) data )->parent_identifier,
@@ -277,15 +279,35 @@ int libfshfs_catalog_btree_key_read_data(
 			 catalog_btree_key->parent_identifier );
 		}
 #endif
+		data_offset += 4;
 	}
-/* TODO add legacy HFS name size support */
+	if( ( additional_size == 1 )
+	 && ( key_data_size >= 7 ) )
+	{
+		catalog_btree_key->name_size = ( (fshfs_catalog_index_key_hfs_t *) data )->name_size;
 
-	if( ( additional_size == 2 )
-	 && ( key_data_size >= 6 ) )
+/* TODO add support for Mac OS codepages */
+		catalog_btree_key->codepage = LIBUNA_CODEPAGE_ASCII;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: name number of characters\t\t: %" PRIu8 "\n",
+			 function,
+			 catalog_btree_key->name_size );
+		}
+#endif
+		data_offset += 1;
+	}
+	else if( ( additional_size == 2 )
+	      && ( key_data_size >= 8 ) )
 	{
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_index_key_hfsplus_t *) data )->name_size,
 		 catalog_btree_key->name_size );
+
+		catalog_btree_key->codepage = LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -310,7 +332,11 @@ int libfshfs_catalog_btree_key_read_data(
 		}
 		catalog_btree_key->name_size *= 2;
 
-		if( (size_t) catalog_btree_key->name_size > ( data_size - 8 ) )
+		data_offset += 2;
+	}
+	if( catalog_btree_key->name_size > 0 )
+	{
+		if( (size_t) catalog_btree_key->name_size > ( data_size - data_offset ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -321,19 +347,36 @@ int libfshfs_catalog_btree_key_read_data(
 
 			return( -1 );
 		}
-	}
-	if( catalog_btree_key->name_size > 0 )
-	{
+		catalog_btree_key->name_data = &( data[ data_offset ] );
+
 		if( additional_size == 1 )
 		{
-			catalog_btree_key->name_data = &( data[ sizeof( fshfs_catalog_index_key_hfs_t ) ] );
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+/* TODO add support for Mac OS codepages */
+				if( libfshfs_debug_print_string_value(
+				     function,
+				     "name\t\t\t\t",
+				     catalog_btree_key->name_data,
+				     (size_t) catalog_btree_key->name_size,
+				     LIBUNA_CODEPAGE_ASCII,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print ASCII name value.",
+					 function );
 
-/* TODO print ASCII string */
+					return( -1 );
+				}
+			}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 		}
 		else
 		{
-			catalog_btree_key->name_data = &( data[ sizeof( fshfs_catalog_index_key_hfsplus_t ) ] );
-
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
@@ -357,9 +400,53 @@ int libfshfs_catalog_btree_key_read_data(
 			}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 		}
+		data_offset += catalog_btree_key->name_size;
+	}
+	/* The key data size can be 0 if the node is no longer used
+	 */
+	catalog_btree_key->data_size = additional_size + key_data_size;
+
+	if( data_offset < catalog_btree_key->data_size )
+	{
+		/* The HFS catalog index key of an index node can contain trailing data
+		 * that is included in the key data size.
+		 */
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: trailing data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( data[ data_offset ] ),
+			 (size_t) catalog_btree_key->data_size - data_offset,
+			 0 );
+		}
+#endif
+	}
+	else if( ( additional_size == 1 )
+	      && ( data_offset < ( data_size - 1 ) )
+	      && ( ( data_offset % 2 ) != 0 ) )
+	{
+		/* The HFS catalog index key of a leaf node can contain alignment padding data
+		 * that is not included in the key data size.
+		 */
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: alignment padding data:\n",
+			 function );
+			libcnotify_print_data(
+			 &( data[ data_offset ] ),
+			 1,
+			 0 );
+		}
+#endif
+		catalog_btree_key->data_size += 1;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
+	else if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
 		 "\n" );
@@ -442,6 +529,7 @@ int libfshfs_catalog_btree_key_compare_name_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          catalog_btree_key->name_data,
 	          catalog_btree_key->name_size,
+	          catalog_btree_key->codepage,
 	          utf8_string,
 	          utf8_string_length,
 	          use_case_folding,
@@ -488,6 +576,7 @@ int libfshfs_catalog_btree_key_compare_name_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          catalog_btree_key->name_data,
 	          catalog_btree_key->name_size,
+	          catalog_btree_key->codepage,
 	          utf16_string,
 	          utf16_string_length,
 	          use_case_folding,

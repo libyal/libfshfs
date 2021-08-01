@@ -58,6 +58,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_extent.c libfshfs_extent.h \
 	libfshfs_extents_btree_file.c libfshfs_extents_btree_file.h \
 	libfshfs_extents_btree_key.c libfshfs_extents_btree_key.h \
+	libfshfs_extents_record.c libfshfs_extents_record.h \
 	libfshfs_extern.h \
 	libfshfs_file_entry.c libfshfs_file_entry.h \
 	libfshfs_file_record.c libfshfs_file_record.h \

@@ -253,7 +253,8 @@ int libfshfs_thread_record_read_data(
 	}
 	else
 	{
-/* TODO add HFS support */
+/* TODO set flag to indicate name is ASCII */
+		name_size = ( (fshfs_catalog_thread_record_hfs_t *) data )->name_size;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -347,19 +348,22 @@ int libfshfs_thread_record_read_data(
 
 	if( thread_record->name_size > 0 )
 	{
-		if( (uint32_t) thread_record->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
+		if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+		 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid thread record - name size value out of bounds.",
-			 function );
+			if( (uint32_t) thread_record->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid thread record - name size value out of bounds.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
+			thread_record->name_size *= 2;
 		}
-		thread_record->name_size *= 2;
-
 		if( thread_record->name_size > ( data_size - header_size ) )
 		{
 			libcerror_error_set(
@@ -402,22 +406,47 @@ int libfshfs_thread_record_read_data(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			if( libfshfs_debug_print_utf16_name_value(
-			     function,
-			     "name\t\t\t\t\t",
-			     &( data[ header_size ] ),
-			     (size_t) thread_record->name_size,
-			     LIBUNA_ENDIAN_BIG,
-			     error ) != 1 )
+			if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+			 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
-				 "%s: unable to print UTF-16 name value.",
-				 function );
+				if( libfshfs_debug_print_utf16_name_value(
+				     function,
+				     "name\t\t\t\t\t",
+				     &( data[ header_size ] ),
+				     (size_t) thread_record->name_size,
+				     LIBUNA_ENDIAN_BIG,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print UTF-16 name value.",
+					 function );
 
-				goto on_error;
+					goto on_error;
+				}
+			}
+			else
+			{
+/* TODO add support for Mac OS codepages */
+				if( libfshfs_debug_print_string_value(
+				     function,
+				     "name\t\t\t\t\t",
+				     &( data[ header_size ] ),
+				     (size_t) thread_record->name_size,
+				     LIBUNA_CODEPAGE_ASCII,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print ASCII name value.",
+					 function );
+
+					return( -1 );
+				}
 			}
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */

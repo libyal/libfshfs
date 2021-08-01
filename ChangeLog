@@ -19,6 +19,13 @@ To do:
 
 * add support to print information about special files (those without a catalog record)
 
+* traditional HFS
+** pass IO handle to directory, file and thread records to validate record types ?
+** add support for Mac OS codepages
+** API: determine how to represent file mode
+** API: add means to determine if date and time values are in local time or UTC
+** correct file record extents with extents start
+
 Format support:
 * implement support for traditional HFS
 * implement support for HFS+/HFX Unicode 2.1 version

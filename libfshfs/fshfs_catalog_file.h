@@ -48,6 +48,11 @@ struct fshfs_catalog_index_key_hfs
 	 */
 	uint8_t parent_identifier[ 4 ];
 
+	/* The number of characters of the name string
+	 * Consists of 1 byte
+	 */
+	uint8_t name_size;
+
 	/* The name string
 	 * Variable of size
 	 */
@@ -121,14 +126,9 @@ typedef struct fshfs_catalog_file_record_hfs fshfs_catalog_file_record_hfs_t;
 struct fshfs_catalog_file_record_hfs
 {
 	/* The record type
-	 * Consists of 1 byte
+	 * Consists of 2 bytes
 	 */
-	uint8_t record_type;
-
-	/* Unknown (reserved)
-	 * Consists of 1 byte
-	 */
-	uint8_t unknown1;
+	uint8_t record_type[ 2 ];
 
 	/* The flags
 	 * Consists of 1 byte
@@ -150,9 +150,35 @@ struct fshfs_catalog_file_record_hfs
 	 */
 	uint8_t identifier[ 4 ];
 
-/* TODO refactor */
-	uint8_t data_fork[ 10 ];
-	uint8_t resource_fork[ 10 ];
+	/* The data fork block number
+	 * Consists of 2 bytes
+	 */
+	uint8_t data_fork_block_number[ 2 ];
+
+	/* The data fork size
+	 * Consists of 4 bytes
+	 */
+	uint8_t data_fork_size[ 4 ];
+
+	/* The data fork allocated size
+	 * Consists of 4 bytes
+	 */
+	uint8_t data_fork_allocated_size[ 4 ];
+
+	/* The resource fork block number
+	 * Consists of 2 bytes
+	 */
+	uint8_t resource_fork_block_number[ 2 ];
+
+	/* The resource fork size
+	 * Consists of 4 bytes
+	 */
+	uint8_t resource_fork_size[ 4 ];
+
+	/* The resource fork allocated size
+	 * Consists of 4 bytes
+	 */
+	uint8_t resource_fork_allocated_size[ 4 ];
 
 	/* The creation time
 	 * Consists of 4 bytes
@@ -182,15 +208,20 @@ struct fshfs_catalog_file_record_hfs
 	 */
 	uint8_t clump_size[ 2 ];
 
-	/* The data fork descriptor
-	 * Consists of 16 bytes
+	/* The data fork extents record
+	 * Consists of 12 bytes
 	 */
-	uint8_t data_fork_descriptor[ 16 ];
+	uint8_t data_fork_extents_record[ 12 ];
 
-	/* The resource fork descriptor
-	 * Consists of 16 bytes
+	/* The resource fork extents record
+	 * Consists of 12 bytes
 	 */
-	uint8_t resource_fork_descriptor[ 16 ];
+	uint8_t resource_fork_extents_record[ 12 ];
+
+	/* Unknown (reserved)
+	 * Consists of 4 bytes
+	 */
+	uint8_t unknown1[ 4 ];
 };
 
 typedef struct fshfs_catalog_thread_record_hfs fshfs_catalog_thread_record_hfs_t;
@@ -216,6 +247,11 @@ struct fshfs_catalog_thread_record_hfs
 	 * Consists of 4 bytes
 	 */
 	uint8_t parent_identifier[ 4 ];
+
+	/* The number of characters of the name string
+	 * Consists of 1 byte
+	 */
+	uint8_t name_size;
 
 	/* The name string
 	 * Variable of size

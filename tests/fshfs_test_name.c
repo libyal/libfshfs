@@ -140,6 +140,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_equal,
 	          5,
 	          0,
@@ -157,6 +158,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_equal,
 	          6,
 	          0,
@@ -174,6 +176,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_great,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_greater,
 	          7,
 	          0,
@@ -191,6 +194,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_less,
 	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_more,
 	          4,
 	          0,
@@ -208,6 +212,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_more,
 	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_less,
 	          4,
 	          0,
@@ -225,6 +230,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_lesser,
 	          12,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_less,
 	          4,
 	          0,
@@ -244,6 +250,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          NULL,
 	          6,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_equal,
 	          5,
 	          0,
@@ -264,6 +271,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_equal,
 	          (size_t) SSIZE_MAX + 1,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_equal,
 	          5,
 	          0,
@@ -284,6 +292,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          NULL,
 	          5,
 	          0,
@@ -304,6 +313,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	result = libfshfs_name_compare_with_utf8_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf8_string_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          0,
@@ -355,6 +365,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_equal,
 	          5,
 	          0,
@@ -372,6 +383,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_equal,
 	          6,
 	          0,
@@ -389,6 +401,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_great,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_greater,
 	          7,
 	          0,
@@ -406,6 +419,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_less,
 	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_more,
 	          4,
 	          0,
@@ -423,6 +437,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_more,
 	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_less,
 	          4,
 	          0,
@@ -440,6 +455,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_lesser,
 	          12,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_less,
 	          4,
 	          0,
@@ -459,6 +475,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          NULL,
 	          6,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_equal,
 	          5,
 	          0,
@@ -479,6 +496,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_equal,
 	          (size_t) SSIZE_MAX + 1,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_equal,
 	          5,
 	          0,
@@ -499,6 +517,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          NULL,
 	          5,
 	          0,
@@ -519,6 +538,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	result = libfshfs_name_compare_with_utf16_string(
 	          name_utf16_stream_equal,
 	          10,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
 	          utf16_string_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          0,

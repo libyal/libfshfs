@@ -1014,6 +1014,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_key(
 		     safe_directory_entry,
 		     node_key->name_data,
 		     node_key->name_size,
+		     node_key->codepage,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

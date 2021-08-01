@@ -156,7 +156,7 @@ struct fshfs_master_directory_block
 	/* The embedded volume signature
 	 * Consists of 2 bytes
 	 */
-	uint8_t embedded_volume_sigature[ 2 ];
+	uint8_t embedded_volume_signature[ 2 ];
 
 	/* The embedded volume extent descriptor
 	 * Consists of 4 bytes

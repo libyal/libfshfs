@@ -55,7 +55,6 @@ int libfshfs_file_entry_initialize(
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_initialize";
 	uint16_t file_mode                                  = 0;
-	int result                                          = 0;
 
 	if( file_entry == NULL )
 	{
@@ -75,6 +74,17 @@ int libfshfs_file_entry_initialize(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
 		 function );
 
 		return( -1 );
@@ -124,13 +134,20 @@ int libfshfs_file_entry_initialize(
 
 		goto on_error;
 	}
-	result = libfshfs_directory_entry_get_file_mode(
+	/* Traditional HFS has not file mode so we derive it from the record type
+	 */
+	if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	{
+		file_mode = LIBFSHFS_FILE_TYPE_DIRECTORY;
+	}
+	else if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
+	{
+		file_mode = LIBFSHFS_FILE_TYPE_REGULAR_FILE;
+	}
+	else if( libfshfs_directory_entry_get_file_mode(
 	          directory_entry,
 	          &file_mode,
-	          error );
-
-/* TODO handle result == 0 for HFS */
-	if( result != 1 )
+	          error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,

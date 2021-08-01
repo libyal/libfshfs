@@ -26,6 +26,7 @@
 
 #include "libfshfs_debug.h"
 #include "libfshfs_definitions.h"
+#include "libfshfs_extents_record.h"
 #include "libfshfs_file_record.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_libcerror.h"
@@ -300,15 +301,17 @@ int libfshfs_file_record_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_file_record_read_data";
-	size_t record_size    = 0;
-	uint16_t record_type  = 0;
-	uint8_t is_hard_link  = 0;
+	static char *function       = "libfshfs_file_record_read_data";
+	size_t record_size          = 0;
+	uint32_t data_fork_size     = 0;
+	uint32_t resource_fork_size = 0;
+	uint16_t record_type        = 0;
+	uint8_t is_hard_link        = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint32_t value_32bit  = 0;
-	uint16_t value_16bit  = 0;
-	int result            = 0;
+	uint32_t value_32bit        = 0;
+	uint16_t value_16bit        = 0;
+	int result                  = 0;
 #endif
 
 	if( file_record == NULL )
@@ -464,6 +467,14 @@ int libfshfs_file_record_read_data(
 		 file_record->identifier );
 
 		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfs_t *) data )->data_fork_size,
+		 data_fork_size );
+
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfs_t *) data )->resource_fork_size,
+		 resource_fork_size );
+
+		byte_stream_copy_to_uint32_big_endian(
 		 ( (fshfs_catalog_file_record_hfs_t *) data )->creation_time,
 		 file_record->creation_time );
 
@@ -478,30 +489,13 @@ int libfshfs_file_record_read_data(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->record_type,
-			 value_16bit );
-		}
-		else
-		{
-			value_16bit = ( (fshfs_catalog_file_record_hfs_t *) data )->record_type;
-		}
 		libcnotify_printf(
 		 "%s: record type\t\t\t\t: 0x%04" PRIx16 " (%s)\n",
 		 function,
-		 value_16bit,
+		 record_type,
 		 libfshfs_debug_print_catalog_record_type(
 		  record_type ) );
 
-		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
-		{
-			libcnotify_printf(
-			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
-			 function,
-			 ( (fshfs_catalog_file_record_hfs_t *) data )->unknown1 );
-		}
 		libcnotify_printf(
 		 "%s: flags\t\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,
@@ -545,22 +539,47 @@ int libfshfs_file_record_read_data(
 
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 		{
-/* TODO refactor */
+			byte_stream_copy_to_uint16_big_endian(
+			 ( (fshfs_catalog_file_record_hfs_t *) data )->data_fork_block_number,
+			 value_16bit );
 			libcnotify_printf(
-			 "%s: data fork:\n",
-			 function );
-			libcnotify_print_data(
-			 ( (fshfs_catalog_file_record_hfs_t *) data )->data_fork,
-			 10,
-			 0 );
+			 "%s: data fork block number\t\t\t: %" PRIu16 "\n",
+			 function,
+			 value_16bit );
 
 			libcnotify_printf(
-			 "%s: resource fork:\n",
-			 function );
-			libcnotify_print_data(
-			 ( (fshfs_catalog_file_record_hfs_t *) data )->resource_fork,
-			 10,
-			 0 );
+			 "%s: data fork size\t\t\t\t: %" PRIu32 "\n",
+			 function,
+			 value_32bit );
+
+			byte_stream_copy_to_uint32_big_endian(
+			 ( (fshfs_catalog_file_record_hfs_t *) data )->data_fork_allocated_size,
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: data fork allocated size\t\t: %" PRIu32 "\n",
+			 function,
+			 value_32bit );
+
+			byte_stream_copy_to_uint16_big_endian(
+			 ( (fshfs_catalog_file_record_hfs_t *) data )->resource_fork_block_number,
+			 value_16bit );
+			libcnotify_printf(
+			 "%s: resource fork block number\t\t: %" PRIu16 "\n",
+			 function,
+			 value_16bit );
+
+			libcnotify_printf(
+			 "%s: resource fork size\t\t\t: %" PRIu32 "\n",
+			 function,
+			 resource_fork_size );
+
+			byte_stream_copy_to_uint32_big_endian(
+			 ( (fshfs_catalog_file_record_hfs_t *) data )->resource_fork_allocated_size,
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: resource fork allocated size\t\t: %" PRIu32 "\n",
+			 function,
+			 value_32bit );
 		}
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
 		{
@@ -839,19 +858,6 @@ int libfshfs_file_record_read_data(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-/* TODO add HFS support */
-	if( record_size < sizeof( fshfs_catalog_file_record_hfsplus_t ) )
-	{
-		return( 1 );
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: data fork descriptor:\n",
-		 function );
-	}
-#endif
 	if( libfshfs_fork_descriptor_initialize(
 	     &( file_record->data_fork_descriptor ),
 	     error ) != 1 )
@@ -865,29 +871,66 @@ int libfshfs_file_record_read_data(
 
 		goto on_error;
 	}
-	if( libfshfs_fork_descriptor_read_data(
-	     file_record->data_fork_descriptor,
-	     ( (fshfs_catalog_file_record_hfsplus_t *) data )->data_fork_descriptor,
-	     80,
-	     error ) != 1 )
+	if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read data fork descriptor.",
-		 function );
+		file_record->data_fork_descriptor->size             = data_fork_size;
+		file_record->data_fork_descriptor->number_of_blocks = data_fork_size / 512;
 
-		goto on_error;
-	}
+		if( ( data_fork_size % 512 ) != 0 )
+		{
+			file_record->data_fork_descriptor->number_of_blocks += 1;
+		}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: resource fork descriptor:\n",
-		 function );
-	}
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: data fork extents record:\n",
+			 function );
+		}
 #endif
+		if( libfshfs_extents_record_read_data(
+		     file_record->data_fork_descriptor,
+		     0,
+		     ( (fshfs_catalog_file_record_hfs_t *) data )->data_fork_extents_record,
+		     12,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read data fork extents record.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	else
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: data fork descriptor:\n",
+			 function );
+		}
+#endif
+		if( libfshfs_fork_descriptor_read_data(
+		     file_record->data_fork_descriptor,
+		     ( (fshfs_catalog_file_record_hfsplus_t *) data )->data_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+	}
 	if( libfshfs_fork_descriptor_initialize(
 	     &( file_record->resource_fork_descriptor ),
 	     error ) != 1 )
@@ -901,21 +944,85 @@ int libfshfs_file_record_read_data(
 
 		goto on_error;
 	}
-	if( libfshfs_fork_descriptor_read_data(
-	     file_record->resource_fork_descriptor,
-	     ( (fshfs_catalog_file_record_hfsplus_t *) data )->resource_fork_descriptor,
-	     80,
-	     error ) != 1 )
+	if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read resource fork descriptor.",
-		 function );
+		file_record->resource_fork_descriptor->size             = resource_fork_size;
+		file_record->resource_fork_descriptor->number_of_blocks = resource_fork_size / 512;
 
-		goto on_error;
+		if( ( resource_fork_size % 512 ) != 0 )
+		{
+			file_record->resource_fork_descriptor->number_of_blocks += 1;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: resource fork extents record:\n",
+			 function );
+		}
+#endif
+		if( libfshfs_extents_record_read_data(
+		     file_record->resource_fork_descriptor,
+		     0,
+		     ( (fshfs_catalog_file_record_hfs_t *) data )->resource_fork_extents_record,
+		     12,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read resource fork extents record.",
+			 function );
+
+			goto on_error;
+		}
 	}
+	else
+	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: resource fork descriptor:\n",
+			 function );
+		}
+#endif
+		if( libfshfs_fork_descriptor_read_data(
+		     file_record->resource_fork_descriptor,
+		     ( (fshfs_catalog_file_record_hfsplus_t *) data )->resource_fork_descriptor,
+		     80,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read resource fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
+		{
+			byte_stream_copy_to_uint32_big_endian(
+			 ( (fshfs_catalog_file_record_hfs_t *) data )->unknown1,
+			 value_32bit );
+			libcnotify_printf(
+			 "%s: unknown2\t\t\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 value_32bit );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+	}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	return( 1 );
 
 on_error:

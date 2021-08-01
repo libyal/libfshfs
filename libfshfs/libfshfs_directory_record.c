@@ -409,7 +409,7 @@ int libfshfs_directory_record_read_data(
 		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
 		{
 			libcnotify_printf(
-			 "%s: unknown1\t\t\t: 0x%02" PRIx8 "\n",
+			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (fshfs_catalog_directory_record_hfs_t *) data )->unknown1 );
 		}

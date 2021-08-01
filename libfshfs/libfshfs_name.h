@@ -334,12 +334,14 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 int libfshfs_name_get_utf8_string_size(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      size_t *utf8_string_size,
      libcerror_error_t **error );
 
 int libfshfs_name_get_utf8_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      libuna_utf8_character_t *utf8_string,
      size_t utf8_string_size,
      libcerror_error_t **error );
@@ -347,6 +349,7 @@ int libfshfs_name_get_utf8_string(
 int libfshfs_name_compare_with_utf8_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      const libuna_utf8_character_t *utf8_string,
      size_t utf8_string_length,
      uint8_t use_case_folding,
@@ -355,12 +358,14 @@ int libfshfs_name_compare_with_utf8_string(
 int libfshfs_name_get_utf16_string_size(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      size_t *utf16_string_size,
      libcerror_error_t **error );
 
 int libfshfs_name_get_utf16_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      libuna_utf16_character_t *utf16_string,
      size_t utf16_string_size,
      libcerror_error_t **error );
@@ -368,6 +373,7 @@ int libfshfs_name_get_utf16_string(
 int libfshfs_name_compare_with_utf16_string(
      const uint8_t *name,
      size_t name_size,
+     int codepage,
      const libuna_utf16_character_t *utf16_string,
      size_t utf16_string_length,
      uint8_t use_case_folding,

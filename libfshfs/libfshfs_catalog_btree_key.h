@@ -52,6 +52,10 @@ struct libfshfs_catalog_btree_key
 	 */
 	uint16_t name_size;
 
+	/* Codepage of the name
+	 */
+	int codepage;
+
 	/* Record data
 	 */
 	const uint8_t *record_data;
