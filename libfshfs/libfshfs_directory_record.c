@@ -230,7 +230,6 @@ int libfshfs_directory_record_read_data(
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint32_t value_32bit  = 0;
-	uint16_t value_16bit  = 0;
 	int result            = 0;
 #endif
 
@@ -389,30 +388,13 @@ int libfshfs_directory_record_read_data(
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
-		if( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 ( (fshfs_catalog_directory_record_hfsplus_t *) data )->record_type,
-			 value_16bit );
-		}
-		else
-		{
-			value_16bit = ( (fshfs_catalog_directory_record_hfs_t *) data )->record_type;
-		}
 		libcnotify_printf(
 		 "%s: record type\t\t\t: 0x%04" PRIx16 " (%s)\n",
 		 function,
-		 value_16bit,
+		 record_type,
 		 libfshfs_debug_print_catalog_record_type(
 		  record_type ) );
 
-		if( record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
-		{
-			libcnotify_printf(
-			 "%s: unknown1\t\t\t\t: 0x%02" PRIx8 "\n",
-			 function,
-			 ( (fshfs_catalog_directory_record_hfs_t *) data )->unknown1 );
-		}
 		libcnotify_printf(
 		 "%s: flags\t\t\t\t: 0x%04" PRIx16 "\n",
 		 function,

@@ -57,7 +57,7 @@ Email change
 | 0.0.9 | J.B. Metz | August 2020 | Changes to formatting.
 | 0.0.10 | J.B. Metz | October 2020 | Textual changes and changes to formatting.
 | 0.0.11 | J.B. Metz | July 2021 | Additional information about extended attributes.
-| 0.0.12 | J.B. Metz | August 2021 | Additional information about traditional HFS.
+| 0.0.12 | J.B. Metz | August 2021 | Additional information about classic HFS.
 |===
 
 :numbered:
@@ -934,6 +934,7 @@ records. The value refers to a specific encoding type.
 | MacHebrew | 5 | 5
 | MacGreek | 6 | 6
 | MacCyrillic | 7 | 7
+3+|
 | MacDevanagari | 9 | 9
 | MacGurmukhi | 10 | 10
 | MacGujarati | 11 | 11
@@ -986,7 +987,7 @@ last name to use the given encoding.
 
 === Links
 
-[yellow-background]*TODO: add text about traditional HFS*
+[yellow-background]*TODO: add text about classic HFS*
 
 HFS+ supports both hard links and symbolic links.
 
@@ -2540,7 +2541,7 @@ It is zero if there is no bootable system on the volume. +
 Typically this value equals the value in entry 3 or 5.
 | 1 | Contains the parent identifier of the startup application, i.e. "Finder". The value is zero if the volume is not bootable.
 | 2 | Contains the directory identifier of a directory whose window should be displayed in the Finder when the volume is mounted, or zero if no directory window should be opened. +
-[yellow-background]*In traditional Mac OS, this is the first in a linked list of windows to open; the frOpenChain field of the directory's Finder Info contains the next directory ID in the list. The open window list is deprecated. The Mac OS X Finder will open this directory's window, but ignores the rest of the open window list. The Mac OS X Finder does not modify this field.*
+[yellow-background]*In classic Mac OS, this is the first in a linked list of windows to open; the frOpenChain field of the directory's Finder Info contains the next directory ID in the list. The open window list is deprecated. The Mac OS X Finder will open this directory's window, but ignores the rest of the open window list. The Mac OS X Finder does not modify this field.*
 | 3 | Contains the directory identifier of a bootable Mac OS 8 or 9 System Folder, or zero if not available.
 | 4 | [yellow-background]*Unknown (Reserved)*
 | 5 | Contains the directory identifier of a bootable Mac OS X system, the "/System/Library/CoreServices" directory, or zero if not available.

@@ -63,14 +63,9 @@ typedef struct fshfs_catalog_directory_record_hfs fshfs_catalog_directory_record
 struct fshfs_catalog_directory_record_hfs
 {
 	/* The record type
-	 * Consists of 1 byte
+	 * Consists of 2 bytes
 	 */
-	uint8_t record_type;
-
-	/* Unknown (reserved)
-	 * Consists of 1 byte
-	 */
-	uint8_t unknown1;
+	uint8_t record_type[ 2 ];
 
 	/* The flags
 	 * Consists of 2 bytes
