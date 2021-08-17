@@ -48,12 +48,14 @@ int libfshfs_catalog_btree_file_get_key_from_node_by_index(
      libfshfs_btree_node_t *node,
      libfshfs_io_handle_t *io_handle,
      uint16_t record_index,
+     int is_leaf_node,
      libfshfs_catalog_btree_key_t **node_key,
      libcerror_error_t **error )
 {
 	libfshfs_btree_node_record_t *node_record   = NULL;
 	libfshfs_catalog_btree_key_t *safe_node_key = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_key_from_node_by_index";
+	size_t data_offset                          = 0;
 
 	if( node_key == NULL )
 	{
@@ -62,6 +64,17 @@ int libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid catalog B-tree key.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
 		 function );
 
 		return( -1 );
@@ -127,6 +140,35 @@ int libfshfs_catalog_btree_file_get_key_from_node_by_index(
 		}
 		node_record->key_value               = (intptr_t *) safe_node_key;
 		node_record->key_value_free_function = (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_catalog_btree_key_free;
+
+		data_offset = (size_t) node_record->offset + safe_node_key->data_size;
+
+		if( ( is_leaf_node != 0 )
+		 && ( io_handle->file_system_type == LIBFSHFS_FILE_SYSTEM_TYPE_HFS )
+		 && ( ( data_offset % 2 ) != 0 )
+		 && ( ( data_offset + 1 ) < node_record->data_size ) )
+		{
+			/* The HFS catalog index key of a leaf node can contain alignment padding data
+			 * that is not included in the key data size.
+			 */
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: alignment padding data:\n",
+				 function );
+				libcnotify_print_data(
+				 &( ( node_record->data )[ node_record->data_size ] ),
+				 1,
+				 0 );
+			}
+#endif
+			data_offset += 1;
+		}
+		data_offset -= node_record->offset;
+
+		safe_node_key->record_data      = &( ( node_record->data )[ data_offset ] );
+		safe_node_key->record_data_size = node_record->data_size - data_offset;
 	}
 	*node_key = (libfshfs_catalog_btree_key_t *) node_record->key_value;
 
@@ -426,6 +468,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 		     node,
 		     io_handle,
 		     record_index,
+		     1,
 		     &node_key,
 		     error ) == -1 )
 		{
@@ -598,6 +641,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 	     node,
 	     io_handle,
 	     0,
+	     0,
 	     &last_node_key,
 	     error ) == -1 )
 	{
@@ -622,6 +666,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			     node,
 			     io_handle,
 			     record_index,
+			     0,
 			     &node_key,
 			     error ) == -1 )
 			{
@@ -710,7 +755,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 
 				goto on_error;
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 					  btree_file,
@@ -722,7 +767,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 					  recursion_depth + 1,
 					  error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 				          btree_file,
@@ -810,7 +855,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 
 		return( -1 );
 	}
-	if( node_type == 0x00 )
+	if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		          btree_file,
@@ -822,7 +867,7 @@ int libfshfs_catalog_btree_file_get_thread_record(
 		          1,
 		          error );
 	}
-	else if( node_type == 0xff )
+	else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_thread_record_from_leaf_node(
 		          btree_file,
@@ -1182,6 +1227,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 		     node,
 		     io_handle,
 		     record_index,
+		     1,
 		     &node_key,
 		     error ) == -1 )
 		{
@@ -1412,6 +1458,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 	     node,
 	     io_handle,
 	     0,
+	     0,
 	     &last_node_key,
 	     error ) == -1 )
 	{
@@ -1436,6 +1483,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			     node,
 			     io_handle,
 			     record_index,
+			     0,
 			     &node_key,
 			     error ) == -1 )
 			{
@@ -1524,7 +1572,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 
 				goto on_error;
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 				          btree_file,
@@ -1536,7 +1584,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 				          recursion_depth + 1,
 				          error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
 				          btree_file,
@@ -1647,7 +1695,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 
 			goto on_error;
 		}
-		if( node_type == 0x00 )
+		if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 		{
 			result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record(
 			          btree_file,
@@ -1659,7 +1707,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 			          1,
 			          error );
 		}
-		else if( node_type == 0xff )
+		else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 		{
 			result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_record(
 			          btree_file,
@@ -1807,6 +1855,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 		     node,
 		     io_handle,
 		     record_index,
+		     1,
 		     &node_key,
 		     error ) == -1 )
 		{
@@ -2030,6 +2079,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 	     node,
 	     io_handle,
 	     0,
+	     0,
 	     &last_node_key,
 	     error ) == -1 )
 	{
@@ -2054,6 +2104,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 			     node,
 			     io_handle,
 			     record_index,
+			     0,
 			     &node_key,
 			     error ) == -1 )
 			{
@@ -2142,7 +2193,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 
 				goto on_error;
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 				          btree_file,
@@ -2157,7 +2208,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 				          recursion_depth + 1,
 				          error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 				          btree_file,
@@ -2251,7 +2302,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 
 		return( -1 );
 	}
-	if( node_type == 0x00 )
+	if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 		          btree_file,
@@ -2266,7 +2317,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 		          1,
 		          error );
 	}
-	else if( node_type == 0xff )
+	else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 		          btree_file,
@@ -2481,7 +2532,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 					goto on_error;
 				}
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
 					  btree_file,
@@ -2496,7 +2547,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 					  1,
 					  error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
 					  btree_file,
@@ -2656,6 +2707,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name
 		     node,
 		     io_handle,
 		     record_index,
+		     1,
 		     &node_key,
 		     error ) == -1 )
 		{
@@ -2879,6 +2931,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 	     node,
 	     io_handle,
 	     0,
+	     0,
 	     &last_node_key,
 	     error ) == -1 )
 	{
@@ -2903,6 +2956,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 			     node,
 			     io_handle,
 			     record_index,
+			     0,
 			     &node_key,
 			     error ) == -1 )
 			{
@@ -2991,7 +3045,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 
 				goto on_error;
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 				          btree_file,
@@ -3006,7 +3060,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 				          recursion_depth + 1,
 				          error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
 				          btree_file,
@@ -3100,7 +3154,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 
 		return( -1 );
 	}
-	if( node_type == 0x00 )
+	if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 		          btree_file,
@@ -3115,7 +3169,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 		          1,
 		          error );
 	}
-	else if( node_type == 0xff )
+	else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
 		          btree_file,
@@ -3330,7 +3384,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 					goto on_error;
 				}
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
 					  btree_file,
@@ -3345,7 +3399,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 					  1,
 					  error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
 					  btree_file,
@@ -3491,6 +3545,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 		     node,
 		     io_handle,
 		     record_index,
+		     1,
 		     &node_key,
 		     error ) == -1 )
 		{
@@ -3674,6 +3729,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 	     node,
 	     io_handle,
 	     0,
+	     0,
 	     &last_node_key,
 	     error ) == -1 )
 	{
@@ -3698,6 +3754,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			     node,
 			     io_handle,
 			     record_index,
+			     0,
 			     &node_key,
 			     error ) == -1 )
 			{
@@ -3786,7 +3843,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 
 				goto on_error;
 			}
-			if( node_type == 0x00 )
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 				          btree_file,
@@ -3798,7 +3855,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 				          recursion_depth + 1,
 				          error );
 			}
-			else if( node_type == 0xff )
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 				          btree_file,
@@ -3884,7 +3941,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 
 		goto on_error;
 	}
-	if( node_type == 0x00 )
+	if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		          btree_file,
@@ -3896,7 +3953,7 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 		          1,
 		          error );
 	}
-	else if( node_type == 0xff )
+	else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
 	{
 		result = libfshfs_catalog_btree_file_get_directory_entries_from_leaf_node(
 		          btree_file,

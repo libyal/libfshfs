@@ -37,13 +37,21 @@ typedef struct libfshfs_master_directory_block libfshfs_master_directory_block_t
 
 struct libfshfs_master_directory_block
 {
-	/* The allocation block size
+	/* Allocation block size
 	 */
 	uint16_t allocation_block_size;
 
-	/* The extents start block number
+	/* Extents start block number
 	 */
 	uint16_t extents_start_block_number;
+
+	/* Volume label
+	 */
+	uint8_t volume_label[ 28 ];
+
+	/* Volume label size
+	 */
+	size_t volume_label_size;
 
 	/* Extents file fork descriptor
 	 */
@@ -72,6 +80,28 @@ int libfshfs_master_directory_block_read_file_io_handle(
      libfshfs_master_directory_block_t *master_directory_block,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
+     libcerror_error_t **error );
+
+int libfshfs_master_directory_block_get_utf8_volume_label_size(
+     libfshfs_master_directory_block_t *master_directory_block,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_master_directory_block_get_utf8_volume_label(
+     libfshfs_master_directory_block_t *master_directory_block,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_master_directory_block_get_utf16_volume_label_size(
+     libfshfs_master_directory_block_t *master_directory_block,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+int libfshfs_master_directory_block_get_utf16_volume_label(
+     libfshfs_master_directory_block_t *master_directory_block,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

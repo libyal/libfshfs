@@ -247,7 +247,7 @@ int libfshfs_extents_btree_file_get_extents_from_record_data(
 
 		return( -1 );
 	}
-/* TODO add traditional HFS support extents_data_size = 12; */
+/* TODO add classic HFS support extents_data_size = 12; */
 	extents_data_size = 64;
 
 	if( node_key->record_data_size < extents_data_size )

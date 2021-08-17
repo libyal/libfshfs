@@ -1355,20 +1355,6 @@ int libfshfs_directory_entry_get_utf8_name_size(
 
 		return( -1 );
 	}
-	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
-	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
-	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
-	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: invalid directory entry - unsupported record type.",
-		 function );
-
-		return( -1 );
-	}
 	if( libfshfs_name_get_utf8_string_size(
 	     directory_entry->name,
 	     (size_t) directory_entry->name_size,

@@ -42,6 +42,7 @@ int libfshfs_catalog_btree_file_get_key_from_node_by_index(
      libfshfs_btree_node_t *node,
      libfshfs_io_handle_t *io_handle,
      uint16_t record_index,
+     int is_leaf_node,
      libfshfs_catalog_btree_key_t **node_key,
      libcerror_error_t **error );
 

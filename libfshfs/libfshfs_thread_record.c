@@ -430,12 +430,14 @@ int libfshfs_thread_record_read_data(
 			else
 			{
 /* TODO add support for Mac OS codepages */
+				thread_record->codepage = LIBUNA_CODEPAGE_ASCII;
+
 				if( libfshfs_debug_print_string_value(
 				     function,
 				     "name\t\t\t\t\t",
 				     &( data[ header_size ] ),
 				     (size_t) thread_record->name_size,
-				     LIBUNA_CODEPAGE_ASCII,
+				     thread_record->codepage,
 				     error ) != 1 )
 				{
 					libcerror_error_set(

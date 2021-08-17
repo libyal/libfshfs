@@ -364,14 +364,14 @@ int libfshfs_volume_header_read_data(
 	     "H+",
 	     2 ) == 0 )
 	{
-		volume_header->file_system_type = LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS_PLUS;
+		volume_header->file_system_type = LIBFSHFS_FILE_SYSTEM_TYPE_HFS_PLUS;
 	}
 	else if( memory_compare(
 	          ( (fshfs_volume_header_t *) data )->signature,
 	          "HX",
 	          2 ) == 0 )
 	{
-		volume_header->file_system_type = LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFSX;
+		volume_header->file_system_type = LIBFSHFS_FILE_SYSTEM_TYPE_HFSX;
 	}
 	else
 	{

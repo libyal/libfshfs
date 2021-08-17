@@ -50,6 +50,10 @@ struct libfshfs_thread_record
 	/* Name
 	 */
 	uint8_t *name;
+
+	/* Codepage of the name
+	 */
+	int codepage;
 };
 
 int libfshfs_thread_record_initialize(

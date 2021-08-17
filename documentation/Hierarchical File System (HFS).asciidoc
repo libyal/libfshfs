@@ -617,6 +617,7 @@ See section: <<hfs_extents_record,The HFS extents record>>
 |===
 
 Notes:
+
 ....
 drVCSize => Volume cache (allocation) block size (16-bit)
 drVBMCSize => Volume bitmap cache (allocation) block size (16-bit)
@@ -1251,8 +1252,8 @@ In an index node, the catalog node name always is stored as 32 bytes and
 therefore the maximum key size should be 37. In a leaf node the catalog
 node name varies in size.
 
-HFS catalog index keys in a leaf node must be stored 16-bit aligned. The size
-of the alignment padding is not included in the key data size.
+HFS catalog index keys in a leaf node must be stored 16-bit aligned within the
+node data. The size of the alignment padding is not included in the key data size.
 
 ==== HFS+ catalog index key
 

@@ -32,6 +32,7 @@
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libfdatetime.h"
 #include "libfshfs_master_directory_block.h"
+#include "libfshfs_libuna.h"
 
 #include "fshfs_master_directory_block.h"
 
@@ -287,6 +288,22 @@ int libfshfs_master_directory_block_read_data(
 	 ( (fshfs_master_directory_block_t *) data )->extents_start_block_number,
 	 master_directory_block->extents_start_block_number );
 
+	master_directory_block->volume_label_size = ( (fshfs_master_directory_block_t *) data )->volume_label_size;
+
+	if( memory_copy(
+	     master_directory_block->volume_label,
+	     ( (fshfs_master_directory_block_t *) data )->volume_label,
+	     27 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy volume label.",
+		 function );
+
+		return( -1 );
+	}
 	byte_stream_copy_to_uint16_big_endian(
 	 ( (fshfs_master_directory_block_t *) data )->embedded_volume_signature,
 	 embedded_volume_signature );
@@ -409,15 +426,15 @@ int libfshfs_master_directory_block_read_data(
 		 value_16bit );
 
 		libcnotify_printf(
-		 "%s: label size\t\t\t\t: %" PRIu8 "\n",
+		 "%s: volume label size\t\t\t: %" PRIu8 "\n",
 		 function,
-		 ( (fshfs_master_directory_block_t *) data )->label_size );
+		 ( (fshfs_master_directory_block_t *) data )->volume_label_size );
 
 		libcnotify_printf(
-		 "%s: label:\n",
+		 "%s: volume label:\n",
 		 function );
 		libcnotify_print_data(
-		 ( (fshfs_master_directory_block_t *) data )->label,
+		 ( (fshfs_master_directory_block_t *) data )->volume_label,
 		 27,
 		 0 );
 
@@ -612,6 +629,17 @@ int libfshfs_master_directory_block_read_data(
 
 		return( -1 );
 	}
+	if( master_directory_block->volume_label_size > 27 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid volume label size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	if( embedded_volume_signature != 0 )
 	{
 		libcerror_error_set(
@@ -693,6 +721,174 @@ int libfshfs_master_directory_block_read_file_io_handle(
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read master directory block data.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-8 encoded volume label
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_master_directory_block_get_utf8_volume_label_size(
+     libfshfs_master_directory_block_t *master_directory_block,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_master_directory_block_get_utf8_volume_label_size";
+
+	if( master_directory_block == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid master directory block.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf8_string_size_from_byte_stream(
+	     master_directory_block->volume_label,
+	     (size_t) master_directory_block->volume_label_size,
+	     LIBUNA_CODEPAGE_ASCII,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the UTF-8 encoded volume label
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_master_directory_block_get_utf8_volume_label(
+     libfshfs_master_directory_block_t *master_directory_block,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_master_directory_block_get_utf8_volume_label";
+
+	if( master_directory_block == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid master directory block.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf8_string_copy_from_byte_stream(
+	     utf8_string,
+	     utf8_string_size,
+	     master_directory_block->volume_label,
+	     (size_t) master_directory_block->volume_label_size,
+	     LIBUNA_CODEPAGE_ASCII,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-16 encoded volume label
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_master_directory_block_get_utf16_volume_label_size(
+     libfshfs_master_directory_block_t *master_directory_block,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_master_directory_block_get_utf16_volume_label_size";
+
+	if( master_directory_block == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid master directory block.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf16_string_size_from_byte_stream(
+	     master_directory_block->volume_label,
+	     (size_t) master_directory_block->volume_label_size,
+	     LIBUNA_CODEPAGE_ASCII,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the UTF-16 encoded volume label
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_master_directory_block_get_utf16_volume_label(
+     libfshfs_master_directory_block_t *master_directory_block,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_master_directory_block_get_utf16_volume_label";
+
+	if( master_directory_block == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid master directory block.",
+		 function );
+
+		return( -1 );
+	}
+	if( libuna_utf16_string_copy_from_byte_stream(
+	     utf16_string,
+	     utf16_string_size,
+	     master_directory_block->volume_label,
+	     (size_t) master_directory_block->volume_label_size,
+	     LIBUNA_CODEPAGE_ASCII,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string.",
 		 function );
 
 		return( -1 );

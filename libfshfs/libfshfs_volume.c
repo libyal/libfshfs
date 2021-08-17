@@ -1118,7 +1118,7 @@ int libfshfs_internal_volume_open_read(
 
 			goto on_error;
 		}
-		internal_volume->io_handle->file_system_type = LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS;
+		internal_volume->io_handle->file_system_type = LIBFSHFS_FILE_SYSTEM_TYPE_HFS;
 		internal_volume->io_handle->block_size       = 512;
 
 		use_case_folding = 1;
@@ -1126,12 +1126,12 @@ int libfshfs_internal_volume_open_read(
 		extents_file_fork_descriptor = internal_volume->master_directory_block->extents_file_fork_descriptor;
 		catalog_file_fork_descriptor = internal_volume->master_directory_block->catalog_file_fork_descriptor;
 
-/* TODO impement traditional HFS support */
+/* TODO impement classic HFS support */
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: traditional HFS not supported.",
+		 "%s: classic HFS not supported.",
 		 function );
 
 		goto on_error;
@@ -1178,7 +1178,7 @@ int libfshfs_internal_volume_open_read(
 		internal_volume->io_handle->file_system_type = internal_volume->volume_header->file_system_type;
 		internal_volume->io_handle->block_size       = internal_volume->volume_header->allocation_block_size;
 
-		if( internal_volume->volume_header->file_system_type == LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS_PLUS )
+		if( internal_volume->volume_header->file_system_type == LIBFSHFS_FILE_SYSTEM_TYPE_HFS_PLUS )
 		{
 			use_case_folding = 1;
 		}
@@ -1369,10 +1369,21 @@ int libfshfs_volume_get_utf8_name_size(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_utf8_name_size(
-	     internal_volume->root_directory_entry,
-	     utf8_string_size,
-	     error ) != 1 )
+	if( internal_volume->root_directory_entry != NULL )
+	{
+		result = libfshfs_directory_entry_get_utf8_name_size(
+		          internal_volume->root_directory_entry,
+		          utf8_string_size,
+		          error );
+	}
+	else
+	{
+		result = libfshfs_master_directory_block_get_utf8_volume_label_size(
+		          internal_volume->master_directory_block,
+		          utf8_string_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1443,11 +1454,23 @@ int libfshfs_volume_get_utf8_name(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_utf8_name(
-	     internal_volume->root_directory_entry,
-	     utf8_string,
-	     utf8_string_size,
-	     error ) != 1 )
+	if( internal_volume->root_directory_entry != NULL )
+	{
+		result = libfshfs_directory_entry_get_utf8_name(
+		          internal_volume->root_directory_entry,
+		          utf8_string,
+		          utf8_string_size,
+		          error );
+	}
+	else
+	{
+		result = libfshfs_master_directory_block_get_utf8_volume_label(
+		          internal_volume->master_directory_block,
+		          utf8_string,
+		          utf8_string_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1517,10 +1540,21 @@ int libfshfs_volume_get_utf16_name_size(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_utf16_name_size(
-	     internal_volume->root_directory_entry,
-	     utf16_string_size,
-	     error ) != 1 )
+	if( internal_volume->root_directory_entry != NULL )
+	{
+		result = libfshfs_directory_entry_get_utf16_name_size(
+		          internal_volume->root_directory_entry,
+		          utf16_string_size,
+		          error );
+	}
+	else
+	{
+		result = libfshfs_master_directory_block_get_utf16_volume_label_size(
+		          internal_volume->master_directory_block,
+		          utf16_string_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1591,11 +1625,23 @@ int libfshfs_volume_get_utf16_name(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_utf16_name(
-	     internal_volume->root_directory_entry,
-	     utf16_string,
-	     utf16_string_size,
-	     error ) != 1 )
+	if( internal_volume->root_directory_entry != NULL )
+	{
+		result = libfshfs_directory_entry_get_utf16_name(
+		          internal_volume->root_directory_entry,
+		          utf16_string,
+		          utf16_string_size,
+		          error );
+	}
+	else
+	{
+		result = libfshfs_master_directory_block_get_utf16_volume_label(
+		          internal_volume->master_directory_block,
+		          utf16_string,
+		          utf16_string_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,

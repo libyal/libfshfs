@@ -200,7 +200,7 @@ int libfshfs_catalog_btree_key_read_data(
 
 		return( -1 );
 	}
-	if( io_handle->file_system_type == LIBFSHFS_EXTENT_FILE_SYSTEM_TYPE_HFS )
+	if( io_handle->file_system_type == LIBFSHFS_FILE_SYSTEM_TYPE_HFS )
 	{
 		additional_size = 1;
 
@@ -406,13 +406,13 @@ int libfshfs_catalog_btree_key_read_data(
 	 */
 	catalog_btree_key->data_size = additional_size + key_data_size;
 
-	if( data_offset < catalog_btree_key->data_size )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
 	{
 		/* The HFS catalog index key of an index node can contain trailing data
 		 * that is included in the key data size.
 		 */
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
+		if( data_offset < catalog_btree_key->data_size )
 		{
 			libcnotify_printf(
 			 "%s: trailing data:\n",
@@ -422,38 +422,13 @@ int libfshfs_catalog_btree_key_read_data(
 			 (size_t) catalog_btree_key->data_size - data_offset,
 			 0 );
 		}
-#endif
-	}
-	else if( ( additional_size == 1 )
-	      && ( data_offset < ( data_size - 1 ) )
-	      && ( ( data_offset % 2 ) != 0 ) )
-	{
-		/* The HFS catalog index key of a leaf node can contain alignment padding data
-		 * that is not included in the key data size.
-		 */
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
+		else
 		{
 			libcnotify_printf(
-			 "%s: alignment padding data:\n",
-			 function );
-			libcnotify_print_data(
-			 &( data[ data_offset ] ),
-			 1,
-			 0 );
+			 "\n" );
 		}
-#endif
-		catalog_btree_key->data_size += 1;
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	else if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
-#endif
-	catalog_btree_key->record_data      = &( data[ catalog_btree_key->data_size ] );
-	catalog_btree_key->record_data_size = data_size - catalog_btree_key->data_size;
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 	return( 1 );
 }

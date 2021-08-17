@@ -1,5 +1,5 @@
 /*
- * The (traditional) HFS master directory block (MDB) definition
+ * The (classic) HFS master directory block (MDB) definition
  *
  * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -101,12 +101,12 @@ struct fshfs_master_directory_block
 	/* The (volume) label sizes
 	 * Consists of 1 byte
 	 */
-	uint8_t label_size;
+	uint8_t volume_label_size;
 
 	/* The (volume) label
 	 * Consists of 27 bytes
 	 */
-	uint8_t label[ 27 ];
+	uint8_t volume_label[ 27 ];
 
 	/* The backup time
 	 * Consists of 4 bytes
