@@ -1344,15 +1344,15 @@ See section: <<catalog_file_data_record_types,Record types>>
 
 ===== The HFS catalog directory record
 
-The HFS catalog directory record (kHFSFolderRecord) is 70 bytes of size and
-consists of:
+The HFS catalog directory record (cdrDirRec, kHFSFolderRecord) is 70 bytes
+of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | 2 | 0x0100 | The record type
 | 2 | 2 | | Directory (folder) flags +
-See section: <<catalog_file_record_flags,file record flags>>
+See section: <<hfs_catalog_directory_record_flags,directory record flags>>
 | 4 | 2 | | Number of directory entries (valence)
 | 6 | 4 | | The identifier +
 Contains a CNID
@@ -1370,6 +1370,11 @@ See section: <<hfs_extended_folder_information,HFS extended folder information>>
 Array of 32-bit integer values
 |===
 
+====== [[hfs_catalog_directory_record_flags]]HFS catalog directory record flags
+
+Not defined. The HFS catalog directory record appears to always have a
+corresponding folder thread record.
+
 ===== The HFS+ catalog directory record
 
 The HFS+ catalog directory record (HFSPlusCatalogFolder) is 88 bytes of size
@@ -1380,7 +1385,7 @@ and consists of:
 | Offset | Size | Value | Description
 | 0 | 2 | 0x0001 | The record type
 | 2 | 2 | | Directory (folder) flags +
-See section: <<catalog_file_record_flags,file record flags>>
+See section: <<hfs_plus_catalog_file_record_flags,file record flags>>
 | 4 | 4 | | Number of directory entries (valence)
 | 8 | 4 | | The identifier +
 Contains a CNID
@@ -1422,8 +1427,8 @@ See section: <<text_encoding,Text encoding>>
 
 ===== The HFS catalog file record
 
-The HFS catalog file record (kHFSFileRecord) is 102 bytes of size and consists
-of:
+The HFS catalog file record (cdrFilRec, kHFSFileRecord) is 102 bytes of size
+and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1431,7 +1436,7 @@ of:
 | 0 | 2 | 0x0200 | The record type
 | 2 | 1 | | Flags +
 Signed 8-bit integer +
-See section: <<catalog_file_record_flags,file record flags>>
+See section: <<hfs_catalog_file_record_flags,file record flags>>
 | 3 | 1 | | File type +
 Signed 8-bit integer +
 This field should always contain 0.
@@ -1460,6 +1465,17 @@ See section: <<hfs_extents_record,The HFS extents record>>
 | 98 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 |===
 
+====== [[hfs_catalog_file_record_flags]]HFS catalog file record flags
+
+[cols="1,1,5",options="header"]
+|===
+| Value | Identifier | Description
+| 0x0001 | | File is locked and cannot be written to
+| 0x0002 | | Has thread record
+3+|
+| 0x0080 | kHFSHasDateAddedMask | Had added date and time
+|===
+
 ===== The HFS+ catalog file record
 
 The HFS+ catalog file record (kHFSPlusFileRecord) is 248 bytes of size and
@@ -1470,7 +1486,7 @@ consists of:
 | Offset | Size | Value | Description
 | 0 | 2 | 0x0002 | The record type
 | 2 | 2 | | Flags +
-See section: <<catalog_file_record_flags,file record flags>>
+See section: <<hfs_plus_catalog_file_record_flags,file record flags>>
 | 4 | 4 | 0x00 | [yellow-background]*Unknown (Reserved)*
 | 8 | 4 | | The identifier +
 Contains a CNID
@@ -1513,13 +1529,14 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure>>
 |===
 
-===== [[catalog_file_record_flags]]The catalog file record flags
+====== [[hfs_plus_catalog_file_record_flags]]HFS+ catalog file record flags
 
 [cols="1,1,5",options="header"]
 |===
 | Value | Identifier | Description
 | 0x0001 | kHFSFileLockedMask | File is locked and cannot be written to
-| 0x0002 | kHFSThreadExistsMask | Has thread record
+| 0x0002 | kHFSThreadExistsMask | Has thread record +
+This should be always set for files on HFS+/HSFX
 | 0x0004 | kHFSHasAttributesMask | Has extended attributes
 | 0x0008 | kHFSHasSecurityMask | Has ACLs
 | 0x0010 | kHFSHasFolderCountMask | Has number of sub-folder
@@ -1534,10 +1551,6 @@ The extended folder of file information contains the date and time the folder or
 | 0x0800 | kHFSAutoCandidateMask | [yellow-background]*Unknown*
 |===
 
-....
-Does 0x0008 in HFS have a different meaning? File record is used, otherwise the file record should be considered empty
-....
-
 ==== The catalog thread record
 
 The file thread record is similar to the directory thread record except that it
@@ -1545,8 +1558,8 @@ refers to a file, instead of a directory.
 
 ===== The HFS catalog file thread record
 
-The HFS catalog thread record (HFSCatalogThread) is variable of size and
-consists of:
+The HFS catalog thread record (cdrThdRec, cdrFThdRec, HFSCatalogThread) is
+variable of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -3019,6 +3032,14 @@ http://sourceforge.net/projects/linux-hfsplus
 |===
 | Title: | hfs_format.h
 | URL: | https://opensource.apple.com/source/xnu/xnu-2050.18.24/bsd/hfs/hfs_format.h
+|===
+
+`[APPLE96]`
+
+[cols="1,5",options="header"]
+|===
+| Title: | Insided Macintosh: Files - Data Organization on Volumes
+| URL: | https://developer.apple.com/library/archive/documentation/mac/Files/Files-99.html
 |===
 
 `[APPLE04]`

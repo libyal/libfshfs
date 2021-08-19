@@ -1366,10 +1366,12 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		goto on_error;
 	}
-	if( libfshfs_file_entry_get_owner_identifier(
-	     file_entry,
-	     &owner_identifier,
-	     error ) != 1 )
+	result = libfshfs_file_entry_get_owner_identifier(
+	          file_entry,
+	          &owner_identifier,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1380,10 +1382,12 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		goto on_error;
 	}
-	if( libfshfs_file_entry_get_group_identifier(
-	     file_entry,
-	     &group_identifier,
-	     error ) != 1 )
+	result = libfshfs_file_entry_get_group_identifier(
+	          file_entry,
+	          &group_identifier,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1394,10 +1398,12 @@ int info_handle_file_entry_value_with_name_fprint(
 
 		goto on_error;
 	}
-	if( libfshfs_file_entry_get_file_mode(
-	     file_entry,
-	     &file_mode,
-	     error ) != 1 )
+	result = libfshfs_file_entry_get_file_mode(
+	          file_entry,
+	          &file_mode,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,

@@ -354,13 +354,12 @@ int libfshfs_catalog_btree_key_read_data(
 #if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
-/* TODO add support for Mac OS codepages */
 				if( libfshfs_debug_print_string_value(
 				     function,
 				     "name\t\t\t\t",
 				     catalog_btree_key->name_data,
 				     (size_t) catalog_btree_key->name_size,
-				     LIBUNA_CODEPAGE_ASCII,
+				     catalog_btree_key->codepage,
 				     error ) != 1 )
 				{
 					libcerror_error_set(

@@ -153,13 +153,14 @@ int libfshfs_thread_record_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function = "libfshfs_thread_record_read_data";
-	size_t header_size    = 0;
-	uint16_t name_size    = 0;
-	uint16_t record_type  = 0;
+	static char *function   = "libfshfs_thread_record_read_data";
+	size_t header_size      = 0;
+	size_t record_data_size = 0;
+	uint16_t name_size      = 0;
+	uint16_t record_type    = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint16_t value_16bit  = 0;
+	uint16_t value_16bit    = 0;
 #endif
 
 	if( thread_record == NULL )
@@ -250,11 +251,41 @@ int libfshfs_thread_record_read_data(
 		byte_stream_copy_to_uint16_big_endian(
 		 ( (fshfs_catalog_thread_record_hfsplus_t *) data )->name_size,
 		 name_size );
+
+		thread_record->codepage = LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN;
+
+		if( name_size > ( ( data_size - header_size ) / 2 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid name size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		record_data_size = header_size + ( name_size * 2 );
 	}
 	else
 	{
-/* TODO set flag to indicate name is ASCII */
 		name_size = ( (fshfs_catalog_thread_record_hfs_t *) data )->name_size;
+
+/* TODO add support for Mac OS codepages */
+		thread_record->codepage = LIBUNA_CODEPAGE_ASCII;
+
+		if( name_size > ( data_size - header_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid name size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		record_data_size = header_size + name_size;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -264,7 +295,7 @@ int libfshfs_thread_record_read_data(
 		 function );
 		libcnotify_print_data(
 		 data,
-		 header_size + ( name_size * 2 ),
+		 record_data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
@@ -338,11 +369,22 @@ int libfshfs_thread_record_read_data(
 		 function,
 		 thread_record->parent_identifier );
 
-		libcnotify_printf(
-		 "%s: name number of characters\t\t: %" PRIu16 " (%" PRIu32 ")\n",
-		 function,
-		 thread_record->name_size,
-		 (uint32_t) thread_record->name_size * 2 );
+		if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
+		 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
+		{
+			libcnotify_printf(
+			 "%s: name number of characters\t\t: %" PRIu16 " (%" PRIu32 ")\n",
+			 function,
+			 thread_record->name_size,
+			 (uint32_t) thread_record->name_size * 2 );
+		}
+		else
+		{
+			libcnotify_printf(
+			 "%s: name number of characters\t\t: %" PRIu16 "\n",
+			 function,
+			 thread_record->name_size );
+		}
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
@@ -351,29 +393,7 @@ int libfshfs_thread_record_read_data(
 		if( ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_THREAD_RECORD )
 		 || ( record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_THREAD_RECORD ) )
 		{
-			if( (uint32_t) thread_record->name_size > ( (uint32_t) UINT16_MAX / 2 ) )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid thread record - name size value out of bounds.",
-				 function );
-
-				goto on_error;
-			}
 			thread_record->name_size *= 2;
-		}
-		if( thread_record->name_size > ( data_size - header_size ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid thread record - name size value out of bounds.",
-			 function );
-
-			goto on_error;
 		}
 		thread_record->name = (uint8_t *) memory_allocate(
 		                                   sizeof( uint8_t ) * thread_record->name_size );
@@ -429,9 +449,6 @@ int libfshfs_thread_record_read_data(
 			}
 			else
 			{
-/* TODO add support for Mac OS codepages */
-				thread_record->codepage = LIBUNA_CODEPAGE_ASCII;
-
 				if( libfshfs_debug_print_string_value(
 				     function,
 				     "name\t\t\t\t\t",

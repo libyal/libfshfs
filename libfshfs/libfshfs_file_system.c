@@ -1440,22 +1440,25 @@ int libfshfs_file_system_get_attributes(
 
 		goto on_error;
 	}
-	if( libfshfs_attributes_btree_file_get_attributes(
-	     file_system->attributes_btree_file,
-	     file_io_handle,
-	     parent_identifier,
-	     *attributes,
-	     error ) != 1 )
+	if( file_system->attributes_btree_file != NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve attributes for entry: %" PRIu32 " from attributes B-tree file.",
-		 function,
-		 parent_identifier );
+		if( libfshfs_attributes_btree_file_get_attributes(
+		     file_system->attributes_btree_file,
+		     file_io_handle,
+		     parent_identifier,
+		     *attributes,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attributes for entry: %" PRIu32 " from attributes B-tree file.",
+			 function,
+			 parent_identifier );
 
-		goto on_error;
+			goto on_error;
+		}
 	}
 	return( 1 );
 

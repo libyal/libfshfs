@@ -1297,7 +1297,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 					break;
 
 				default:
-					compare_result = LIBUNA_COMPARE_LESS;
+					compare_result = 0;
 					break;
 			}
 			if( compare_result != 0 )

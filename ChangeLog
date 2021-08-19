@@ -19,15 +19,18 @@ To do:
 
 * add support to print information about special files (those without a catalog record)
 
-* traditional HFS
-** pass IO handle to directory, file and thread records to validate record types ?
-** add support for Mac OS codepages
-** API: determine how to represent file mode
+* classic HFS
+** fshfsinfo: add support retrieving non-directory file entries using fshfsinfo -E
+*** files in classic HFS do not need to have a thread record
+** API: add option to set file system encoding
 ** API: add means to determine if date and time values are in local time or UTC
+** API: determine how to represent file mode
+** add support for Mac OS codepages
+** pass IO handle to directory, file and thread records to validate record types ?
 ** correct file record extents with extents start
 
 Format support:
-* implement support for traditional HFS
+* implement support for classic HFS pre Mac OS 9.0
 * implement support for HFS+/HFX Unicode 2.1 version
 * implement support for folder and file information
 * implement support for extended folder and file information
