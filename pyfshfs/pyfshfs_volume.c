@@ -304,6 +304,15 @@ void pyfshfs_volume_free(
 
 		return;
 	}
+	if( pyfshfs_volume->file_io_handle != NULL )
+	{
+		if( pyfshfs_volume_close(
+		     pyfshfs_volume,
+		     NULL ) == NULL )
+		{
+			return;
+		}
+	}
 	if( pyfshfs_volume->volume != NULL )
 	{
 		Py_BEGIN_ALLOW_THREADS
