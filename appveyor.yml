@@ -279,6 +279,6 @@ artifacts:
 - path: dist\*.whl
 
 deploy_script:
-- ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and $isWindows -and $env:BUILD_ENVIRONMENT -eq "python") {
+- ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and (-not $isLinux) -and $env:BUILD_ENVIRONMENT -eq "python") {
     Invoke-Expression "${env:PYTHON} -m twine upload dist/*.whl --username __token__ --password ${env:PYPI_TOKEN} --skip-existing" }
 

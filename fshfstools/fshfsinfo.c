@@ -1,7 +1,7 @@
 /*
  * Shows information obtained from a Hierarchical File System (HFS) volume
  *
- * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
