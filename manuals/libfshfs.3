@@ -1,4 +1,4 @@
-.Dd July 29, 2021
+.Dd January 12, 2022
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -160,6 +160,10 @@ File entry functions
 .Fn libfshfs_file_entry_get_offset "libfshfs_file_entry_t *file_entry" "off64_t *offset" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_size "libfshfs_file_entry_t *file_entry" "size64_t *size" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_number_of_extents "libfshfs_file_entry_t *file_entry" "int *number_of_extents" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_extent_by_index "libfshfs_file_entry_t *file_entry" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
 .Pp
 Extended attribute functions
 .Ft int

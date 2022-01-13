@@ -90,7 +90,7 @@ struct libfshfs_internal_file_entry
 	 */
 	size64_t data_size;
 
-	/* Extents
+	/* The extents array
 	 */
 	libcdata_array_t *extents;
 
@@ -393,6 +393,21 @@ LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_size(
      libfshfs_file_entry_t *file_entry,
      size64_t *size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_number_of_extents(
+     libfshfs_file_entry_t *file_entry,
+     int *number_of_extents,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_extent_by_index(
+     libfshfs_file_entry_t *file_entry,
+     int extent_index,
+     off64_t *extent_offset,
+     size64_t *extent_size,
+     uint32_t *extent_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

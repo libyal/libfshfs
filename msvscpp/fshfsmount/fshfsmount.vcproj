@@ -232,10 +232,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\fshfstools\fshfstools_libcdata.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\fshfstools\fshfstools_libcerror.h"
 				>
 			</File>

@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_libcerror.h"
+#include "libfshfs_io_handle.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -50,6 +51,14 @@ int libfshfs_extent_initialize(
 
 int libfshfs_extent_free(
      libfshfs_extent_t **extent,
+     libcerror_error_t **error );
+
+int libfshfs_extent_get_values(
+     libfshfs_extent_t *extent,
+     libfshfs_io_handle_t *io_handle,
+     off64_t *extent_offset,
+     size64_t *extent_size,
+     uint32_t *extent_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

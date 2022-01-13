@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "libfshfs_extent.h"
+#include "libfshfs_io_handle.h"
 #include "libfshfs_libcerror.h"
 
 /* Creates an extent
@@ -126,6 +127,114 @@ int libfshfs_extent_free(
 
 		*extent = NULL;
 	}
+	return( 1 );
+}
+
+/* Retrieves the extents values
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_extent_get_values(
+     libfshfs_extent_t *extent,
+     libfshfs_io_handle_t *io_handle,
+     off64_t *extent_offset,
+     size64_t *extent_size,
+     uint32_t *extent_flags,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_extent_get_values";
+
+	if( extent == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle->block_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid IO handle - block size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent offset.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent size.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_flags == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent flags.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent->block_number > ( (uint64_t) INT64_MAX / io_handle->block_size ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extent - invalid block number value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent->number_of_blocks > ( (uint64_t) UINT64_MAX / io_handle->block_size ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extent - invalid number of blocks value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	*extent_offset = (off64_t) extent->block_number * (off64_t) io_handle->block_size;
+	*extent_size   = (size64_t) extent->number_of_blocks * (size64_t) io_handle->block_size;
+	*extent_flags  = 0;
+
 	return( 1 );
 }
 

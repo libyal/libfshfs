@@ -71,7 +71,6 @@ fshfsmount_SOURCES = \
 	fshfstools_getopt.c fshfstools_getopt.h \
 	fshfstools_i18n.h \
 	fshfstools_libbfio.h \
-	fshfstools_libcdata.h \
 	fshfstools_libcerror.h \
 	fshfstools_libclocale.h \
 	fshfstools_libcnotify.h \
