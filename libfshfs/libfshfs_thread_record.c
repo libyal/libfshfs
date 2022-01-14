@@ -155,11 +155,11 @@ int libfshfs_thread_record_read_data(
 {
 	static char *function   = "libfshfs_thread_record_read_data";
 	size_t header_size      = 0;
-	size_t record_data_size = 0;
 	uint16_t name_size      = 0;
 	uint16_t record_type    = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
+	size_t record_data_size = 0;
 	uint16_t value_16bit    = 0;
 #endif
 
@@ -265,7 +265,9 @@ int libfshfs_thread_record_read_data(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		record_data_size = header_size + ( name_size * 2 );
+#endif
 	}
 	else
 	{
@@ -285,7 +287,9 @@ int libfshfs_thread_record_read_data(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		record_data_size = header_size + name_size;
+#endif
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )

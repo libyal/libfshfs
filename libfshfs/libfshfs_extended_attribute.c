@@ -23,8 +23,8 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_allocation_block_stream.h"
 #include "libfshfs_attribute_record.h"
-#include "libfshfs_data_stream.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_extended_attribute.h"
 #include "libfshfs_extent.h"
@@ -575,7 +575,7 @@ int libfshfs_internal_extended_attribute_get_data_stream(
 	}
 	if( internal_extended_attribute->attribute_record->record_type == LIBFSHFS_ATTRIBUTE_RECORD_TYPE_INLINE_DATA )
 	{
-		result = libfshfs_data_stream_initialize_from_data(
+		result = libfshfs_allocation_block_stream_initialize_from_data(
 		          &( internal_extended_attribute->data_stream ),
 		          internal_extended_attribute->attribute_record->inline_data,
 		          internal_extended_attribute->attribute_record->inline_data_size,
@@ -597,7 +597,7 @@ int libfshfs_internal_extended_attribute_get_data_stream(
 
 			goto on_error;
 		}
-		result = libfshfs_data_stream_initialize_from_fork_descriptor(
+		result = libfshfs_allocation_block_stream_initialize_from_fork_descriptor(
 		          &( internal_extended_attribute->data_stream ),
 		          internal_extended_attribute->io_handle,
 		          fork_descriptor,

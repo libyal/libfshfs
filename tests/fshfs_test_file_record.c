@@ -1258,20 +1258,18 @@ int fshfs_test_file_record_get_resource_fork_descriptor(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 1 );
+	 0 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "resource_fork_descriptor",
+	 resource_fork_descriptor );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
 
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "resource_fork_descriptor",
-	 resource_fork_descriptor );
-
 	/* Test error cases
 	 */
-	resource_fork_descriptor = NULL;
-
 	result = libfshfs_file_record_get_resource_fork_descriptor(
 	          NULL,
 	          &resource_fork_descriptor,

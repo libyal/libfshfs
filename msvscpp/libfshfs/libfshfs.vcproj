@@ -174,6 +174,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block_stream.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_attribute_record.c"
 				>
 			</File>
@@ -369,6 +373,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\fshfs_volume_header.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_allocation_block_stream.h"
 				>
 			</File>
 			<File

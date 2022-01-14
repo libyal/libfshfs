@@ -142,6 +142,14 @@ PyObject *pyfshfs_file_entry_get_symbolic_link_target(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 
+PyObject *pyfshfs_file_entry_has_resource_fork(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
+PyObject *pyfshfs_file_entry_get_resource_fork(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
 PyObject *pyfshfs_file_entry_get_number_of_extended_attributes(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );

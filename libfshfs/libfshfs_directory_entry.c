@@ -1604,7 +1604,7 @@ int libfshfs_directory_entry_get_resource_fork_descriptor(
 		          fork_descriptor,
 		          error );
 
-		if( result != 1 )
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,

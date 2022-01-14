@@ -31,6 +31,7 @@ libfshfs_la_SOURCES = \
 	fshfs_master_directory_block.h \
 	fshfs_volume_header.h \
 	libfshfs.c \
+	libfshfs_allocation_block_stream.c libfshfs_allocation_block_stream.h \
 	libfshfs_attribute_record.c libfshfs_attribute_record.h \
 	libfshfs_attributes_btree_file.c libfshfs_attributes_btree_file.h \
 	libfshfs_attributes_btree_key.c libfshfs_attributes_btree_key.h \

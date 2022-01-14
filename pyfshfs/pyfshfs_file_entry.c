@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #endif
 
+#include "pyfshfs_data_stream.h"
 #include "pyfshfs_datetime.h"
 #include "pyfshfs_error.h"
 #include "pyfshfs_extended_attribute.h"
@@ -180,6 +181,20 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  "get_symbolic_link_target() -> Unicode string or None\n"
 	  "\n"
 	  "Returns the symbolic link target." },
+
+	{ "has_resource_fork",
+	  (PyCFunction) pyfshfs_file_entry_has_resource_fork,
+	  METH_NOARGS,
+	  "has_resource_fork() -> Boolean\n"
+	  "\n"
+	  "Determines if the file entry has a resource fork." },
+
+	{ "get_resource_fork",
+	  (PyCFunction) pyfshfs_file_entry_get_resource_fork,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "get_resource_fork() -> Object or None\n"
+	  "\n"
+	  "Retrieves the resource fork." },
 
 	{ "get_number_of_extended_attributes",
 	  (PyCFunction) pyfshfs_file_entry_get_number_of_extended_attributes,
@@ -1913,6 +1928,140 @@ on_error:
 	{
 		PyMem_Free(
 		 target );
+	}
+	return( NULL );
+}
+
+/* Determines if the file entry has a resource fork
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_has_resource_fork(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_has_resource_fork";
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_has_resource_fork(
+	          pyfshfs_file_entry->file_entry,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to determine if file entry has a resource fork.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result != 0 )
+	{
+		Py_IncRef(
+		 (PyObject *) Py_True );
+
+		return( Py_True );
+	}
+	Py_IncRef(
+	 (PyObject *) Py_False );
+
+	return( Py_False );
+}
+
+/* Retrieves the resource fork
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_resource_fork(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *data_stream_object        = NULL;
+	libcerror_error_t *error            = NULL;
+	libfshfs_data_stream_t *data_stream = NULL;
+	static char *function               = "pyfshfs_file_entry_get_resource_fork";
+	int result                          = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_resource_fork(
+	          ( (pyfshfs_file_entry_t *) pyfshfs_file_entry )->file_entry,
+	          &data_stream,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve resource fork.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	data_stream_object = pyfshfs_data_stream_new(
+	                      data_stream,
+	                      (PyObject *) pyfshfs_file_entry );
+
+	if( data_stream_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create data stream object.",
+		 function );
+
+		goto on_error;
+	}
+	return( data_stream_object );
+
+on_error:
+	if( data_stream != NULL )
+	{
+		libfshfs_data_stream_free(
+		 &data_stream,
+		 NULL );
 	}
 	return( NULL );
 }

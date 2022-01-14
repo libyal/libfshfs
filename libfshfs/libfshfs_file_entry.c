@@ -23,6 +23,7 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libfshfs_allocation_block_stream.h"
 #include "libfshfs_attribute_record.h"
 #include "libfshfs_compressed_data_header.h"
 #include "libfshfs_data_stream.h"
@@ -312,10 +313,10 @@ int libfshfs_file_entry_free(
 				result = -1;
 			}
 		}
-		if( internal_file_entry->extents != NULL )
+		if( internal_file_entry->extents_array != NULL )
 		{
 			if( libcdata_array_free(
-			     &( internal_file_entry->extents ),
+			     &( internal_file_entry->extents_array ),
 			     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
 			     error ) != 1 )
 			{
@@ -600,24 +601,13 @@ int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
 
 		goto on_error;
 	}
-	if( fork_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing fork descriptor.",
-		 function );
-
-		return( -1 );
-	}
 	if( libfshfs_file_system_get_extents(
 	     internal_file_entry->file_system,
 	     internal_file_entry->file_io_handle,
 	     internal_file_entry->identifier,
 	     fork_type,
 	     fork_descriptor,
-	     &( internal_file_entry->extents ),
+	     &( internal_file_entry->extents_array ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -629,10 +619,10 @@ int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
 
 		goto on_error;
 	}
-	if( libfshfs_data_stream_initialize_from_extents(
+	if( libfshfs_allocation_block_stream_initialize_from_extents(
 	     data_stream,
 	     internal_file_entry->io_handle,
-	     internal_file_entry->extents,
+	     internal_file_entry->extents_array,
 	     (size64_t) fork_descriptor->size,
 	     error ) != 1 )
 	{
@@ -648,10 +638,10 @@ int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
 	return( 1 );
 
 on_error:
-	if( internal_file_entry->extents != NULL )
+	if( internal_file_entry->extents_array != NULL )
 	{
 		libcdata_array_free(
-		 &( internal_file_entry->extents ),
+		 &( internal_file_entry->extents_array ),
 		 (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_extent_free,
 		 NULL );
 	}
@@ -741,7 +731,7 @@ int libfshfs_internal_file_entry_get_data_stream(
 		}
 		else
 		{
-			if( libfshfs_data_stream_initialize_from_data(
+			if( libfshfs_allocation_block_stream_initialize_from_data(
 			     &compressed_data_stream,
 			     internal_file_entry->compressed_data_attribute_record->inline_data,
 			     internal_file_entry->compressed_data_attribute_record->inline_data_size,
@@ -757,7 +747,7 @@ int libfshfs_internal_file_entry_get_data_stream(
 				goto on_error;
 			}
 		}
-		if( libfshfs_data_stream_initialize_from_compressed_data_stream(
+		if( libfshfs_allocation_block_stream_initialize_from_compressed_stream(
 		     &( internal_file_entry->data_stream ),
 		     compressed_data_stream,
 		     internal_file_entry->compressed_data_header->uncompressed_data_size,
@@ -881,7 +871,7 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 
 			goto on_error;
 		}
-		if( libfshfs_data_stream_initialize_from_fork_descriptor(
+		if( libfshfs_allocation_block_stream_initialize_from_fork_descriptor(
 		     &( internal_file_entry->data_stream ),
 		     internal_file_entry->io_handle,
 		     data_fork_descriptor,
@@ -2732,6 +2722,177 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
 			result = -1;
 		}
 		result = 1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Determines if the file entry has a resource fork
+ * Returns 1 if the file entry has a resource fork, 0 if not or -1 on error
+ */
+int libfshfs_file_entry_has_resource_fork(
+     libfshfs_file_entry_t *file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_fork_descriptor_t *fork_descriptor         = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_has_resource_fork";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_directory_entry_get_resource_fork_descriptor(
+	          internal_file_entry->directory_entry,
+	          &fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve resource fork descriptor from directory entry.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves a data stream of the resource fork
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_resource_fork(
+     libfshfs_file_entry_t *file_entry,
+     libfshfs_data_stream_t **data_stream,
+     libcerror_error_t **error )
+{
+	libfshfs_fork_descriptor_t *fork_descriptor         = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_resource_fork";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	result = libfshfs_directory_entry_get_resource_fork_descriptor(
+	          internal_file_entry->directory_entry,
+	          &fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve resource fork descriptor from directory entry.",
+		 function );
+
+		result = -1;
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_data_stream_initialize(
+		     data_stream,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->file_system,
+		     internal_file_entry->identifier,
+		     fork_descriptor,
+		     LIBFSHFS_FORK_TYPE_RESOURCE,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create resource fork data stream.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -4693,7 +4854,7 @@ int libfshfs_file_entry_get_number_of_extents(
 	if( result != -1 )
 	{
 		if( libcdata_array_get_number_of_entries(
-		     internal_file_entry->extents,
+		     internal_file_entry->extents_array,
 		     number_of_extents,
 		     error ) != 1 )
 		{
@@ -4788,7 +4949,7 @@ int libfshfs_file_entry_get_extent_by_index(
 	if( result != -1 )
 	{
 		if( libcdata_array_get_entry_by_index(
-		     internal_file_entry->extents,
+		     internal_file_entry->extents_array,
 		     extent_index,
 		     (intptr_t **) &extent,
 		     error ) != 1 )

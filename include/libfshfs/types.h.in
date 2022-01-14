@@ -201,6 +201,7 @@ typedef int64_t off64_t;
 
 /* The following type definitions hide internal data structures
  */
+typedef intptr_t libfshfs_data_stream_t;
 typedef intptr_t libfshfs_extended_attribute_t;
 typedef intptr_t libfshfs_file_entry_t;
 typedef intptr_t libfshfs_volume_t;

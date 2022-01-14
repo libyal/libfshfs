@@ -92,7 +92,7 @@ struct libfshfs_internal_file_entry
 
 	/* The extents array
 	 */
-	libcdata_array_t *extents;
+	libcdata_array_t *extents_array;
 
 	/* The symbolic link data
 	 */
@@ -273,6 +273,22 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
      libfshfs_file_entry_t *file_entry,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_has_default_data_stream(
+     libfshfs_file_entry_t *file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_has_resource_fork(
+     libfshfs_file_entry_t *file_entry,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_resource_fork(
+     libfshfs_file_entry_t *file_entry,
+     libfshfs_data_stream_t **data_stream,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

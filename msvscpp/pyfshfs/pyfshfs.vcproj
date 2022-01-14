@@ -174,6 +174,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\pyfshfs\pyfshfs_data_stream.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\pyfshfs\pyfshfs_datetime.c"
 				>
 			</File>
@@ -217,6 +221,10 @@
 			>
 			<File
 				RelativePath="..\..\pyfshfs\pyfshfs.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\pyfshfs\pyfshfs_data_stream.h"
 				>
 			</File>
 			<File

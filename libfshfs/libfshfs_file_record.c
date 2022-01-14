@@ -301,17 +301,18 @@ int libfshfs_file_record_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
-	static char *function       = "libfshfs_file_record_read_data";
-	size_t record_size          = 0;
-	uint32_t data_fork_size     = 0;
-	uint32_t resource_fork_size = 0;
-	uint16_t record_type        = 0;
-	uint8_t is_hard_link        = 0;
+	libfshfs_fork_descriptor_t *resource_fork_descriptor = NULL;
+	static char *function                                = "libfshfs_file_record_read_data";
+	size_t record_size                                   = 0;
+	uint32_t data_fork_size                              = 0;
+	uint32_t resource_fork_size                          = 0;
+	uint16_t record_type                                 = 0;
+	uint8_t is_hard_link                                 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint32_t value_32bit        = 0;
-	uint16_t value_16bit        = 0;
-	int result                  = 0;
+	uint32_t value_32bit                                 = 0;
+	uint16_t value_16bit                                 = 0;
+	int result                                           = 0;
 #endif
 
 	if( file_record == NULL )
@@ -932,7 +933,7 @@ int libfshfs_file_record_read_data(
 		}
 	}
 	if( libfshfs_fork_descriptor_initialize(
-	     &( file_record->resource_fork_descriptor ),
+	     &resource_fork_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -946,12 +947,12 @@ int libfshfs_file_record_read_data(
 	}
 	if( record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD )
 	{
-		file_record->resource_fork_descriptor->size             = resource_fork_size;
-		file_record->resource_fork_descriptor->number_of_blocks = resource_fork_size / 512;
+		resource_fork_descriptor->size             = resource_fork_size;
+		resource_fork_descriptor->number_of_blocks = resource_fork_size / 512;
 
 		if( ( resource_fork_size % 512 ) != 0 )
 		{
-			file_record->resource_fork_descriptor->number_of_blocks += 1;
+			resource_fork_descriptor->number_of_blocks += 1;
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -962,7 +963,7 @@ int libfshfs_file_record_read_data(
 		}
 #endif
 		if( libfshfs_extents_record_read_data(
-		     file_record->resource_fork_descriptor,
+		     resource_fork_descriptor,
 		     0,
 		     ( (fshfs_catalog_file_record_hfs_t *) data )->resource_fork_extents_record,
 		     12,
@@ -989,7 +990,7 @@ int libfshfs_file_record_read_data(
 		}
 #endif
 		if( libfshfs_fork_descriptor_read_data(
-		     file_record->resource_fork_descriptor,
+		     resource_fork_descriptor,
 		     ( (fshfs_catalog_file_record_hfsplus_t *) data )->resource_fork_descriptor,
 		     80,
 		     error ) != 1 )
@@ -999,6 +1000,26 @@ int libfshfs_file_record_read_data(
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
 			 "%s: unable to read resource fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	if( resource_fork_descriptor->number_of_blocks != 0 )
+	{
+		file_record->resource_fork_descriptor = resource_fork_descriptor;
+	}
+	else
+	{
+		if( libfshfs_fork_descriptor_free(
+		     &resource_fork_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free resource fork descriptor.",
 			 function );
 
 			goto on_error;
@@ -1026,10 +1047,10 @@ int libfshfs_file_record_read_data(
 	return( 1 );
 
 on_error:
-	if( file_record->resource_fork_descriptor == NULL )
+	if( resource_fork_descriptor == NULL )
 	{
 		libfshfs_fork_descriptor_free(
-		 &( file_record->resource_fork_descriptor ),
+		 &resource_fork_descriptor,
 		 NULL );
 	}
 	if( file_record->data_fork_descriptor == NULL )
@@ -1348,7 +1369,7 @@ int libfshfs_file_record_get_data_fork_descriptor(
 }
 
 /* Retrieves the resource fork descriptor
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_record_get_resource_fork_descriptor(
      libfshfs_file_record_t *file_record,
@@ -1378,6 +1399,10 @@ int libfshfs_file_record_get_resource_fork_descriptor(
 		 function );
 
 		return( -1 );
+	}
+	if( file_record->resource_fork_descriptor == NULL )
+	{
+		return( 0 );
 	}
 	*fork_descriptor = file_record->resource_fork_descriptor;
 

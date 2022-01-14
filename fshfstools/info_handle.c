@@ -1900,6 +1900,27 @@ int info_handle_file_entry_value_with_name_fprint(
 			 "\tSymbolic link target\t: %" PRIs_SYSTEM "\n",
 			 symbolic_link_target );
 		}
+		result = libfshfs_file_entry_has_resource_fork(
+		          file_entry,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine if file entry has a resource fork.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result == 1 )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "\tHas a resource fork\n" );
+		}
 		if( libfshfs_file_entry_get_number_of_extended_attributes(
 		     file_entry,
 		     &number_of_extended_attributes,

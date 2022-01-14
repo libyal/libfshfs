@@ -16,6 +16,7 @@ pyexec_LTLIBRARIES = pyfshfs.la
 
 pyfshfs_la_SOURCES = \
 	pyfshfs.c pyfshfs.h \
+	pyfshfs_data_stream.c pyfshfs_data_stream.h \
 	pyfshfs_datetime.c pyfshfs_datetime.h \
 	pyfshfs_error.c pyfshfs_error.h \
 	pyfshfs_extended_attribute.c pyfshfs_extended_attribute.h \

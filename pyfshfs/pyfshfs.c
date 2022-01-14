@@ -28,6 +28,7 @@
 #endif
 
 #include "pyfshfs.h"
+#include "pyfshfs_data_stream.h"
 #include "pyfshfs_error.h"
 #include "pyfshfs_extended_attribute.h"
 #include "pyfshfs_extended_attributes.h"
@@ -596,6 +597,23 @@ PyMODINIT_FUNC initpyfshfs(
 	PyEval_InitThreads();
 #endif
 	gil_state = PyGILState_Ensure();
+
+	/* Setup the data_stream type object
+	 */
+	pyfshfs_data_stream_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyfshfs_data_stream_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyfshfs_data_stream_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "data_stream",
+	 (PyObject *) &pyfshfs_data_stream_type_object );
 
 	/* Setup the extended_attribute type object
 	 */

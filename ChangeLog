@@ -1,18 +1,15 @@
 To do:
-* add support for extended attribute (named fork) data stream
-** add support for LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
+* add support for extended attribute (named fork) data stream with LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
 * check kHFSHasAttributesMask flag to see if file entry has extended attributes
+* for extended attributes by name look up use native B-tree structures
 
 * info handle implement is_empty ?
 
 * add support for hard link count
 
-* for extended attributes by name look up use native B-tree structures
-
 * what about a symbolic link to HFS+ Private data directory?
 
 * complete name case folding and decomposition tests
-* add support for resource fork data stream
 * on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
 * catalog B-tree file, include name in branch key check
 * file entry API: add extents functions

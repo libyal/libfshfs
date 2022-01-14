@@ -1,4 +1,4 @@
-.Dd January 12, 2022
+.Dd January 14, 2022
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -131,6 +131,10 @@ File entry functions
 .Ft int
 .Fn libfshfs_file_entry_get_utf16_symbolic_link_target "libfshfs_file_entry_t *file_entry" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
 .Ft int
+.Fn libfshfs_file_entry_has_resource_fork "libfshfs_file_entry_t *file_entry" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_resource_fork "libfshfs_file_entry_t *file_entry" "libfshfs_data_stream_t **data_stream" "libfshfs_error_t **error"
+.Ft int
 .Fn libfshfs_file_entry_get_number_of_extended_attributes "libfshfs_file_entry_t *file_entry" "int *number_of_extended_attributes" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_extended_attribute_by_index "libfshfs_file_entry_t *file_entry" "int extended_attribute_index" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
@@ -164,6 +168,24 @@ File entry functions
 .Fn libfshfs_file_entry_get_number_of_extents "libfshfs_file_entry_t *file_entry" "int *number_of_extents" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_extent_by_index "libfshfs_file_entry_t *file_entry" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
+.Pp
+Data stream functions
+.Ft int
+.Fn libfshfs_data_stream_free "libfshfs_data_stream_t **data_stream" "libfshfs_error_t **error"
+.Ft ssize_t
+.Fn libfshfs_data_stream_read_buffer "libfshfs_data_stream_t *data_stream" "void *buffer" "size_t buffer_size" "libfshfs_error_t **error"
+.Ft ssize_t
+.Fn libfshfs_data_stream_read_buffer_at_offset "libfshfs_data_stream_t *data_stream" "void *buffer" "size_t buffer_size" "off64_t offset" "libfshfs_error_t **error"
+.Ft off64_t
+.Fn libfshfs_data_stream_seek_offset "libfshfs_data_stream_t *data_stream" "off64_t offset" "int whence" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_data_stream_get_offset "libfshfs_data_stream_t *data_stream" "off64_t *offset" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_data_stream_get_size "libfshfs_data_stream_t *data_stream" "size64_t *size" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_data_stream_get_number_of_extents "libfshfs_data_stream_t *data_stream" "int *number_of_extents" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_data_stream_get_extent_by_index "libfshfs_data_stream_t *data_stream" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
 .Pp
 Extended attribute functions
 .Ft int
