@@ -151,6 +151,11 @@ int libfshfs_directory_entry_get_group_identifier(
      uint32_t *group_identifier,
      libcerror_error_t **error );
 
+int libfshfs_directory_entry_get_special_permissions(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *special_permissions,
+     libcerror_error_t **error );
+
 int libfshfs_directory_entry_get_link_reference(
      libfshfs_directory_entry_t *directory_entry,
      uint32_t *link_reference,

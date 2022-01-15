@@ -1267,6 +1267,7 @@ int info_handle_file_entry_value_with_name_fprint(
 	uint32_t group_identifier                         = 0;
 	uint32_t link_identifier                          = 0;
 	uint32_t modification_time                        = 0;
+	uint32_t number_of_links                          = 0;
 	uint32_t owner_identifier                         = 0;
 	uint32_t parent_identifier                        = 0;
 	int32_t added_time                                = 0;
@@ -1877,6 +1878,25 @@ int info_handle_file_entry_value_with_name_fprint(
 				goto on_error;
 			}
 		}
+		if( libfshfs_file_entry_get_number_of_links(
+		     file_entry,
+		     &number_of_links,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of links.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tNumber of links\t\t: %" PRIu32 "\n",
+		 number_of_links );
+
 		fprintf(
 		 info_handle->notify_stream,
 		 "\tOwner identifier\t: %" PRIu32 "\n",

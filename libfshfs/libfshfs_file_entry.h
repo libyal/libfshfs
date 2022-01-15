@@ -102,6 +102,10 @@ struct libfshfs_internal_file_entry
 	 */
 	size_t symbolic_link_data_size;
 
+	/* Indirectory node directory entry
+	 */
+	libfshfs_directory_entry_t *indirect_node_directory_entry;
+
 	/* Attributes
 	 */
 	libcdata_array_t *attributes;
@@ -142,6 +146,10 @@ int libfshfs_internal_file_entry_get_data_stream(
      libcerror_error_t **error );
 
 int libfshfs_internal_file_entry_get_symbolic_link_data(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_indirect_node_file(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
@@ -209,6 +217,12 @@ LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_file_mode(
      libfshfs_file_entry_t *file_entry,
      uint16_t *file_mode,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_number_of_links(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *number_of_links,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \

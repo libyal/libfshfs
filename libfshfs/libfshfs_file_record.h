@@ -80,6 +80,10 @@ struct libfshfs_file_record
 	 */
 	uint16_t file_mode;
 
+	/* The special permissions
+	 */
+	uint32_t special_permissions;
+
 	/* The link reference
 	 */
 	uint32_t link_reference;
@@ -170,6 +174,11 @@ int libfshfs_file_record_get_owner_identifier(
 int libfshfs_file_record_get_group_identifier(
      libfshfs_file_record_t *file_record,
      uint32_t *group_identifier,
+     libcerror_error_t **error );
+
+int libfshfs_file_record_get_special_permissions(
+     libfshfs_file_record_t *file_record,
+     uint32_t *special_permissions,
      libcerror_error_t **error );
 
 int libfshfs_file_record_get_link_reference(

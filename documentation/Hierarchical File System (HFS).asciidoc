@@ -31,7 +31,7 @@ specification.
 == License
 
 ....
-Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
 published by the Free Software Foundation; with no Invariant Sections, no
@@ -58,6 +58,7 @@ Email change
 | 0.0.10 | J.B. Metz | October 2020 | Textual changes and changes to formatting.
 | 0.0.11 | J.B. Metz | July 2021 | Additional information about extended attributes.
 | 0.0.12 | J.B. Metz | August 2021 | Additional information about classic HFS.
+| 0.0.13 | J.B. Metz | January 2022 | Cleaned up notes.
 |===
 
 :numbered:
@@ -616,7 +617,7 @@ See section: <<hfs_extents_record,The HFS extents record>>
 See section: <<hfs_extents_record,The HFS extents record>>
 |===
 
-Notes:
+==== Notes
 
 ....
 drVCSize => Volume cache (allocation) block size (16-bit)
@@ -824,98 +825,6 @@ allocation block (or two allocation blocks for a volume formatted with 512-byte
 allocation blocks) is still reserved even if the alternate volume header is not
 stored there.
 
-=== Metadata zone
-
-==== Notes
-
-....
-Mac OS X version 10.3 introduced a new policy for determining where to allocate
-space for files, which improves performance for most users. This policy places
-the volume metadata and frequently used small files ("hot files") near each
-other on disk, which reduces the seek time for typical accesses. This area on
-disk is known as the metadata zone.
-
-The volume metadata are the structures that let the file system manage the
-contents of the volume. It includes the allocation bitmap file, extents
-(overflow) file, and the catalog file, and the journal file. The volume header
-and alternate volume header are also metadata, but they have fixed locations
-within the volume, so they are not located in the hot file area. Mac OS X may
-use a quota users file and quota groups file to manage disk space quotas on a
-volume. These files aren't strictly metadata, but they are included in the
-metadata zone because of their heavy use by the OS and they are too large to be
-considered ordinary hot files.
-
-Implementations are encouraged not to interfere with the metadata zone policy.
-For example, a disk optimizer should avoid moving files into the metadata zone
-unless that file is known to be frequently accessed, in which case it may be
-added to the "hot file" list. Similarly, files in the metadata zone should not
-be moved elsewhere on disk unless they are also removed from the hot file list.
-
-This policy is only applied to volumes whose size is at least 10GB, and which
-have journaling enabled. The metadata zone is established when the volume is
-mounted. The size of the zone is based upon the following sizes:
-
-Item 	Contribution to the Metadata Zone size
-Allocation Bitmap File 	Physical size (totalBlocks times the volume's allocation block size) of the allocation bitmap file.
-Extents Overflow File 	4MB, plus 4MB per 100GB (up to 128MB maximum)
-Journal File 	8MB, plus 8MB per 100GB (up to 512MB maximum)
-Catalog File 	10 bytes per KB (1GB minimum)
-Hot Files 	5 bytes per KB (10MB minimum; 512MB maximum)
-Quota Users File 	Described below
-Quota Groups File 	Described below
-
-In Mac OS X version 10.3, the amount of space reserved for the allocation file
-is actually the minimum allocation file size for the volume (the total number
-of allocation blocks, divided by 8, rounded up to a multiple of the allocation
-block size). If the allocation file is larger than that (which is sometimes
-done to allow a volume to be more easily grown at a later time), then there
-will be less space available for other metadata or hot files in the metadata
-zone. This is a bug (r. 3522516).
-
-The amount of space reserved for each type of metadata (except for the
-allocation bitmap file) is based on the total size of the volume. For the
-purposes of these computations, the total size of the volume is the allocation
-block size multiplied by the total number of allocation blocks.
-
-The sizes reserved for quota users and groups files are the result of complex
-calculations. In each case, the size reserved is a value of the form (items +
-1) * 64 bytes, where items is based on the size of the volume in gigabytes,
-rounded down. For the quota users file, items is 256 per gigabyte, rounded up
-to a power of 2, with a minimum of 2048, and a maximum of 2097152 (2M). For the
-quota groups file, items is 32 per gigabyte, rounded up to a power of 2, with a
-minimum of 2048, and a maximum of 262144 (256K). The quota files are considered
-hot files, and occupy the hot file area, even though they are larger than the
-maximum file size normally eligible to be a hot file.
-
-The total size of the metadata zone is the sum of the above sizes, rounded up
-so that the metadata zone is represented by a whole number of allocation blocks
-within the volume bitmap. That is, the start and end of the metadata zone fall
-on allocation block boundaries in the volume bitmap. That means that the size
-of the metadata zone is rounded up to a multiple of 8 times the square of the
-allocation block size. In Mac OS X version 10.3, the extra space due to the
-round up of the metadata zone is split up between the catalog and the hot file
-area (2/3 and 1/3, respectively).
-
-The calculations for the extents (overflow) file and journal file divide the
-total size of the volume by 100GB, rounding down. Then they add one (to
-compensate for any remainder lost as part of the rounding). The result is then
-multiplied by 4MB or 8MB, respectively. If the volume's total size is not a
-multiple of 100GB, this is equivalent to 4MB (or 8MB) per 100GB, rounded up.
-
-In Mac OS X version 10.3, the metadata zone is located at the start of the
-volume, following the volume header. The hot file area is located towards the
-end of the metadata zone.
-
-When performing normal file allocations, the allocator will skip over the
-metadata zone. This ensures that the metadata will be less fragmented, and all
-of the metadata will be located in the same area on the disk. If the area
-outside the metadata zone is exhausted, the allocator will then use space
-inside the metadata zone for normal file allocations. Similarly, when
-allocating space for metadata, the allocator will use space inside the metadata
-zone first. If all of the metadata zone is in use, then metadata allocations
-will use space outside the metadata zone.
-....
-
 === [[text_encoding]]Text encoding
 
 HFS+ includes features specifically designed to help Mac OS handle the
@@ -1022,20 +931,33 @@ enum {
 };
 ....
 
+The hard link file's creation date should be set to the creation date of
+the metadata directory, but the creation date may also be set to the creation
+date of the volume's root directory though this is deprecated.
+
 ===== Notes
 
 ....
-The fileType and fileCreator fields of the userInfo in the catalog record of a
-hard link file must be set to kHardLinkFileType and kHFSPlusCreator,
-respectively. The hard link file's creation date should be set to the creation
-date of the metadata directory. The hard link file's creation date may also be
-set to the creation date of the volume's root directory (if it differs from the
-creation date of the metadata directory), though this is deprecated.
-
 For better compatibility with older versions of the Mac OS Finder, the
 kHasBeenInited flag should be set in the Finder flags. The other Finder
 information, and other dates in the catalog record are reserved.
+....
 
+....
+kColor = 0x000E
+kHasBeenInited = 0x0100
+kHasBundle = 0x2000
+kHasCustomIcon = 0x0400
+kHasNoINITs = 0x0080
+kIsAlias = 0x8000
+kIsInvisible = 0x4000
+kIsOnDesk = 0x0001
+kIsShared = 0x0040
+kIsStationery = 0x0800
+kNameLocked = 0x1000
+....
+
+....
 POSIX semantics allow an open file to be unlinked (deleted). These open but
 unlinked files are stored on HFS+ volumes much like a hard link. When the open
 file is deleted, it is renamed and moved into the metadata directory. The new
@@ -1077,10 +999,11 @@ The data fork of a symbolic link contains the path of the directory or file it
 refers to.
 
 On HFS+ path is a POSIX pathname, as used by the Mac OS BSD and Cocoa
-programming interfaces. It is not a traditional Mac OS, or Carbon, path. The
-path is stored as an UTF-8 encoded string without an end-of-string character.
-The length of the path should be 1024 bytes or less. The path may be full or
-partial, with or without a leading forward slash.
+programming interfaces. It is not a traditional Mac OS, or Carbon, path.
+
+The path is stored as an UTF-8 encoded string without an end-of-string
+character. The length of the path should be 1024 bytes or less. The path
+may be full or partial, with or without a leading forward slash.
 
 The first 8 bytes of the file information should contain "slnkrhap".
 
@@ -1091,17 +1014,7 @@ enum {
 };
 ....
 
-===== Notes
-
-....
-On a HFS+ volume, a symbolic link is stored as an ordinary file with special
-values in some of the fields of its catalog record. The pathname of the file
-being referred to is stored in the data fork. The file type in the fileMode
-field of the permissions is set to S_IFLNK. For compatibility with Carbon and
-Classic applications, the file type of a symbolic link is set to
-kSymLinkFileType, and the creator code is set to kSymLinkCreator. The resource
-fork of the symbolic link has zero length and is reserved.
-....
+The resource fork of a symbolic link is reserved and should be 0 bytes in size.
 
 == The HFS wrapper
 
@@ -1512,7 +1425,7 @@ Also see: <<owner_flags,Owner flags>>
 | 42 | 2 | | File mode +
 Also see: <<file_mode,File mode>>
 | 44 | 4 | | Special permission data +
-Consist of either: hard link reference, number of (hard) links, raw device number
+See section: <<hfs_plus_file_special_permission_data,HFS+ file special permission data>>
 4+| _File information_
 | 48 | 16 | | File information (or user information) +
 See section: <<hfs_plus_file_information,HFS+ file information>>
@@ -1692,15 +1605,6 @@ of the file or the directory, or is the super-user.
 ===== Notes
 
 ....
-special
-    This field is used only for certain special kinds of files. For directories, and most files, this field is unused and reserved. When used, this field is used as one of the following:
-iNodeNum
-    For hard link files, this field contains the link reference number. See the Hard Links section for more information.
-linkCount
-    For indirect node files, this field contains the number of hard links that point at this indirect node file. See the Hard Links section for more information.
-rawDevice
-    For block and character special devices files (when the S_IFMT field contains S_IFCHR or S_IFBLK), this field contains the device number.
-
 WARNING:
 Mac OS 8 and 9 treat the permissions as reserved.
 
@@ -1731,6 +1635,14 @@ that sets the permissions fields to zeroes, will behave as if the "ignore
 ownership" option is enabled for those files, even if "ignore ownership" is
 disabled for the volume as a whole.
 ....
+
+==== [[hfs_plus_file_special_permission_data]]HFS+ file special permission data
+
+The special permission data is used to store the following information:
+
+* hard link reference (iNodeNum)
+* number of (hard) links (linkCount) in indirect node files
+* raw device number (rawDevice) in block (S_IFBLK) and character (S_IFCHR) devices files
 
 === File system hierarchy
 
@@ -2159,51 +2071,24 @@ header.
 Format wise it is valid for the startup file to contain more than eight
 extents, but in doing so the purpose of the startup file is defeated.
 
-== The HFS+ Hot file
+
+== Metadata zone and hot files
+
+In Mac OS X 10.3 a metadata zone was instroduced to store certain volum
+metadata (such as allocation bitmap file, extents (overflow) file, and
+the catalog file, and the journal file) and frequently used small files
+(also referred to as "hot files") near each other to reduces seek time
+for typical accesses.
+
+=== Hot File B-tree
+
+The hot file B-tree is a file named ".hotfiles.btree" stored the root directory.
 
 === Notes
 
 ....
-Hot Files
-
-Most files on a disk are rarely, if ever, accessed. Most frequently accessed
-(hot) files are small. To improve performance of these small, frequently access
-files, they are moved near the volume's metadata, into the metadata zone. This
-reduces seek times for most accesses. As files are moved into the metadata
-zone, they are also defragmented (allocated in a single extent), which further
-improves performance. This process is known as adaptive hot file clustering.
-
-The relative importance of a frequently used (hot) file is called its
-temperature. Files with the hottest (largest) temperatures are the ones
-actually moved into the metadata zone. In Mac OS X version 10.3, a file's
-temperature is computed as the number of bytes read from the file during the
-recording period divided by the file's size in bytes. This is a measure of how
-often the file is read.
-
-This section describes the on-disk structures used for tracking hot files. The
-algorithms used at run-time are subject to change, and are not documented here.
-
-Migration of files into or out of the hot file area of the metadata zone is a
-gradual process, based upon the user's actual file access patterns. The
-migration happens in several phases:
-
-Recording
-    Watch file accesses to determine which files are used most
-Evaluation
-    Merge recently used hot files with previously found hot files
-Eviction
-    Move older and less frequently used hot files out of metadata zone to make room for newer, hotter files
-Adoption
-    Move newer and hotter files into the metadata zone
-
-Hot File B-tree
-
-A B-tree is used to keep track of the files that currently occupy the hot file
-area of the metadata zone. The hot file B-tree is an ordinary file on the
-volume (that is, it has records in the catalog). It is a file named
-".hotfiles.btree" in the root directory. To avoid accidental manipulation of
-this file, the kIsInvisible and kNameLocked bits in the finderFlags field of
-the Finder info should be set.
+To avoid accidental manipulation of this file, the kIsInvisible and kNameLocked
+bits in the finderFlags field of the Finder info should be set.
 
 The node size of the hot file B-tree is at least 512 bytes, and is typically
 the same as the the volume's allocation block size. Like other B-trees on an

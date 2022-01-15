@@ -307,11 +307,11 @@ int libfshfs_file_record_read_data(
 	uint32_t data_fork_size                              = 0;
 	uint32_t resource_fork_size                          = 0;
 	uint16_t record_type                                 = 0;
-	uint8_t is_hard_link                                 = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint32_t value_32bit                                 = 0;
 	uint16_t value_16bit                                 = 0;
+	uint8_t is_hard_link                                 = 0;
 	int result                                           = 0;
 #endif
 
@@ -438,19 +438,21 @@ int libfshfs_file_record_read_data(
 		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->file_mode,
 		 file_record->file_mode );
 
+		byte_stream_copy_to_uint32_big_endian(
+		 ( (fshfs_catalog_file_record_hfsplus_t *) data )->special_permissions,
+		 file_record->special_permissions );
+
 		if( ( ( file_record->flags & 0x0020 ) != 0 )
 		 && ( memory_compare(
 		       ( (fshfs_catalog_file_record_hfsplus_t *) data )->file_information,
 		       "hlnkhfs+",
 		       8 ) == 0 ) )
 		{
+			file_record->link_reference = file_record->special_permissions;
+
+#if defined( HAVE_DEBUG_OUTPUT )
 			is_hard_link = 1;
-		}
-		if( is_hard_link != 0 )
-		{
-			byte_stream_copy_to_uint32_big_endian(
-			 ( (fshfs_catalog_file_record_hfsplus_t *) data )->special_permissions,
-			 file_record->link_reference );
+#endif
 		}
 		if( ( file_record->flags & 0x0080 ) != 0 )
 		{
@@ -1518,6 +1520,47 @@ int libfshfs_file_record_get_group_identifier(
 	*group_identifier = file_record->group_identifier;
 
 	return( 1 );
+}
+
+/* Retrieves the special permissions
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_record_get_special_permissions(
+     libfshfs_file_record_t *file_record,
+     uint32_t *special_permissions,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_special_permissions";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( special_permissions == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid special permissions.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_record->special_permissions > 0 )
+	{
+		*special_permissions = file_record->special_permissions;
+
+		return( 1 );
+	}
+	return( 0 );
 }
 
 /* Retrieves the link reference

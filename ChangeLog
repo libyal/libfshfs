@@ -5,7 +5,7 @@ To do:
 
 * info handle implement is_empty ?
 
-* add support for hard link count
+* handle (hard) link count differently for indirect node files in /␀␀␀␀HFS+ Private Data/
 
 * what about a symbolic link to HFS+ Private data directory?
 

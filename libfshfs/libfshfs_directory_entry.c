@@ -611,7 +611,7 @@ int libfshfs_directory_entry_get_parent_identifier(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid link identifier.",
+		 "%s: invalid parent identifier.",
 		 function );
 
 		return( -1 );
@@ -1266,6 +1266,65 @@ int libfshfs_directory_entry_get_group_identifier(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve group identifier from catalog record.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( result );
+}
+
+/* Retrieves the special permissions
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_directory_entry_get_special_permissions(
+     libfshfs_directory_entry_t *directory_entry,
+     uint32_t *special_permissions,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_entry_get_special_permissions";
+	int result            = 0;
+
+	if( directory_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
+	 && ( directory_entry->record_type != LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid directory entry - unsupported record type.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD )
+	 || ( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD ) )
+	{
+		result = libfshfs_file_record_get_special_permissions(
+		          (libfshfs_file_record_t *) directory_entry->catalog_record,
+		          special_permissions,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve special permissions from catalog record.",
 			 function );
 
 			return( -1 );

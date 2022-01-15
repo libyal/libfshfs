@@ -126,6 +126,10 @@ PyObject *pyfshfs_file_entry_get_file_mode(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );
 
+PyObject *pyfshfs_file_entry_get_number_of_links(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments );
+
 PyObject *pyfshfs_file_entry_get_owner_identifier(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments );

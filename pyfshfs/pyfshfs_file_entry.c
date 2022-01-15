@@ -154,6 +154,13 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  "\n"
 	  "Retrieves the file mode." },
 
+	{ "get_number_of_links",
+	  (PyCFunction) pyfshfs_file_entry_get_number_of_links,
+	  METH_NOARGS,
+	  "get_number_of_links() -> Integer\n"
+	  "\n"
+	  "Retrieves the number of (hard) links." },
+
 	{ "get_owner_identifier",
 	  (PyCFunction) pyfshfs_file_entry_get_owner_identifier,
 	  METH_NOARGS,
@@ -380,6 +387,12 @@ PyGetSetDef pyfshfs_file_entry_object_get_set_definitions[] = {
 	  (getter) pyfshfs_file_entry_get_file_mode,
 	  (setter) 0,
 	  "The file mode.",
+	  NULL },
+
+	{ "number_of_links",
+	  (getter) pyfshfs_file_entry_get_number_of_links,
+	  (setter) 0,
+	  "The number of (hard) links.",
 	  NULL },
 
 	{ "owner_identifier",
@@ -1583,6 +1596,58 @@ PyObject *pyfshfs_file_entry_get_file_mode(
 	integer_object = PyInt_FromLong(
 	                  (long) file_mode );
 #endif
+	return( integer_object );
+}
+
+/* Retrieves the number of (hard) links
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_number_of_links(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyfshfs_file_entry_get_number_of_links";
+	uint32_t value_32bit     = 0;
+	int result               = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_number_of_links(
+	          pyfshfs_file_entry->file_entry,
+	          &value_32bit,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve number of (hard) links.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) value_32bit );
+
 	return( integer_object );
 }
 

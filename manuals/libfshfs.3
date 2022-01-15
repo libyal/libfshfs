@@ -1,4 +1,4 @@
-.Dd January 14, 2022
+.Dd January 15, 2022
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -110,6 +110,8 @@ File entry functions
 .Fn libfshfs_file_entry_get_added_time "libfshfs_file_entry_t *file_entry" "int32_t *posix_time" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_file_mode "libfshfs_file_entry_t *file_entry" "uint16_t *file_mode" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_number_of_links "libfshfs_file_entry_t *file_entry" "uint16_t *number_of_links" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_owner_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *owner_identifier" "libfshfs_error_t **error"
 .Ft int

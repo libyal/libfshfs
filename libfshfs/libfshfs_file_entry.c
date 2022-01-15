@@ -352,6 +352,22 @@ int libfshfs_file_entry_free(
 			memory_free(
 			 internal_file_entry->symbolic_link_data );
 		}
+		if( internal_file_entry->indirect_node_directory_entry != NULL )
+		{
+			if( libfshfs_directory_entry_free(
+			     &( internal_file_entry->indirect_node_directory_entry ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free indirect node directory entry.",
+				 function );
+
+				result = -1;
+			}
+		}
 		memory_free(
 		 internal_file_entry );
 	}
@@ -960,6 +976,79 @@ on_error:
 	internal_file_entry->symbolic_link_data_size = 0;
 
 	return( -1 );
+}
+
+/* Determines the indirect node file
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_indirect_node_file(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	static char *function    = "libfshfs_internal_file_entry_get_indirect_node_file";
+	uint32_t link_identifier = 0;
+	int result               = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->indirect_node_directory_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - indirect node directory entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_directory_entry_get_link_identifier(
+	          internal_file_entry->directory_entry,
+	          &link_identifier,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve link identifier from directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	else if( result != 0 )
+	{
+		if( libfshfs_file_system_get_directory_entry_by_identifier(
+		     internal_file_entry->file_system,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     link_identifier,
+		     &( internal_file_entry->indirect_node_directory_entry ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve indirect node directory entry: %" PRIu32 ".",
+			 function,
+			 link_identifier );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
 }
 
 /* Retrieves the identifier (or catalog node identifier (CNID))
@@ -1881,6 +1970,112 @@ int libfshfs_file_entry_get_file_mode(
 		return( -1 );
 	}
 #endif
+	return( result );
+}
+
+/* Retrieves the number of links
+ * This value is retrieved from the indirect node file if available otherwise it defaults to 1
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_entry_get_number_of_links(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *number_of_links,
+     libcerror_error_t **error )
+{
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_number_of_links";
+	uint32_t safe_number_of_links                       = 1;
+	int result                                          = 1;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+	if( number_of_links == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid number of links.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_file_entry->indirect_node_directory_entry == NULL )
+	{
+		if( libfshfs_internal_file_entry_get_indirect_node_file(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine indirect node file.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( internal_file_entry->indirect_node_directory_entry != NULL )
+	{
+		if( libfshfs_directory_entry_get_special_permissions(
+		     internal_file_entry->directory_entry,
+		     &safe_number_of_links,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve special permissions from directory entry.",
+			 function );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	*number_of_links = safe_number_of_links;
+
 	return( result );
 }
 
