@@ -487,7 +487,7 @@ int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 	libfshfs_attributes_btree_key_t *last_node_key = NULL;
 	libfshfs_attributes_btree_key_t *node_key      = NULL;
 	libfshfs_btree_node_t *sub_node                = NULL;
-	static char *function                          = "libfshfs_attributes_btree_file_get_attributes_from_node";
+	static char *function                          = "libfshfs_attributes_btree_file_get_attributes_from_branch_node";
 	uint32_t sub_node_number                       = 0;
 	uint16_t record_index                          = 0;
 	uint8_t node_type                              = 0;
