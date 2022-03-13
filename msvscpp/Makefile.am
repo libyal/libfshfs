@@ -25,6 +25,7 @@ MSVSCPP_FILES = \
 	fshfs_test_master_directory_block/fshfs_test_master_directory_block.vcproj \
 	fshfs_test_name/fshfs_test_name.vcproj \
 	fshfs_test_notify/fshfs_test_notify.vcproj \
+	fshfs_test_profiler/fshfs_test_profiler.vcproj \
 	fshfs_test_support/fshfs_test_support.vcproj \
 	fshfs_test_thread_record/fshfs_test_thread_record.vcproj \
 	fshfs_test_tools_info_handle/fshfs_test_tools_info_handle.vcproj \

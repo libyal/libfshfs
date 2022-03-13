@@ -154,6 +154,7 @@ stamp-h[1-9]
 /tests/fshfs_test_master_directory_block
 /tests/fshfs_test_name
 /tests/fshfs_test_notify
+/tests/fshfs_test_profiler
 /tests/fshfs_test_support
 /tests/fshfs_test_thread_record
 /tests/fshfs_test_tools_info_handle

@@ -1,5 +1,5 @@
 /*
- * Input/Output (IO) handle functions
+ * The profiler functions
  *
  * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,57 +19,66 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBFSHFS_IO_HANDLE_H )
-#define _LIBFSHFS_IO_HANDLE_H
+#if !defined( _LIBFSHFS_PROFILER_H )
+#define _LIBFSHFS_PROFILER_H
 
 #include <common.h>
+#include <file_stream.h>
 #include <types.h>
 
 #include "libfshfs_libcerror.h"
-#include "libfshfs_profiler.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libfshfs_io_handle libfshfs_io_handle_t;
-
-struct libfshfs_io_handle
-{
-	/* The file system type
-	 */
-	uint8_t file_system_type;
-
-	/* The block size
-	 */
-	uint32_t block_size;
-
 #if defined( HAVE_PROFILER )
-	/* The profiler
-	 */
-	libfshfs_profiler_t *profiler;
-#endif
 
-	/* Value to indicate if abort was signalled
+typedef struct libfshfs_profiler libfshfs_profiler_t;
+
+struct libfshfs_profiler
+{
+	/* The output stream
 	 */
-	int abort;
+	FILE *output_stream;
 };
 
-int libfshfs_io_handle_initialize(
-     libfshfs_io_handle_t **io_handle,
+int libfshfs_profiler_initialize(
+     libfshfs_profiler_t **profiler,
      libcerror_error_t **error );
 
-int libfshfs_io_handle_free(
-     libfshfs_io_handle_t **io_handle,
+int libfshfs_profiler_free(
+     libfshfs_profiler_t **profiler,
      libcerror_error_t **error );
 
-int libfshfs_io_handle_clear(
-     libfshfs_io_handle_t *io_handle,
+int libfshfs_profiler_open(
+     libfshfs_profiler_t *profiler,
+     const char *filename,
      libcerror_error_t **error );
+
+int libfshfs_profiler_close(
+     libfshfs_profiler_t *profiler,
+     libcerror_error_t **error );
+
+int libfshfs_profiler_start_timing(
+     libfshfs_profiler_t *profiler,
+     int64_t *start_timestamp,
+     libcerror_error_t **error );
+
+int libfshfs_profiler_stop_timing(
+     libfshfs_profiler_t *profiler,
+     int64_t start_timestamp,
+     const char *name,
+     off64_t offset,
+     size64_t size,
+     const char *cache_hit_or_miss,
+     libcerror_error_t **error );
+
+#endif /* defined( HAVE_PROFILER ) */
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBFSHFS_IO_HANDLE_H ) */
+#endif /* !defined( _LIBFSHFS_PROFILER_H ) */
 

@@ -32,6 +32,7 @@
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
 #include "libfshfs_libfcache.h"
+#include "libfshfs_profiler.h"
 #include "libfshfs_unused.h"
 
 /* Creates a B-tree node vector
@@ -231,8 +232,9 @@ int libfshfs_btree_node_vector_get_node_by_number(
 	int number_of_extents                = 0;
 	int result                           = 0;
 
-#if defined( HAVE_DEBUG_OUTPUT )
-	const char *hit_or_miss              = NULL;
+#if defined( HAVE_PROFILER )
+	int64_t profiler_start_timestamp     = 0;
+	const char *cache_hit_or_miss        = "hit";
 #endif
 
 	if( node_vector == NULL )
@@ -290,6 +292,26 @@ int libfshfs_btree_node_vector_get_node_by_number(
 
 		return( -1 );
 	}
+#if defined( HAVE_PROFILER )
+	if( node_vector->io_handle->profiler != NULL )
+	{
+		if( libfshfs_profiler_start_timing(
+		     node_vector->io_handle->profiler,
+		     &profiler_start_timestamp,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to start timing.",
+			 function );
+
+			goto on_error;
+		}
+	}
+#endif /* defined( HAVE_PROFILER ) */
+
 	if( libfcache_cache_get_value_by_index(
 	     (libfcache_cache_t *) cache,
 	     recursion_depth,
@@ -343,27 +365,12 @@ int libfshfs_btree_node_vector_get_node_by_number(
 			result = 1;
 		}
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		if( result == 0 )
-		{
-			hit_or_miss = "miss";
-		}
-		else
-		{
-			hit_or_miss = "hit";
-		}
-		libcnotify_printf(
-		 "%s: cache: 0x%08" PRIjx " %s\n",
-		 function,
-		 (intptr_t) cache,
-		 hit_or_miss );
-	}
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
 	if( result == 0 )
 	{
+#if defined( HAVE_PROFILER )
+		cache_hit_or_miss = "miss";
+#endif
+
 		if( libfshfs_btree_node_initialize(
 		     &safe_node,
 		     (size_t) node_vector->node_size,
@@ -510,6 +517,32 @@ int libfshfs_btree_node_vector_get_node_by_number(
 		}
 		*node = safe_node;
 	}
+#if defined( HAVE_PROFILER )
+	if( node_vector->io_handle->profiler != NULL )
+	{
+		node_offset = (off64_t) node_number * node_vector->node_size;
+
+		if( libfshfs_profiler_stop_timing(
+		     node_vector->io_handle->profiler,
+		     profiler_start_timestamp,
+		     function,
+		     node_offset,
+		     node_vector->node_size,
+		     cache_hit_or_miss,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to stop timing.",
+			 function );
+
+			goto on_error;
+		}
+	}
+#endif /* defined( HAVE_PROFILER ) */
+
 	return( 1 );
 
 on_error:

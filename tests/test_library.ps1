@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "attribute_record attributes_btree_key btree_file btree_header btree_node btree_node_descriptor btree_node_record buffer_data_handle catalog_btree_key compressed_data_handle compression deflate directory_entry directory_record error extent extents_btree_key file_entry file_record file_system fork_descriptor io_handle lzvn master_directory_block name notify thread_record volume_header"
+$LibraryTests = "attribute_record attributes_btree_key btree_file btree_header btree_node btree_node_descriptor btree_node_record buffer_data_handle catalog_btree_key compressed_data_handle compression deflate directory_entry directory_record error extent extents_btree_key file_entry file_record file_system fork_descriptor io_handle lzvn master_directory_block name notify profiler thread_record volume_header"
 $LibraryTestsWithInput = "support volume"
 $OptionSets = "offset"
 

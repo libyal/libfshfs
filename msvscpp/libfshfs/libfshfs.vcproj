@@ -322,6 +322,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_profiler.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_support.c"
 				>
 			</File>
@@ -573,6 +577,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_notify.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_profiler.h"
 				>
 			</File>
 			<File
