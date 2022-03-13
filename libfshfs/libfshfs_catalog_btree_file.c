@@ -725,9 +725,9 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
-			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -829,7 +829,6 @@ int libfshfs_catalog_btree_file_get_thread_record(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -1542,9 +1541,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
-			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -1669,7 +1668,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		     btree_file,
 		     file_io_handle,
 		     &root_node,
-		     0,
 		     error ) == -1 )
 		{
 			libcerror_error_set(
@@ -2163,9 +2161,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
-			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -2276,7 +2274,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -2416,7 +2413,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -3015,9 +3011,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
-			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -3128,7 +3124,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -3268,7 +3263,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -3813,9 +3807,9 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
-			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -3915,7 +3909,6 @@ int libfshfs_catalog_btree_file_get_directory_entries(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(

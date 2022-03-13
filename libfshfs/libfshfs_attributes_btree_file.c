@@ -649,9 +649,9 @@ int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
-			     recursion_depth,
 			     error ) == -1 )
 			{
 				libcerror_error_set(
@@ -748,7 +748,6 @@ int libfshfs_attributes_btree_file_get_attributes(
 	     btree_file,
 	     file_io_handle,
 	     &root_node,
-	     0,
 	     error ) == -1 )
 	{
 		libcerror_error_set(

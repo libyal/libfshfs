@@ -136,7 +136,7 @@ int libfshfs_btree_node_vector_initialize(
 		 "%s: invalid total number of blocks value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	total_number_of_nodes = size / node_size;
 
@@ -153,7 +153,20 @@ int libfshfs_btree_node_vector_initialize(
 		 "%s: invalid number of nodes value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	if( libfcache_date_time_get_timestamp(
+	     &( ( *node_vector )->cache_timestamp ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve cache timestamp.",
+		 function );
+
+		goto on_error;
 	}
 	( *node_vector )->number_of_nodes = (uint32_t) total_number_of_nodes;
 	( *node_vector )->io_handle       = io_handle;
@@ -215,7 +228,6 @@ int libfshfs_btree_node_vector_get_node_by_number(
      libfcache_cache_t *cache,
      uint32_t node_number,
      libfshfs_btree_node_t **node,
-     int recursion_depth,
      libcerror_error_t **error )
 {
 	libfcache_cache_value_t *cache_value = NULL;
@@ -226,15 +238,13 @@ int libfshfs_btree_node_vector_get_node_by_number(
 	off64_t cache_value_offset           = 0;
 	off64_t file_offset                  = 0;
 	off64_t node_offset                  = 0;
-	int64_t cache_value_timestamp        = 0;
-	int cache_value_file_index           = 0;
 	int extent_index                     = 0;
 	int number_of_extents                = 0;
 	int result                           = 0;
 
 #if defined( HAVE_PROFILER )
 	int64_t profiler_start_timestamp     = 0;
-	const char *cache_hit_or_miss        = "hit";
+	const char *cache_hit_or_miss        = NULL;
 #endif
 
 	if( node_vector == NULL )
@@ -312,65 +322,44 @@ int libfshfs_btree_node_vector_get_node_by_number(
 	}
 #endif /* defined( HAVE_PROFILER ) */
 
-	if( libfcache_cache_get_value_by_index(
-	     (libfcache_cache_t *) cache,
-	     recursion_depth,
-	     &cache_value,
-	     error ) != 1 )
+	result = libfcache_cache_get_value_by_identifier(
+	          (libfcache_cache_t *) cache,
+	          0,
+	          (off64_t) node_number,
+	          node_vector->cache_timestamp,
+	          &cache_value,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve value: %d from cache.",
-		 function,
-		 recursion_depth );
+		 "%s: unable to retrieve value from cache.",
+		 function );
 
 		goto on_error;
 	}
-	if( cache_value != NULL )
+	else if( result != 0 )
 	{
-		if( libfcache_cache_value_get_identifier(
+		if( libfcache_cache_value_get_value(
 		     cache_value,
-		     &cache_value_file_index,
-		     &cache_value_offset,
-		     &cache_value_timestamp,
+		     (intptr_t **) node,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve cache value identifier.",
+			 "%s: unable to retrieve cache value.",
 			 function );
 
 			goto on_error;
 		}
-		if( (off64_t) node_number == cache_value_offset )
-		{
-			if( libfcache_cache_value_get_value(
-			     cache_value,
-			     (intptr_t **) node,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve cache value.",
-				 function );
-
-				goto on_error;
-			}
-			result = 1;
-		}
 	}
-	if( result == 0 )
+	else
 	{
-#if defined( HAVE_PROFILER )
-		cache_hit_or_miss = "miss";
-#endif
-
 		if( libfshfs_btree_node_initialize(
 		     &safe_node,
 		     (size_t) node_vector->node_size,
@@ -494,12 +483,11 @@ int libfshfs_btree_node_vector_get_node_by_number(
 
 			goto on_error;
 		}
-		if( libfcache_cache_set_value_by_index(
+		if( libfcache_cache_set_value_by_identifier(
 		     cache,
-		     recursion_depth,
 		     0,
 		     (off64_t) node_number,
-		     0,
+		     node_vector->cache_timestamp,
 		     (intptr_t *) safe_node,
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_free,
 		     LIBFCACHE_CACHE_VALUE_FLAG_MANAGED,
@@ -509,19 +497,27 @@ int libfshfs_btree_node_vector_get_node_by_number(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set value: %d in cache.",
-			 function,
-			 recursion_depth );
+			 "%s: unable to set value in cache.",
+			 function );
 
 			goto on_error;
 		}
-		*node = safe_node;
+		*node     = safe_node;
+		safe_node = NULL;
 	}
 #if defined( HAVE_PROFILER )
 	if( node_vector->io_handle->profiler != NULL )
 	{
 		node_offset = (off64_t) node_number * node_vector->node_size;
 
+		if( result == 0 )
+		{
+			cache_hit_or_miss = "miss";
+		}
+		else
+		{
+			cache_hit_or_miss = "hit";
+		}
 		if( libfshfs_profiler_stop_timing(
 		     node_vector->io_handle->profiler,
 		     profiler_start_timestamp,

@@ -55,6 +55,10 @@ struct libfshfs_btree_node_vector
 	/* Extents
 	 */
 	libcdata_array_t *extents;
+
+	/* Cache timestamp
+	 */
+	int64_t cache_timestamp;
 };
 
 int libfshfs_btree_node_vector_initialize(
@@ -75,7 +79,6 @@ int libfshfs_btree_node_vector_get_node_by_number(
      libfcache_cache_t *cache,
      uint32_t node_number,
      libfshfs_btree_node_t **node,
-     int recursion_depth,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
