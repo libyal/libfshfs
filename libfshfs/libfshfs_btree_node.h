@@ -54,10 +54,6 @@ struct libfshfs_btree_node
 	/* The records array
 	 */
 	libcdata_array_t *records_array;
-
-	/* The records range list
-	 */
-	libcdata_range_list_t *records_range_list;
 };
 
 int libfshfs_btree_node_initialize(

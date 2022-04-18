@@ -154,31 +154,11 @@ int libfshfs_btree_node_initialize(
 
 		goto on_error;
 	}
-	if( libcdata_range_list_initialize(
-	     &( ( *node )->records_range_list ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create records range list.",
-		 function );
-
-		goto on_error;
-	}
 	return( 1 );
 
 on_error:
 	if( *node != NULL )
 	{
-		if( ( *node )->records_array != NULL )
-		{
-			libcdata_array_free(
-			 &( ( *node )->records_array ),
-			 NULL,
-			 NULL );
-		}
 		if( ( *node )->data != NULL )
 		{
 			memory_free(
@@ -248,20 +228,6 @@ int libfshfs_btree_node_free(
 
 			result = -1;
 		}
-		if( libcdata_range_list_free(
-		     &( ( *node )->records_range_list ),
-		     NULL,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free the records range list.",
-			 function );
-
-			result = -1;
-		}
 		if( ( *node )->data != NULL )
 		{
 			memory_free(
@@ -284,13 +250,17 @@ int libfshfs_btree_node_read_data(
      size_t data_size,
      libcerror_error_t **error )
 {
+	uint16_t *record_offsets                  = NULL;
+	uint16_t *sorted_record_offsets           = NULL;
 	libfshfs_btree_node_record_t *node_record = NULL;
 	static char *function                     = "libfshfs_btree_node_read_data";
 	size_t records_data_offset                = 0;
 	size_t records_data_size                  = 0;
 	uint16_t record_offset                    = 0;
+	uint16_t sorted_record_offset             = 0;
+	int entry_index                           = 0;
 	int record_index                          = 0;
-	int result                                = 0;
+	int sorted_record_index                   = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	uint16_t value_16bit                      = 0;
@@ -382,17 +352,16 @@ int libfshfs_btree_node_read_data(
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
-	if( libcdata_array_resize(
-	     node->records_array,
-	     node->descriptor->number_of_records,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libfshfs_btree_node_record_free,
-	     error ) != 1 )
+	record_offsets = (uint16_t *) memory_allocate(
+	                               sizeof( uint16_t ) * node->descriptor->number_of_records );
+
+	if( record_offsets == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
-		 "%s: unable to resize records array.",
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create record offsets.",
 		 function );
 
 		goto on_error;
@@ -404,19 +373,6 @@ int libfshfs_btree_node_read_data(
 	     record_index < (int) node->descriptor->number_of_records;
 	     record_index++ )
 	{
-		if( libfshfs_btree_node_record_initialize(
-		     &node_record,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create B-tree node record.",
-			 function );
-
-			goto on_error;
-		}
 		byte_stream_copy_to_uint16_big_endian(
 		 &( data[ records_data_offset ] ),
 		 record_offset );
@@ -434,92 +390,7 @@ int libfshfs_btree_node_read_data(
 			 record_offset );
 		}
 #endif
-		if( ( record_offset < sizeof( fshfs_btree_node_descriptor_t ) )
-		 || ( record_offset > data_size ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid record: %d offset value out of bounds.",
-			 function,
-			 record_index );
-
-			goto on_error;
-		}
-		result = libcdata_range_list_range_has_overlapping_range(
-		          node->records_range_list,
-		          (uint64_t) record_offset,
-		          1,
-		          error );
-
-		if( result == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to determine if there is an overlapping node record range in the range list.",
-			 function );
-
-			goto on_error;
-		}
-		else if( result != 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid record offset: %" PRIu32 " (0x%08" PRIu32 ") value already added.",
-			 function,
-			 record_offset,
-			 record_offset );
-
-			goto on_error;
-		}
-		/* Note that record->data_size here is an approximation
-		 */
-		node_record->offset    = record_offset;
-		node_record->data      = &( data[ record_offset ] );
-		node_record->data_size = data_size - record_offset;
-
-		if( libcdata_array_set_entry_by_index(
-		     node->records_array,
-		     record_index,
-		     (intptr_t *) node_record,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set node record: %d.",
-			 function,
-			 record_index );
-
-			goto on_error;
-		}
-		node_record = NULL;
-
-		if( libcdata_range_list_insert_range(
-		     node->records_range_list,
-		     (uint64_t) record_offset,
-		     1,
-		     NULL,
-		     NULL,
-		     NULL,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to insert node record: %d range into records range list.",
-			 function,
-			 record_index );
-
-			goto on_error;
-		}
+		record_offsets[ record_index ] = record_offset;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -537,6 +408,146 @@ int libfshfs_btree_node_read_data(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
+	records_data_offset -= 2;
+
+	sorted_record_offsets = (uint16_t *) memory_allocate(
+	                                      sizeof( uint16_t ) * node->descriptor->number_of_records );
+
+	if( sorted_record_offsets == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create sorted record offsets.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_set(
+	     sorted_record_offsets,
+	     0,
+	     sizeof( uint16_t ) * node->descriptor->number_of_records ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear sorted record offsets.",
+		 function );
+
+		goto on_error;
+	}
+	for( record_index = 0;
+	     record_index < (int) node->descriptor->number_of_records;
+	     record_index++ )
+	{
+		record_offset = record_offsets[ record_index ];
+
+		if( ( record_offset < sizeof( fshfs_btree_node_descriptor_t ) )
+		 || ( record_offset > data_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid record: %d offset value out of bounds.",
+			 function,
+			 record_index );
+
+			goto on_error;
+		}
+		sorted_record_offsets[ record_index ] = record_offset;
+
+		for( sorted_record_index = record_index - 1;
+		     sorted_record_index >= 0;
+		     sorted_record_index-- )
+		{
+			sorted_record_offset = sorted_record_offsets[ sorted_record_index ];
+
+			if( record_offset == sorted_record_offset )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid record: %d offset: %" PRIu32 " (0x%08" PRIu32 ") value already exists.",
+				 function,
+				 record_index,
+				 record_offset,
+				 record_offset );
+
+				goto on_error;
+			}
+			else if( record_offset > sorted_record_offset )
+			{
+				break;
+			}
+			sorted_record_offsets[ sorted_record_index ]     = record_offset;
+			sorted_record_offsets[ sorted_record_index + 1 ] = sorted_record_offset;
+		}
+		if( libfshfs_btree_node_record_initialize(
+		     &node_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create B-tree node record.",
+			 function );
+
+			goto on_error;
+		}
+		/* Note that record->data_size here is an approximation
+		 */
+		node_record->offset    = record_offset;
+		node_record->data      = &( data[ record_offset ] );
+		node_record->data_size = data_size - record_offset;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: record: % 2d offset: %" PRIu16 " (0x%04" PRIx16 ") size: %" PRIu16 "\n",
+			 function,
+			 record_index,
+			 node_record->offset,
+			 node_record->offset,
+			 node_record->data_size );
+		}
+#endif
+		if( libcdata_array_append_entry(
+		     node->records_array,
+		     &entry_index,
+		     (intptr_t *) node_record,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to append node record: %d.",
+			 function,
+			 record_index );
+
+			goto on_error;
+		}
+		node_record = NULL;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	memory_free(
+	 sorted_record_offsets );
+
+	memory_free(
+	 record_offsets );
+
 	return( 1 );
 
 on_error:
@@ -545,6 +556,16 @@ on_error:
 		libfshfs_btree_node_record_free(
 		 &node_record,
 		 NULL );
+	}
+	if( sorted_record_offsets != NULL )
+	{
+		memory_free(
+		 sorted_record_offsets );
+	}
+	if( record_offsets != NULL )
+	{
+		memory_free(
+		 record_offsets );
 	}
 	libcdata_array_empty(
 	 node->records_array,

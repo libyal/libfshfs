@@ -235,7 +235,6 @@ int libfshfs_btree_node_vector_get_node_by_number(
 	libfshfs_extent_t *extent            = NULL;
 	static char *function                = "libfshfs_btree_node_vector_get_node_by_number";
 	size64_t extent_size                 = 0;
-	off64_t cache_value_offset           = 0;
 	off64_t file_offset                  = 0;
 	off64_t node_offset                  = 0;
 	int extent_index                     = 0;
