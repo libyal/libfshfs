@@ -137,6 +137,7 @@ int libfshfs_btree_node_cache_free(
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_node_cache_free";
+	int depth             = 0;
 	int result            = 1;
 
 	if( btree_node_cache == NULL )
@@ -152,6 +153,25 @@ int libfshfs_btree_node_cache_free(
 	}
 	if( *btree_node_cache != NULL )
 	{
+		for( depth = 0;
+		     depth < 9;
+		     depth++ )
+		{
+			if( libfcache_cache_free(
+			     &( ( *btree_node_cache )->caches[ depth ] ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free cache: %d.",
+				 function,
+				 depth );
+
+				result = -1;
+			}
+		}
 		memory_free(
 		 *btree_node_cache );
 

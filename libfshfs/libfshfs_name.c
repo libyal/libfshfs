@@ -5492,24 +5492,14 @@ int libfshfs_name_get_utf8_string(
 
 		return( -1 );
 	}
-	if( name_size > (size_t) SSIZE_MAX )
+	if( ( name_size == 0 )
+	 || ( name_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid name size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( name_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: missing name value.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -5674,24 +5664,14 @@ int libfshfs_name_compare_with_utf8_string(
 
 		return( -1 );
 	}
-	if( name_size > (size_t) SSIZE_MAX )
+	if( ( name_size == 0 )
+	 || ( name_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid name size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( name_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: missing name value.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -6008,24 +5988,14 @@ int libfshfs_name_get_utf16_string(
 
 		return( -1 );
 	}
-	if( name_size > (size_t) SSIZE_MAX )
+	if( ( name_size == 0 )
+	 || ( name_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid name size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( name_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: missing name value.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -6188,24 +6158,14 @@ int libfshfs_name_compare_with_utf16_string(
 
 		return( -1 );
 	}
-	if( name_size > (size_t) SSIZE_MAX )
+	if( ( name_size == 0 )
+	 || ( name_size > (size_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid name size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( name_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: missing name value.",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -6352,5 +6312,343 @@ int libfshfs_name_compare_with_utf16_string(
 		return( LIBUNA_COMPARE_LESS );
 	}
 	return( LIBUNA_COMPARE_EQUAL );
+}
+
+/* Calculates a Fowler–Noll–Vo string hash of the name
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_calculate_hash(
+     const uint8_t *name,
+     size_t name_size,
+     int codepage,
+     uint8_t use_case_folding,
+     uint32_t *name_hash,
+     libcerror_error_t **error )
+{
+	static char *function                        = "libfshfs_name_calculate_hash";
+	libuna_unicode_character_t unicode_character = 0;
+	size_t name_index                            = 0;
+	uint32_t safe_name_hash                      = 0x811c9dc5UL;
+
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( name_size == 0 )
+	 || ( name_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_hash == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name hash.",
+		 function );
+
+		return( -1 );
+	}
+	while( name_index < name_size )
+	{
+		if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
+		{
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from UTF-16 encoded name.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		else
+		{
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &unicode_character,
+			     name,
+			     name_size,
+			     &name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		/* ':' is stored as '/'
+		 */
+		if( unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		else if( use_case_folding != 0 )
+		{
+			libfshfs_name_get_case_folding_mapping(
+			 unicode_character );
+		}
+		safe_name_hash *= 0x1000193UL;
+		safe_name_hash ^= (uint8_t) ( unicode_character & 0xff );
+
+		unicode_character >>= 8;
+
+		safe_name_hash *= 0x1000193UL;
+		safe_name_hash ^= (uint8_t) ( unicode_character & 0xff );
+
+		unicode_character >>= 8;
+
+		safe_name_hash *= 0x1000193UL;
+		safe_name_hash ^= (uint8_t) ( unicode_character & 0xff );
+
+		unicode_character >>= 8;
+
+		safe_name_hash *= 0x1000193UL;
+		safe_name_hash ^= (uint8_t) ( unicode_character & 0xff );
+	}
+	*name_hash = safe_name_hash;
+
+	return( 1 );
+}
+
+/* Calculates a Fowler–Noll–Vo string hash of an UTF-8 string
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_calculate_hash_utf8_string(
+     const libuna_utf8_character_t *utf8_string,
+     size_t utf8_string_length,
+     uint8_t use_case_folding,
+     uint32_t *name_hash,
+     libcerror_error_t **error )
+{
+	libfshfs_name_decomposition_mapping_t utf8_single_nfd_mapping = { 1, { 0 } };
+
+	libfshfs_name_decomposition_mapping_t *utf8_nfd_mapping       = NULL;
+	static char *function                                         = "libfshfs_name_calculate_hash_utf8_string";
+	libuna_unicode_character_t utf8_unicode_character             = 0;
+	size_t utf8_string_index                                      = 0;
+	uint32_t safe_name_hash                                       = 0x811c9dc5UL;
+	uint8_t nfd_character_index                                   = 0;
+
+	if( utf8_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_hash == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name hash.",
+		 function );
+
+		return( -1 );
+	}
+	while( utf8_string_index < utf8_string_length )
+	{
+		if( libuna_unicode_character_copy_from_utf8(
+		     &utf8_unicode_character,
+		     utf8_string,
+		     utf8_string_length,
+		     &utf8_string_index,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_OUTPUT_FAILED,
+			 "%s: unable to copy Unicode character from UTF-8 string.",
+			 function );
+
+			return( -1 );
+		}
+		if( utf8_unicode_character == 0 )
+		{
+			break;
+		}
+		libfshfs_name_get_decomposition_mapping(
+		 utf8_unicode_character,
+		 utf8_nfd_mapping,
+		 utf8_single_nfd_mapping );
+
+		for( nfd_character_index = 0;
+		     nfd_character_index < utf8_nfd_mapping->number_of_characters;
+		     nfd_character_index++ )
+		{
+			utf8_unicode_character = utf8_nfd_mapping->characters[ nfd_character_index ];
+
+			if( use_case_folding != 0 )
+			{
+				libfshfs_name_get_case_folding_mapping(
+				 utf8_unicode_character );
+			}
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf8_unicode_character & 0xff );
+
+			utf8_unicode_character >>= 8;
+
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf8_unicode_character & 0xff );
+
+			utf8_unicode_character >>= 8;
+
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf8_unicode_character & 0xff );
+
+			utf8_unicode_character >>= 8;
+
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf8_unicode_character & 0xff );
+		}
+	}
+	*name_hash = safe_name_hash;
+
+	return( 1 );
+}
+
+/* Calculates a Fowler–Noll–Vo string hash of an UTF-16 string
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_name_calculate_hash_utf16_string(
+     const libuna_utf16_character_t *utf16_string,
+     size_t utf16_string_length,
+     uint8_t use_case_folding,
+     uint32_t *name_hash,
+     libcerror_error_t **error )
+{
+	libfshfs_name_decomposition_mapping_t utf16_single_nfd_mapping = { 1, { 0 } };
+
+	libfshfs_name_decomposition_mapping_t *utf16_nfd_mapping       = NULL;
+	static char *function                                          = "libfshfs_name_calculate_hash_utf16_string";
+	libuna_unicode_character_t utf16_unicode_character             = 0;
+	size_t utf16_string_index                                      = 0;
+	uint32_t safe_name_hash                                        = 0x811c9dc5UL;
+	uint8_t nfd_character_index                                    = 0;
+
+	if( utf16_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_hash == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name hash.",
+		 function );
+
+		return( -1 );
+	}
+	while( utf16_string_index < utf16_string_length )
+	{
+		if( libuna_unicode_character_copy_from_utf16(
+		     &utf16_unicode_character,
+		     utf16_string,
+		     utf16_string_length,
+		     &utf16_string_index,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+			 LIBCERROR_CONVERSION_ERROR_OUTPUT_FAILED,
+			 "%s: unable to copy Unicode character from UTF-16 string.",
+			 function );
+
+			return( -1 );
+		}
+		if( utf16_unicode_character == 0 )
+		{
+			break;
+		}
+		libfshfs_name_get_decomposition_mapping(
+		 utf16_unicode_character,
+		 utf16_nfd_mapping,
+		 utf16_single_nfd_mapping );
+
+		for( nfd_character_index = 0;
+		     nfd_character_index < utf16_nfd_mapping->number_of_characters;
+		     nfd_character_index++ )
+		{
+			utf16_unicode_character = utf16_nfd_mapping->characters[ nfd_character_index ];
+
+			if( use_case_folding != 0 )
+			{
+				libfshfs_name_get_case_folding_mapping(
+				 utf16_unicode_character );
+			}
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf16_unicode_character & 0xff );
+
+			utf16_unicode_character >>= 8;
+
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf16_unicode_character & 0xff );
+
+			utf16_unicode_character >>= 8;
+
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf16_unicode_character & 0xff );
+
+			utf16_unicode_character >>= 8;
+
+			safe_name_hash *= 0x1000193UL;
+			safe_name_hash ^= (uint8_t) ( utf16_unicode_character & 0xff );
+		}
+	}
+	*name_hash = safe_name_hash;
+
+	return( 1 );
 }
 

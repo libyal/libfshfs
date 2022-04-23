@@ -58,6 +58,10 @@ struct libfshfs_internal_file_entry
 	 */
 	libfshfs_file_system_t *file_system;
 
+	/* Flags
+	 */
+	uint16_t flags;
+
 	/* Identifier
 	 */
 	uint32_t identifier;

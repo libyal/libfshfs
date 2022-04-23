@@ -116,6 +116,11 @@ int libfshfs_file_record_read_data(
      size_t data_size,
      libcerror_error_t **error );
 
+int libfshfs_file_record_get_flags(
+     libfshfs_file_record_t *file_record,
+     uint16_t *flags,
+     libcerror_error_t **error );
+
 int libfshfs_file_record_get_identifier(
      libfshfs_file_record_t *file_record,
      uint32_t *identifier,

@@ -39,6 +39,8 @@
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcthreads.h"
+#include "libfshfs_libuna.h"
+#include "libfshfs_name.h"
 
 /* Creates a file system
  * Make sure the value file_system is referencing, is set to NULL
@@ -201,6 +203,22 @@ int libfshfs_file_system_free(
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 				 "%s: unable to free extents B-tree file.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( ( *file_system )->indirect_nodes_directory_entry != NULL )
+		{
+			if( libfshfs_directory_entry_free(
+			     &( ( *file_system )->indirect_nodes_directory_entry ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free indirect nodes directory entry.",
 				 function );
 
 				result = -1;
@@ -768,13 +786,15 @@ int libfshfs_file_system_resolve_indirect_node_directory_entry(
      libfshfs_directory_entry_t *directory_entry,
      libcerror_error_t **error )
 {
-	char indirect_node_path[ 64 ];
+	char indirect_node_path[ 32 ];
 
 	libfshfs_directory_entry_t *link_directory_entry = NULL;
 	intptr_t *catalog_record                         = NULL;
 	static char *function                            = "libfshfs_file_system_resolve_indirect_node_directory_entry";
 	size_t indirect_node_path_length                 = 0;
 	ssize_t print_count                              = 0;
+	uint32_t indirect_node_name_hash                 = 0;
+	uint32_t indirect_nodes_directory_identifier     = 0;
 	uint32_t link_reference                          = 0;
 	int result                                       = 0;
 
@@ -800,6 +820,50 @@ int libfshfs_file_system_resolve_indirect_node_directory_entry(
 
 		return( -1 );
 	}
+	if( file_system->indirect_nodes_directory_entry == NULL )
+	{
+		print_count = narrow_string_snprintf(
+		               indirect_node_path,
+			       32,
+			       "/\xe2\x90\x80\xe2\x90\x80\xe2\x90\x80\xe2\x90\x80HFS+ Private Data" );
+
+		if( ( print_count <= -1 )
+		 || ( print_count > 32 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set indirect node path.",
+			 function );
+
+			goto on_error;
+		}
+		indirect_node_path_length = narrow_string_length(
+		                             indirect_node_path );
+
+		if( libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
+		     file_system->catalog_btree_file,
+		     io_handle,
+		     file_io_handle,
+		     file_system->indirect_node_catalog_btree_node_cache,
+		     (uint8_t *) indirect_node_path,
+		     indirect_node_path_length,
+		     file_system->use_case_folding,
+		     &( file_system->indirect_nodes_directory_entry ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve indirect nodes directory entry by UTF-8 path.",
+			 function,
+			 link_reference );
+
+			goto on_error;
+		}
+	}
 	result = libfshfs_directory_entry_get_link_reference(
 	          directory_entry,
 	          &link_reference,
@@ -819,14 +883,28 @@ int libfshfs_file_system_resolve_indirect_node_directory_entry(
 	else if( ( result != 0 )
 	      && ( link_reference > 2 ) )
 	{
+		if( libfshfs_directory_entry_get_identifier(
+		     file_system->indirect_nodes_directory_entry,
+		     &indirect_nodes_directory_identifier,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry identifier.",
+			 function );
+
+			goto on_error;
+		}
 		print_count = narrow_string_snprintf(
 		               indirect_node_path,
-			       64,
-			       "/\xe2\x90\x80\xe2\x90\x80\xe2\x90\x80\xe2\x90\x80HFS+ Private Data/iNode%" PRIu32 "",
+			       32,
+			       "iNode%" PRIu32 "",
 			       link_reference );
 
 		if( ( print_count <= -1 )
-		 || ( print_count > 64 ) )
+		 || ( print_count > 32 ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -840,18 +918,34 @@ int libfshfs_file_system_resolve_indirect_node_directory_entry(
 		indirect_node_path_length = narrow_string_length(
 		                             indirect_node_path );
 
-		result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
-		          file_system->catalog_btree_file,
-		          io_handle,
-		          file_io_handle,
-		          file_system->indirect_node_catalog_btree_node_cache,
-		          (uint8_t *) indirect_node_path,
-		          indirect_node_path_length,
-		          file_system->use_case_folding,
-		          &link_directory_entry,
-		          error );
+		if( libfshfs_name_calculate_hash_utf8_string(
+		     (libuna_utf8_character_t *) indirect_node_path,
+		     indirect_node_path_length,
+		     file_system->use_case_folding,
+		     &indirect_node_name_hash,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GENERIC,
+			 "%s: unable to calculate name hash.",
+			 function );
 
-		if( result != 1 )
+			goto on_error;
+		}
+		if( libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
+		     file_system->catalog_btree_file,
+		     io_handle,
+		     file_io_handle,
+		     file_system->indirect_node_catalog_btree_node_cache,
+		     indirect_nodes_directory_identifier,
+		     indirect_node_name_hash,
+		     (uint8_t *) indirect_node_path,
+		     indirect_node_path_length,
+		     file_system->use_case_folding,
+		     &link_directory_entry,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -1020,6 +1114,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 {
 	libfshfs_directory_entry_t *safe_directory_entry = NULL;
 	static char *function                            = "libfshfs_file_system_get_directory_entry_by_utf8_name";
+	uint32_t name_hash                               = 0;
 	int result                                       = 0;
 
 	if( file_system == NULL )
@@ -1044,12 +1139,29 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 
 		return( -1 );
 	}
+	if( libfshfs_name_calculate_hash_utf8_string(
+	     (libuna_utf8_character_t *) utf8_string,
+	     utf8_string_length,
+	     file_system->use_case_folding,
+	     &name_hash,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 "%s: unable to calculate name hash.",
+		 function );
+
+		goto on_error;
+	}
 	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf8_name(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
 	          file_system->catalog_btree_node_cache,
 	          parent_identifier,
+	          name_hash,
 	          utf8_string,
 	          utf8_string_length,
 	          file_system->use_case_folding,
@@ -1206,6 +1318,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 {
 	libfshfs_directory_entry_t *safe_directory_entry = NULL;
 	static char *function                            = "libfshfs_file_system_get_directory_entry_by_utf16_name";
+	uint32_t name_hash                               = 0;
 	int result                                       = 0;
 
 	if( file_system == NULL )
@@ -1230,12 +1343,29 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 
 		return( -1 );
 	}
+	if( libfshfs_name_calculate_hash_utf16_string(
+	     (libuna_utf16_character_t *) utf16_string,
+	     utf16_string_length,
+	     file_system->use_case_folding,
+	     &name_hash,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 "%s: unable to calculate name hash.",
+		 function );
+
+		goto on_error;
+	}
 	result = libfshfs_catalog_btree_file_get_directory_entry_by_utf16_name(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
 	          file_system->catalog_btree_node_cache,
 	          parent_identifier,
+	          name_hash,
 	          utf16_string,
 	          utf16_string_length,
 	          file_system->use_case_folding,

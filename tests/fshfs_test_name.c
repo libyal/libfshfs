@@ -117,6 +117,151 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfshfs_name_get_utf8_string_size function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_name_get_utf8_string_size(
+     void )
+{
+        uint8_t name_byte_stream[ 4 ]  = { 'T', 'e', 's', 't' };
+        uint8_t name_utf16_stream[ 8 ] = { 0, 'T', 0, 'e', 0, 's', 0, 't' };
+	libcerror_error_t *error       = NULL;
+	size_t utf8_string_size        = 0;
+	int result                     = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_name_get_utf8_string_size(
+	          name_byte_stream,
+	          4,
+	          LIBUNA_CODEPAGE_MAC_ROMAN,
+	          &utf8_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_SIZE(
+	 "utf8_string_size",
+	 utf8_string_size,
+	 (size_t) 5 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_name_get_utf8_string_size(
+	          name_utf16_stream,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          &utf8_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_SIZE(
+	 "utf8_string_size",
+	 utf8_string_size,
+	 (size_t) 5 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_name_get_utf8_string_size(
+	          NULL,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          &utf8_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_get_utf8_string_size(
+	          name_utf16_stream,
+	          (size_t) SSIZE_MAX + 1,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          &utf8_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_get_utf8_string_size(
+	          name_utf16_stream,
+	          8,
+	          -1,
+	          &utf8_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_get_utf8_string_size(
+	          name_utf16_stream,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 /* Tests the libfshfs_name_compare_with_utf8_string function
  * Returns 1 if successful or 0 if not
  */
@@ -317,6 +462,151 @@ int fshfs_test_name_compare_with_utf8_string(
 	          utf8_string_equal,
 	          (size_t) SSIZE_MAX + 1,
 	          0,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_name_get_utf16_string_size function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_name_get_utf16_string_size(
+     void )
+{
+        uint8_t name_byte_stream[ 4 ]  = { 'T', 'e', 's', 't' };
+        uint8_t name_utf16_stream[ 8 ] = { 0, 'T', 0, 'e', 0, 's', 0, 't' };
+	libcerror_error_t *error       = NULL;
+	size_t utf16_string_size       = 0;
+	int result                     = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_name_get_utf16_string_size(
+	          name_byte_stream,
+	          4,
+	          LIBUNA_CODEPAGE_MAC_ROMAN,
+	          &utf16_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_SIZE(
+	 "utf16_string_size",
+	 utf16_string_size,
+	 (size_t) 5 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_name_get_utf16_string_size(
+	          name_utf16_stream,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          &utf16_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_SIZE(
+	 "utf16_string_size",
+	 utf16_string_size,
+	 (size_t) 5 );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_name_get_utf16_string_size(
+	          NULL,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          &utf16_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_get_utf16_string_size(
+	          name_utf16_stream,
+	          (size_t) SSIZE_MAX + 1,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          &utf16_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_get_utf16_string_size(
+	          name_utf16_stream,
+	          8,
+	          -1,
+	          &utf16_string_size,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_get_utf16_string_size(
+	          name_utf16_stream,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          NULL,
 	          &error );
 
 	FSHFS_TEST_ASSERT_EQUAL_INT(
@@ -567,6 +857,385 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libfshfs_name_calculate_hash function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_name_calculate_hash(
+     void )
+{
+        uint8_t name_byte_stream[ 4 ]  = { 'T', 'e', 's', 't' };
+        uint8_t name_utf16_stream[ 8 ] = { 0, 'T', 0, 'e', 0, 's', 0, 't' };
+	libcerror_error_t *error       = NULL;
+	uint32_t name_hash             = 0;
+	int result                     = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_name_calculate_hash(
+	          name_byte_stream,
+	          4,
+	          LIBUNA_CODEPAGE_MAC_ROMAN,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_UINT32(
+	 "name_hash",
+	 name_hash,
+	 (uint32_t) 0x9d989383UL );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libfshfs_name_calculate_hash(
+	          name_utf16_stream,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_UINT32(
+	 "name_hash",
+	 name_hash,
+	 (uint32_t) 0x9d989383UL );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_name_calculate_hash(
+	          NULL,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash(
+	          name_utf16_stream,
+	          0,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash(
+	          name_utf16_stream,
+	          (size_t) SSIZE_MAX + 1,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash(
+	          name_utf16_stream,
+	          8,
+	          -1,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash(
+	          name_utf16_stream,
+	          8,
+	          LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN,
+	          0,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_name_calculate_hash_utf8_string function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_name_calculate_hash_utf8_string(
+     void )
+{
+        uint8_t name_utf8_string[ 5 ] = { 'T', 'e', 's', 't', 0 };
+	libcerror_error_t *error      = NULL;
+	uint32_t name_hash            = 0;
+	int result                    = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_name_calculate_hash_utf8_string(
+	          name_utf8_string,
+	          4,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_UINT32(
+	 "name_hash",
+	 name_hash,
+	 (uint32_t) 0x9d989383UL );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_name_calculate_hash_utf8_string(
+	          NULL,
+	          4,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash_utf8_string(
+	          name_utf8_string,
+	          (size_t) SSIZE_MAX + 1,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash_utf8_string(
+	          name_utf8_string,
+	          4,
+	          0,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libfshfs_name_calculate_hash_utf16_string function
+ * Returns 1 if successful or 0 if not
+ */
+int fshfs_test_name_calculate_hash_utf16_string(
+     void )
+{
+        uint16_t name_utf16_string[ 5 ] = { 'T', 'e', 's', 't', 0 };
+	libcerror_error_t *error        = NULL;
+	uint32_t name_hash              = 0;
+	int result                      = 0;
+
+	/* Test regular cases
+	 */
+	result = libfshfs_name_calculate_hash_utf16_string(
+	          name_utf16_string,
+	          4,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 LIBUNA_COMPARE_EQUAL );
+
+	FSHFS_TEST_ASSERT_EQUAL_UINT32(
+	 "name_hash",
+	 name_hash,
+	 (uint32_t) 0x9d989383UL );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libfshfs_name_calculate_hash_utf16_string(
+	          NULL,
+	          4,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash_utf16_string(
+	          name_utf16_string,
+	          (size_t) SSIZE_MAX + 1,
+	          0,
+	          &name_hash,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libfshfs_name_calculate_hash_utf16_string(
+	          name_utf16_string,
+	          4,
+	          0,
+	          NULL,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 
 /* The main program
@@ -597,12 +1266,36 @@ int main(
 */
 
 	FSHFS_TEST_RUN(
+	 "libfshfs_name_get_utf8_string_size",
+	 fshfs_test_name_get_utf8_string_size );
+
+	/* TODO add tests for libfshfs_name_get_utf8_string */
+
+	FSHFS_TEST_RUN(
 	 "libfshfs_name_compare_with_utf8_string",
 	 fshfs_test_name_compare_with_utf8_string );
 
 	FSHFS_TEST_RUN(
+	 "libfshfs_name_get_utf16_string_size",
+	 fshfs_test_name_get_utf16_string_size );
+
+	/* TODO add tests for libfshfs_name_get_utf16_string */
+
+	FSHFS_TEST_RUN(
 	 "libfshfs_name_compare_with_utf16_string",
 	 fshfs_test_name_compare_with_utf16_string );
+
+	FSHFS_TEST_RUN(
+	 "libfshfs_name_calculate_hash",
+	 fshfs_test_name_calculate_hash );
+
+	FSHFS_TEST_RUN(
+	 "libfshfs_name_calculate_hash_utf8_string",
+	 fshfs_test_name_calculate_hash_utf8_string );
+
+	FSHFS_TEST_RUN(
+	 "libfshfs_name_calculate_hash_utf16_string",
+	 fshfs_test_name_calculate_hash_utf16_string );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBFSHFS_DLL_IMPORT ) */
 

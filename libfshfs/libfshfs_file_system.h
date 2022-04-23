@@ -62,6 +62,10 @@ struct libfshfs_file_system
 	 */
 	libfshfs_btree_node_cache_t *indirect_node_catalog_btree_node_cache;
 
+	/* The indirect nodes (HFS+ Private Data) directory entry
+	 */
+	libfshfs_directory_entry_t *indirect_nodes_directory_entry;
+
 	/* The attributes B-tree file
 	 */
 	libfshfs_btree_file_t *attributes_btree_file;

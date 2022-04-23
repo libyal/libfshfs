@@ -91,6 +91,11 @@ int libfshfs_directory_entry_set_catalog_record(
      intptr_t *catalog_record,
      libcerror_error_t **error );
 
+int libfshfs_directory_entry_get_flags(
+     libfshfs_directory_entry_t *directory_entry,
+     uint16_t *flags,
+     libcerror_error_t **error );
+
 int libfshfs_directory_entry_get_identifier(
      libfshfs_directory_entry_t *directory_entry,
      uint32_t *identifier,

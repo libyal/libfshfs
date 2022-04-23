@@ -379,6 +379,28 @@ int libfshfs_name_compare_with_utf16_string(
      uint8_t use_case_folding,
      libcerror_error_t **error );
 
+int libfshfs_name_calculate_hash(
+     const uint8_t *name,
+     size_t name_size,
+     int codepage,
+     uint8_t use_case_folding,
+     uint32_t *name_hash,
+     libcerror_error_t **error );
+
+int libfshfs_name_calculate_hash_utf8_string(
+     const libuna_utf8_character_t *utf8_string,
+     size_t utf8_string_length,
+     uint8_t use_case_folding,
+     uint32_t *name_hash,
+     libcerror_error_t **error );
+
+int libfshfs_name_calculate_hash_utf16_string(
+     const libuna_utf16_character_t *utf16_string,
+     size_t utf16_string_length,
+     uint8_t use_case_folding,
+     uint32_t *name_hash,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

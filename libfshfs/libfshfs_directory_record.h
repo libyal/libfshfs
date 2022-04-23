@@ -99,6 +99,11 @@ int libfshfs_directory_record_read_data(
      size_t data_size,
      libcerror_error_t **error );
 
+int libfshfs_directory_record_get_flags(
+     libfshfs_directory_record_t *directory_record,
+     uint16_t *flags,
+     libcerror_error_t **error );
+
 int libfshfs_directory_record_get_identifier(
      libfshfs_directory_record_t *directory_record,
      uint32_t *identifier,

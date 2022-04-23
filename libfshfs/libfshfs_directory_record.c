@@ -707,6 +707,43 @@ int libfshfs_directory_record_read_data(
 	return( 1 );
 }
 
+/* Retrieves the flags
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_directory_record_get_flags(
+     libfshfs_directory_record_t *directory_record,
+     uint16_t *flags,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_directory_record_get_flags";
+
+	if( directory_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory record.",
+		 function );
+
+		return( -1 );
+	}
+	if( flags == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid flags.",
+		 function );
+
+		return( -1 );
+	}
+	*flags = directory_record->flags;
+
+	return( 1 );
+}
+
 /* Retrieves the identifier
  * Returns 1 if successful or -1 on error
  */

@@ -1064,6 +1064,43 @@ on_error:
 	return( -1 );
 }
 
+/* Retrieves the flags
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_file_record_get_flags(
+     libfshfs_file_record_t *file_record,
+     uint16_t *flags,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_record_get_flags";
+
+	if( file_record == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file record.",
+		 function );
+
+		return( -1 );
+	}
+	if( flags == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid flags.",
+		 function );
+
+		return( -1 );
+	}
+	*flags = file_record->flags;
+
+	return( 1 );
+}
+
 /* Retrieves the identifier
  * Returns 1 if successful or -1 on error
  */

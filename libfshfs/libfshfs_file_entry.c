@@ -121,6 +121,20 @@ int libfshfs_file_entry_initialize(
 
 		return( -1 );
 	}
+	if( libfshfs_directory_entry_get_flags(
+	     directory_entry,
+	     &( internal_file_entry->flags ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve flags from directory entry.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfshfs_directory_entry_get_identifier(
 	     directory_entry,
 	     &( internal_file_entry->identifier ),
@@ -3147,7 +3161,8 @@ int libfshfs_file_entry_get_number_of_extended_attributes(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->attributes == NULL )
+	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
+	 && ( internal_file_entry->attributes == NULL ) )
 	{
 		if( libfshfs_file_system_get_attributes(
 		     internal_file_entry->file_system,
@@ -3265,7 +3280,8 @@ int libfshfs_file_entry_get_extended_attribute_by_index(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->attributes == NULL )
+	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
+	 && ( internal_file_entry->attributes == NULL ) )
 	{
 		if( libfshfs_file_system_get_attributes(
 		     internal_file_entry->file_system,
@@ -3367,7 +3383,8 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
 
 		return( -1 );
 	}
-	if( internal_file_entry->attributes == NULL )
+	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
+	 && ( internal_file_entry->attributes == NULL ) )
 	{
 		if( libfshfs_file_system_get_attributes(
 		     internal_file_entry->file_system,
@@ -3474,7 +3491,8 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
 
 		return( -1 );
 	}
-	if( internal_file_entry->attributes == NULL )
+	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
+	 && ( internal_file_entry->attributes == NULL ) )
 	{
 		if( libfshfs_file_system_get_attributes(
 		     internal_file_entry->file_system,

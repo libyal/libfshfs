@@ -1,8 +1,5 @@
 To do:
-* clean up code to separately cache indirect node lookups
-
 * add support for extended attribute (named fork) data stream with LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
-* check kHFSHasAttributesMask flag to see if file entry has extended attributes
 * for extended attributes by name look up use native B-tree structures
 
 * info handle implement is_empty ?
