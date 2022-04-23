@@ -27,6 +27,7 @@
 #include "libfshfs_btree_file.h"
 #include "libfshfs_btree_header.h"
 #include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_btree_node_descriptor.h"
 #include "libfshfs_btree_node_vector.h"
 #include "libfshfs_debug.h"
@@ -49,7 +50,6 @@ int libfshfs_btree_file_initialize(
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_file_initialize";
-	int depth             = 0;
 
 	if( btree_file == NULL )
 	{
@@ -133,39 +133,11 @@ int libfshfs_btree_file_initialize(
 
 		goto on_error;
 	}
-	for( depth = 0;
-	     depth < 9;
-	     depth++ )
-	{
-		if( libfcache_cache_initialize(
-		     &( ( *btree_file )->nodes_caches[ depth ] ),
-		     LIBFSHFS_MAXIMUM_CACHE_ENTRIES_BTREE_FILE_NODES,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create B-tree nodes cache: %d.",
-			 function,
-			 depth );
-
-			goto on_error;
-		}
-	}
 	return( 1 );
 
 on_error:
 	if( *btree_file != NULL )
 	{
-		while( depth > 0 )
-		{
-			depth--;
-
-			libfcache_cache_free(
-			 &( ( *btree_file )->nodes_caches[ depth ] ),
-			 NULL );
-		}
 		if( ( *btree_file )->extents != NULL )
 		{
 			libcdata_array_free(
@@ -189,7 +161,6 @@ int libfshfs_btree_file_free(
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_btree_file_free";
-	int depth             = 0;
 	int result            = 1;
 
 	if( btree_file == NULL )
@@ -232,37 +203,18 @@ int libfshfs_btree_file_free(
 
 			result = -1;
 		}
-		if( ( *btree_file )->nodes_vector != NULL )
+		if( ( *btree_file )->node_vector != NULL )
 		{
 			if( libfshfs_btree_node_vector_free(
-			     &( ( *btree_file )->nodes_vector ),
+			     &( ( *btree_file )->node_vector ),
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free B-tree nodes vector.",
+				 "%s: unable to free B-tree node vector.",
 				 function );
-
-				result = -1;
-			}
-		}
-		for( depth = 0;
-		     depth < 9;
-		     depth++ )
-		{
-			if( libfcache_cache_free(
-			     &( ( *btree_file )->nodes_caches[ depth ] ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free B-tree nodes cache: %d.",
-				 function,
-				 depth );
 
 				result = -1;
 			}
@@ -303,13 +255,13 @@ int libfshfs_btree_file_read_file_io_handle(
 
 		return( -1 );
 	}
-	if( btree_file->nodes_vector != NULL )
+	if( btree_file->node_vector != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid B-tree file - nodes vector already set.",
+		 "%s: invalid B-tree file - node vector already set.",
 		 function );
 
 		return( -1 );
@@ -463,10 +415,10 @@ int libfshfs_btree_file_read_file_io_handle(
 
 		goto on_error;
 	}
-	/* Read the root node using the nodes vector
+	/* Read the root node using the node vector
 	 */
 	if( libfshfs_btree_node_vector_initialize(
-	     &( btree_file->nodes_vector ),
+	     &( btree_file->node_vector ),
 	     io_handle,
 	     btree_file->size,
 	     btree_file->header->node_size,
@@ -477,7 +429,7 @@ int libfshfs_btree_file_read_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create B-tree nodes vector.",
+		 "%s: unable to create B-tree node vector.",
 		 function );
 
 		goto on_error;
@@ -485,10 +437,10 @@ int libfshfs_btree_file_read_file_io_handle(
 	return( 1 );
 
 on_error:
-	if( btree_file->nodes_vector != NULL )
+	if( btree_file->node_vector != NULL )
 	{
 		libfshfs_btree_node_vector_free(
-		 &( btree_file->nodes_vector ),
+		 &( btree_file->node_vector ),
 		 NULL );
 	}
 	if( header_node_descriptor != NULL )
@@ -506,6 +458,7 @@ on_error:
 int libfshfs_btree_file_get_node_by_number(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      int depth,
      uint32_t node_number,
      libfshfs_btree_node_t **node,
@@ -537,9 +490,10 @@ int libfshfs_btree_file_get_node_by_number(
 		return( -1 );
 	}
 	if( libfshfs_btree_node_vector_get_node_by_number(
-	     btree_file->nodes_vector,
+	     btree_file->node_vector,
 	     file_io_handle,
-	     btree_file->nodes_caches[ depth ],
+	     node_cache,
+	     depth,
 	     node_number,
 	     node,
 	     error ) != 1 )
@@ -564,6 +518,7 @@ int libfshfs_btree_file_get_node_by_number(
 int libfshfs_btree_file_get_root_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t **root_node,
      libcerror_error_t **error )
 {
@@ -581,9 +536,10 @@ int libfshfs_btree_file_get_root_node(
 		return( -1 );
 	}
 	if( libfshfs_btree_node_vector_get_node_by_number(
-	     btree_file->nodes_vector,
+	     btree_file->node_vector,
 	     file_io_handle,
-	     btree_file->nodes_caches[ 0 ],
+	     node_cache,
+	     0,
 	     btree_file->header->root_node_number,
 	     root_node,
 	     error ) != 1 )

@@ -155,7 +155,7 @@ enum LIBFSHFS_COMPRESSION_METHODS
 
 /* The maximum number of cache entries definitions
  */
-#define LIBFSHFS_MAXIMUM_CACHE_ENTRIES_BTREE_FILE_NODES		8
+#define LIBFSHFS_MAXIMUM_CACHE_ENTRIES_BTREE_FILE_NODES		64
 
 #endif /* !defined( _LIBFSHFS_INTERNAL_DEFINITIONS_H ) */
 

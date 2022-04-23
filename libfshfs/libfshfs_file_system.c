@@ -27,6 +27,7 @@
 #include "libfshfs_attribute_record.h"
 #include "libfshfs_attributes_btree_file.h"
 #include "libfshfs_btree_file.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_catalog_btree_file.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_directory_entry.h"
@@ -173,6 +174,22 @@ int libfshfs_file_system_free(
 			result = -1;
 		}
 #endif
+		if( ( *file_system )->extents_btree_node_cache != NULL )
+		{
+			if( libfshfs_btree_node_cache_free(
+			     &( ( *file_system )->extents_btree_node_cache ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free extents B-tree node cache.",
+				 function );
+
+				result = -1;
+			}
+		}
 		if( ( *file_system )->extents_btree_file != NULL )
 		{
 			if( libfshfs_btree_file_free(
@@ -189,6 +206,38 @@ int libfshfs_file_system_free(
 				result = -1;
 			}
 		}
+		if( ( *file_system )->indirect_node_catalog_btree_node_cache != NULL )
+		{
+			if( libfshfs_btree_node_cache_free(
+			     &( ( *file_system )->indirect_node_catalog_btree_node_cache ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free indirect node catalog B-tree node cache.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( ( *file_system )->catalog_btree_node_cache != NULL )
+		{
+			if( libfshfs_btree_node_cache_free(
+			     &( ( *file_system )->catalog_btree_node_cache ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free catalog B-tree node cache.",
+				 function );
+
+				result = -1;
+			}
+		}
 		if( ( *file_system )->catalog_btree_file != NULL )
 		{
 			if( libfshfs_btree_file_free(
@@ -200,6 +249,22 @@ int libfshfs_file_system_free(
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 				 "%s: unable to free catalog B-tree file.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( ( *file_system )->attributes_btree_node_cache != NULL )
+		{
+			if( libfshfs_btree_node_cache_free(
+			     &( ( *file_system )->attributes_btree_node_cache ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free attributes B-tree node cache.",
 				 function );
 
 				result = -1;
@@ -322,6 +387,7 @@ int libfshfs_file_system_read_attributes_file(
 		if( libfshfs_extents_btree_file_get_extents(
 		     file_system->extents_btree_file,
 		     file_io_handle,
+		     file_system->extents_btree_node_cache,
 		     LIBFSHFS_ATTRIBUTES_FILE_IDENTIFIER,
 		     LIBFSHFS_FORK_TYPE_DATA,
 		     file_system->attributes_btree_file->extents,
@@ -351,6 +417,19 @@ int libfshfs_file_system_read_attributes_file(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
 		 "%s: unable to read attributes B-tree file.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_node_cache_initialize(
+	     &( file_system->attributes_btree_node_cache ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create attributes B-tree node cache.",
 		 function );
 
 		goto on_error;
@@ -460,6 +539,7 @@ int libfshfs_file_system_read_catalog_file(
 		if( libfshfs_extents_btree_file_get_extents(
 		     file_system->extents_btree_file,
 		     file_io_handle,
+		     file_system->extents_btree_node_cache,
 		     LIBFSHFS_CATALOG_FILE_IDENTIFIER,
 		     LIBFSHFS_FORK_TYPE_DATA,
 		     file_system->catalog_btree_file->extents,
@@ -493,9 +573,41 @@ int libfshfs_file_system_read_catalog_file(
 
 		goto on_error;
 	}
+	if( libfshfs_btree_node_cache_initialize(
+	     &( file_system->catalog_btree_node_cache ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create catalog B-tree node cache.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_btree_node_cache_initialize(
+	     &( file_system->indirect_node_catalog_btree_node_cache ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create indirect node catalog B-tree node cache.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
+	if( file_system->catalog_btree_node_cache != NULL )
+	{
+		libfshfs_btree_node_cache_free(
+		 &( file_system->catalog_btree_node_cache ),
+		 NULL );
+	}
 	if( file_system->catalog_btree_file != NULL )
 	{
 		libfshfs_btree_file_free(
@@ -621,6 +733,19 @@ int libfshfs_file_system_read_extents_file(
 
 		goto on_error;
 	}
+	if( libfshfs_btree_node_cache_initialize(
+	     &( file_system->extents_btree_node_cache ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents B-tree node cache.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
@@ -719,6 +844,7 @@ int libfshfs_file_system_resolve_indirect_node_directory_entry(
 		          file_system->catalog_btree_file,
 		          io_handle,
 		          file_io_handle,
+		          file_system->indirect_node_catalog_btree_node_cache,
 		          (uint8_t *) indirect_node_path,
 		          indirect_node_path_length,
 		          file_system->use_case_folding,
@@ -810,6 +936,7 @@ int libfshfs_file_system_get_directory_entry_by_identifier(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
+	          file_system->catalog_btree_node_cache,
 	          identifier,
 	          directory_entry,
 	          error );
@@ -821,6 +948,55 @@ int libfshfs_file_system_get_directory_entry_by_identifier(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve directory entry: %" PRIu32 ".",
+		 function,
+		 identifier );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Retrieves an indirect node directory entry for a specific identifier
+ * Returns 1 if successful, 0 if not found or -1 on error
+ */
+int libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libfshfs_file_system_get_indirect_node_directory_entry_by_identifier";
+	int result            = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
+	          file_system->catalog_btree_file,
+	          io_handle,
+	          file_io_handle,
+	          file_system->indirect_node_catalog_btree_node_cache,
+	          identifier,
+	          directory_entry,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve indirect node directory entry: %" PRIu32 ".",
 		 function,
 		 identifier );
 
@@ -872,6 +1048,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
+	          file_system->catalog_btree_node_cache,
 	          parent_identifier,
 	          utf8_string,
 	          utf8_string_length,
@@ -964,6 +1141,7 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
+	          file_system->catalog_btree_node_cache,
 	          utf8_string,
 	          utf8_string_length,
 	          file_system->use_case_folding,
@@ -1056,6 +1234,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
+	          file_system->catalog_btree_node_cache,
 	          parent_identifier,
 	          utf16_string,
 	          utf16_string_length,
@@ -1148,6 +1327,7 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 	          file_system->catalog_btree_file,
 	          io_handle,
 	          file_io_handle,
+	          file_system->catalog_btree_node_cache,
 	          utf16_string,
 	          utf16_string_length,
 	          file_system->use_case_folding,
@@ -1250,6 +1430,7 @@ int libfshfs_file_system_get_directory_entries(
 	     file_system->catalog_btree_file,
 	     io_handle,
 	     file_io_handle,
+	     file_system->catalog_btree_node_cache,
 	     parent_identifier,
 	     *directory_entries,
 	     error ) != 1 )
@@ -1363,6 +1544,7 @@ int libfshfs_file_system_get_extents(
 		if( libfshfs_extents_btree_file_get_extents(
 		     file_system->extents_btree_file,
 		     file_io_handle,
+		     file_system->extents_btree_node_cache,
 		     identifier,
 		     fork_type,
 		     *extents,
@@ -1445,6 +1627,7 @@ int libfshfs_file_system_get_attributes(
 		if( libfshfs_attributes_btree_file_get_attributes(
 		     file_system->attributes_btree_file,
 		     file_io_handle,
+		     file_system->attributes_btree_node_cache,
 		     parent_identifier,
 		     *attributes,
 		     error ) != 1 )

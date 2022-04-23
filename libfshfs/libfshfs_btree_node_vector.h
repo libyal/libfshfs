@@ -26,11 +26,11 @@
 #include <types.h>
 
 #include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfcache.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -76,7 +76,8 @@ int libfshfs_btree_node_vector_free(
 int libfshfs_btree_node_vector_get_node_by_number(
      libfshfs_btree_node_vector_t *node_vector,
      libbfio_handle_t *file_io_handle,
-     libfcache_cache_t *cache,
+     libfshfs_btree_node_cache_t *node_cache,
+     int depth,
      uint32_t node_number,
      libfshfs_btree_node_t **node,
      libcerror_error_t **error );

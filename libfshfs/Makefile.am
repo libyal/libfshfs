@@ -38,6 +38,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_btree_header.c libfshfs_btree_header.h \
 	libfshfs_btree_node.c libfshfs_btree_node.h \
+	libfshfs_btree_node_cache.c libfshfs_btree_node_cache.h \
 	libfshfs_btree_node_descriptor.c libfshfs_btree_node_descriptor.h \
 	libfshfs_btree_node_record.c libfshfs_btree_node_record.h \
 	libfshfs_btree_node_vector.c libfshfs_btree_node_vector.h \

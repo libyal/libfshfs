@@ -27,12 +27,12 @@
 
 #include "libfshfs_btree_header.h"
 #include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_btree_node_vector.h"
 #include "libfshfs_io_handle.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
-#include "libfshfs_libfcache.h"
 #include "libfshfs_libfdata.h"
 
 #if defined( __cplusplus )
@@ -55,13 +55,9 @@ struct libfshfs_btree_file
 	 */
 	libfshfs_btree_header_t *header;
 
-	/* The nodes vector
+	/* The node vector
 	 */
-	libfshfs_btree_node_vector_t *nodes_vector;
-
-	/* The nodes caches, one MRU cache for each level of the B-tree
-	 */
-	libfcache_cache_t *nodes_caches[ 9 ];
+	libfshfs_btree_node_vector_t *node_vector;
 };
 
 int libfshfs_btree_file_initialize(
@@ -81,6 +77,7 @@ int libfshfs_btree_file_read_file_io_handle(
 int libfshfs_btree_file_get_node_by_number(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      int depth,
      uint32_t node_number,
      libfshfs_btree_node_t **node,
@@ -89,6 +86,7 @@ int libfshfs_btree_file_get_node_by_number(
 int libfshfs_btree_file_get_root_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t **root_node,
      libcerror_error_t **error );
 

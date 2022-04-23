@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_btree_file.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_directory_entry.h"
 #include "libfshfs_fork_descriptor.h"
 #include "libfshfs_io_handle.h"
@@ -41,17 +42,33 @@ typedef struct libfshfs_file_system libfshfs_file_system_t;
 
 struct libfshfs_file_system
 {
-	/* The extents btree file
+	/* The extents B-tree file
 	 */
 	libfshfs_btree_file_t *extents_btree_file;
 
-	/* The catalog btree file
+	/* The extents B-tree node cache
+	 */
+	libfshfs_btree_node_cache_t *extents_btree_node_cache;
+
+	/* The catalog B-tree file
 	 */
 	libfshfs_btree_file_t *catalog_btree_file;
 
-	/* The attributes btree file
+	/* The catalog B-tree node cache
+	 */
+	libfshfs_btree_node_cache_t *catalog_btree_node_cache;
+
+	/* The catalog B-tree node cache for indirect node lookups
+	 */
+	libfshfs_btree_node_cache_t *indirect_node_catalog_btree_node_cache;
+
+	/* The attributes B-tree file
 	 */
 	libfshfs_btree_file_t *attributes_btree_file;
+
+	/* The attributes B-tree node cache
+	 */
+	libfshfs_btree_node_cache_t *attributes_btree_node_cache;
 
 	/* Flag to indicate case folding should be used
 	 */
@@ -102,6 +119,14 @@ int libfshfs_file_system_resolve_indirect_node_directory_entry(
      libcerror_error_t **error );
 
 int libfshfs_file_system_get_directory_entry_by_identifier(
+     libfshfs_file_system_t *file_system,
+     libfshfs_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     uint32_t identifier,
+     libfshfs_directory_entry_t **directory_entry,
+     libcerror_error_t **error );
+
+int libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
      libfshfs_file_system_t *file_system,
      libfshfs_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,

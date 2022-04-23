@@ -26,6 +26,8 @@
 #include "libfshfs_attribute_record.h"
 #include "libfshfs_attributes_btree_file.h"
 #include "libfshfs_attributes_btree_key.h"
+#include "libfshfs_btree_file.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_file_record.h"
 #include "libfshfs_libbfio.h"
@@ -478,6 +480,7 @@ on_error:
 int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      libcdata_array_t *attributes,
@@ -649,6 +652,7 @@ int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     node_cache,
 			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
@@ -684,6 +688,7 @@ int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 				result = libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 				          btree_file,
 				          file_io_handle,
+				          node_cache,
 				          sub_node,
 				          identifier,
 				          attributes,
@@ -735,6 +740,7 @@ on_error:
 int libfshfs_attributes_btree_file_get_attributes(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      uint32_t identifier,
      libcdata_array_t *attributes,
      libcerror_error_t **error )
@@ -747,6 +753,7 @@ int libfshfs_attributes_btree_file_get_attributes(
 	if( libfshfs_btree_file_get_root_node(
 	     btree_file,
 	     file_io_handle,
+	     node_cache,
 	     &root_node,
 	     error ) == -1 )
 	{
@@ -778,6 +785,7 @@ int libfshfs_attributes_btree_file_get_attributes(
 		result = libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 		          btree_file,
 		          file_io_handle,
+		          node_cache,
 		          root_node,
 		          identifier,
 		          attributes,

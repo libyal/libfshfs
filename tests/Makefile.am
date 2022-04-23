@@ -423,6 +423,7 @@ fshfs_test_profiler_SOURCES = \
 	fshfs_test_libcerror.h \
 	fshfs_test_libfshfs.h \
 	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
 	fshfs_test_profiler.c \
 	fshfs_test_unused.h
 

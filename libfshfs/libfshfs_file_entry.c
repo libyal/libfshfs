@@ -1029,7 +1029,7 @@ int libfshfs_internal_file_entry_get_indirect_node_file(
 	}
 	else if( result != 0 )
 	{
-		if( libfshfs_file_system_get_directory_entry_by_identifier(
+		if( libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
 		     internal_file_entry->file_system,
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,

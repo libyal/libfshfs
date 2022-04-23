@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "libfshfs_btree_node.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_btree_node_vector.h"
 #include "libfshfs_definitions.h"
 #include "libfshfs_extent.h"
@@ -225,7 +226,8 @@ int libfshfs_btree_node_vector_free(
 int libfshfs_btree_node_vector_get_node_by_number(
      libfshfs_btree_node_vector_t *node_vector,
      libbfio_handle_t *file_io_handle,
-     libfcache_cache_t *cache,
+     libfshfs_btree_node_cache_t *node_cache,
+     int depth,
      uint32_t node_number,
      libfshfs_btree_node_t **node,
      libcerror_error_t **error )
@@ -301,6 +303,17 @@ int libfshfs_btree_node_vector_get_node_by_number(
 
 		return( -1 );
 	}
+	if( node_cache == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid B-tree node cache.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_PROFILER )
 	if( node_vector->io_handle->profiler != NULL )
 	{
@@ -321,8 +334,9 @@ int libfshfs_btree_node_vector_get_node_by_number(
 	}
 #endif /* defined( HAVE_PROFILER ) */
 
+/* TODO move this into node_cache */
 	result = libfcache_cache_get_value_by_identifier(
-	          (libfcache_cache_t *) cache,
+	          node_cache->caches[ depth ],
 	          0,
 	          (off64_t) node_number,
 	          node_vector->cache_timestamp,
@@ -483,7 +497,7 @@ int libfshfs_btree_node_vector_get_node_by_number(
 			goto on_error;
 		}
 		if( libfcache_cache_set_value_by_identifier(
-		     cache,
+		     node_cache->caches[ depth ],
 		     0,
 		     (off64_t) node_number,
 		     node_vector->cache_timestamp,

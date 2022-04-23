@@ -26,6 +26,7 @@
 #include <types.h>
 
 #include "libfshfs_btree_file.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_extents_btree_key.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
@@ -63,6 +64,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 int libfshfs_extents_btree_file_get_extents_from_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      uint8_t fork_type,
@@ -73,6 +75,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 int libfshfs_extents_btree_file_get_extents(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      uint32_t identifier,
      uint8_t fork_type,
      libcdata_array_t *extents,

@@ -28,6 +28,7 @@
 #include "libfshfs_attribute_record.h"
 #include "libfshfs_attributes_btree_key.h"
 #include "libfshfs_btree_file.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_libbfio.h"
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
@@ -63,6 +64,7 @@ int libfshfs_attributes_btree_file_get_attributes_from_leaf_node(
 int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      libcdata_array_t *attributes,
@@ -72,6 +74,7 @@ int libfshfs_attributes_btree_file_get_attributes_from_branch_node(
 int libfshfs_attributes_btree_file_get_attributes(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      uint32_t identifier,
      libcdata_array_t *attributes,
      libcerror_error_t **error );

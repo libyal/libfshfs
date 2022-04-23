@@ -24,6 +24,8 @@
 #include <types.h>
 
 #include "libfshfs_definitions.h"
+#include "libfshfs_btree_file.h"
+#include "libfshfs_btree_node_cache.h"
 #include "libfshfs_extent.h"
 #include "libfshfs_extents_btree_file.h"
 #include "libfshfs_extents_btree_key.h"
@@ -539,6 +541,7 @@ on_error:
 int libfshfs_extents_btree_file_get_extents_from_branch_node(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
      uint8_t fork_type,
@@ -711,6 +714,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 			if( libfshfs_btree_file_get_node_by_number(
 			     btree_file,
 			     file_io_handle,
+			     node_cache,
 			     recursion_depth,
 			     sub_node_number,
 			     &sub_node,
@@ -746,6 +750,7 @@ int libfshfs_extents_btree_file_get_extents_from_branch_node(
 				result = libfshfs_extents_btree_file_get_extents_from_branch_node(
 				          btree_file,
 				          file_io_handle,
+				          node_cache,
 				          sub_node,
 				          identifier,
 				          fork_type,
@@ -799,6 +804,7 @@ on_error:
 int libfshfs_extents_btree_file_get_extents(
      libfshfs_btree_file_t *btree_file,
      libbfio_handle_t *file_io_handle,
+     libfshfs_btree_node_cache_t *node_cache,
      uint32_t identifier,
      uint8_t fork_type,
      libcdata_array_t *extents,
@@ -812,6 +818,7 @@ int libfshfs_extents_btree_file_get_extents(
 	if( libfshfs_btree_file_get_root_node(
 	     btree_file,
 	     file_io_handle,
+	     node_cache,
 	     &root_node,
 	     error ) == -1 )
 	{
@@ -843,6 +850,7 @@ int libfshfs_extents_btree_file_get_extents(
 		result = libfshfs_extents_btree_file_get_extents_from_branch_node(
 		          btree_file,
 		          file_io_handle,
+		          node_cache,
 		          root_node,
 		          identifier,
 		          fork_type,
