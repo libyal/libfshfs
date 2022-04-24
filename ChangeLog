@@ -5,15 +5,13 @@ To do:
 * info handle implement is_empty ?
 
 * handle (hard) link count differently for indirect node files in /␀␀␀␀HFS+ Private Data/
-
 * what about a symbolic link to HFS+ Private data directory?
 
-* complete name case folding and decomposition tests
 * on file_entry_initialize lookup com.apple.decmpfs specifically instead of all attributes?
 * catalog B-tree file, include name in branch key check
 * file entry API: add extents functions
 
-* add support to print information about special files (those without a catalog record)
+* add support to print information about special files (those without a catalog record) ?
 
 * classic HFS
 ** fshfsinfo: add support retrieving non-directory file entries using fshfsinfo -E

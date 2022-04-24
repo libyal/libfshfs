@@ -322,7 +322,6 @@ fshfs_test_unicode_case_folding_mapping_t fshfs_test_unicode_case_folding_mappin
 	{ 0x000003f4, 0x000003b8 },
 	{ 0x000003f5, 0x000003b5 },
 	{ 0x000003f7, 0x000003f8 },
-	{ 0x000003f9, 0x000003f2 },
 	{ 0x000003fa, 0x000003fb },
 	{ 0x000003fd, 0x0000037b },
 	{ 0x000003fe, 0x0000037c },

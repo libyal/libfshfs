@@ -913,6 +913,9 @@ Hard links in HFS+ are represented by multiple different types of file records:
 Indirect node files exist in a special (invisible) directory called the metadata directory
 named "/\u2400\u2400\u2400\u2400HFS+ Private Data".
 
+The link reference corresponds to the catalog node identifier (CNID) of
+the indirect node file.
+
 [NOTE]
 TN1150 claims that a new link reference randomly chosen from the range 100 to
 1073741923. However link references that fall outside of this range have been

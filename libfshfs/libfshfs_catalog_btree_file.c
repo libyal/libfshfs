@@ -2550,7 +2550,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 	if( ( utf8_string_length == 0 )
 	 || ( utf8_string_length == 1 ) )
 	{
-/* TODO optimize this */
 		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		          btree_file,
 		          io_handle,
@@ -3501,7 +3500,6 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 	if( ( utf16_string_length == 0 )
 	 || ( utf16_string_length == 1 ) )
 	{
-/* TODO optimize this */
 		result = libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 		          btree_file,
 		          io_handle,
