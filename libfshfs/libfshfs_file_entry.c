@@ -121,20 +121,6 @@ int libfshfs_file_entry_initialize(
 
 		return( -1 );
 	}
-	if( libfshfs_directory_entry_get_flags(
-	     directory_entry,
-	     &( internal_file_entry->flags ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve flags from directory entry.",
-		 function );
-
-		goto on_error;
-	}
 	if( libfshfs_directory_entry_get_identifier(
 	     directory_entry,
 	     &( internal_file_entry->identifier ),
@@ -149,7 +135,40 @@ int libfshfs_file_entry_initialize(
 
 		goto on_error;
 	}
-	/* Traditional HFS has not file mode so we derive it from the record type
+	if( libfshfs_directory_entry_get_parent_identifier(
+	     directory_entry,
+	     &( internal_file_entry->parent_identifier ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent identifier from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( libfshfs_directory_entry_get_link_reference(
+	     directory_entry,
+	     &( internal_file_entry->link_reference ),
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve link reference from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	if( internal_file_entry->link_reference > 2 )
+	{
+		internal_file_entry->link_identifier = internal_file_entry->identifier;
+		internal_file_entry->identifier      = internal_file_entry->link_reference;
+	}
+	/* Traditional HFS does not have a file mode so we derive it from the record type
 	 */
 	if( directory_entry->record_type == LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD )
 	{
@@ -178,21 +197,8 @@ int libfshfs_file_entry_initialize(
 	internal_file_entry->directory_entry = directory_entry;
 	internal_file_entry->file_system     = file_system;
 	internal_file_entry->file_mode       = file_mode;
+	internal_file_entry->data_size       = (size64_t) -1;
 
-	if( libfshfs_internal_file_entry_get_data_size(
-	     internal_file_entry,
-	     directory_entry,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve data size.",
-		 function );
-
-		goto on_error;
-	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
 	     &( internal_file_entry->read_write_lock ),
@@ -388,18 +394,15 @@ int libfshfs_file_entry_free(
 	return( result );
 }
 
-/* Retrieves the data size
+/* Retrieves the (active) directory entry
  * Returns 1 if successful or -1 on error
  */
-int libfshfs_internal_file_entry_get_data_size(
+int libfshfs_internal_file_entry_get_directory_entry(
      libfshfs_internal_file_entry_t *internal_file_entry,
-     libfshfs_directory_entry_t *directory_entry,
+     libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
-	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
-	static char *function                            = "libfshfs_internal_file_entry_get_data_size";
-	size64_t data_size                               = 0;
-	int result                                       = 0;
+	static char *function = "libfshfs_internal_file_entry_get_directory_entry";
 
 	if( internal_file_entry == NULL )
 	{
@@ -412,162 +415,48 @@ int libfshfs_internal_file_entry_get_data_size(
 
 		return( -1 );
 	}
-	if( internal_file_entry->compressed_data_attribute_record != NULL )
+	if( directory_entry == NULL )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - compressed data attribute record value already set.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid directory entry.",
 		 function );
 
 		return( -1 );
 	}
-	if( internal_file_entry->compressed_data_header != NULL )
+	if( ( internal_file_entry->link_reference > 2 )
+	 && ( internal_file_entry->indirect_node_directory_entry == NULL ) )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - compressed data header value already set.",
-		 function );
-
-		return( -1 );
-	}
-	result = libfshfs_directory_entry_get_data_fork_descriptor(
-	          directory_entry,
-	          &data_fork_descriptor,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve data fork descriptor from directory entry.",
-		 function );
-
-		goto on_error;
-	}
-	else if( result != 0 ) 
-	{
-		if( data_fork_descriptor == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing data fork descriptor.",
-			 function );
-
-			goto on_error;
-		}
-		result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
-		          internal_file_entry,
-		          (uint8_t *) "com.apple.decmpfs",
-		          17,
-		          &( internal_file_entry->compressed_data_attribute_record ),
-		          error );
-
-		if( result == -1 )
+		if( libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
+		     internal_file_entry->file_system,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->link_reference,
+		     &( internal_file_entry->indirect_node_directory_entry ),
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve com.apple.decmpfs attribute record.",
-			 function );
+			 "%s: unable to retrieve indirect node directory entry: %" PRIu32 ".",
+			 function,
+			 internal_file_entry->link_reference );
 
-			result = -1;
-		}
-		else if( result != 0 )
-		{
-			if( libfshfs_compressed_data_header_initialize(
-			     &( internal_file_entry->compressed_data_header ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create compressed data header.",
-				 function );
-
-				goto on_error;
-			}
-			result = 0;
-
-			if( internal_file_entry->compressed_data_attribute_record->record_type == LIBFSHFS_ATTRIBUTE_RECORD_TYPE_INLINE_DATA )
-			{
-				result = libfshfs_compressed_data_header_read_data(
-				          internal_file_entry->compressed_data_header,
-				          internal_file_entry->compressed_data_attribute_record->inline_data,
-				          internal_file_entry->compressed_data_attribute_record->inline_data_size,
-				          error );
-
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read compressed data header.",
-					 function );
-
-					goto on_error;
-				}
-			}
-			else
-			{
-/* TODO add support for additional attribute record types */
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-				 "%s: unsupported com.apple.decmpfs attribute record type.",
-				 function );
-
-				goto on_error;
-			}
-			if( result != 0 )
-			{
-				data_size = internal_file_entry->compressed_data_header->uncompressed_data_size;
-			}
-			else
-			{
-				if( libfshfs_compressed_data_header_free(
-				     &( internal_file_entry->compressed_data_header ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create compressed data header.",
-					 function );
-
-					goto on_error;
-				}
-			}
-		}
-		if( result == 0 )
-		{
-			data_size = (size64_t) data_fork_descriptor->size;
+			return( -1 );
 		}
 	}
-	internal_file_entry->data_size = data_size;
-
-	return( 1 );
-
-on_error:
-	if( internal_file_entry->compressed_data_header != NULL )
+	if( internal_file_entry->indirect_node_directory_entry != NULL )
 	{
-		libfshfs_compressed_data_header_free(
-		 &( internal_file_entry->compressed_data_header ),
-		 NULL );
+		*directory_entry = internal_file_entry->indirect_node_directory_entry;
 	}
-	return( -1 );
+	else
+	{
+		*directory_entry = internal_file_entry->directory_entry;
+	}
+	return( 1 );
 }
 
 /* Retrieves the data stream from a fork descriptor
@@ -579,6 +468,7 @@ int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
      libfdata_stream_t **data_stream,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry = NULL;
 	libfshfs_fork_descriptor_t *fork_descriptor = NULL;
 	static char *function                       = "libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor";
 	int result                                  = 0;
@@ -606,17 +496,31 @@ int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
 
 		return( -1 );
 	}
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		goto on_error;
+	}
 	if( fork_type == LIBFSHFS_FORK_TYPE_DATA )
 	{
 		result = libfshfs_directory_entry_get_data_fork_descriptor(
-		          internal_file_entry->directory_entry,
+		          directory_entry,
 		          &fork_descriptor,
 		          error );
 	}
 	else
 	{
 		result = libfshfs_directory_entry_get_resource_fork_descriptor(
-		          internal_file_entry->directory_entry,
+		          directory_entry,
 		          &fork_descriptor,
 		          error );
 	}
@@ -837,6 +741,7 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry      = NULL;
 	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
 	static char *function                            = "libfshfs_internal_file_entry_get_symbolic_link_data";
 	ssize_t read_count                               = 0;
@@ -874,10 +779,24 @@ int libfshfs_internal_file_entry_get_symbolic_link_data(
 			 "%s: invalid file entry - data stream value already set.",
 			 function );
 
-			return( -1 );
+			goto on_error;
+		}
+		if( libfshfs_internal_file_entry_get_directory_entry(
+		     internal_file_entry,
+		     &directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry.",
+			 function );
+
+			goto on_error;
 		}
 		if( libfshfs_directory_entry_get_data_fork_descriptor(
-		     internal_file_entry->directory_entry,
+		     directory_entry,
 		     &data_fork_descriptor,
 		     error ) != 1 )
 		{
@@ -992,79 +911,6 @@ on_error:
 	return( -1 );
 }
 
-/* Determines the indirect node file
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_internal_file_entry_get_indirect_node_file(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libcerror_error_t **error )
-{
-	static char *function    = "libfshfs_internal_file_entry_get_indirect_node_file";
-	uint32_t link_identifier = 0;
-	int result               = 0;
-
-	if( internal_file_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_file_entry->indirect_node_directory_entry != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry - indirect node directory entry value already set.",
-		 function );
-
-		return( -1 );
-	}
-	result = libfshfs_directory_entry_get_link_identifier(
-	          internal_file_entry->directory_entry,
-	          &link_identifier,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve link identifier from directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	else if( result != 0 )
-	{
-		if( libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
-		     internal_file_entry->file_system,
-		     internal_file_entry->io_handle,
-		     internal_file_entry->file_io_handle,
-		     link_identifier,
-		     &( internal_file_entry->indirect_node_directory_entry ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve indirect node directory entry: %" PRIu32 ".",
-			 function,
-			 link_identifier );
-
-			return( -1 );
-		}
-	}
-	return( 1 );
-}
-
 /* Retrieves the identifier (or catalog node identifier (CNID))
  * Returns 1 if successful or -1 on error
  */
@@ -1145,7 +991,6 @@ int libfshfs_file_entry_get_parent_identifier(
 {
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_parent_identifier";
-	int result                                          = 1;
 
 	if( file_entry == NULL )
 	{
@@ -1186,20 +1031,8 @@ int libfshfs_file_entry_get_parent_identifier(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_parent_identifier(
-	     internal_file_entry->directory_entry,
-	     parent_identifier,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve parent identifier from directory entry.",
-		 function );
+	*parent_identifier = internal_file_entry->parent_identifier;
 
-		result = -1;
-	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,
@@ -1215,7 +1048,7 @@ int libfshfs_file_entry_get_parent_identifier(
 		return( -1 );
 	}
 #endif
-	return( result );
+	return( 1 );
 }
 
 /* Retrieves the parent file entry
@@ -1226,10 +1059,9 @@ int libfshfs_file_entry_get_parent_file_entry(
      libfshfs_file_entry_t **parent_file_entry,
      libcerror_error_t **error )
 {
-	libfshfs_directory_entry_t *directory_entry         = NULL;
+	libfshfs_directory_entry_t *parent_directory_entry  = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_parent_file_entry";
-	uint32_t identifier                                 = 0;
 	int result                                          = 0;
 
 	if( file_entry == NULL )
@@ -1282,42 +1114,14 @@ int libfshfs_file_entry_get_parent_file_entry(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_identifier(
-	     internal_file_entry->directory_entry,
-	     &identifier,
-	     error ) != 1 )
+	if( internal_file_entry->identifier > LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve identifier from directory entry.",
-		 function );
-
-		goto on_error;
-	}
-	if( identifier > LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER )
-	{
-		if( libfshfs_directory_entry_get_parent_identifier(
-		     internal_file_entry->directory_entry,
-		     &identifier,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve parent identifier from directory entry.",
-			 function );
-
-			goto on_error;
-		}
 		if( libfshfs_file_system_get_directory_entry_by_identifier(
 		     internal_file_entry->file_system,
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
-		     identifier,
-		     &directory_entry,
+		     internal_file_entry->parent_identifier,
+		     &parent_directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1326,18 +1130,18 @@ int libfshfs_file_entry_get_parent_file_entry(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve parent directory entry: %" PRIu32 ".",
 			 function,
-			 identifier );
+			 internal_file_entry->parent_identifier );
 
 			goto on_error;
 		}
-		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		/* libfshfs_file_entry_initialize takes over management of parent_directory_entry
 		 */
 		if( libfshfs_file_entry_initialize(
 		     parent_file_entry,
 		     internal_file_entry->io_handle,
 		     internal_file_entry->file_io_handle,
 		     internal_file_entry->file_system,
-		     directory_entry,
+		     parent_directory_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1349,8 +1153,8 @@ int libfshfs_file_entry_get_parent_file_entry(
 
 			goto on_error;
 		}
-		directory_entry = NULL;
-		result          = 1;
+		parent_directory_entry = NULL;
+		result                 = 1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -1370,10 +1174,10 @@ int libfshfs_file_entry_get_parent_file_entry(
 	return( result );
 
 on_error:
-	if( directory_entry != NULL )
+	if( parent_directory_entry != NULL )
 	{
 		libfshfs_directory_entry_free(
-		 &directory_entry,
+		 &parent_directory_entry,
 		 NULL );
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
@@ -1435,21 +1239,11 @@ int libfshfs_file_entry_get_link_identifier(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_link_identifier(
-	          internal_file_entry->directory_entry,
-	          link_identifier,
-	          error );
-
-	if( result == -1 )
+	if( internal_file_entry->link_reference > 2 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve link identifier from directory entry.",
-		 function );
+		*link_identifier = internal_file_entry->link_identifier;
 
-		result = -1;
+		result = 1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1478,6 +1272,7 @@ int libfshfs_file_entry_get_creation_time(
      uint32_t *hfs_time,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_creation_time";
 	int result                                          = 1;
@@ -1510,19 +1305,36 @@ int libfshfs_file_entry_get_creation_time(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_creation_time(
-	     internal_file_entry->directory_entry,
-	     hfs_time,
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve creation time from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		if( libfshfs_directory_entry_get_creation_time(
+		     directory_entry,
+		     hfs_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve creation time from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1551,6 +1363,7 @@ int libfshfs_file_entry_get_modification_time(
      uint32_t *hfs_time,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_modification_time";
 	int result                                          = 1;
@@ -1583,19 +1396,36 @@ int libfshfs_file_entry_get_modification_time(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_modification_time(
-	     internal_file_entry->directory_entry,
-	     hfs_time,
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve modification time from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		if( libfshfs_directory_entry_get_modification_time(
+		     directory_entry,
+		     hfs_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve modification time from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1624,6 +1454,7 @@ int libfshfs_file_entry_get_entry_modification_time(
      uint32_t *hfs_time,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_entry_modification_time";
 	int result                                          = 1;
@@ -1656,21 +1487,38 @@ int libfshfs_file_entry_get_entry_modification_time(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_entry_modification_time(
-	          internal_file_entry->directory_entry,
-	          hfs_time,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve entry modification time from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_entry_modification_time(
+		          directory_entry,
+		          hfs_time,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve entry modification time from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1699,6 +1547,7 @@ int libfshfs_file_entry_get_access_time(
      uint32_t *hfs_time,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_access_time";
 	int result                                          = 1;
@@ -1731,21 +1580,38 @@ int libfshfs_file_entry_get_access_time(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_access_time(
-	          internal_file_entry->directory_entry,
-	          hfs_time,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve access time from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_access_time(
+		          directory_entry,
+		          hfs_time,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve access time from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1774,6 +1640,7 @@ int libfshfs_file_entry_get_backup_time(
      uint32_t *hfs_time,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_backup_time";
 	int result                                          = 1;
@@ -1806,19 +1673,36 @@ int libfshfs_file_entry_get_backup_time(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_directory_entry_get_backup_time(
-	     internal_file_entry->directory_entry,
-	     hfs_time,
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve backup time from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		if( libfshfs_directory_entry_get_backup_time(
+		     directory_entry,
+		     hfs_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve backup time from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1847,6 +1731,7 @@ int libfshfs_file_entry_get_added_time(
      int32_t *posix_time,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_added_time";
 	int result                                          = 1;
@@ -1879,21 +1764,38 @@ int libfshfs_file_entry_get_added_time(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_added_time(
-	          internal_file_entry->directory_entry,
-	          posix_time,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve added time from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_added_time(
+		          directory_entry,
+		          posix_time,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve added time from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -1921,6 +1823,7 @@ int libfshfs_file_entry_get_file_mode(
      uint16_t *file_mode,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_file_mode";
 	int result                                          = 0;
@@ -1953,21 +1856,38 @@ int libfshfs_file_entry_get_file_mode(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_file_mode(
-	          internal_file_entry->directory_entry,
-	          file_mode,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve file mode from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_file_mode(
+		          directory_entry,
+		          file_mode,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve file mode from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2040,18 +1960,24 @@ int libfshfs_file_entry_get_number_of_links(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->indirect_node_directory_entry == NULL )
+	if( ( internal_file_entry->link_reference > 2 )
+	 && ( internal_file_entry->indirect_node_directory_entry == NULL ) )
 	{
-		if( libfshfs_internal_file_entry_get_indirect_node_file(
-		     internal_file_entry,
+		if( libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
+		     internal_file_entry->file_system,
+		     internal_file_entry->io_handle,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->link_reference,
+		     &( internal_file_entry->indirect_node_directory_entry ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to determine indirect node file.",
-			 function );
+			 "%s: unable to retrieve indirect node directory entry: %" PRIu32 ".",
+			 function,
+			 internal_file_entry->link_reference );
 
 			result = -1;
 		}
@@ -2059,7 +1985,7 @@ int libfshfs_file_entry_get_number_of_links(
 	if( internal_file_entry->indirect_node_directory_entry != NULL )
 	{
 		if( libfshfs_directory_entry_get_special_permissions(
-		     internal_file_entry->directory_entry,
+		     internal_file_entry->indirect_node_directory_entry,
 		     &safe_number_of_links,
 		     error ) == -1 )
 		{
@@ -2067,7 +1993,7 @@ int libfshfs_file_entry_get_number_of_links(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve special permissions from directory entry.",
+			 "%s: unable to retrieve special permissions from indirect node directory entry.",
 			 function );
 
 			result = -1;
@@ -2101,6 +2027,7 @@ int libfshfs_file_entry_get_owner_identifier(
      uint32_t *owner_identifier,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_owner_identifier";
 	int result                                          = 0;
@@ -2133,21 +2060,38 @@ int libfshfs_file_entry_get_owner_identifier(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_owner_identifier(
-	          internal_file_entry->directory_entry,
-	          owner_identifier,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve owner identifier from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_owner_identifier(
+		          directory_entry,
+		          owner_identifier,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve owner identifier from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2175,6 +2119,7 @@ int libfshfs_file_entry_get_group_identifier(
      uint32_t *group_identifier,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_group_identifier";
 	int result                                          = 0;
@@ -2207,21 +2152,38 @@ int libfshfs_file_entry_get_group_identifier(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_group_identifier(
-	          internal_file_entry->directory_entry,
-	          group_identifier,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve group identifier from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_group_identifier(
+		          directory_entry,
+		          group_identifier,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve group identifier from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2284,24 +2246,21 @@ int libfshfs_file_entry_get_utf8_name_size(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->directory_entry != NULL )
+	result = libfshfs_directory_entry_get_utf8_name_size(
+	          internal_file_entry->directory_entry,
+	          utf8_string_size,
+	          error );
+
+	if( result != 1 )
 	{
-		result = libfshfs_directory_entry_get_utf8_name_size(
-		          internal_file_entry->directory_entry,
-		          utf8_string_size,
-		          error );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve UTF-8 string size.",
-			 function );
-
-			result = -1;
-		}
+		result = -1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2365,25 +2324,22 @@ int libfshfs_file_entry_get_utf8_name(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->directory_entry != NULL )
+	result = libfshfs_directory_entry_get_utf8_name(
+	          internal_file_entry->directory_entry,
+	          utf8_string,
+	          utf8_string_size,
+	          error );
+
+	if( result != 1 )
 	{
-		result = libfshfs_directory_entry_get_utf8_name(
-		          internal_file_entry->directory_entry,
-		          utf8_string,
-		          utf8_string_size,
-		          error );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve UTF-8 string.",
-			 function );
-
-			result = -1;
-		}
+		result = -1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2446,24 +2402,21 @@ int libfshfs_file_entry_get_utf16_name_size(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->directory_entry != NULL )
+	result = libfshfs_directory_entry_get_utf16_name_size(
+	          internal_file_entry->directory_entry,
+	          utf16_string_size,
+	          error );
+
+	if( result != 1 )
 	{
-		result = libfshfs_directory_entry_get_utf16_name_size(
-		          internal_file_entry->directory_entry,
-		          utf16_string_size,
-		          error );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string size.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve UTF-16 string size.",
-			 function );
-
-			result = -1;
-		}
+		result = -1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2527,25 +2480,22 @@ int libfshfs_file_entry_get_utf16_name(
 		return( -1 );
 	}
 #endif
-	if( internal_file_entry->directory_entry != NULL )
+	result = libfshfs_directory_entry_get_utf16_name(
+	          internal_file_entry->directory_entry,
+	          utf16_string,
+	          utf16_string_size,
+	          error );
+
+	if( result != 1 )
 	{
-		result = libfshfs_directory_entry_get_utf16_name(
-		          internal_file_entry->directory_entry,
-		          utf16_string,
-		          utf16_string_size,
-		          error );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve UTF-16 string.",
-			 function );
-
-			result = -1;
-		}
+		result = -1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -2957,6 +2907,7 @@ int libfshfs_file_entry_has_resource_fork(
      libfshfs_file_entry_t *file_entry,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_fork_descriptor_t *fork_descriptor         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_has_resource_fork";
@@ -2990,21 +2941,38 @@ int libfshfs_file_entry_has_resource_fork(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_resource_fork_descriptor(
-	          internal_file_entry->directory_entry,
-	          &fork_descriptor,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve resource fork descriptor from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
+	}
+	else
+	{
+		result = libfshfs_directory_entry_get_resource_fork_descriptor(
+		          directory_entry,
+		          &fork_descriptor,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve resource fork descriptor from directory entry.",
+			 function );
+
+			result = -1;
+		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -3032,6 +3000,7 @@ int libfshfs_file_entry_get_resource_fork(
      libfshfs_data_stream_t **data_stream,
      libcerror_error_t **error )
 {
+	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_fork_descriptor_t *fork_descriptor         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_resource_fork";
@@ -3065,42 +3034,59 @@ int libfshfs_file_entry_get_resource_fork(
 		return( -1 );
 	}
 #endif
-	result = libfshfs_directory_entry_get_resource_fork_descriptor(
-	          internal_file_entry->directory_entry,
-	          &fork_descriptor,
-	          error );
-
-	if( result == -1 )
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve resource fork descriptor from directory entry.",
+		 "%s: unable to retrieve directory entry.",
 		 function );
 
 		result = -1;
 	}
-	else if( result != 0 )
+	else
 	{
-		if( libfshfs_data_stream_initialize(
-		     data_stream,
-		     internal_file_entry->io_handle,
-		     internal_file_entry->file_io_handle,
-		     internal_file_entry->file_system,
-		     internal_file_entry->identifier,
-		     fork_descriptor,
-		     LIBFSHFS_FORK_TYPE_RESOURCE,
-		     error ) != 1 )
+		result = libfshfs_directory_entry_get_resource_fork_descriptor(
+		          directory_entry,
+		          &fork_descriptor,
+		          error );
+
+		if( result == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create resource fork data stream.",
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve resource fork descriptor from directory entry.",
 			 function );
 
 			result = -1;
+		}
+		else if( result != 0 )
+		{
+			if( libfshfs_data_stream_initialize(
+			     data_stream,
+			     internal_file_entry->io_handle,
+			     internal_file_entry->file_io_handle,
+			     internal_file_entry->file_system,
+			     internal_file_entry->identifier,
+			     fork_descriptor,
+			     LIBFSHFS_FORK_TYPE_RESOURCE,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create resource fork data stream.",
+				 function );
+
+				result = -1;
+			}
 		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
@@ -3119,6 +3105,95 @@ int libfshfs_file_entry_get_resource_fork(
 	}
 #endif
 	return( result );
+}
+
+/* Retrieves the attributes
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_attributes(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry = NULL;
+	static char *function                       = "libfshfs_internal_file_entry_get_attributes";
+	uint16_t flags                              = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_directory_entry_get_flags(
+	     directory_entry,
+	     &flags,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve flags from directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( flags & 0x0004 ) != 0 )
+	{
+		if( libfshfs_file_system_get_attributes(
+		     internal_file_entry->file_system,
+		     internal_file_entry->file_io_handle,
+		     internal_file_entry->identifier,
+		     &( internal_file_entry->attributes ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve attributes from file system.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	else
+	{
+		if( libcdata_array_initialize(
+		     &( internal_file_entry->attributes ),
+		     0,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create attributes array.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
 }
 
 /* Retrieves the number of extended attributes
@@ -3161,14 +3236,10 @@ int libfshfs_file_entry_get_number_of_extended_attributes(
 		return( -1 );
 	}
 #endif
-	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
-	 && ( internal_file_entry->attributes == NULL ) )
+	if( internal_file_entry->attributes == NULL )
 	{
-		if( libfshfs_file_system_get_attributes(
-		     internal_file_entry->file_system,
-		     internal_file_entry->file_io_handle,
-		     internal_file_entry->identifier,
-		     &( internal_file_entry->attributes ),
+		if( libfshfs_internal_file_entry_get_attributes(
+		     internal_file_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3280,14 +3351,10 @@ int libfshfs_file_entry_get_extended_attribute_by_index(
 		return( -1 );
 	}
 #endif
-	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
-	 && ( internal_file_entry->attributes == NULL ) )
+	if( internal_file_entry->attributes == NULL )
 	{
-		if( libfshfs_file_system_get_attributes(
-		     internal_file_entry->file_system,
-		     internal_file_entry->file_io_handle,
-		     internal_file_entry->identifier,
-		     &( internal_file_entry->attributes ),
+		if( libfshfs_internal_file_entry_get_attributes(
+		     internal_file_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3383,14 +3450,10 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
 
 		return( -1 );
 	}
-	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
-	 && ( internal_file_entry->attributes == NULL ) )
+	if( internal_file_entry->attributes == NULL )
 	{
-		if( libfshfs_file_system_get_attributes(
-		     internal_file_entry->file_system,
-		     internal_file_entry->file_io_handle,
-		     internal_file_entry->identifier,
-		     &( internal_file_entry->attributes ),
+		if( libfshfs_internal_file_entry_get_attributes(
+		     internal_file_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3400,7 +3463,7 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
 			 "%s: unable to retrieve attributes.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
 	}
 	if( libcdata_array_get_number_of_entries(
@@ -3491,14 +3554,10 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
 
 		return( -1 );
 	}
-	if( ( ( internal_file_entry->flags & 0x0004 ) != 0 )
-	 && ( internal_file_entry->attributes == NULL ) )
+	if( internal_file_entry->attributes == NULL )
 	{
-		if( libfshfs_file_system_get_attributes(
-		     internal_file_entry->file_system,
-		     internal_file_entry->file_io_handle,
-		     internal_file_entry->identifier,
-		     &( internal_file_entry->attributes ),
+		if( libfshfs_internal_file_entry_get_attributes(
+		     internal_file_entry,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -3508,7 +3567,7 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
 			 "%s: unable to retrieve attributes.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
 	}
 	if( libcdata_array_get_number_of_entries(
@@ -4187,26 +4246,6 @@ int libfshfs_file_entry_get_sub_file_entry_by_index(
 
 			result = -1;
 		}
-		else if( libfshfs_file_system_resolve_indirect_node_directory_entry(
-		          internal_file_entry->file_system,
-		          internal_file_entry->io_handle,
-		          internal_file_entry->file_io_handle,
-		          safe_directory_entry,
-		          error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to resolve indirect node directory entry.",
-			 function );
-
-			libfshfs_directory_entry_free(
-			 &safe_directory_entry,
-			 NULL );
-
-			result = -1;
-		}
 		/* libfshfs_file_entry_initialize takes over management of sub_directory_entry
 		 */
 		else if( libfshfs_file_entry_initialize(
@@ -4318,7 +4357,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf8_name(
 	          internal_file_entry->file_system,
 	          internal_file_entry->io_handle,
 	          internal_file_entry->file_io_handle,
-	          internal_file_entry->directory_entry->parent_identifier,
+	          internal_file_entry->parent_identifier,
 	          utf8_string,
 	          utf8_string_length,
 	          &sub_directory_entry,
@@ -4448,7 +4487,7 @@ int libfshfs_file_entry_get_sub_file_entry_by_utf16_name(
 	          internal_file_entry->file_system,
 	          internal_file_entry->io_handle,
 	          internal_file_entry->file_io_handle,
-	          internal_file_entry->directory_entry->parent_identifier,
+	          internal_file_entry->parent_identifier,
 	          utf16_string,
 	          utf16_string_length,
 	          &sub_directory_entry,
@@ -4937,6 +4976,202 @@ int libfshfs_file_entry_get_offset(
 	return( result );
 }
 
+/* Retrieves the data size
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_internal_file_entry_get_data_size(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry      = NULL;
+	libfshfs_fork_descriptor_t *data_fork_descriptor = NULL;
+	static char *function                            = "libfshfs_internal_file_entry_get_data_size";
+	size64_t data_size                               = 0;
+	int result                                       = 0;
+
+	if( internal_file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->compressed_data_attribute_record != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - compressed data attribute record value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_file_entry->compressed_data_header != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry - compressed data header value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libfshfs_internal_file_entry_get_directory_entry(
+	     internal_file_entry,
+	     &directory_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	result = libfshfs_directory_entry_get_data_fork_descriptor(
+	          directory_entry,
+	          &data_fork_descriptor,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve data fork descriptor from directory entry.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 ) 
+	{
+		if( data_fork_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing data fork descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		result = libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
+		          internal_file_entry,
+		          (uint8_t *) "com.apple.decmpfs",
+		          17,
+		          &( internal_file_entry->compressed_data_attribute_record ),
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve com.apple.decmpfs attribute record.",
+			 function );
+
+			result = -1;
+		}
+		else if( result != 0 )
+		{
+			if( libfshfs_compressed_data_header_initialize(
+			     &( internal_file_entry->compressed_data_header ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create compressed data header.",
+				 function );
+
+				goto on_error;
+			}
+			result = 0;
+
+			if( internal_file_entry->compressed_data_attribute_record->record_type == LIBFSHFS_ATTRIBUTE_RECORD_TYPE_INLINE_DATA )
+			{
+				result = libfshfs_compressed_data_header_read_data(
+				          internal_file_entry->compressed_data_header,
+				          internal_file_entry->compressed_data_attribute_record->inline_data,
+				          internal_file_entry->compressed_data_attribute_record->inline_data_size,
+				          error );
+
+				if( result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read compressed data header.",
+					 function );
+
+					goto on_error;
+				}
+			}
+			else
+			{
+/* TODO add support for additional attribute record types */
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported com.apple.decmpfs attribute record type.",
+				 function );
+
+				goto on_error;
+			}
+			if( result != 0 )
+			{
+				data_size = internal_file_entry->compressed_data_header->uncompressed_data_size;
+			}
+			else
+			{
+				if( libfshfs_compressed_data_header_free(
+				     &( internal_file_entry->compressed_data_header ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create compressed data header.",
+					 function );
+
+					goto on_error;
+				}
+			}
+		}
+		if( result == 0 )
+		{
+			data_size = (size64_t) data_fork_descriptor->size;
+		}
+	}
+	internal_file_entry->data_size = data_size;
+
+	return( 1 );
+
+on_error:
+	if( internal_file_entry->compressed_data_header != NULL )
+	{
+		libfshfs_compressed_data_header_free(
+		 &( internal_file_entry->compressed_data_header ),
+		 NULL );
+	}
+	return( -1 );
+}
+
 /* Retrieves the size of the data
  * Returns 1 if successful or -1 on error
  */
@@ -4988,8 +5223,26 @@ int libfshfs_file_entry_get_size(
 		return( -1 );
 	}
 #endif
-	*size = internal_file_entry->data_size;
+	if( internal_file_entry->data_size == (size64_t) -1 )
+	{
+		if( libfshfs_internal_file_entry_get_data_size(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data size.",
+			 function );
 
+			result = -1;
+		}
+	}
+	if( result == 1 )
+	{
+		*size = internal_file_entry->data_size;
+	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_file_entry->read_write_lock,

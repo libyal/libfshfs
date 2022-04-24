@@ -59,10 +59,6 @@ struct libfshfs_directory_entry
 	/* Parent identifier
 	 */
 	uint32_t parent_identifier;
-
-	/* Link identifier
-	 */
-	uint32_t link_identifier;
 };
 
 int libfshfs_directory_entry_initialize(
@@ -104,11 +100,6 @@ int libfshfs_directory_entry_get_identifier(
 int libfshfs_directory_entry_get_parent_identifier(
      libfshfs_directory_entry_t *directory_entry,
      uint32_t *parent_identifier,
-     libcerror_error_t **error );
-
-int libfshfs_directory_entry_get_link_identifier(
-     libfshfs_directory_entry_t *directory_entry,
-     uint32_t *link_identifier,
      libcerror_error_t **error );
 
 int libfshfs_directory_entry_get_creation_time(

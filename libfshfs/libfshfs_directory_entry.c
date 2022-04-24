@@ -687,47 +687,6 @@ int libfshfs_directory_entry_get_parent_identifier(
 	return( 1 );
 }
 
-/* Retrieves the link identifier
- * Returns 1 if successful, 0 if not available or -1 on error
- */
-int libfshfs_directory_entry_get_link_identifier(
-     libfshfs_directory_entry_t *directory_entry,
-     uint32_t *link_identifier,
-     libcerror_error_t **error )
-{
-	static char *function = "libfshfs_directory_entry_get_link_identifier";
-
-	if( directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( link_identifier == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid link identifier.",
-		 function );
-
-		return( -1 );
-	}
-	if( directory_entry->link_identifier != 0 )
-	{
-		*link_identifier = directory_entry->link_identifier;
-
-		return( 1 );
-	}
-	return( 0 );
-}
-
 /* Retrieves the creation date and time
  * The timestamp is a unsigned 32-bit HFS date and time value in number of seconds
  * Returns 1 if successful or -1 on error

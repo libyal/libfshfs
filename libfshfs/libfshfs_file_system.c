@@ -760,126 +760,6 @@ on_error:
 	return( -1 );
 }
 
-/* Resolves an indirect node directory entry if available
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_file_system_resolve_indirect_node_directory_entry(
-     libfshfs_file_system_t *file_system,
-     libfshfs_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     libfshfs_directory_entry_t *directory_entry,
-     libcerror_error_t **error )
-{
-	libfshfs_directory_entry_t *link_directory_entry = NULL;
-	intptr_t *catalog_record                         = NULL;
-	static char *function                            = "libfshfs_file_system_resolve_indirect_node_directory_entry";
-	uint32_t link_reference                          = 0;
-	int result                                       = 0;
-
-	if( file_system == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file system.",
-		 function );
-
-		return( -1 );
-	}
-	if( directory_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid directory entry.",
-		 function );
-
-		return( -1 );
-	}
-	result = libfshfs_directory_entry_get_link_reference(
-	          directory_entry,
-	          &link_reference,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve link reference.",
-		 function );
-
-		goto on_error;
-	}
-	else if( ( result != 0 )
-	      && ( link_reference > 2 ) )
-	{
-		if( libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
-		     file_system->catalog_btree_file,
-		     io_handle,
-		     file_io_handle,
-		     file_system->indirect_node_catalog_btree_node_cache,
-		     link_reference,
-		     &link_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve indirect node: %" PRIu32 " directory entry by UTF-8 path.",
-			 function,
-			 link_reference );
-
-			goto on_error;
-		}
-		if( libfshfs_directory_entry_get_identifier(
-		     directory_entry,
-		     &( directory_entry->link_identifier ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve directory entry identifier.",
-			 function );
-
-			goto on_error;
-		}
-		catalog_record                       = directory_entry->catalog_record;
-		directory_entry->catalog_record      = link_directory_entry->catalog_record;
-		link_directory_entry->catalog_record = catalog_record;
-
-		if( libfshfs_directory_entry_free(
-		     &link_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free directory entry.",
-			 function );
-
-			goto on_error;
-		}
-	}
-	return( 1 );
-
-on_error:
-	if( link_directory_entry != NULL )
-	{
-		libfshfs_directory_entry_free(
-		 &link_directory_entry,
-		 NULL );
-	}
-	return( -1 );
-}
-
 /* Retrieves a directory entry for a specific identifier
  * Returns 1 if successful, 0 if not found or -1 on error
  */
@@ -1060,22 +940,6 @@ int libfshfs_file_system_get_directory_entry_by_utf8_name(
 	}
 	else if( result != 0 )
 	{
-		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
-		     file_system,
-		     io_handle,
-		     file_io_handle,
-		     safe_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to resolve indirect node directory entry.",
-			 function );
-
-			goto on_error;
-		}
 		*directory_entry = safe_directory_entry;
 	}
 	return( result );
@@ -1152,22 +1016,6 @@ int libfshfs_file_system_get_directory_entry_by_utf8_path(
 	}
 	else if( result != 0 )
 	{
-		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
-		     file_system,
-		     io_handle,
-		     file_io_handle,
-		     safe_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to resolve indirect node directory entry.",
-			 function );
-
-			goto on_error;
-		}
 		*directory_entry = safe_directory_entry;
 	}
 	return( result );
@@ -1264,22 +1112,6 @@ int libfshfs_file_system_get_directory_entry_by_utf16_name(
 	}
 	else if( result != 0 )
 	{
-		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
-		     file_system,
-		     io_handle,
-		     file_io_handle,
-		     safe_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to resolve indirect node directory entry.",
-			 function );
-
-			goto on_error;
-		}
 		*directory_entry = safe_directory_entry;
 	}
 	return( result );
@@ -1356,22 +1188,6 @@ int libfshfs_file_system_get_directory_entry_by_utf16_path(
 	}
 	else if( result != 0 )
 	{
-		if( libfshfs_file_system_resolve_indirect_node_directory_entry(
-		     file_system,
-		     io_handle,
-		     file_io_handle,
-		     safe_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to resolve indirect node directory entry.",
-			 function );
-
-			goto on_error;
-		}
 		*directory_entry = safe_directory_entry;
 	}
 	return( result );

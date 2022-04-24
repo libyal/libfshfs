@@ -58,13 +58,17 @@ struct libfshfs_internal_file_entry
 	 */
 	libfshfs_file_system_t *file_system;
 
-	/* Flags
-	 */
-	uint16_t flags;
-
 	/* Identifier
 	 */
 	uint32_t identifier;
+
+	/* Parent identifier
+	 */
+	uint32_t parent_identifier;
+
+	/* Link identifier
+	 */
+	uint32_t link_identifier;
 
 	/* Directory entry
 	 */
@@ -106,6 +110,10 @@ struct libfshfs_internal_file_entry
 	 */
 	size_t symbolic_link_data_size;
 
+	/* Link reference, contians the CNID of the indirect node file
+	 */
+	uint32_t link_reference;
+
 	/* Indirectory node directory entry
 	 */
 	libfshfs_directory_entry_t *indirect_node_directory_entry;
@@ -134,11 +142,6 @@ int libfshfs_file_entry_free(
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 
-int libfshfs_internal_file_entry_get_data_size(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libfshfs_directory_entry_t *directory_entry,
-     libcerror_error_t **error );
-
 int libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
      libfshfs_internal_file_entry_t *internal_file_entry,
      uint8_t fork_type,
@@ -150,10 +153,6 @@ int libfshfs_internal_file_entry_get_data_stream(
      libcerror_error_t **error );
 
 int libfshfs_internal_file_entry_get_symbolic_link_data(
-     libfshfs_internal_file_entry_t *internal_file_entry,
-     libcerror_error_t **error );
-
-int libfshfs_internal_file_entry_get_indirect_node_file(
      libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
@@ -309,6 +308,10 @@ int libfshfs_file_entry_get_resource_fork(
      libfshfs_data_stream_t **data_stream,
      libcerror_error_t **error );
 
+int libfshfs_internal_file_entry_get_attributes(
+     libfshfs_internal_file_entry_t *internal_file_entry,
+     libcerror_error_t **error );
+
 LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_number_of_extended_attributes(
      libfshfs_file_entry_t *file_entry,
@@ -421,6 +424,10 @@ LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_offset(
      libfshfs_file_entry_t *file_entry,
      off64_t *offset,
+     libcerror_error_t **error );
+
+int libfshfs_internal_file_entry_get_data_size(
+     libfshfs_internal_file_entry_t *internal_file_entry,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
