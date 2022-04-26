@@ -554,6 +554,7 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_thread_record_from_branch_node";
 	uint32_t sub_node_number                    = 0;
+	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
@@ -684,18 +685,18 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 
 				goto on_error;
 			}
-		}
-		if( node_key == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing catalog B-tree key: %" PRIu16 ".",
-			 function,
-			 record_index );
+			if( node_key == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing catalog B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
 
-			goto on_error;
+				goto on_error;
+			}
 		}
 		if( ( record_index == node->descriptor->number_of_records )
 		 || ( node_key->parent_identifier >= identifier ) )
@@ -718,8 +719,9 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: B-tree sub node number\t: %" PRIu32 "\n",
+				 "%s: B-tree record: %d sub node number: %" PRIu32 "\n",
 				 function,
+				 last_record_index,
 				 sub_node_number );
 
 				libcnotify_printf(
@@ -802,6 +804,8 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 			}
 		}
 		last_node_key = node_key;
+
+		last_record_index++;
 	}
 	return( result );
 
@@ -1135,6 +1139,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
      libfshfs_io_handle_t *io_handle,
      libfshfs_btree_node_t *node,
      libfshfs_thread_record_t *thread_record,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
@@ -1291,6 +1296,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 					                  node_key,
 					                  thread_record->name,
 					                  thread_record->name_size,
+					                  use_case_folding,
 					                  error );
 
 					if( compare_result == -1 )
@@ -1309,7 +1315,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_thread_rec
 				default:
 					break;
 			}
-			if( compare_result != LIBUNA_COMPARE_LESS )
+			if( compare_result == LIBUNA_COMPARE_EQUAL )
 			{
 				result = libfshfs_catalog_btree_file_get_directory_entry_from_key(
 				          node_key,
@@ -1357,6 +1363,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
      libfshfs_btree_node_cache_t *node_cache,
      libfshfs_btree_node_t *node,
      libfshfs_thread_record_t *thread_record,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      int recursion_depth,
      libcerror_error_t **error )
@@ -1366,8 +1373,10 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record";
 	uint32_t sub_node_number                    = 0;
+	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
+	int compare_result                          = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
 
@@ -1464,6 +1473,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 
 		goto on_error;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: B-tree node depth: %d\n",
+		 function,
+		 recursion_depth );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
 	if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
 	     node,
 	     io_handle,
@@ -1487,6 +1508,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 	     record_index <= node->descriptor->number_of_records;
 	     record_index++ )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: B-tree record: %d\n",
+			 function,
+			 record_index );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 		if( record_index < node->descriptor->number_of_records )
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
@@ -1507,21 +1540,51 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 
 				goto on_error;
 			}
-		}
-		if( node_key == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing catalog B-tree key: %" PRIu16 ".",
-			 function,
-			 record_index );
+			if( node_key == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing catalog B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
 
-			goto on_error;
+				goto on_error;
+			}
 		}
+		compare_result = LIBUNA_COMPARE_LESS;
+
 		if( ( record_index == node->descriptor->number_of_records )
-		 || ( node_key->parent_identifier >= thread_record->parent_identifier ) )
+		 || ( node_key->parent_identifier > thread_record->parent_identifier ) )
+		{
+			compare_result = LIBUNA_COMPARE_GREATER;
+		}
+		else if( node_key->parent_identifier == thread_record->parent_identifier )
+		{
+			if( node_key->name_data != NULL )
+			{
+				compare_result = libfshfs_catalog_btree_key_compare_name(
+				                  node_key,
+				                  thread_record->name,
+				                  thread_record->name_size,
+				                  use_case_folding,
+				                  error );
+
+				if( compare_result == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GENERIC,
+					 "%s: unable to compare thread record name with catalog B-tree key name.",
+					 function );
+
+					goto on_error;
+				}
+			}
+		}
+		if( compare_result == LIBUNA_COMPARE_GREATER )
 		{
 			if( libfshfs_catalog_btree_file_get_sub_node_number_from_key(
 			     last_node_key,
@@ -1541,8 +1604,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: B-tree sub node number\t: %" PRIu32 "\n",
+				 "%s: B-tree record: %d sub node number: %" PRIu32 "\n",
 				 function,
+				 last_record_index,
 				 sub_node_number );
 
 				libcnotify_printf(
@@ -1592,6 +1656,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 				          node_cache,
 				          sub_node,
 				          thread_record,
+				          use_case_folding,
 				          directory_entry,
 				          recursion_depth + 1,
 				          error );
@@ -1603,6 +1668,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 				          io_handle,
 				          sub_node,
 				          thread_record,
+				          use_case_folding,
 				          directory_entry,
 				          error );
 			}
@@ -1625,6 +1691,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 			}
 		}
 		last_node_key = node_key;
+
+		last_record_index++;
 	}
 	return( result );
 
@@ -1647,6 +1715,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
      libbfio_handle_t *file_io_handle,
      libfshfs_btree_node_cache_t *node_cache,
      uint32_t identifier,
+     uint8_t use_case_folding,
      libfshfs_directory_entry_t **directory_entry,
      libcerror_error_t **error )
 {
@@ -1718,6 +1787,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 			          node_cache,
 			          root_node,
 			          thread_record,
+			          use_case_folding,
 			          directory_entry,
 			          1,
 			          error );
@@ -1729,6 +1799,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_identifier(
 			          io_handle,
 			          root_node,
 			          thread_record,
+			          use_case_folding,
 			          directory_entry,
 			          error );
 		}
@@ -2031,8 +2102,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name";
 	uint32_t sub_node_number                    = 0;
+	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
-	uint16_t record_type                        = 0;
 	uint8_t node_type                           = 0;
 	int compare_result                          = 0;
 	int is_branch_node                          = 0;
@@ -2143,6 +2214,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 	     record_index <= node->descriptor->number_of_records;
 	     record_index++ )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: B-tree record: %d\n",
+			 function,
+			 record_index );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 		if( record_index < node->descriptor->number_of_records )
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
@@ -2163,162 +2246,155 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 
 				goto on_error;
 			}
-		}
-		if( node_key == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing catalog B-tree key: %" PRIu16 ".",
-			 function,
-			 record_index );
-
-			goto on_error;
-		}
-		if( ( record_index == node->descriptor->number_of_records )
-		 || ( node_key->parent_identifier >= parent_identifier ) )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 node_key->record_data,
-			 record_type );
-
-			compare_result = LIBUNA_COMPARE_LESS;
-
-			switch( record_type )
+			if( node_key == NULL )
 			{
-				case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD:
-				case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD:
-				case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD:
-				case LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD:
-					compare_result = libfshfs_catalog_btree_key_compare_name_with_utf8_string(
-					                  node_key,
-					                  utf8_string,
-					                  utf8_string_length,
-					                  use_case_folding,
-					                  error );
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing catalog B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
 
-					if( compare_result == -1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_GENERIC,
-						 "%s: unable to compare UTF-8 string with catalog B-tree key name.",
-						 function );
-
-						goto on_error;
-					}
-					break;
-
-				default:
-					break;
+				goto on_error;
 			}
-			if( compare_result != LIBUNA_COMPARE_GREATER )
+		}
+		compare_result = LIBUNA_COMPARE_LESS;
+
+		if( ( record_index == node->descriptor->number_of_records )
+		 || ( node_key->parent_identifier > parent_identifier ) )
+		{
+			compare_result = LIBUNA_COMPARE_GREATER;
+		}
+		else if( node_key->parent_identifier == parent_identifier )
+		{
+			if( node_key->name_data != NULL )
 			{
-				if( libfshfs_catalog_btree_file_get_sub_node_number_from_key(
-				     last_node_key,
-				     &sub_node_number,
-				     error ) != 1 )
+				compare_result = libfshfs_catalog_btree_key_compare_name_with_utf8_string(
+				                  node_key,
+				                  utf8_string,
+				                  utf8_string_length,
+				                  use_case_folding,
+				                  error );
+
+				if( compare_result == -1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve sub node number from catalog B-Tree key.",
+					 LIBCERROR_RUNTIME_ERROR_GENERIC,
+					 "%s: unable to compare UTF-8 string with catalog B-tree key name.",
 					 function );
 
 					goto on_error;
 				}
+			}
+		}
+		if( compare_result == LIBUNA_COMPARE_GREATER )
+		{
+			if( libfshfs_catalog_btree_file_get_sub_node_number_from_key(
+			     last_node_key,
+			     &sub_node_number,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve sub node number from catalog B-Tree key.",
+				 function );
+
+				goto on_error;
+			}
 #if defined( HAVE_DEBUG_OUTPUT )
-				if( libcnotify_verbose != 0 )
-				{
-					libcnotify_printf(
-					 "%s: B-tree sub node number\t: %" PRIu32 "\n",
-					 function,
-					 sub_node_number );
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: B-tree record: %d sub node number: %" PRIu32 "\n",
+				 function,
+				 last_record_index,
+				 sub_node_number );
 
-					libcnotify_printf(
-					 "\n" );
-				}
+				libcnotify_printf(
+				 "\n" );
+			}
 #endif
-				if( libfshfs_btree_file_get_node_by_number(
-				     btree_file,
-				     file_io_handle,
-				     node_cache,
-				     recursion_depth,
-				     sub_node_number,
-				     &sub_node,
-				     error ) == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve B-tree sub node: %" PRIu32 ".",
-					 function,
-					 sub_node_number );
+			if( libfshfs_btree_file_get_node_by_number(
+			     btree_file,
+			     file_io_handle,
+			     node_cache,
+			     recursion_depth,
+			     sub_node_number,
+			     &sub_node,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve B-tree sub node: %" PRIu32 ".",
+				 function,
+				 sub_node_number );
 
-					goto on_error;
-				}
-				if( libfshfs_btree_node_get_node_type(
-				     sub_node,
-				     &node_type,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
-					 function,
-					 sub_node_number );
+				goto on_error;
+			}
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
+				 function,
+				 sub_node_number );
 
-					goto on_error;
-				}
-				if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
-				{
-					result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
-					          btree_file,
-					          io_handle,
-					          file_io_handle,
-					          node_cache,
-					          sub_node,
-					          parent_identifier,
-					          name_hash,
-					          utf8_string,
-					          utf8_string_length,
-					          use_case_folding,
-					          directory_entry,
-					          recursion_depth + 1,
-					          error );
-				}
-				else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
-				{
-					result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
-					          btree_file,
-					          io_handle,
-					          sub_node,
-					          parent_identifier,
-					          name_hash,
-					          utf8_string,
-					          utf8_string_length,
-					          use_case_folding,
-					          directory_entry,
-					          error );
-				}
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve directory entry from catalog B-tree node: %" PRIu32 ".",
-					 function,
-					 sub_node_number );
+				goto on_error;
+			}
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name(
+				          btree_file,
+				          io_handle,
+				          file_io_handle,
+				          node_cache,
+				          sub_node,
+				          parent_identifier,
+				          name_hash,
+				          utf8_string,
+				          utf8_string_length,
+				          use_case_folding,
+				          directory_entry,
+				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf8_name(
+				          btree_file,
+				          io_handle,
+				          sub_node,
+				          parent_identifier,
+				          name_hash,
+				          utf8_string,
+				          utf8_string_length,
+				          use_case_folding,
+				          directory_entry,
+				          error );
+			}
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve directory entry from catalog B-tree node: %" PRIu32 ".",
+				 function,
+				 sub_node_number );
 
-					goto on_error;
-				}
+				goto on_error;
 			}
 			if( ( result == 1 )
 			 || ( node_key->parent_identifier > parent_identifier ) )
@@ -2327,6 +2403,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 			}
 		}
 		last_node_key = node_key;
+
+		last_record_index++;
 	}
 	return( result );
 
@@ -2556,6 +2634,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf8_path(
 		          file_io_handle,
 		          node_cache,
 		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
+		          use_case_folding,
 		          &safe_directory_entry,
 		          error );
 
@@ -2981,8 +3060,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name";
 	uint32_t sub_node_number                    = 0;
+	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
-	uint16_t record_type                        = 0;
 	uint8_t node_type                           = 0;
 	int compare_result                          = 0;
 	int is_branch_node                          = 0;
@@ -3093,6 +3172,18 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 	     record_index <= node->descriptor->number_of_records;
 	     record_index++ )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: B-tree record: %d\n",
+			 function,
+			 record_index );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 		if( record_index < node->descriptor->number_of_records )
 		{
 			if( libfshfs_catalog_btree_file_get_key_from_node_by_index(
@@ -3113,162 +3204,155 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 
 				goto on_error;
 			}
-		}
-		if( node_key == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing catalog B-tree key: %" PRIu16 ".",
-			 function,
-			 record_index );
-
-			goto on_error;
-		}
-		if( ( record_index == node->descriptor->number_of_records )
-		 || ( node_key->parent_identifier >= parent_identifier ) )
-		{
-			byte_stream_copy_to_uint16_big_endian(
-			 node_key->record_data,
-			 record_type );
-
-			compare_result = LIBUNA_COMPARE_LESS;
-
-			switch( record_type )
+			if( node_key == NULL )
 			{
-				case LIBFSHFS_RECORD_TYPE_HFSPLUS_DIRECTORY_RECORD:
-				case LIBFSHFS_RECORD_TYPE_HFSPLUS_FILE_RECORD:
-				case LIBFSHFS_RECORD_TYPE_HFS_DIRECTORY_RECORD:
-				case LIBFSHFS_RECORD_TYPE_HFS_FILE_RECORD:
-					compare_result = libfshfs_catalog_btree_key_compare_name_with_utf16_string(
-					                  node_key,
-					                  utf16_string,
-					                  utf16_string_length,
-					                  use_case_folding,
-					                  error );
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing catalog B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
 
-					if( compare_result == -1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_GENERIC,
-						 "%s: unable to compare UTF-16 string with catalog B-tree key name.",
-						 function );
-
-						goto on_error;
-					}
-					break;
-
-				default:
-					break;
+				goto on_error;
 			}
-			if( compare_result != LIBUNA_COMPARE_GREATER )
+		}
+		compare_result = LIBUNA_COMPARE_LESS;
+
+		if( ( record_index == node->descriptor->number_of_records )
+		 || ( node_key->parent_identifier > parent_identifier ) )
+		{
+			compare_result = LIBUNA_COMPARE_GREATER;
+		}
+		else if( node_key->parent_identifier == parent_identifier )
+		{
+			if( node_key->name_data != NULL )
 			{
-				if( libfshfs_catalog_btree_file_get_sub_node_number_from_key(
-				     last_node_key,
-				     &sub_node_number,
-				     error ) != 1 )
+				compare_result = libfshfs_catalog_btree_key_compare_name_with_utf16_string(
+				                  node_key,
+				                  utf16_string,
+				                  utf16_string_length,
+				                  use_case_folding,
+				                  error );
+
+				if( compare_result == -1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve sub node number from catalog B-Tree key.",
+					 LIBCERROR_RUNTIME_ERROR_GENERIC,
+					 "%s: unable to compare UTF-16 string with catalog B-tree key name.",
 					 function );
 
 					goto on_error;
 				}
-	#if defined( HAVE_DEBUG_OUTPUT )
-				if( libcnotify_verbose != 0 )
-				{
-					libcnotify_printf(
-					 "%s: B-tree sub node number\t: %" PRIu32 "\n",
-					 function,
-					 sub_node_number );
+			}
+		}
+		if( compare_result == LIBUNA_COMPARE_GREATER )
+		{
+			if( libfshfs_catalog_btree_file_get_sub_node_number_from_key(
+			     last_node_key,
+			     &sub_node_number,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve sub node number from catalog B-Tree key.",
+				 function );
 
-					libcnotify_printf(
-					 "\n" );
-				}
-	#endif
-				if( libfshfs_btree_file_get_node_by_number(
-				     btree_file,
-				     file_io_handle,
-				     node_cache,
-				     recursion_depth,
-				     sub_node_number,
-				     &sub_node,
-				     error ) == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve B-tree sub node: %" PRIu32 ".",
-					 function,
-					 sub_node_number );
+				goto on_error;
+			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: B-tree record: %d sub node number: %" PRIu32 "\n",
+				 function,
+				 last_record_index,
+				 sub_node_number );
 
-					goto on_error;
-				}
-				if( libfshfs_btree_node_get_node_type(
-				     sub_node,
-				     &node_type,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
-					 function,
-					 sub_node_number );
+				libcnotify_printf(
+				 "\n" );
+			}
+#endif
+			if( libfshfs_btree_file_get_node_by_number(
+			     btree_file,
+			     file_io_handle,
+			     node_cache,
+			     recursion_depth,
+			     sub_node_number,
+			     &sub_node,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve B-tree sub node: %" PRIu32 ".",
+				 function,
+				 sub_node_number );
 
-					goto on_error;
-				}
-				if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
-				{
-					result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
-					          btree_file,
-					          io_handle,
-					          file_io_handle,
-					          node_cache,
-					          sub_node,
-					          parent_identifier,
-					          name_hash,
-					          utf16_string,
-					          utf16_string_length,
-					          use_case_folding,
-					          directory_entry,
-					          recursion_depth + 1,
-					          error );
-				}
-				else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
-				{
-					result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
-					          btree_file,
-					          io_handle,
-					          sub_node,
-					          parent_identifier,
-					          name_hash,
-					          utf16_string,
-					          utf16_string_length,
-					          use_case_folding,
-					          directory_entry,
-					          error );
-				}
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve directory entry from catalog B-tree node: %" PRIu32 ".",
-					 function,
-					 sub_node_number );
+				goto on_error;
+			}
+			if( libfshfs_btree_node_get_node_type(
+			     sub_node,
+			     &node_type,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine if B-tree sub node: %" PRIu32 " type.",
+				 function,
+				 sub_node_number );
 
-					goto on_error;
-				}
+				goto on_error;
+			}
+			if( node_type == LIBFSHFS_BTREE_NODE_TYPE_INDEX_NODE )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name(
+				          btree_file,
+				          io_handle,
+				          file_io_handle,
+				          node_cache,
+				          sub_node,
+				          parent_identifier,
+				          name_hash,
+				          utf16_string,
+				          utf16_string_length,
+				          use_case_folding,
+				          directory_entry,
+				          recursion_depth + 1,
+				          error );
+			}
+			else if( node_type == LIBFSHFS_BTREE_NODE_TYPE_LEAF_NODE )
+			{
+				result = libfshfs_catalog_btree_file_get_directory_entry_from_leaf_node_by_utf16_name(
+				          btree_file,
+				          io_handle,
+				          sub_node,
+				          parent_identifier,
+				          name_hash,
+				          utf16_string,
+				          utf16_string_length,
+				          use_case_folding,
+				          directory_entry,
+				          error );
+			}
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve directory entry from catalog B-tree node: %" PRIu32 ".",
+				 function,
+				 sub_node_number );
+
+				goto on_error;
 			}
 			if( ( result == 1 )
 			 || ( node_key->parent_identifier > parent_identifier ) )
@@ -3277,6 +3361,8 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 			}
 		}
 		last_node_key = node_key;
+
+		last_record_index++;
 	}
 	return( result );
 
@@ -3506,6 +3592,7 @@ int libfshfs_catalog_btree_file_get_directory_entry_by_utf16_path(
 		          file_io_handle,
 		          node_cache,
 		          LIBFSHFS_ROOT_DIRECTORY_IDENTIFIER,
+		          use_case_folding,
 		          &safe_directory_entry,
 		          error );
 
@@ -3861,6 +3948,7 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entries_from_branch_node";
 	uint32_t sub_node_number                    = 0;
+	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
@@ -3980,18 +4068,18 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 
 				goto on_error;
 			}
-		}
-		if( node_key == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing catalog B-tree key: %" PRIu16 ".",
-			 function,
-			 record_index );
+			if( node_key == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing catalog B-tree key: %" PRIu16 ".",
+				 function,
+				 record_index );
 
-			goto on_error;
+				goto on_error;
+			}
 		}
 		if( ( record_index == node->descriptor->number_of_records )
 		 || ( node_key->parent_identifier >= parent_identifier ) )
@@ -4014,8 +4102,9 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: B-tree sub node number\t: %" PRIu32 "\n",
+				 "%s: B-tree record: %d sub node number: %" PRIu32 "\n",
 				 function,
+				 last_record_index,
 				 sub_node_number );
 
 				libcnotify_printf(
@@ -4097,6 +4186,8 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 			}
 		}
 		last_node_key = node_key;
+
+		last_record_index++;
 	}
 	return( 1 );
 

@@ -331,6 +331,15 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 		nfd_mapping = &single_nfd_mapping; \
 	} \
 
+int libfshfs_name_compare(
+     const uint8_t *first_name,
+     size_t first_name_size,
+     const uint8_t *second_name,
+     size_t second_name_size,
+     int codepage,
+     uint8_t use_case_folding,
+     libcerror_error_t **error );
+
 int libfshfs_name_get_utf8_string_size(
      const uint8_t *name,
      size_t name_size,

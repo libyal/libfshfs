@@ -5324,6 +5324,201 @@ libfshfs_name_decomposition_mapping_t libfshfs_name_decomposition_mappings_0x000
 	/* 0x0000fb4f */ { 1, { 0x0000fb4f } }
 };
 
+/* Compares two UTF-16 big-endian encoded file entry name
+ * Returns LIBUNA_COMPARE_LESS, LIBUNA_COMPARE_EQUAL, LIBUNA_COMPARE_GREATER if successful or -1 on error
+ */
+int libfshfs_name_compare(
+     const uint8_t *first_name,
+     size_t first_name_size,
+     const uint8_t *second_name,
+     size_t second_name_size,
+     int codepage,
+     uint8_t use_case_folding,
+     libcerror_error_t **error )
+{
+	static char *function                                    = "libfshfs_name_compare";
+	libuna_unicode_character_t first_name_unicode_character  = 0;
+	libuna_unicode_character_t second_name_unicode_character = 0;
+	size_t first_name_index                                  = 0;
+	size_t second_name_index                                 = 0;
+
+	if( first_name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid first name.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( first_name_size == 0 )
+	 || ( first_name_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid first name size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( second_name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid second name.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( second_name_size == 0 )
+	 || ( second_name_size > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid second name size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	while( ( first_name_index < first_name_size )
+	    && ( second_name_index < second_name_size ) )
+	{
+		if( codepage == LIBUNA_CODEPAGE_UTF16_BIG_ENDIAN )
+		{
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &first_name_unicode_character,
+			     first_name,
+			     first_name_size,
+			     &first_name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from first UTF-16 big-endian encoded name.",
+				 function );
+
+				return( -1 );
+			}
+			if( libuna_unicode_character_copy_from_utf16_stream(
+			     &second_name_unicode_character,
+			     second_name,
+			     second_name_size,
+			     &second_name_index,
+			     LIBUNA_ENDIAN_BIG,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from second UTF-16 big-endian encoded name.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		else
+		{
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &first_name_unicode_character,
+			     first_name,
+			     first_name_size,
+			     &first_name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from first ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
+			if( libuna_unicode_character_copy_from_byte_stream(
+			     &second_name_unicode_character,
+			     second_name,
+			     second_name_size,
+			     &second_name_index,
+			     codepage,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+				 LIBCERROR_CONVERSION_ERROR_INPUT_FAILED,
+				 "%s: unable to copy Unicode character from second ASCII encoded name.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		/* ':' is stored as '/'
+		 */
+		if( first_name_unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			first_name_unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( first_name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			first_name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		else if( use_case_folding != 0 )
+		{
+			libfshfs_name_get_case_folding_mapping(
+			 first_name_unicode_character );
+		}
+		/* ':' is stored as '/'
+		 */
+		if( second_name_unicode_character == (libuna_unicode_character_t) '/' )
+		{
+			second_name_unicode_character = (libuna_unicode_character_t) ':';
+		}
+		/* U+2400 is stored as U+0
+		 */
+		else if( second_name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
+		{
+			second_name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
+		}
+		else if( use_case_folding != 0 )
+		{
+			libfshfs_name_get_case_folding_mapping(
+			 second_name_unicode_character );
+		}
+		if( first_name_unicode_character < second_name_unicode_character )
+		{
+			return( LIBUNA_COMPARE_LESS );
+		}
+		else if( first_name_unicode_character > second_name_unicode_character )
+		{
+			return( LIBUNA_COMPARE_GREATER );
+		}
+	}
+	if( first_name_size < second_name_size )
+	{
+		return( LIBUNA_COMPARE_LESS );
+	}
+	else if( first_name_size > second_name_size )
+	{
+		return( LIBUNA_COMPARE_GREATER );
+	}
+	return( LIBUNA_COMPARE_EQUAL );
+}
+
 /* Determines the size of an UTF-8 string from an UTF-16 big-endian encoded file entry name
  * Returns 1 if successful or -1 on error
  */
@@ -5795,11 +5990,11 @@ int libfshfs_name_compare_with_utf8_string(
 				libfshfs_name_get_case_folding_mapping(
 				 utf8_unicode_character );
 			}
-			if( utf8_unicode_character < name_unicode_character )
+			if( name_unicode_character < utf8_unicode_character )
 			{
 				return( LIBUNA_COMPARE_LESS );
 			}
-			else if( utf8_unicode_character > name_unicode_character )
+			else if( name_unicode_character > utf8_unicode_character )
 			{
 				return( LIBUNA_COMPARE_GREATER );
 			}
@@ -5811,11 +6006,11 @@ int libfshfs_name_compare_with_utf8_string(
 	}
 	if( utf8_string_index < utf8_string_length )
 	{
-		return( LIBUNA_COMPARE_GREATER );
+		return( LIBUNA_COMPARE_LESS );
 	}
 	else if( name_index < name_size )
 	{
-		return( LIBUNA_COMPARE_LESS );
+		return( LIBUNA_COMPARE_GREATER );
 	}
 	return( LIBUNA_COMPARE_EQUAL );
 }
@@ -6289,11 +6484,11 @@ int libfshfs_name_compare_with_utf16_string(
 				libfshfs_name_get_case_folding_mapping(
 				 utf16_unicode_character );
 			}
-			if( utf16_unicode_character < name_unicode_character )
+			if( name_unicode_character < utf16_unicode_character )
 			{
 				return( LIBUNA_COMPARE_LESS );
 			}
-			else if( utf16_unicode_character > name_unicode_character )
+			else if( name_unicode_character > utf16_unicode_character )
 			{
 				return( LIBUNA_COMPARE_GREATER );
 			}
@@ -6305,11 +6500,11 @@ int libfshfs_name_compare_with_utf16_string(
 	}
 	if( utf16_string_index < utf16_string_length )
 	{
-		return( LIBUNA_COMPARE_GREATER );
+		return( LIBUNA_COMPARE_LESS );
 	}
 	else if( name_index < name_size )
 	{
-		return( LIBUNA_COMPARE_LESS );
+		return( LIBUNA_COMPARE_GREATER );
 	}
 	return( LIBUNA_COMPARE_EQUAL );
 }

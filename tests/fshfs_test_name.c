@@ -492,7 +492,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_GREATER );
+	 LIBUNA_COMPARE_LESS );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -510,7 +510,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_GREATER );
+	 LIBUNA_COMPARE_LESS );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -528,7 +528,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_LESS );
+	 LIBUNA_COMPARE_GREATER );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -546,7 +546,7 @@ int fshfs_test_name_compare_with_utf8_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_LESS );
+	 LIBUNA_COMPARE_GREATER );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -1024,7 +1024,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_GREATER );
+	 LIBUNA_COMPARE_LESS );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -1042,7 +1042,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_GREATER );
+	 LIBUNA_COMPARE_LESS );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -1060,7 +1060,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_LESS );
+	 LIBUNA_COMPARE_GREATER );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -1078,7 +1078,7 @@ int fshfs_test_name_compare_with_utf16_string(
 	FSHFS_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 LIBUNA_COMPARE_LESS );
+	 LIBUNA_COMPARE_GREATER );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",

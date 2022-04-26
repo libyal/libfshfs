@@ -791,6 +791,7 @@ int libfshfs_file_system_get_directory_entry_by_identifier(
 	          file_io_handle,
 	          file_system->catalog_btree_node_cache,
 	          identifier,
+	          file_system->use_case_folding,
 	          directory_entry,
 	          error );
 
@@ -840,6 +841,7 @@ int libfshfs_file_system_get_indirect_node_directory_entry_by_identifier(
 	          file_io_handle,
 	          file_system->indirect_node_catalog_btree_node_cache,
 	          identifier,
+	          file_system->use_case_folding,
 	          directory_entry,
 	          error );
 

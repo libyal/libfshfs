@@ -88,6 +88,7 @@ int libfshfs_catalog_btree_key_compare_name(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint8_t *name,
      size_t name_size,
+     uint8_t use_case_folding,
      libcerror_error_t **error );
 
 int libfshfs_catalog_btree_key_compare_name_with_utf8_string(

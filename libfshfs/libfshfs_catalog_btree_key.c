@@ -400,7 +400,6 @@ int libfshfs_catalog_btree_key_read_data(
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 		}
 		data_offset += catalog_btree_key->name_size;
-
 	}
 	/* The key data size can be 0 if the node is no longer used
 	 */
@@ -434,15 +433,17 @@ int libfshfs_catalog_btree_key_read_data(
 }
 
 /* Compares a name with the catalog B-tree key name
- * Returns 1 if equal, 0 if not or -1 on error
+ * Returns LIBUNA_COMPARE_LESS, LIBUNA_COMPARE_EQUAL, LIBUNA_COMPARE_GREATER if successful or -1 on error
  */
 int libfshfs_catalog_btree_key_compare_name(
      libfshfs_catalog_btree_key_t *catalog_btree_key,
      const uint8_t *name,
      size_t name_size,
+     uint8_t use_case_folding,
      libcerror_error_t **error )
 {
 	static char *function = "libfshfs_catalog_btree_key_compare_name";
+	int result            = 0;
 
 	if( catalog_btree_key == NULL )
 	{
@@ -455,26 +456,27 @@ int libfshfs_catalog_btree_key_compare_name(
 
 		return( -1 );
 	}
-	if( name == NULL )
+	result = libfshfs_name_compare(
+	          catalog_btree_key->name_data,
+	          catalog_btree_key->name_size,
+	          name,
+	          name_size,
+	          catalog_btree_key->codepage,
+	          use_case_folding,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid name.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GENERIC,
+		 "%s: unable to compare name.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( name_size == catalog_btree_key->name_size )
-	 && ( memory_compare(
-	       catalog_btree_key->name_data,
-	       name,
-	       name_size ) == 0 ) )
-	{
-		return( 1 );
-	}
-	return( 0 );
+	return( result );
 }
 
 /* Compares an UTF-8 string with the catalog B-tree key name

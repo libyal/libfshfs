@@ -1,4 +1,6 @@
 To do:
+* check if get directory entries uses previous/next node
+
 * add support for extended attribute (named fork) data stream with LIBFSHFS_ATTRIBUTE_RECORD_TYPE_EXTENTS
 * for extended attributes by name look up use native B-tree structures
 
