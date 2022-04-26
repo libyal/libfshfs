@@ -5465,36 +5465,12 @@ int libfshfs_name_compare(
 				return( -1 );
 			}
 		}
-		/* ':' is stored as '/'
-		 */
-		if( first_name_unicode_character == (libuna_unicode_character_t) '/' )
-		{
-			first_name_unicode_character = (libuna_unicode_character_t) ':';
-		}
-		/* U+2400 is stored as U+0
-		 */
-		else if( first_name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
-		{
-			first_name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
-		}
-		else if( use_case_folding != 0 )
+		if( use_case_folding != 0 )
 		{
 			libfshfs_name_get_case_folding_mapping(
 			 first_name_unicode_character );
 		}
-		/* ':' is stored as '/'
-		 */
-		if( second_name_unicode_character == (libuna_unicode_character_t) '/' )
-		{
-			second_name_unicode_character = (libuna_unicode_character_t) ':';
-		}
-		/* U+2400 is stored as U+0
-		 */
-		else if( second_name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
-		{
-			second_name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
-		}
-		else if( use_case_folding != 0 )
+		if( use_case_folding != 0 )
 		{
 			libfshfs_name_get_case_folding_mapping(
 			 second_name_unicode_character );
@@ -5966,26 +5942,26 @@ int libfshfs_name_compare_with_utf8_string(
 					return( -1 );
 				}
 			}
-			/* ':' is stored as '/'
-			 */
-			if( name_unicode_character == (libuna_unicode_character_t) '/' )
-			{
-				name_unicode_character = (libuna_unicode_character_t) ':';
-			}
-			/* U+2400 is stored as U+0
-			 */
-			else if( name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
-			{
-				name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
-			}
-			else if( use_case_folding != 0 )
+			if( use_case_folding != 0 )
 			{
 				libfshfs_name_get_case_folding_mapping(
 				 name_unicode_character );
 			}
 			utf8_unicode_character = utf8_nfd_mapping->characters[ nfd_character_index ];
 
-			if( use_case_folding != 0 )
+			/* ':' is stored as '/'
+			 */
+			if( utf8_unicode_character == (libuna_unicode_character_t) ':' )
+			{
+				utf8_unicode_character = (libuna_unicode_character_t) '/';
+			}
+			/* U+2400 is stored as U+0
+			 */
+			else if( utf8_unicode_character == (libuna_unicode_character_t) 0x00002400UL )
+			{
+				utf8_unicode_character = (libuna_unicode_character_t) 0x00000000UL;
+			}
+			else if( use_case_folding != 0 )
 			{
 				libfshfs_name_get_case_folding_mapping(
 				 utf8_unicode_character );
@@ -6460,26 +6436,26 @@ int libfshfs_name_compare_with_utf16_string(
 					return( -1 );
 				}
 			}
-			/* ':' is stored as '/'
-			 */
-			if( name_unicode_character == (libuna_unicode_character_t) '/' )
-			{
-				name_unicode_character = (libuna_unicode_character_t) ':';
-			}
-			/* U+2400 is stored as U+0
-			 */
-			else if( name_unicode_character == (libuna_unicode_character_t) 0x00000000UL )
-			{
-				name_unicode_character = (libuna_unicode_character_t) 0x00002400UL;
-			}
-			else if( use_case_folding != 0 )
+			if( use_case_folding != 0 )
 			{
 				libfshfs_name_get_case_folding_mapping(
 				 name_unicode_character );
 			}
 			utf16_unicode_character = utf16_nfd_mapping->characters[ nfd_character_index ];
 
-			if( use_case_folding != 0 )
+			/* ':' is stored as '/'
+			 */
+			if( utf16_unicode_character == (libuna_unicode_character_t) ':' )
+			{
+				utf16_unicode_character = (libuna_unicode_character_t) '/';
+			}
+			/* U+2400 is stored as U+0
+			 */
+			else if( utf16_unicode_character == (libuna_unicode_character_t) 0x00002400UL )
+			{
+				utf16_unicode_character = (libuna_unicode_character_t) 0x00000000UL;
+			}
+			else if( use_case_folding != 0 )
 			{
 				libfshfs_name_get_case_folding_mapping(
 				 utf16_unicode_character );

@@ -59,6 +59,7 @@ Email change
 | 0.0.11 | J.B. Metz | July 2021 | Additional information about extended attributes.
 | 0.0.12 | J.B. Metz | August 2021 | Additional information about classic HFS.
 | 0.0.13 | J.B. Metz | January 2022 | Cleaned up notes.
+| 0.0.14 | J.B. Metz | April 2022 | Additional information about catalog B-tree key.
 |===
 
 :numbered:
@@ -108,11 +109,12 @@ U+2000 - U+2FFF, U+F900 - U+FAFF and U+2F800 - U+2FAFF are not decomposed. For
 Mac OS 8.1 through 10.2.x decomposition is based on Unicode 2.1 rules.
 
 [NOTE]
-Based on observations on Mac OS 10.15.7 the range U+1D000 - U+1D1FF appears to
-be excluded from decomposition as well.
+Based on observations on Mac OS 10.15.7 on HFS+ the range U+1D000 - U+1D1FF
+appears to be excluded from decomposition as well.
 
 [NOTE]
-Based on observations on Mac OS 10.15.7 U+2400 appears to be replaced by U+0
+Based on observations on Mac OS 10.15.7 on HFS+ U+2400 appears to be replaced
+by U+0.
 
 [NOTE]
 HFS+ allows for the `/` character in file names. On Mac OS, Finder this will be
@@ -1135,7 +1137,7 @@ Used temporarily during exchange files operations.
 In a catalog file the search key consists of:
 
 * parent directory identifier
-* file or directory name
+* (optional) file or directory name
 
 The volume reference number is not included in the search key.
 
@@ -1189,6 +1191,10 @@ Contains a CNID
 UTF-16 big-endian string without end-of-string character +
 Contains the name of the file or directory
 |===
+
+[NOTE]
+The characters ':' and U+2400 are stored as '/' and U+0 respectively and must
+be converted before comparision.
 
 [yellow-background]*Maximum name string length 255 characters?*
 
