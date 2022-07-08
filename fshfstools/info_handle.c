@@ -1272,6 +1272,8 @@ int info_handle_file_entry_value_with_name_fprint(
 	uint32_t parent_identifier                        = 0;
 	int32_t added_time                                = 0;
 	uint16_t file_mode                                = 0;
+	uint8_t major_device_number                       = 0;
+	uint8_t minor_device_number                       = 0;
 	int extended_attribute_index                      = 0;
 	int has_access_time                               = 0;
 	int has_entry_modification_time                   = 0;
@@ -1913,6 +1915,31 @@ int info_handle_file_entry_value_with_name_fprint(
 		 file_mode_string,
 		 file_mode );
 
+		result = libfshfs_file_entry_get_device_number(
+		          file_entry,
+		          &major_device_number,
+		          &minor_device_number,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve device number.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "\tDevice number\t\t: %" PRIu8 ",%" PRIu8 "\n",
+			 major_device_number,
+			 minor_device_number );
+		}
 		if( symbolic_link_target != NULL )
 		{
 			fprintf(

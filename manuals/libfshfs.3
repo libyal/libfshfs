@@ -1,4 +1,4 @@
-.Dd January 15, 2022
+.Dd July  8, 2022
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -111,11 +111,13 @@ File entry functions
 .Ft int
 .Fn libfshfs_file_entry_get_file_mode "libfshfs_file_entry_t *file_entry" "uint16_t *file_mode" "libfshfs_error_t **error"
 .Ft int
-.Fn libfshfs_file_entry_get_number_of_links "libfshfs_file_entry_t *file_entry" "uint16_t *number_of_links" "libfshfs_error_t **error"
+.Fn libfshfs_file_entry_get_number_of_links "libfshfs_file_entry_t *file_entry" "uint32_t *number_of_links" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_owner_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *owner_identifier" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_group_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *group_identifier" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_file_entry_get_device_number "libfshfs_file_entry_t *file_entry" "uint8_t *major_device_number" "uint8_t *minor_device_number" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_file_entry_get_utf8_name_size "libfshfs_file_entry_t *file_entry" "size_t *utf8_string_size" "libfshfs_error_t **error"
 .Ft int

@@ -175,6 +175,13 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	  "\n"
 	  "Retrieves the group identifier." },
 
+	{ "get_device_number",
+	  (PyCFunction) pyfshfs_file_entry_get_device_number,
+	  METH_NOARGS,
+	  "get_device_number() -> Tuple(Integer, Integer)\n"
+	  "\n"
+	  "Retrieves the device number." },
+
 	{ "get_name",
 	  (PyCFunction) pyfshfs_file_entry_get_name,
 	  METH_NOARGS,
@@ -405,6 +412,12 @@ PyGetSetDef pyfshfs_file_entry_object_get_set_definitions[] = {
 	  (getter) pyfshfs_file_entry_get_group_identifier,
 	  (setter) 0,
 	  "The group identifier.",
+	  NULL },
+
+	{ "device_number",
+	  (getter) pyfshfs_file_entry_get_device_number,
+	  (setter) 0,
+	  "The device number.",
 	  NULL },
 
 	{ "name",
@@ -1767,6 +1780,113 @@ PyObject *pyfshfs_file_entry_get_group_identifier(
 	                  (unsigned long) value_32bit );
 
 	return( integer_object );
+}
+
+/* Retrieves the device number
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyfshfs_file_entry_get_device_number(
+           pyfshfs_file_entry_t *pyfshfs_file_entry,
+           PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object    = NULL;
+	PyObject *tuple_object      = NULL;
+	libcerror_error_t *error    = NULL;
+	static char *function       = "pyfshfs_file_entry_get_device_number";
+	uint8_t major_device_number = 0;
+	uint8_t minor_device_number = 0;
+	int result                  = 0;
+
+	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
+
+	if( pyfshfs_file_entry == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libfshfs_file_entry_get_device_number(
+	          pyfshfs_file_entry->file_entry,
+	          &major_device_number,
+	          &minor_device_number,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pyfshfs_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve device number.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	tuple_object = PyTuple_New(
+                        2 );
+
+#if PY_MAJOR_VERSION >= 3
+	integer_object = PyLong_FromLong(
+	                  (long) major_device_number );
+#else
+	integer_object = PyInt_FromLong(
+	                  (long) major_device_number );
+#endif
+	/* Tuple set item does not increment the reference count of the integer object
+	 */
+	if( PyTuple_SetItem(
+	     tuple_object,
+	     0,
+	     integer_object ) != 0 )
+	{
+		goto on_error;
+	}
+#if PY_MAJOR_VERSION >= 3
+	integer_object = PyLong_FromLong(
+	                  (long) minor_device_number );
+#else
+	integer_object = PyInt_FromLong(
+	                  (long) minor_device_number );
+#endif
+	/* Tuple set item does not increment the reference count of the integer object
+	 */
+	if( PyTuple_SetItem(
+	     tuple_object,
+	     1,
+	     integer_object ) != 0 )
+	{
+		goto on_error;
+	}
+	return( tuple_object );
+
+on_error:
+	if( integer_object != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) integer_object );
+	}
+	if( tuple_object != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) tuple_object );
+	}
+	return( NULL );
 }
 
 /* Retrieves the name
