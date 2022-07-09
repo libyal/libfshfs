@@ -15,6 +15,9 @@ To do:
 
 * add support to print information about special files (those without a catalog record) ?
 
+* HFS+/HFSX
+** add support for solaris and bsdos device numbers
+
 * classic HFS
 ** fshfsinfo: add support retrieving non-directory file entries using fshfsinfo -E
 *** files in classic HFS do not need to have a thread record

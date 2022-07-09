@@ -1006,7 +1006,7 @@ contains the device information. The device information can be stored in
 different formats, such as: native, 386bsd, 4bsd, bsdos, freebsd, hpux, isc,
 linux, netbsd, osf1, sco, solaris, sunos, svr3, svr4 and ultrix.
 
-The "native" device information is 4 bytes of size and consists of:
+The "native" and "hpux" device information is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1014,6 +1014,45 @@ The "native" device information is 4 bytes of size and consists of:
 | 0 | 1 | | Major device number
 | 1 | 2 | 0 | [yellow-background]*Unknown*
 | 3 | 1 | | Minor device number
+|===
+
+The "386bsd", "4bsd", "freebsd", "isc", "linux", "netbsd", "sco", "sunos",
+"svr3" and "ultrix" device information is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0 | 2 | 0 | [yellow-background]*Unknown*
+| 2 | 1 | | Major device number
+| 3 | 1 | | Minor device number
+|===
+
+The "solaris" and "svr4" device information is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0.0 | 18 bits | | Minor device number
+| 2.2 | 14 bits | | Major device number
+|===
+
+The "bsdos" and "osf1" device information is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0.0 | 20 bits | | Minor device number
+| 2.4 | 12 bits | | Major device number
+|===
+
+The "bsdos" alternative device information is 4 bytes of size and consists of:
+
+[cols="1,1,1,5",options="header"]
+|===
+| Offset | Size | Value | Description
+| 0.0 | 8 bits | | Sub unit number
+| 1.0 | 12 bits | | Unit number
+| 2.4 | 12 bits | | Major device number
 |===
 
 ==== Symbolic Links

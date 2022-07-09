@@ -1266,14 +1266,14 @@ int info_handle_file_entry_value_with_name_fprint(
 	uint32_t file_entry_identifier                    = 0;
 	uint32_t group_identifier                         = 0;
 	uint32_t link_identifier                          = 0;
+	uint32_t major_device_number                      = 0;
+	uint32_t minor_device_number                      = 0;
 	uint32_t modification_time                        = 0;
 	uint32_t number_of_links                          = 0;
 	uint32_t owner_identifier                         = 0;
 	uint32_t parent_identifier                        = 0;
 	int32_t added_time                                = 0;
 	uint16_t file_mode                                = 0;
-	uint8_t major_device_number                       = 0;
-	uint8_t minor_device_number                       = 0;
 	int extended_attribute_index                      = 0;
 	int has_access_time                               = 0;
 	int has_entry_modification_time                   = 0;
@@ -1936,7 +1936,7 @@ int info_handle_file_entry_value_with_name_fprint(
 		{
 			fprintf(
 			 info_handle->notify_stream,
-			 "\tDevice number\t\t: %" PRIu8 ",%" PRIu8 "\n",
+			 "\tDevice number\t\t: %" PRIu32 ",%" PRIu32 "\n",
 			 major_device_number,
 			 minor_device_number );
 		}

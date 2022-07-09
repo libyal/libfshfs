@@ -2204,13 +2204,12 @@ int libfshfs_file_entry_get_group_identifier(
 }
 
 /* Retrieves the device number
- * This value is retrieved from the inode
  * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libfshfs_file_entry_get_device_number(
      libfshfs_file_entry_t *file_entry,
-     uint8_t *major_device_number,
-     uint8_t *minor_device_number,
+     uint32_t *major_device_number,
+     uint32_t *minor_device_number,
      libcerror_error_t **error )
 {
 	libfshfs_directory_entry_t *directory_entry         = NULL;
@@ -2306,8 +2305,20 @@ int libfshfs_file_entry_get_device_number(
 			}
 			else if( result != 0 )
 			{
-				*major_device_number = (uint8_t) ( ( device_information >> 24 ) & 0x000000ffUL );
-				*minor_device_number = (uint8_t) ( device_information & 0x000000ffUL );
+				if( ( device_information & 0xffff0000UL ) == 0 )
+				{
+					*major_device_number = ( device_information >> 8 ) & 0x000000ffUL;
+					*minor_device_number = device_information & 0x000000ffUL;
+				}
+				else if( ( device_information & 0x00ffff00UL ) == 0 )
+				{
+					*major_device_number = ( device_information >> 24 ) & 0x000000ffUL;
+					*minor_device_number = device_information & 0x000000ffUL;
+				}
+				else
+				{
+					result = 0;
+				}
 			}
 		}
 	}

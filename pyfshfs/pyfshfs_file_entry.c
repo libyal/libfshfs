@@ -1789,13 +1789,13 @@ PyObject *pyfshfs_file_entry_get_device_number(
            pyfshfs_file_entry_t *pyfshfs_file_entry,
            PyObject *arguments PYFSHFS_ATTRIBUTE_UNUSED )
 {
-	PyObject *integer_object    = NULL;
-	PyObject *tuple_object      = NULL;
-	libcerror_error_t *error    = NULL;
-	static char *function       = "pyfshfs_file_entry_get_device_number";
-	uint8_t major_device_number = 0;
-	uint8_t minor_device_number = 0;
-	int result                  = 0;
+	PyObject *integer_object     = NULL;
+	PyObject *tuple_object       = NULL;
+	libcerror_error_t *error     = NULL;
+	static char *function        = "pyfshfs_file_entry_get_device_number";
+	uint32_t major_device_number = 0;
+	uint32_t minor_device_number = 0;
+	int result                   = 0;
 
 	PYFSHFS_UNREFERENCED_PARAMETER( arguments )
 
