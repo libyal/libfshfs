@@ -2203,6 +2203,102 @@ int libfshfs_file_entry_get_group_identifier(
 	return( result );
 }
 
+/* Retrieves the device identifier
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libfshfs_file_entry_get_device_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *device_identifier,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *directory_entry         = NULL;
+	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
+	static char *function                               = "libfshfs_file_entry_get_device_identifier";
+	int result                                          = 0;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file_entry = (libfshfs_internal_file_entry_t *) file_entry;
+
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( ( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_CHARACTER_DEVICE )
+	 || ( ( internal_file_entry->file_mode & 0xf000 ) == LIBFSHFS_FILE_TYPE_BLOCK_DEVICE ) )
+	{
+		if( libfshfs_internal_file_entry_get_directory_entry(
+		     internal_file_entry,
+		     &directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry.",
+			 function );
+
+			result = -1;
+		}
+		else
+		{
+			result = libfshfs_directory_entry_get_special_permissions(
+			          directory_entry,
+			          device_identifier,
+			          error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve special permissions from directory entry.",
+				 function );
+
+				result = -1;
+			}
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file_entry->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Retrieves the device number
  * Returns 1 if successful, 0 if not available or -1 on error
  */
@@ -2215,7 +2311,7 @@ int libfshfs_file_entry_get_device_number(
 	libfshfs_directory_entry_t *directory_entry         = NULL;
 	libfshfs_internal_file_entry_t *internal_file_entry = NULL;
 	static char *function                               = "libfshfs_file_entry_get_device_number";
-	uint32_t device_information                         = 0;
+	uint32_t device_identifier                          = 0;
 	int result                                          = 0;
 
 	if( file_entry == NULL )
@@ -2289,7 +2385,7 @@ int libfshfs_file_entry_get_device_number(
 		{
 			result = libfshfs_directory_entry_get_special_permissions(
 			          directory_entry,
-			          &device_information,
+			          &device_identifier,
 			          error );
 
 			if( result == -1 )
@@ -2305,15 +2401,15 @@ int libfshfs_file_entry_get_device_number(
 			}
 			else if( result != 0 )
 			{
-				if( ( device_information & 0xffff0000UL ) == 0 )
+				if( ( device_identifier & 0xffff0000UL ) == 0 )
 				{
-					*major_device_number = ( device_information >> 8 ) & 0x000000ffUL;
-					*minor_device_number = device_information & 0x000000ffUL;
+					*major_device_number = ( device_identifier >> 8 ) & 0x000000ffUL;
+					*minor_device_number = device_identifier & 0x000000ffUL;
 				}
-				else if( ( device_information & 0x00ffff00UL ) == 0 )
+				else if( ( device_identifier & 0x00ffff00UL ) == 0 )
 				{
-					*major_device_number = ( device_information >> 24 ) & 0x000000ffUL;
-					*minor_device_number = device_information & 0x000000ffUL;
+					*major_device_number = ( device_identifier >> 24 ) & 0x000000ffUL;
+					*minor_device_number = device_identifier & 0x000000ffUL;
 				}
 				else
 				{

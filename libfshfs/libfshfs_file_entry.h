@@ -241,6 +241,12 @@ int libfshfs_file_entry_get_group_identifier(
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
+int libfshfs_file_entry_get_device_identifier(
+     libfshfs_file_entry_t *file_entry,
+     uint32_t *device_identifier,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
 int libfshfs_file_entry_get_device_number(
      libfshfs_file_entry_t *file_entry,
      uint32_t *major_device_number,

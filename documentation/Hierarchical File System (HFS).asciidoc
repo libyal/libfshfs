@@ -60,7 +60,7 @@ Email change
 | 0.0.12 | J.B. Metz | August 2021 | Additional information about classic HFS.
 | 0.0.13 | J.B. Metz | January 2022 | Cleaned up notes.
 | 0.0.14 | J.B. Metz | April 2022 | Additional information about catalog B-tree key.
-| 0.0.15 | J.B. Metz | July 2022 | Additional information about device information.
+| 0.0.15 | J.B. Metz | July 2022 | Additional information about device identifier.
 |===
 
 :numbered:
@@ -999,14 +999,14 @@ possible to repair the hard link by determining the proper link reference.
 Otherwise, the hard link should be deleted.
 ....
 
-==== Device information
+==== Device identifier
 
 The <<hfs_plus_file_special_permission_data,HFS+ file special permission data>>
-contains the device information. The device information can be stored in
+contains the device identifier. The device identifier can be stored in
 different formats, such as: native, 386bsd, 4bsd, bsdos, freebsd, hpux, isc,
 linux, netbsd, osf1, sco, solaris, sunos, svr3, svr4 and ultrix.
 
-The "native" and "hpux" device information is 4 bytes of size and consists of:
+The "native" and "hpux" device identifier is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1017,7 +1017,7 @@ The "native" and "hpux" device information is 4 bytes of size and consists of:
 |===
 
 The "386bsd", "4bsd", "freebsd", "isc", "linux", "netbsd", "sco", "sunos",
-"svr3" and "ultrix" device information is 4 bytes of size and consists of:
+"svr3" and "ultrix" device identifier is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1027,7 +1027,7 @@ The "386bsd", "4bsd", "freebsd", "isc", "linux", "netbsd", "sco", "sunos",
 | 3 | 1 | | Minor device number
 |===
 
-The "solaris" and "svr4" device information is 4 bytes of size and consists of:
+The "solaris" and "svr4" device identifier is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1036,7 +1036,7 @@ The "solaris" and "svr4" device information is 4 bytes of size and consists of:
 | 2.2 | 14 bits | | Major device number
 |===
 
-The "bsdos" and "osf1" device information is 4 bytes of size and consists of:
+The "bsdos" and "osf1" device identifier is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1045,7 +1045,7 @@ The "bsdos" and "osf1" device information is 4 bytes of size and consists of:
 | 2.4 | 12 bits | | Major device number
 |===
 
-The "bsdos" alternative device information is 4 bytes of size and consists of:
+The "bsdos" alternative device identifier is 4 bytes of size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
