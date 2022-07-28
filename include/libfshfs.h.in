@@ -302,6 +302,15 @@ int libfshfs_volume_get_utf16_name(
      size_t utf16_string_size,
      libfshfs_error_t **error );
 
+/* Retrieves the root directory file entry
+ * Returns 1 if successful or -1 on error
+ */
+LIBFSHFS_EXTERN \
+int libfshfs_volume_get_root_directory(
+     libfshfs_volume_t *volume,
+     libfshfs_file_entry_t **file_entry,
+     libfshfs_error_t **error );
+
 /* Retrieves the file entry for a specific identifier (or catalog node identifier (CNID))
  * Returns 1 if successful, 0 if not available or -1 on error
  */
@@ -309,15 +318,6 @@ LIBFSHFS_EXTERN \
 int libfshfs_volume_get_file_entry_by_identifier(
      libfshfs_volume_t *volume,
      uint32_t identifier,
-     libfshfs_file_entry_t **file_entry,
-     libfshfs_error_t **error );
-
-/* Retrieves the root directory file entry
- * Returns 1 if successful or -1 on error
- */
-LIBFSHFS_EXTERN \
-int libfshfs_volume_get_root_directory(
-     libfshfs_volume_t *volume,
      libfshfs_file_entry_t **file_entry,
      libfshfs_error_t **error );
 

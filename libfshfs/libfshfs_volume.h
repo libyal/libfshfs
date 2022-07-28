@@ -165,15 +165,15 @@ int libfshfs_volume_get_utf16_name(
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
-int libfshfs_volume_get_file_entry_by_identifier(
+int libfshfs_volume_get_root_directory(
      libfshfs_volume_t *volume,
-     uint32_t identifier,
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 
 LIBFSHFS_EXTERN \
-int libfshfs_volume_get_root_directory(
+int libfshfs_volume_get_file_entry_by_identifier(
      libfshfs_volume_t *volume,
+     uint32_t identifier,
      libfshfs_file_entry_t **file_entry,
      libcerror_error_t **error );
 

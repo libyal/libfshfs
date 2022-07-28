@@ -1670,6 +1670,127 @@ int libfshfs_volume_get_utf16_name(
 	return( result );
 }
 
+/* Retrieves the root directory file entry
+ * Returns 1 if successful or -1 on error
+ */
+int libfshfs_volume_get_root_directory(
+     libfshfs_volume_t *volume,
+     libfshfs_file_entry_t **file_entry,
+     libcerror_error_t **error )
+{
+	libfshfs_directory_entry_t *safe_directory_entry = NULL;
+	libfshfs_internal_volume_t *internal_volume      = NULL;
+	static char *function                            = "libfshfs_volume_get_root_directory";
+	int result                                       = 1;
+
+	if( volume == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid volume.",
+		 function );
+
+		return( -1 );
+	}
+	internal_volume = (libfshfs_internal_volume_t *) volume;
+
+	if( file_entry == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file entry.",
+		 function );
+
+		return( -1 );
+	}
+	if( *file_entry != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid file entry value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfshfs_directory_entry_clone(
+	     &safe_directory_entry,
+	     internal_volume->root_directory_entry,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to clone root directory entry.",
+		 function );
+
+		result = -1;
+	}
+	else
+	{
+		/* libfshfs_file_entry_initialize takes over management of directory_entry
+		 */
+		if( libfshfs_file_entry_initialize(
+		     file_entry,
+		     internal_volume->io_handle,
+		     internal_volume->file_io_handle,
+		     internal_volume->file_system,
+		     safe_directory_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create file entry.",
+			 function );
+
+			libfshfs_directory_entry_free(
+			 &safe_directory_entry,
+			 NULL );
+
+			result = -1;
+		}
+	}
+#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_volume->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Retrieves the file entry for a specific identifier (or catalog node identifier (CNID))
  * Returns 1 if successful, 0 if not available or -1 on error
  */
@@ -1790,127 +1911,6 @@ int libfshfs_volume_get_file_entry_by_identifier(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( result );
-}
-
-/* Retrieves the root directory file entry
- * Returns 1 if successful or -1 on error
- */
-int libfshfs_volume_get_root_directory(
-     libfshfs_volume_t *volume,
-     libfshfs_file_entry_t **file_entry,
-     libcerror_error_t **error )
-{
-	libfshfs_directory_entry_t *safe_directory_entry = NULL;
-	libfshfs_internal_volume_t *internal_volume      = NULL;
-	static char *function                            = "libfshfs_volume_get_root_directory";
-	int result                                       = 1;
-
-	if( volume == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid volume.",
-		 function );
-
-		return( -1 );
-	}
-	internal_volume = (libfshfs_internal_volume_t *) volume;
-
-	if( file_entry == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file entry.",
-		 function );
-
-		return( -1 );
-	}
-	if( *file_entry != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file entry value already set.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for reading.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libfshfs_directory_entry_clone(
-	     &safe_directory_entry,
-	     internal_volume->root_directory_entry,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to clone root directory entry.",
-		 function );
-
-		result = -1;
-	}
-	else
-	{
-		/* libfshfs_file_entry_initialize takes over management of directory_entry
-		 */
-		if( libfshfs_file_entry_initialize(
-		     file_entry,
-		     internal_volume->io_handle,
-		     internal_volume->file_io_handle,
-		     internal_volume->file_system,
-		     safe_directory_entry,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create file entry.",
-			 function );
-
-			libfshfs_directory_entry_free(
-			 &safe_directory_entry,
-			 NULL );
-
-			result = -1;
-		}
-	}
-#if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_read(
-	     internal_volume->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for reading.",
 		 function );
 
 		return( -1 );

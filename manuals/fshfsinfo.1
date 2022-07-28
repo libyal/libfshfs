@@ -1,4 +1,4 @@
-.Dd May 4, 2015
+.Dd July 28, 2022
 .Dt fshfsinfo
 .Os libfshfs
 .Sh NAME
@@ -6,7 +6,11 @@
 .Nd determines information about a Hierarchical File System (HFS) volume
 .Sh SYNOPSIS
 .Nm fshfsinfo
-.Op Fl ahvV
+.Op Fl B Ar bodyfile
+.Op Fl E Ar identifier
+.Op Fl F Ar path
+.Op Fl o Ar offset
+.Op Fl dhHvV
 .Ar source
 .Sh DESCRIPTION
 .Nm fshfsinfo
@@ -24,10 +28,22 @@ is the source file.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl a
-shows allocation information
+.It Fl B Ar bodyfile
+output file system information as a bodyfile
+.It Fl d
+calculate a MD5 hash of a file entry to include in the bodyfile
+.It Fl E Ar identifier
+show information about a specific file system entry or "all"
+.It Fl f Ar file_system_index
+show information about a specific file system or "all"
+.It Fl F Ar path
+show information about a specific file entry path
 .It Fl h
 shows this help
+.It Fl H
+shows the file system hierarchy
+.It Fl o Ar offset
+specify the volume offset
 .It Fl v
 verbose output to stderr
 .It Fl V
@@ -39,12 +55,14 @@ None
 None
 .Sh EXAMPLES
 .Bd -literal
-# fshfsinfo /dev/sda1
-fshfsinfo 20150504
-
+# fshfsinfo hfsplus.raw
+fshfsinfo 20220727
+.sp
+Hierarchical File System information:
+.sp
 Volume information:
-.Dl        ...
-
+        Name                            : hfsplus_test
+.sp
 .Ed
 .Sh DIAGNOSTICS
 Errors, verbose and debug output are printed to stderr when verbose output \-v is enabled.
@@ -55,6 +73,6 @@ https://github.com/libyal/libfshfs/
 .Sh AUTHOR
 These man pages were written by Joachim Metz.
 .Sh COPYRIGHT
-Copyright 2009-2015, Joachim Metz <joachim.metz@gmail.com>.
+Copyright 2009-2022, Joachim Metz <joachim.metz@gmail.com>.
 This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .Sh SEE ALSO
