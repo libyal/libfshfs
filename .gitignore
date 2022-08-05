@@ -150,7 +150,6 @@ stamp-h[1-9]
 /tests/fshfs_test_file_system
 /tests/fshfs_test_fork_descriptor
 /tests/fshfs_test_io_handle
-/tests/fshfs_test_lzvn
 /tests/fshfs_test_master_directory_block
 /tests/fshfs_test_name
 /tests/fshfs_test_notify
@@ -180,5 +179,6 @@ stamp-h[1-9]
 /libfdata
 /libfdatetime
 /libfguid
+/libfmos
 /libhmac
 /libuna

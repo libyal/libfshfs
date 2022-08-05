@@ -17,6 +17,7 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@LIBFMOS_CPPFLAGS@ \
 	@LIBCRYPTO_CPPFLAGS@ \
 	@LIBHMAC_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
@@ -69,7 +70,6 @@ check_PROGRAMS = \
 	fshfs_test_file_system \
 	fshfs_test_fork_descriptor \
 	fshfs_test_io_handle \
-	fshfs_test_lzvn \
 	fshfs_test_master_directory_block \
 	fshfs_test_name \
 	fshfs_test_notify \

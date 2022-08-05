@@ -21,7 +21,6 @@ MSVSCPP_FILES = \
 	fshfs_test_file_system/fshfs_test_file_system.vcproj \
 	fshfs_test_fork_descriptor/fshfs_test_fork_descriptor.vcproj \
 	fshfs_test_io_handle/fshfs_test_io_handle.vcproj \
-	fshfs_test_lzvn/fshfs_test_lzvn.vcproj \
 	fshfs_test_master_directory_block/fshfs_test_master_directory_block.vcproj \
 	fshfs_test_name/fshfs_test_name.vcproj \
 	fshfs_test_notify/fshfs_test_notify.vcproj \
@@ -48,6 +47,7 @@ MSVSCPP_FILES = \
 	libfdata/libfdata.vcproj \
 	libfdatetime/libfdatetime.vcproj \
 	libfguid/libfguid.vcproj \
+	libfmos/libfmos.vcproj \
 	libfshfs/libfshfs.vcproj \
 	libhmac/libhmac.vcproj \
 	libuna/libuna.vcproj \

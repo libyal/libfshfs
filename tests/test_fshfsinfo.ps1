@@ -6,8 +6,8 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$Profiles = @("fshfsinfo", "fshfsinfo_fs")
-$OptionsPerProfile = @("", "-H")
+$Profiles = @("fshfsinfo" "fshfsinfo_fs")
+$OptionsPerProfile = @("" "-H")
 $OptionSets = "offset"
 
 $InputGlob = "*"

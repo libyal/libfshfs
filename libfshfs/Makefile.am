@@ -15,6 +15,7 @@ AM_CPPFLAGS = \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@LIBFGUID_CPPFLAGS@ \
+	@LIBFMOS_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_EXPORT@
@@ -77,8 +78,8 @@ libfshfs_la_SOURCES = \
 	libfshfs_libfdata.h \
 	libfshfs_libfdatetime.h \
 	libfshfs_libfguid.h \
+	libfshfs_libfmos.h \
 	libfshfs_libuna.h \
-	libfshfs_lzvn.c libfshfs_lzvn.h \
 	libfshfs_master_directory_block.c libfshfs_master_directory_block.h \
 	libfshfs_name.c libfshfs_name.h \
 	libfshfs_notify.c libfshfs_notify.h \
@@ -105,6 +106,7 @@ libfshfs_la_LIBADD = \
 	@LIBFDATA_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
 	@LIBFGUID_LIBADD@ \
+	@LIBFMOS_LIBADD@ \
 	@ZLIB_LIBADD@ \
 	@PTHREAD_LIBADD@
 

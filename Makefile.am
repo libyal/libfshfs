@@ -17,6 +17,7 @@ SUBDIRS = \
 	libfdata \
 	libfdatetime \
 	libfguid \
+	libfmos \
 	libfshfs \
 	libhmac \
 	fshfstools \
@@ -92,6 +93,7 @@ library:
 	(cd $(srcdir)/libfdata && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfdatetime && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfguid && $(MAKE) $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libfmos && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfshfs && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) $(AM_MAKEFLAGS))
 
@@ -122,6 +124,7 @@ splint:
 	(cd $(srcdir)/libfdata && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfdatetime && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfguid && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libfmos && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfshfs && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libhmac && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/fshfstools && $(MAKE) splint $(AM_MAKEFLAGS))
