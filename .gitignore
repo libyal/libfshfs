@@ -130,6 +130,7 @@ stamp-h[1-9]
 /tests/*.exe
 /tests/fshfs_test_attribute_record
 /tests/fshfs_test_attributes_btree_key
+/tests/fshfs_test_bit_stream
 /tests/fshfs_test_btree_file
 /tests/fshfs_test_btree_header
 /tests/fshfs_test_btree_node
@@ -149,6 +150,7 @@ stamp-h[1-9]
 /tests/fshfs_test_file_record
 /tests/fshfs_test_file_system
 /tests/fshfs_test_fork_descriptor
+/tests/fshfs_test_huffman_tree
 /tests/fshfs_test_io_handle
 /tests/fshfs_test_master_directory_block
 /tests/fshfs_test_name

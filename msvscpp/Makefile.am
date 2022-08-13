@@ -1,6 +1,7 @@
 MSVSCPP_FILES = \
 	fshfs_test_attribute_record/fshfs_test_attribute_record.vcproj \
 	fshfs_test_attributes_btree_key/fshfs_test_attributes_btree_key.vcproj \
+	fshfs_test_bit_stream/fshfs_test_bit_stream.vcproj \
 	fshfs_test_btree_file/fshfs_test_btree_file.vcproj \
 	fshfs_test_btree_header/fshfs_test_btree_header.vcproj \
 	fshfs_test_btree_node/fshfs_test_btree_node.vcproj \
@@ -20,6 +21,7 @@ MSVSCPP_FILES = \
 	fshfs_test_file_record/fshfs_test_file_record.vcproj \
 	fshfs_test_file_system/fshfs_test_file_system.vcproj \
 	fshfs_test_fork_descriptor/fshfs_test_fork_descriptor.vcproj \
+	fshfs_test_huffman_tree/fshfs_test_huffman_tree.vcproj \
 	fshfs_test_io_handle/fshfs_test_io_handle.vcproj \
 	fshfs_test_master_directory_block/fshfs_test_master_directory_block.vcproj \
 	fshfs_test_name/fshfs_test_name.vcproj \

@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="attribute_record attributes_btree_key btree_file btree_header btree_node btree_node_descriptor btree_node_record buffer_data_handle catalog_btree_key compressed_data_handle compression deflate directory_entry directory_record error extent extents_btree_key file_entry file_record file_system fork_descriptor io_handle master_directory_block name notify profiler thread_record volume_header";
+LIBRARY_TESTS="attribute_record attributes_btree_key bit_stream btree_file btree_header btree_node btree_node_descriptor btree_node_record buffer_data_handle catalog_btree_key compressed_data_handle compression deflate directory_entry directory_record error extent extents_btree_key file_entry file_record file_system fork_descriptor huffman_tree io_handle master_directory_block name notify profiler thread_record volume_header";
 LIBRARY_TESTS_WITH_INPUT="support volume";
 OPTION_SETS="offset";
 

@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_bit_stream.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_block_data_handle.c"
 				>
 			</File>
@@ -306,6 +310,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfshfs\libfshfs_huffman_tree.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfshfs\libfshfs_io_handle.c"
 				>
 			</File>
@@ -393,6 +401,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_attributes_btree_key.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_bit_stream.h"
 				>
 			</File>
 			<File
@@ -517,6 +529,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libfshfs\libfshfs_fork_descriptor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfshfs\libfshfs_huffman_tree.h"
 				>
 			</File>
 			<File

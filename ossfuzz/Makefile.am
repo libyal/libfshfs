@@ -12,8 +12,27 @@ AM_CPPFLAGS = \
 	@LIBBFIO_CPPFLAGS@
 
 bin_PROGRAMS = \
+	extended_attribute_fuzzer \
 	file_entry_fuzzer \
 	volume_fuzzer
+
+extended_attribute_fuzzer_SOURCES = \
+	extended_attribute_fuzzer.cc \
+	ossfuzz_libbfio.h \
+	ossfuzz_libfshfs.h
+
+extended_attribute_fuzzer_LDADD = \
+	@LIB_FUZZING_ENGINE@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libfshfs/libfshfs.la \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 file_entry_fuzzer_SOURCES = \
 	file_entry_fuzzer.cc \
@@ -59,6 +78,8 @@ distclean: clean
 	/bin/rm -f Makefile
 
 splint:
+	@echo "Running splint on extended_attribute_fuzzer ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(extended_attribute_fuzzer_SOURCES)
 	@echo "Running splint on file_entry_fuzzer ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(file_entry_fuzzer_SOURCES)
 	@echo "Running splint on volume_fuzzer ..."

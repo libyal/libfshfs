@@ -50,6 +50,7 @@ EXTRA_DIST = \
 check_PROGRAMS = \
 	fshfs_test_attribute_record \
 	fshfs_test_attributes_btree_key \
+	fshfs_test_bit_stream \
 	fshfs_test_btree_file \
 	fshfs_test_btree_header \
 	fshfs_test_btree_node \
@@ -69,6 +70,7 @@ check_PROGRAMS = \
 	fshfs_test_file_record \
 	fshfs_test_file_system \
 	fshfs_test_fork_descriptor \
+	fshfs_test_huffman_tree \
 	fshfs_test_io_handle \
 	fshfs_test_master_directory_block \
 	fshfs_test_name \
@@ -103,6 +105,18 @@ fshfs_test_attributes_btree_key_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_attributes_btree_key_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_bit_stream_SOURCES = \
+	fshfs_test_bit_stream.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_bit_stream_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 
@@ -343,6 +357,18 @@ fshfs_test_fork_descriptor_SOURCES = \
 	fshfs_test_unused.h
 
 fshfs_test_fork_descriptor_LDADD = \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
+
+fshfs_test_huffman_tree_SOURCES = \
+	fshfs_test_huffman_tree.c \
+	fshfs_test_libcerror.h \
+	fshfs_test_libfshfs.h \
+	fshfs_test_macros.h \
+	fshfs_test_memory.c fshfs_test_memory.h \
+	fshfs_test_unused.h
+
+fshfs_test_huffman_tree_LDADD = \
 	../libfshfs/libfshfs.la \
 	@LIBCERROR_LIBADD@
 

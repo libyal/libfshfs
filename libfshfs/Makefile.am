@@ -36,6 +36,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_attribute_record.c libfshfs_attribute_record.h \
 	libfshfs_attributes_btree_file.c libfshfs_attributes_btree_file.h \
 	libfshfs_attributes_btree_key.c libfshfs_attributes_btree_key.h \
+	libfshfs_bit_stream.c libfshfs_bit_stream.h \
 	libfshfs_btree_file.c libfshfs_btree_file.h \
 	libfshfs_btree_header.c libfshfs_btree_header.h \
 	libfshfs_btree_node.c libfshfs_btree_node.h \
@@ -67,6 +68,7 @@ libfshfs_la_SOURCES = \
 	libfshfs_file_record.c libfshfs_file_record.h \
 	libfshfs_file_system.c libfshfs_file_system.h \
 	libfshfs_fork_descriptor.c libfshfs_fork_descriptor.h \
+	libfshfs_huffman_tree.c libfshfs_huffman_tree.h \
 	libfshfs_io_handle.c libfshfs_io_handle.h \
 	libfshfs_libbfio.h \
 	libfshfs_libcdata.h \
