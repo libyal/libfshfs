@@ -64,9 +64,9 @@ struct libfshfs_internal_extended_attribute
 	 */
 	libfshfs_attribute_record_t *attribute_record;
 
-	/* Extents
+	/* The extents array
 	 */
-	libcdata_array_t *extents;
+	libcdata_array_t *extents_array;
 
 	/* The data stream
 	 */
@@ -155,6 +155,21 @@ LIBFSHFS_EXTERN \
 int libfshfs_extended_attribute_get_size(
      libfshfs_extended_attribute_t *extended_attribute,
      size64_t *size,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_number_of_extents(
+     libfshfs_extended_attribute_t *extended_attribute,
+     int *number_of_extents,
+     libcerror_error_t **error );
+
+LIBFSHFS_EXTERN \
+int libfshfs_extended_attribute_get_extent_by_index(
+     libfshfs_extended_attribute_t *extended_attribute,
+     int extent_index,
+     off64_t *extent_offset,
+     size64_t *extent_size,
+     uint32_t *extent_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -325,9 +325,9 @@ PyMethodDef pyfshfs_file_entry_object_methods[] = {
 	{ "get_extent",
 	  (PyCFunction) pyfshfs_file_entry_get_extent,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "get_extent(extent_index) -> Tuple( Integer, Integer, Integer )\n"
+	  "get_extent(extent_index) -> Tuple(Integer, Integer, Integer)\n"
 	  "\n"
-	  "Retrieves a specific extent.\t"
+	  "Retrieves a specific extent.\n"
           "The extent is a tuple of offset, size and flags." },
 
 	/* Sentinel */

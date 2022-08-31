@@ -1,4 +1,4 @@
-.Dd July 27, 2022
+.Dd August 31, 2022
 .Dt libfshfs 3
 .Os libfshfs
 .Sh NAME
@@ -214,6 +214,10 @@ Extended attribute functions
 .Fn libfshfs_extended_attribute_get_offset "libfshfs_extended_attribute_t *extended_attribute" "off64_t *offset" "libfshfs_error_t **error"
 .Ft int
 .Fn libfshfs_extended_attribute_get_size "libfshfs_extended_attribute_t *extended_attribute" "size64_t *size" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_number_of_extents "libfshfs_extended_attribute_t *extended_attribute" "int *number_of_extents" "libfshfs_error_t **error"
+.Ft int
+.Fn libfshfs_extended_attribute_get_extent_by_index "libfshfs_extended_attribute_t *extended_attribute" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version

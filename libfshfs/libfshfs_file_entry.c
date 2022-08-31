@@ -4854,7 +4854,7 @@ ssize_t libfshfs_file_entry_read_buffer(
 			read_count = -1;
 		}
 	}
-	if( read_count != -1 )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		read_count = libfdata_stream_read_buffer(
 		              internal_file_entry->data_stream,
@@ -4963,7 +4963,7 @@ ssize_t libfshfs_file_entry_read_buffer_at_offset(
 			read_count = -1;
 		}
 	}
-	if( read_count != -1 )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		read_count = libfdata_stream_read_buffer_at_offset(
 		              internal_file_entry->data_stream,
@@ -5074,7 +5074,7 @@ off64_t libfshfs_file_entry_seek_offset(
 			result_offset = -1;
 		}
 	}
-	if( result_offset != -1 )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		result_offset = libfdata_stream_seek_offset(
 		                 internal_file_entry->data_stream,
@@ -5179,7 +5179,7 @@ int libfshfs_file_entry_get_offset(
 			result = -1;
 		}
 	}
-	if( result != -1 )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		if( libfdata_stream_get_offset(
 		     internal_file_entry->data_stream,
@@ -5555,7 +5555,7 @@ int libfshfs_file_entry_get_number_of_extents(
 			result = -1;
 		}
 	}
-	if( result != -1 )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		if( libcdata_array_get_number_of_entries(
 		     internal_file_entry->extents_array,
@@ -5650,7 +5650,7 @@ int libfshfs_file_entry_get_extent_by_index(
 			result = -1;
 		}
 	}
-	if( result != -1 )
+	if( internal_file_entry->data_stream != NULL )
 	{
 		if( libcdata_array_get_entry_by_index(
 		     internal_file_entry->extents_array,
@@ -5668,26 +5668,26 @@ int libfshfs_file_entry_get_extent_by_index(
 
 			result = -1;
 		}
-	}
-	if( result == 1 )
-	{
-		if( libfshfs_extent_get_values(
-		     extent,
-		     internal_file_entry->io_handle,
-		     extent_offset,
-		     extent_size,
-		     extent_flags,
-		     error ) != 1 )
+		if( result == 1 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve extent: %d values.",
-			 function,
-			 extent_index );
+			if( libfshfs_extent_get_values(
+			     extent,
+			     internal_file_entry->io_handle,
+			     extent_offset,
+			     extent_size,
+			     extent_flags,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve extent: %d values.",
+				 function,
+				 extent_index );
 
-			result = -1;
+				result = -1;
+			}
 		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )

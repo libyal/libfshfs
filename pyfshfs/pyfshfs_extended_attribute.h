@@ -89,6 +89,19 @@ PyObject *pyfshfs_extended_attribute_get_size(
            pyfshfs_extended_attribute_t *pyfshfs_extended_attribute,
            PyObject *arguments );
 
+PyObject *pyfshfs_extended_attribute_get_number_of_extents(
+           pyfshfs_extended_attribute_t *pyfshfs_extended_attribute,
+           PyObject *arguments );
+
+PyObject *pyfshfs_extended_attribute_get_extent_by_index(
+           pyfshfs_extended_attribute_t *pyfshfs_extended_attribute,
+           int extent_index );
+
+PyObject *pyfshfs_extended_attribute_get_extent(
+           pyfshfs_extended_attribute_t *pyfshfs_extended_attribute,
+           PyObject *arguments,
+           PyObject *keywords );
+
 #if defined( __cplusplus )
 }
 #endif
