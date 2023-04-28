@@ -1,6 +1,6 @@
 dnl Checks for required headers and functions
 dnl
-dnl Version: 20230205
+dnl Version: 20200713
 
 dnl Function to detect if libfshfs dependencies are available
 AC_DEFUN([AX_LIBFSHFS_CHECK_LOCAL],
