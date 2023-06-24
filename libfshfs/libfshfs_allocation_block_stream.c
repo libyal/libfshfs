@@ -426,27 +426,27 @@ int libfshfs_allocation_block_stream_initialize_from_extents(
 
 			goto on_error;
 		}
-		if( extent->block_number == 0 )
+		if( ( extent->block_number == 0 )
+		 || ( extent->block_number > ( (uint64_t) INT64_MAX / io_handle->block_size ) ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: invalid extent: %d - missing block number.",
-			 function,
-			 extent_index );
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent - invalid block number value out of bounds.",
+			 function );
 
 			goto on_error;
 		}
-		if( extent->number_of_blocks == 0 )
+		if( ( extent->number_of_blocks == 0 )
+		 || ( extent->number_of_blocks > ( (uint64_t) UINT64_MAX / io_handle->block_size ) ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: invalid extent: %d - missing number of blocks.",
-			 function,
-			 extent_index );
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent - invalid number of blocks value out of bounds.",
+			 function );
 
 			goto on_error;
 		}

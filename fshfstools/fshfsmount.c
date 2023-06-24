@@ -570,7 +570,7 @@ int main( int argc, char * const argv[] )
 #else
 	fprintf(
 	 stderr,
-	 "No sub system to mount APFS format.\n" );
+	 "No sub system to mount HFS format.\n" );
 
 	return( EXIT_FAILURE );
 
