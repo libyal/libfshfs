@@ -610,9 +610,9 @@ int libfshfs_volume_open_file_io_handle(
 {
 	libfshfs_internal_volume_t *internal_volume = NULL;
 	static char *function                       = "libfshfs_volume_open_file_io_handle";
+	uint8_t file_io_handle_opened_in_library    = 0;
 	int bfio_access_flags                       = 0;
 	int file_io_handle_is_open                  = 0;
-	int file_io_handle_opened_in_library        = 0;
 
 	if( volume == NULL )
 	{
