@@ -1,6 +1,6 @@
 # Files to ignore by git
 #
-# Version: 20230405
+# Version: 20230909
 
 # Generic auto-generated build files
 *~
@@ -29,6 +29,7 @@
 .deps
 .dirstamp
 .libs
+.tox
 INSTALL
 Makefile
 Makefile.bcc
@@ -165,7 +166,6 @@ stamp-h[1-9]
 /tests/fshfs_test_volume
 /tests/fshfs_test_volume_header
 /tests/input
-/tests/profiler.csv
 /tests/tmp*
 
 # Local library dependencies specific files

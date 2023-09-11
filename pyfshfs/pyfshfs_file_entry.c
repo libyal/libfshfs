@@ -1899,7 +1899,6 @@ PyObject *pyfshfs_file_entry_get_name(
 	PyObject *string_object  = NULL;
 	libcerror_error_t *error = NULL;
 	uint8_t *name            = NULL;
-	const char *errors       = NULL;
 	static char *function    = "pyfshfs_file_entry_get_name";
 	size_t name_size         = 0;
 	int result               = 0;
@@ -1951,7 +1950,7 @@ PyObject *pyfshfs_file_entry_get_name(
 	if( name == NULL )
 	{
 		PyErr_Format(
-		 PyExc_IOError,
+		 PyExc_MemoryError,
 		 "%s: unable to create name.",
 		 function );
 
@@ -1987,7 +1986,7 @@ PyObject *pyfshfs_file_entry_get_name(
 	string_object = PyUnicode_DecodeUTF8(
 			 (char *) name,
 			 (Py_ssize_t) name_size - 1,
-			 errors );
+			 NULL );
 
 	PyMem_Free(
 	 name );
@@ -2012,7 +2011,6 @@ PyObject *pyfshfs_file_entry_get_symbolic_link_target(
 {
 	libcerror_error_t *error = NULL;
 	PyObject *string_object  = NULL;
-	const char *errors       = NULL;
 	uint8_t *target          = NULL;
 	static char *function    = "pyfshfs_file_entry_get_symbolic_link_target";
 	size_t target_size       = 0;
@@ -2065,7 +2063,7 @@ PyObject *pyfshfs_file_entry_get_symbolic_link_target(
 	if( target == NULL )
 	{
 		PyErr_Format(
-		 PyExc_IOError,
+		 PyExc_MemoryError,
 		 "%s: unable to create target.",
 		 function );
 
@@ -2101,7 +2099,7 @@ PyObject *pyfshfs_file_entry_get_symbolic_link_target(
 	string_object = PyUnicode_DecodeUTF8(
 			 (char *) target,
 			 (Py_ssize_t) target_size - 1,
-			 errors );
+			 NULL );
 
 	PyMem_Free(
 	 target );
