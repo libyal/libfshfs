@@ -123,11 +123,13 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f libfshfs_definitions.h
-	/bin/rm -f libfshfs.rc
-	/bin/rm -f Makefile
+	-rm -f libfshfs_definitions.h
+	-rm -f libfshfs.rc
+	-rm -f Makefile
 
-splint:
+sources-local: $(BUILT_SOURCES)
+
+splint-local:
 	@echo "Running splint on libfshfs ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libfshfs_la_SOURCES)
 

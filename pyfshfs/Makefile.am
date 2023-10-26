@@ -52,6 +52,6 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f setup.py
-	/bin/rm -f Makefile
+	-rm -f setup.py
+	-rm -f Makefile
 

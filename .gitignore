@@ -1,6 +1,6 @@
 # Files to ignore by git
 #
-# Version: 20230909
+# Version: 20230926
 
 # Generic auto-generated build files
 *~
@@ -25,7 +25,9 @@
 *.swp
 *.Tpo
 *.trs
+*.whl
 /*.egg-info/
+__pycache__
 .deps
 .dirstamp
 .libs
@@ -126,6 +128,7 @@ stamp-h[1-9]
 /libfshfs/libfshfs.rc
 /libfshfs/libfshfs_definitions.h
 /pyfshfs-python[23]/*.[ch]
+/setup.cfg
 /fshfstools/*.exe
 /fshfstools/fshfsinfo
 /fshfstools/fshfsmount
