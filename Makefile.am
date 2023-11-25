@@ -22,8 +22,6 @@ SUBDIRS = \
 	libhmac \
 	fshfstools \
 	pyfshfs \
-	pyfshfs-python2 \
-	pyfshfs-python3 \
 	po \
 	manuals \
 	tests \
