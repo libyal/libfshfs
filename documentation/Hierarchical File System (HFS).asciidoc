@@ -9,7 +9,7 @@ Analysis of MFS, HFS, HFS+ and HFSX
 == Summary
 
 The Hierarchical File System (HFS) is mainly used on the Apple Macintosh
-platform. It has evolved from the Mactintosh File System (MFS). The current
+platform. It has evolved from the Macintosh File System (MFS). The current
 variant of HFS is known as HFS+. This document is based on the Apple
 documentation of HFS and HFS+ and was enhanced by analyzing test data.
 
@@ -24,7 +24,7 @@ specification.
 | Author(s): | Joachim Metz <joachim.metz@gmail.com>
 | Abstract: | This document contains information about the Hierarchical File System (HFS).
 | Classification: | Public
-| Keywords: | Hierarchical File System, HFS, HFS+, HFSX, Mactintosh File System, MFS
+| Keywords: | Hierarchical File System, HFS, HFS+, HFSX, Macintosh File System, MFS
 |===
 
 [preface]
@@ -67,7 +67,7 @@ Email change
 == Overview
 
 The Hierarchical File System (HFS) is mainly used on the Macintosh platform.
-The Mactintosh File System (MFS) is the predecessor of HFS.
+The Macintosh File System (MFS) is the predecessor of HFS.
 
 [cols="1,5",options="header"]
 |===
@@ -75,8 +75,8 @@ The Mactintosh File System (MFS) is the predecessor of HFS.
 | MFS | 400 KiB floppies
 | HFS | Early Mac OS
 | HFS+ 8.10 | Mac OS 8.1 to 9.2.2
-| HFS+ 10.0 | Mac OS 10.0
-| HFSX | Mac OS 10.3
+| HFS+ 10.0 | Mac OS X 10.0
+| HFSX | Mac OS X 10.3
 |===
 
 [cols="1,5",options="header"]
@@ -110,16 +110,16 @@ U+2000 - U+2FFF, U+F900 - U+FAFF and U+2F800 - U+2FAFF are not decomposed. For
 Mac OS 8.1 through 10.2.x decomposition is based on Unicode 2.1 rules.
 
 [NOTE]
-Based on observations on Mac OS 10.15.7 on HFS+ the range U+1D000 - U+1D1FF
+Based on observations on Mac OS X 10.15.7 on HFS+ the range U+1D000 - U+1D1FF
 appears to be excluded from decomposition as well.
 
 [NOTE]
-Based on observations on Mac OS 10.15.7 on HFS+ U+2400 appears to be replaced
+Based on observations on Mac OS X 10.15.7 on HFS+ U+2400 appears to be replaced
 by U+0.
 
 [NOTE]
-HFS+ allows for the `/` character in file names. On Mac OS, Finder this will be
-represented as a `/` but in Terminal it is replaced by `:` seeing the same
+HFS+ allows for the `/` character in file names. In the Mac OS X Finder, this will
+be represented as a `/` but in Terminal it is replaced by `:` since the same
 character is used as path segment separator. A file name with a `:` created
 in Terminal will be shown as `/` in Finder. Finder does not allow the creation
 of a file containing `:` in the name. A symbolic link created in Terminal to a
@@ -133,7 +133,7 @@ HFSX (or sometimes referred to as HFS/X) is an extension to HFS+ to allow
 additional features that are incompatible with HFS+. A HFSX volume cannot be
 wrapped in a HFS volume.
 
-One of such features is case-sensitive filenames. A HFSX volume may be either
+One such feature is case-sensitive filenames. A HFSX volume may be either
 case-sensitive or case-insensitive. Case sensitivity (or lack thereof) is
 global to the volume; the setting applies to all file and directory names on
 the volume.
@@ -216,7 +216,7 @@ node offset = node number x node size
 The node descriptor (BTNodeDescriptor) contains information about the node,
 like the forward and backward links to other nodes.
 
-The B-tree node descriptor is 14 bytes of size and consists of:
+The B-tree node descriptor is 14 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -283,7 +283,7 @@ The records in the B-tree header node do not have keys.
 The B-tree header record (BTHeaderRec) contains information about the beginning
 of the tree, as well as the size of the tree.
 
-The B-tree header record is 106 bytes of size and consists of:
+The B-tree header record is 106 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -356,7 +356,7 @@ B-tree file are used and which are not. The bits are interpreted in exactly the
 same way as the bits in the volume bitmap: if a bit in the map record is set,
 then the corresponding node in the B-tree file is being used.
 
-The bitmap is 256 bytes of size and can therefore contain information about
+The bitmap is 256 bytes in size and can therefore contain information about
 2048 nodes at most. If more nodes are needed a map node is used to store
 additional mapping information.
 
@@ -369,7 +369,7 @@ The next tree node value in the B-tree node descriptor of the header node is
 used to refer to the first map node.
 
 A map node consists of a B-tree node descriptor and one B-tree map record. The
-map record is 494 bytes of size ( 512 - ( 14 + 2 ) ) and can therefore contain
+map record is 494 bytes in size ( 512 - ( 14 + 2 ) ) and can therefore contain
 mapping information for 3952 nodes.
 
 If a B-tree contains more than 6000 nodes (enough for about 25000 files) a
@@ -458,7 +458,7 @@ header itself. You can determine whether a boot block header uses the current
 or the older format by inspecting a bit in the high-order byte of the version
 value.
 
-The boot block header is 141 bytes of size and consists of:
+The boot block header is 141 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -558,13 +558,13 @@ The master directory block (MDB), also known as the volume information block
 (VIB), contains information about the data in the volume. The MDB starts at
 offset 1024 of the volume.
 
-The MDB is 162 bytes of size and consists of:
+The MDB is 162 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
 | Offset | Size | Value | Description
 | 0 | 2 | "BD" ("\x42\x44") | The volume signature (kHFSSigWord) +
-For Mactintosh File System (MFS) volumes the signature contains "\xd2\xd7".
+For Macintosh File System (MFS) volumes the signature contains "\xd2\xd7".
 | 2 | 4 | | Volume creation date and time +
 Contains a HFS timestamp in local time +
 The date and time when the volume was created.
@@ -694,7 +694,7 @@ The volume header (HFSPlusVolumeHeader) replaces the master directory block
 The allocation block containing the first 1536 bytes (reserved space plus
 volume header) are marked as used in the allocation file.
 
-The volume header is 512 bytes of size and consists of:
+The volume header is 512 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1006,7 +1006,7 @@ contains the device identifier. The device identifier can be stored in
 different formats, such as: native, 386bsd, 4bsd, bsdos, freebsd, hpux, isc,
 linux, netbsd, osf1, sco, solaris, sunos, svr3, svr4 and ultrix.
 
-The "native" and "hpux" device identifier is 4 bytes of size and consists of:
+The "native" and "hpux" device identifier is 4 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1017,7 +1017,7 @@ The "native" and "hpux" device identifier is 4 bytes of size and consists of:
 |===
 
 The "386bsd", "4bsd", "freebsd", "isc", "linux", "netbsd", "sco", "sunos",
-"svr3" and "ultrix" device identifier is 4 bytes of size and consists of:
+"svr3" and "ultrix" device identifier is 4 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1027,7 +1027,7 @@ The "386bsd", "4bsd", "freebsd", "isc", "linux", "netbsd", "sco", "sunos",
 | 3 | 1 | | Minor device number
 |===
 
-The "solaris" and "svr4" device identifier is 4 bytes of size and consists of:
+The "solaris" and "svr4" device identifier is 4 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1036,7 +1036,7 @@ The "solaris" and "svr4" device identifier is 4 bytes of size and consists of:
 | 2.2 | 14 bits | | Major device number
 |===
 
-The "bsdos" and "osf1" device identifier is 4 bytes of size and consists of:
+The "bsdos" and "osf1" device identifier is 4 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1045,7 +1045,7 @@ The "bsdos" and "osf1" device identifier is 4 bytes of size and consists of:
 | 2.4 | 12 bits | | Major device number
 |===
 
-The "bsdos" alternative device identifier is 4 bytes of size and consists of:
+The "bsdos" alternative device identifier is 4 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1276,7 +1276,7 @@ Each catalog data record consists of:
 
 ===== The HFS catalog data record header
 
-The HFS catalog data record header is 2 bytes of size and consists of:
+The HFS catalog data record header is 2 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1294,7 +1294,7 @@ as a 16-bit big-endian value.
 
 ===== The HFS+ catalog data record header
 
-The HFS+ catalog data record header is 2 bytes of size and consists of:
+The HFS+ catalog data record header is 2 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1324,7 +1324,7 @@ See section: <<catalog_file_data_record_types,Record types>>
 ===== The HFS catalog directory record
 
 The HFS catalog directory record (cdrDirRec, kHFSFolderRecord) is 70 bytes
-of size and consists of:
+in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1356,7 +1356,7 @@ corresponding folder thread record.
 
 ===== The HFS+ catalog directory record
 
-The HFS+ catalog directory record (HFSPlusCatalogFolder) is 88 bytes of size
+The HFS+ catalog directory record (HFSPlusCatalogFolder) is 88 bytes in size
 and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1406,7 +1406,7 @@ See section: <<text_encoding,Text encoding>>
 
 ===== The HFS catalog file record
 
-The HFS catalog file record (cdrFilRec, kHFSFileRecord) is 102 bytes of size
+The HFS catalog file record (cdrFilRec, kHFSFileRecord) is 102 bytes in size
 and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1457,7 +1457,7 @@ See section: <<hfs_extents_record,The HFS extents record>>
 
 ===== The HFS+ catalog file record
 
-The HFS+ catalog file record (kHFSPlusFileRecord) is 248 bytes of size and
+The HFS+ catalog file record (kHFSPlusFileRecord) is 248 bytes in size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1537,8 +1537,8 @@ refers to a file, instead of a directory.
 
 ===== The HFS catalog file thread record
 
-The HFS catalog thread record (cdrThdRec, cdrFThdRec, HFSCatalogThread) is
-variable of size and consists of:
+The HFS catalog thread record (cdrThdRec, cdrFThdRec, HFSCatalogThread) is of
+variable size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1557,7 +1557,7 @@ Contains the name of the associated file or directory
 
 ===== The HFS+ catalog file thread record
 
-The HFS+ catalog thread record (HFSPlusCatalogThread) is variable of size and
+The HFS+ catalog thread record (HFSPlusCatalogThread) is of variable size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1735,7 +1735,7 @@ in the attributes file.
 HFS+ maintains information about file contents using the HFS+ fork descriptor
 structure (HFSPlusForkData).
 
-The fork descriptor structure is 80 bytes of size and consists of:
+The fork descriptor structure is 80 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1796,7 +1796,7 @@ In an extents (overflow) file the search key consists of:
 
 ==== The HFS extent key (record)
 
-The HFS extent key (record) is 8 bytes of size and consists of:
+The HFS extent key (record) is 8 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1818,7 +1818,7 @@ file record. So the number of extent records for a fork is ((number of extents
 
 ==== The HFS+ extent key (record)
 
-The HFS+ extent key (record) is 12 bytes of size and consists of:
+The HFS+ extent key (record) is 12 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -1864,7 +1864,7 @@ and number of blocks set to zero.
 The HFS extents record (HFSExtentRecord) consist of an array of 3 HFS extent
 descriptors. The size of the HFS extents records is 3 x 4 = 12 bytes.
 
-An individual HFS extent descriptor (HFSExtentDescriptor) is 4 bytes of size and
+An individual HFS extent descriptor (HFSExtentDescriptor) is 4 bytes in size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -1999,7 +1999,7 @@ allowing a forks to have more than eight extents.
 Each attributes file record starts with a type value, which describes the type
 of attribute data record.
 
-The HFS+ attributes file data record header is 4 bytes of size and consists of:
+The HFS+ attributes file data record header is 4 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2024,7 +2024,7 @@ is created and how it should be handled.
 
 ==== The inline data attribute record
 
-The HFS+ attributes file inline data attribute record is variable of size and
+The HFS+ attributes file inline data attribute record is of variable size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2039,7 +2039,7 @@ consists of:
 
 ==== The fork descriptor attribute record
 
-The HFS+ attributes file fork descriptor attribute record is 88 bytes of size
+The HFS+ attributes file fork descriptor attribute record is 88 bytes in size
 and consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2053,7 +2053,7 @@ See section: <<hfs_plus_fork_descriptor_structure,HFS+ fork descriptor structure
 
 ==== The extents attribute record
 
-The HFS+ attributes file extents attribute record is 72 bytes of size and
+The HFS+ attributes file extents attribute record is 72 bytes in size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2074,7 +2074,7 @@ The compressed extended attribute is named "com.apple.decmpfs" and consists of:
 
 ==== [[compressed_data_header]]Compressed data header
 
-The compressed data header is 16 bytes of size and consists of:
+The compressed data header is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2309,7 +2309,7 @@ The journal information block describes where the journal header and journal
 buffer are stored. The journal information block is stored at the start of the
 allocation block referred to by the volume header.
 
-The HFS+ journal information block is 44 bytes of size and consists of:
+The HFS+ journal information block is 44 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2349,7 +2349,7 @@ The journal begins with a journal header, whose main purpose is to describe the
 location of transactions in the journal buffer. The journal header is stored
 using the journal_header data type.
 
-The HFS+ journal header is 44 bytes of size and consists of:
+The HFS+ journal header is 44 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2420,7 +2420,7 @@ transaction may include several block lists if it modifies more blocks than can
 be represented in a single block list. The block list header is stored in a
 structure of type block_list_header.
 
-The HFS+ journal block list header is 16 bytes of size and consists of:
+The HFS+ journal block list header is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2446,7 +2446,7 @@ therefore the number of journal blocks actually containing data is minus one (-
 
 === Journal block information
 
-The HFS+ journal block information is 16 bytes of size and consists of:
+The HFS+ journal block information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2519,7 +2519,7 @@ These elements may be zero if no such identifier has been created for the volume
 
 ==== [[hfs_file_information]]HFS file information
 
-The HFS file information is 16 bytes of size and consists of:
+The HFS file information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2539,7 +2539,7 @@ The window in which the file's icon appears.
 
 ==== [[hfs_extended_file_information]]HFS extended file information
 
-The HFS extended file information is 16 bytes of size and consists of:
+The HFS extended file information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2561,7 +2561,7 @@ If the high-bit is clear, an identifier, assigned by the Finder, for the comment
 
 ==== [[hfs_plus_file_information]]HFS+ file information
 
-The HFS+ file information (FileInfo) is 16 bytes of size and consists of:
+The HFS+ file information (FileInfo) is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2580,7 +2580,7 @@ If set to {0, 0}, the Finder will place the item automatically
 
 ==== [[hfs_plus_extended_file_information]]HFS+ extended file information
 
-The HFS+ extended file information (ExtendedFileInfo) is 16 bytes of size and
+The HFS+ extended file information (ExtendedFileInfo) is 16 bytes in size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2605,7 +2605,7 @@ Signed 16-bit integers
 
 ==== [[hfs_folder_information]]HFS folder information
 
-The HFS folder information is 16 bytes of size and consists of:
+The HFS folder information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2624,7 +2624,7 @@ The manner in which folders are displayed.
 
 ==== [[hfs_extended_folder_information]]HFS extended folder information
 
-The HFS extended folder information is 16 bytes of size and consists of:
+The HFS extended folder information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2653,7 +2653,7 @@ If the high-bit is clear, an identifier, assigned by the Finder, for the comment
 
 ==== [[hfs_plus_folder_information]]HFS+ folder information
 
-The HFS+ folder information is 16 bytes of size and consists of:
+The HFS+ folder information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2671,7 +2671,7 @@ If set to {0, 0}, the Finder will place the item automatically
 
 ==== [[hfs_plus_extended_folder_information]]HFS+ extended folder information
 
-The HFS+ extended folder information is 16 bytes of size and consists of:
+The HFS+ extended folder information is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2826,7 +2826,7 @@ of the compressed data blocks.
 
 ===== ZLIB (DEFLATE) compressed header
 
-The ZLIB (DEFLATE) compressed header is 16 bytes of size and consists of:
+The ZLIB (DEFLATE) compressed header is 16 bytes in size and consists of:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -2857,7 +2857,7 @@ consist of:
 
 ===== ZLIB (DEFLATE) compressed data block descriptor
 
-The ZLIB (DEFLATE) compressed data block descriptor is 8 bytes of size and
+The ZLIB (DEFLATE) compressed data block descriptor is 8 bytes in size and
 consists of:
 
 [cols="1,1,1,5",options="header"]
@@ -2901,7 +2901,7 @@ The offset is relative from the start of the LZVN compressed data
 
 [NOTE]
 The compressed data block contains a maximum of 65536 bytes of data. The
-compressed data block therefore should not exceed 65537 bytes of size.
+compressed data block therefore should not exceed 65537 bytes in size.
 
 === Resource fork
 
