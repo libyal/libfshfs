@@ -1,7 +1,7 @@
 /*
  * Allocation block stream functions
  *
- * Copyright (C) 2009-2023, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2024, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -254,6 +254,28 @@ int libfshfs_allocation_block_stream_initialize_from_fork_descriptor(
 		 || ( segment_size == 0 ) )
 		{
 			break;
+		}
+		if( segment_offset > ( (off64_t) INT64_MAX / io_handle->block_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid segment offset value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		if( segment_size > ( (size64_t) UINT64_MAX / io_handle->block_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid segment size value out of bounds.",
+			 function );
+
+			goto on_error;
 		}
 		segment_offset *= io_handle->block_size;
 		segment_size   *= io_handle->block_size;
