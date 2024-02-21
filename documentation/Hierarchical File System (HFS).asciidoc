@@ -104,7 +104,7 @@ Unicode strings are stored in UTF-16 big-endian without the byte order mark (BOM
 | Maximum filename length | 31 characters | 255 characters
 | Maximum allocation blocks | 216 (65535 bytes) | 232 (4294967296 bytes)
 | Character set | extended ASCII with codepage | Unicode UTF-16 big-endian
-| Time stamps | In local time | In UTC (GMT)
+| Time stamps | In local time | In UTC
 | Catalog B-tree file node size | 512 bytes | 4096 bytes
 | File attributes | none | Basic and extended
 |===
@@ -148,11 +148,11 @@ the volume.
 
 In HFS+ date and time values are stored in an unsigned 32-bit integer
 containing the number of seconds since January 1, 1904 at 00:00:00 (midnight)
-UTC (GMT). This is slightly different from HFS where the date and time value
-are stored using the local time. This document will refer to both forms as
-HFS timestamp.
+UTC. This is slightly different from HFS where the date and time value are
+stored using the local time. This document will refer to both forms as HFS
+timestamp.
 
-The maximum representable date is February 6, 2040 at 06:28:15 UTC (GMT).
+The maximum representable date is February 6, 2040 at 06:28:15 UTC.
 
 The date values do not account for leap seconds. They do include a leap day in
 every year that is evenly divisible by four. This is sufficient given that the
@@ -2200,7 +2200,7 @@ version
 duration
     Contains the duration of the current recording phase, in seconds. In Mac OS X 10.3, this value is typically HFC_DEFAULT_DURATION (60 hours).
 timebase
-    Contains the time that the current recording phase began, in seconds since Jan 1, 1970 GMT.
+    Contains the time that the current recording phase began, in seconds since Jan 1, 1970 UTC.
 timeleft
     Contains the time remaining in the current recording phase, in seconds.
 threshold
