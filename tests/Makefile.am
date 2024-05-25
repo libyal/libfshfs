@@ -79,6 +79,7 @@ check_PROGRAMS = \
 	fshfs_test_support \
 	fshfs_test_thread_record \
 	fshfs_test_tools_info_handle \
+	fshfs_test_tools_mount_path_string \
 	fshfs_test_tools_output \
 	fshfs_test_tools_signal \
 	fshfs_test_volume \
@@ -507,6 +508,19 @@ fshfs_test_tools_info_handle_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCRYPTO_LIBADD@ \
 	@LIBDL_LIBADD@
+
+fshfs_test_tools_mount_path_string_SOURCES = \
+	../fshfstools/mount_path_string.c ../fshfstools/mount_path_string.h \
+	fshfs_test_libcerror.h \
+	fshfs_test_libcpath.h \
+	fshfs_test_macros.h \
+	fshfs_test_tools_mount_path_string.c \
+	fshfs_test_unused.h
+
+fshfs_test_tools_mount_path_string_LDADD = \
+	@LIBUNA_LIBADD@ \
+	../libfshfs/libfshfs.la \
+	@LIBCERROR_LIBADD@
 
 fshfs_test_tools_output_SOURCES = \
 	../fshfstools/fshfstools_output.c ../fshfstools/fshfstools_output.h \

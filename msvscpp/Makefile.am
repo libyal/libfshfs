@@ -30,6 +30,7 @@ MSVSCPP_FILES = \
 	fshfs_test_support/fshfs_test_support.vcproj \
 	fshfs_test_thread_record/fshfs_test_thread_record.vcproj \
 	fshfs_test_tools_info_handle/fshfs_test_tools_info_handle.vcproj \
+	fshfs_test_tools_mount_path_string/fshfs_test_tools_mount_path_string.vcproj \
 	fshfs_test_tools_output/fshfs_test_tools_output.vcproj \
 	fshfs_test_tools_signal/fshfs_test_tools_signal.vcproj \
 	fshfs_test_volume/fshfs_test_volume.vcproj \

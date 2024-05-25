@@ -85,7 +85,8 @@ fshfsmount_SOURCES = \
 	mount_file_entry.c mount_file_entry.h \
 	mount_file_system.c mount_file_system.h \
 	mount_fuse.c mount_fuse.h \
-	mount_handle.c mount_handle.h
+	mount_handle.c mount_handle.h \
+	mount_path_string.c mount_path_string.h
 
 fshfsmount_LDADD = \
 	@LIBFUSE_LIBADD@ \
@@ -108,4 +109,6 @@ DISTCLEANFILES = \
 splint-local:
 	@echo "Running splint on fshfsinfo ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(fshfsinfo_SOURCES)
+	@echo "Running splint on fshfsmount ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(fshfsmount_SOURCES)
 

@@ -1,5 +1,5 @@
 /*
- * Shows information obtained from a Hierarchical File System (HFS) volume
+ * Shows information obtained from a Hierarchical File System (HFS) volume.
  *
  * Copyright (C) 2009-2024, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -61,7 +61,7 @@ enum FSHFSINFO_MODES
 info_handle_t *fshfsinfo_info_handle = NULL;
 int fshfsinfo_abort                  = 0;
 
-/* Prints the executable usage information
+/* Prints usage information
  */
 void usage_fprint(
       FILE *stream )
@@ -162,7 +162,7 @@ int main( int argc, char * const argv[] )
 	 1 );
 
 	if( libclocale_initialize(
-             "fshfstools",
+	     "fshfstools",
 	     &error ) != 1 )
 	{
 		fprintf(
@@ -171,9 +171,9 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( fshfstools_output_initialize(
-             _IONBF,
-             &error ) != 1 )
+	if( fshfstools_output_initialize(
+	     _IONBF,
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,

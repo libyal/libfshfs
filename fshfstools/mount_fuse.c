@@ -44,7 +44,11 @@
 
 extern mount_handle_t *fshfsmount_mount_handle;
 
-#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
+#if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
+
+#if !defined( ENODATA )
+#define ENODATA ENOATTR
+#endif
 
 #if ( SIZEOF_OFF_T != 8 ) && ( SIZEOF_OFF_T != 4 )
 #error Size of off_t not supported
@@ -255,11 +259,20 @@ int mount_fuse_filldir(
 
 		return( -1 );
 	}
+#if defined( HAVE_LIBFUSE3 )
+	if( filler(
+	     buffer,
+	     name,
+	     stat_info,
+	     0,
+	     0 ) == 1 )
+#else
 	if( filler(
 	     buffer,
 	     name,
 	     stat_info,
 	     0 ) == 1 )
+#endif
 	{
 		libcerror_error_set(
 		 error,
@@ -571,22 +584,23 @@ int mount_fuse_getxattr(
      char *value,
      size_t size )
 {
-	libcerror_error_t *error                           = NULL;
+	libcerror_error_t *error                          = NULL;
 	libfshfs_extended_attribute_t *extended_attribute = NULL;
-	mount_file_entry_t *file_entry                     = NULL;
-	static char *function                              = "mount_fuse_getxattr";
-	size64_t value_data_size                           = 0;
-	size_t name_length                                 = 0;
-	ssize_t read_count                                 = 0;
-	int result                                         = 0;
+	mount_file_entry_t *file_entry                    = NULL;
+	static char *function                             = "mount_fuse_getxattr";
+	size64_t value_data_size                          = 0;
+	size_t name_length                                = 0;
+	ssize_t read_count                                = 0;
+	int result                                        = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: %s\n",
+		 "%s: %s (%s)\n",
 		 function,
-		 path );
+		 path,
+		 name );
 	}
 #endif
 	if( path == NULL )
@@ -781,7 +795,7 @@ int mount_fuse_getxattr(
 	}
 	if( result == 0 )
 	{
-		return( -ENOENT );
+		return( -ENODATA );
 	}
 	return( (int) read_count );
 
@@ -810,15 +824,15 @@ int mount_fuse_listxattr(
      char *list,
      size_t size )
 {
-	libcerror_error_t *error                           = NULL;
+	libcerror_error_t *error                          = NULL;
 	libfshfs_extended_attribute_t *extended_attribute = NULL;
-	mount_file_entry_t *file_entry                     = NULL;
-	static char *function                              = "mount_fuse_listxattr";
-	size_t extended_attribute_name_size                = 0;
-	size_t list_offset                                 = 0;
-	int extended_attribute_index                       = 0;
-	int number_of_extended_attributes                  = 0;
-	int result                                         = 0;
+	mount_file_entry_t *file_entry                    = NULL;
+	static char *function                             = "mount_fuse_listxattr";
+	size_t extended_attribute_name_size               = 0;
+	size_t list_offset                                = 0;
+	int extended_attribute_index                      = 0;
+	int number_of_extended_attributes                 = 0;
+	int result                                        = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1138,12 +1152,22 @@ on_error:
 /* Reads a directory
  * Returns 0 if successful or a negative errno value otherwise
  */
+#if defined( HAVE_LIBFUSE3 )
+int mount_fuse_readdir(
+     const char *path,
+     void *buffer,
+     fuse_fill_dir_t filler,
+     off_t offset FSHFSTOOLS_ATTRIBUTE_UNUSED,
+     struct fuse_file_info *file_info FSHFSTOOLS_ATTRIBUTE_UNUSED,
+     enum fuse_readdir_flags flags FSHFSTOOLS_ATTRIBUTE_UNUSED )
+#else
 int mount_fuse_readdir(
      const char *path,
      void *buffer,
      fuse_fill_dir_t filler,
      off_t offset FSHFSTOOLS_ATTRIBUTE_UNUSED,
      struct fuse_file_info *file_info FSHFSTOOLS_ATTRIBUTE_UNUSED )
+#endif
 {
 	struct stat *stat_info                = NULL;
 	libcerror_error_t *error              = NULL;
@@ -1157,6 +1181,10 @@ int mount_fuse_readdir(
 	int sub_file_entry_index              = 0;
 
 	FSHFSTOOLS_UNREFERENCED_PARAMETER( offset )
+
+#if defined( HAVE_LIBFUSE3 )
+	FSHFSTOOLS_UNREFERENCED_PARAMETER( flags )
+#endif
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1527,9 +1555,16 @@ on_error:
 /* Retrieves the file stat info
  * Returns 0 if successful or a negative errno value otherwise
  */
+#if defined( HAVE_LIBFUSE3 )
+int mount_fuse_getattr(
+     const char *path,
+     struct stat *stat_info,
+     struct fuse_file_info *file_info FSHFSTOOLS_ATTRIBUTE_UNUSED )
+#else
 int mount_fuse_getattr(
      const char *path,
      struct stat *stat_info )
+#endif
 {
 	libcerror_error_t *error       = NULL;
 	mount_file_entry_t *file_entry = NULL;
@@ -1540,6 +1575,10 @@ int mount_fuse_getattr(
 	uint64_t modification_time     = 0;
 	uint16_t file_mode             = 0;
 	int result                     = 0;
+
+#if defined( HAVE_LIBFUSE3 )
+	FSHFSTOOLS_UNREFERENCED_PARAMETER( file_info )
+#endif
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1907,5 +1946,5 @@ on_error:
 	return;
 }
 
-#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE ) */
+#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE ) */
 
