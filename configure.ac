@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
  [libfshfs],
- [20240521],
+ [20240706],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -246,7 +246,7 @@ Building:
    libfmos support:                            $ac_cv_libfmos
    libhmac support:                            $ac_cv_libhmac
    MD5 support:                                $ac_cv_libhmac_md5
-   DEFLATE compression support:                $ac_cv_inflate
+   DEFLATE compression support:                $ac_cv_uncompress
    FUSE support:                               $ac_cv_libfuse
 
 Features:
