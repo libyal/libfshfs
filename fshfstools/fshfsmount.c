@@ -1,7 +1,7 @@
 /*
  * Mounts a Hierarchical File System (HFS) volume.
  *
- * Copyright (C) 2009-2024, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2025, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -66,8 +66,8 @@ void usage_fprint(
 	}
 	fprintf( stream, "Use fshfsmount to mount a Hierarchical File System (HFS) volume\n\n" );
 
-	fprintf( stream, "Usage: fshfsmount [ -o offset ] [ -X extended_options ]\n"
-	                 "                  [ -hvV ] volume mount_point\n\n" );
+	fprintf( stream, "Usage: fshfsmount [ -o offset ] [ -X extended_options ] [ -hvV ] volume\n"
+	                 "                  mount_point\n\n" );
 
 	fprintf( stream, "\tvolume:      a Hierarchical File System (HFS) volume\n\n" );
 	fprintf( stream, "\tmount_point: the directory to serve as mount point\n\n" );
@@ -311,6 +311,11 @@ int main( int argc, char * const argv[] )
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBFUSE3 ) || defined( HAVE_LIBOSXFUSE )
 	if( option_extended_options != NULL )
 	{
+#if defined( HAVE_LIBFUSE3 )
+		// fuse_opt_add_arg: Assertion `!args->argv || args->allocated' failed.
+		fshfsmount_fuse_arguments.argc = 0;
+		fshfsmount_fuse_arguments.argv = NULL;
+#endif
 		/* This argument is required but ignored
 		 */
 		if( fuse_opt_add_arg(
@@ -486,7 +491,6 @@ int main( int argc, char * const argv[] )
 #else
 	fshfsmount_dokan_options.ThreadCount  = 0;
 #endif
-
 	if( verbose != 0 )
 	{
 		fshfsmount_dokan_options.Options |= DOKAN_OPTION_STDERR;
@@ -619,7 +623,7 @@ int main( int argc, char * const argv[] )
 #else
 	fprintf(
 	 stderr,
-	 "No sub system to mount HFS format.\n" );
+	 "No sub system to mount Hierarchical File System (HFS) format.\n" );
 
 	return( EXIT_FAILURE );
 
