@@ -1,7 +1,7 @@
 /*
  * B-tree file functions
  *
- * Copyright (C) 2009-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -288,151 +288,154 @@ int libfshfs_btree_file_read_file_io_handle(
 
 		return( -1 );
 	}
-	/* Read the header record first to determine the B-tree node size.
-	 */
-	if( libcdata_array_get_entry_by_index(
-	     btree_file->extents,
-	     0,
-	     (intptr_t **) &extent,
-	     error ) != 1 )
+	if( btree_file->size > 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extent: 0.",
-		 function );
+		/* Read the header record first to determine the B-tree node size.
+		 */
+		if( libcdata_array_get_entry_by_index(
+		     btree_file->extents,
+		     0,
+		     (intptr_t **) &extent,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extent: 0.",
+			 function );
 
-		goto on_error;
-	}
-	if( extent == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent: 0.",
-		 function );
+			goto on_error;
+		}
+		if( extent == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing extent: 0.",
+			 function );
 
-		goto on_error;
-	}
-	file_offset = extent->block_number * io_handle->block_size;
+			goto on_error;
+		}
+		file_offset = extent->block_number * io_handle->block_size;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: reading B-tree header node at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-		 function,
-		 file_offset,
-		 file_offset );
-	}
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: reading B-tree header node at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 file_offset,
+			 file_offset );
+		}
 #endif
-	read_count = libbfio_handle_read_buffer_at_offset(
-	              file_io_handle,
-	              header_node_data,
-	              512,
-	              file_offset,
-	              error );
+		read_count = libbfio_handle_read_buffer_at_offset(
+		              file_io_handle,
+		              header_node_data,
+		              512,
+		              file_offset,
+		              error );
 
-	if( read_count != (ssize_t) 512 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree header node data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 file_offset,
-		 file_offset );
+		if( read_count != (ssize_t) 512 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read B-tree header node data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
 
-		goto on_error;
-	}
-	if( libfshfs_btree_node_descriptor_initialize(
-	     &header_node_descriptor,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create B-tree header node descriptor.",
-		 function );
+			goto on_error;
+		}
+		if( libfshfs_btree_node_descriptor_initialize(
+		     &header_node_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create B-tree header node descriptor.",
+			 function );
 
-		goto on_error;
-	}
-	if( libfshfs_btree_node_descriptor_read_data(
-	     header_node_descriptor,
-	     header_node_data,
-	     512,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree header node descriptor.",
-		 function );
+			goto on_error;
+		}
+		if( libfshfs_btree_node_descriptor_read_data(
+		     header_node_descriptor,
+		     header_node_data,
+		     512,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read B-tree header node descriptor.",
+			 function );
 
-		goto on_error;
-	}
-	if( header_node_descriptor->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unuspported B-tree header node type.",
-		 function );
+			goto on_error;
+		}
+		if( header_node_descriptor->type != LIBFSHFS_BTREE_NODE_TYPE_HEADER_NODE )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unuspported B-tree header node type.",
+			 function );
 
-		goto on_error;
-	}
-	if( libfshfs_btree_node_descriptor_free(
-	     &header_node_descriptor,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free B-tree header node descriptor.",
-		 function );
+			goto on_error;
+		}
+		if( libfshfs_btree_node_descriptor_free(
+		     &header_node_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free B-tree header node descriptor.",
+			 function );
 
-		goto on_error;
-	}
-	if( libfshfs_btree_header_read_data(
-	     btree_file->header,
-	     &( header_node_data[ sizeof( fshfs_btree_node_descriptor_t ) ] ),
-	     512 - sizeof( fshfs_btree_node_descriptor_t ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read B-tree header.",
-		 function );
+			goto on_error;
+		}
+		if( libfshfs_btree_header_read_data(
+		     btree_file->header,
+		     &( header_node_data[ sizeof( fshfs_btree_node_descriptor_t ) ] ),
+		     512 - sizeof( fshfs_btree_node_descriptor_t ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read B-tree header.",
+			 function );
 
-		goto on_error;
-	}
-	/* Read the root node using the node vector
-	 */
-	if( libfshfs_btree_node_vector_initialize(
-	     &( btree_file->node_vector ),
-	     io_handle,
-	     btree_file->size,
-	     btree_file->header->node_size,
-	     btree_file->extents,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create B-tree node vector.",
-		 function );
+			goto on_error;
+		}
+		/* Read the root node using the node vector
+		 */
+		if( libfshfs_btree_node_vector_initialize(
+		     &( btree_file->node_vector ),
+		     io_handle,
+		     btree_file->size,
+		     btree_file->header->node_size,
+		     btree_file->extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create B-tree node vector.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
 	}
 	return( 1 );
 

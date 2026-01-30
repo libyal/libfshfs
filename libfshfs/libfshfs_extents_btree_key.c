@@ -1,7 +1,7 @@
 /*
  * The extents (overflow) B-tree key functions
  *
- * Copyright (C) 2009-2025, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2026, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -189,7 +189,7 @@ int libfshfs_extents_btree_key_read_data(
 		 ( (fshfs_extents_index_key_hfsplus_t *) data )->data_size,
 		 key_data_size );
 	}
-/* TODO add legacy HFS name size support
+/* TODO add legacy HFS support
 	else
 	{
 		additional_size = 1;

@@ -519,6 +519,10 @@ Or for older versions of the boot block header:
 BRA.S *+ 0x88
 ....
 
+....
+BRA.W *+ 0x88
+....
+
 This instruction jumps to the main boot code following the boot block header.
 
 This field is ignored, however, if bit 6 is clear in the high-order byte of the
