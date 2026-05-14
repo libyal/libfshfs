@@ -1,9 +1,9 @@
-libfshfs is a library to access the Mac OS Hierarchical File System (HFS).
+libfshfs is a library to access the Hierarchical File System (HFS) format.
 
 Project information:
 
 * Status: experimental
-* Licence: LGPLv3+
+* Licence: LGPL-3.0-or-later
 
 Read-only supported HFS formats:
 
