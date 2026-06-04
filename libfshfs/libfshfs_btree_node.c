@@ -408,8 +408,6 @@ int libfshfs_btree_node_read_data(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-	records_data_offset -= 2;
-
 	sorted_record_offsets = (uint16_t *) memory_allocate(
 	                                      sizeof( uint16_t ) * node->descriptor->number_of_records );
 

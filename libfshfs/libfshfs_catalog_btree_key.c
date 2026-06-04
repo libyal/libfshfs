@@ -399,7 +399,9 @@ int libfshfs_catalog_btree_key_read_data(
 			}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
 		data_offset += catalog_btree_key->name_size;
+#endif
 	}
 	/* The key data size can be 0 if the node is no longer used
 	 */

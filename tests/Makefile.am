@@ -24,6 +24,10 @@ AM_CPPFLAGS = \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBFSHFS_DLL_IMPORT@
 
+AM_TESTS_ENVIRONMENT = \
+	export PYTHON="@PYTHON@"; \
+	export TESTS_USE_WINAPI="@TESTS_USE_WINAPI@";
+
 if HAVE_PYTHON_TESTS
 TESTS_PYFSHFS = \
 	test_python_module.sh
@@ -531,7 +535,8 @@ fshfs_test_tools_output_SOURCES = \
 
 fshfs_test_tools_output_LDADD = \
 	../libfshfs/libfshfs.la \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 fshfs_test_tools_signal_SOURCES = \
 	../fshfstools/fshfstools_signal.c ../fshfstools/fshfstools_signal.h \

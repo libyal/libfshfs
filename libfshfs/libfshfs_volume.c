@@ -1121,10 +1121,12 @@ int libfshfs_internal_volume_open_read(
 		internal_volume->io_handle->file_system_type = LIBFSHFS_FILE_SYSTEM_TYPE_HFS;
 		internal_volume->io_handle->block_size       = 512;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		use_case_folding = 1;
 
 		extents_file_fork_descriptor = internal_volume->master_directory_block->extents_file_fork_descriptor;
 		catalog_file_fork_descriptor = internal_volume->master_directory_block->catalog_file_fork_descriptor;
+#endif
 
 /* TODO impement classic HFS support */
 		libcerror_error_set(

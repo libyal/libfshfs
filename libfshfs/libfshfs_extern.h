@@ -24,21 +24,28 @@
 
 #include <common.h>
 
+#if !defined( __CYGWIN__ ) && !defined( _WIN32 ) && defined( __has_attribute )
+#if __has_attribute( visibility )
+#define LIBFSHFS_INTERNAL	__attribute__((visibility("hidden"))) extern
+
+#else
+#define LIBFSHFS_INTERNAL	extern
+
+#endif /* __has_attribute( visibility ) */
+#else
+#define LIBFSHFS_INTERNAL	extern
+
+#endif /* !defined( __CYGWIN__ ) && !defined( _WIN32 ) && defined( __has_attribute ) */
+
 /* Define HAVE_LOCAL_LIBFSHFS for local use of libfshfs
  */
 #if !defined( HAVE_LOCAL_LIBFSHFS )
 
 #include <libfshfs/extern.h>
 
-#if defined( __CYGWIN__ ) || defined( __MINGW32__ )
-#define LIBFSHFS_EXTERN_VARIABLE	extern
-#else
-#define LIBFSHFS_EXTERN_VARIABLE	LIBFSHFS_EXTERN
-#endif
-
 #else
 #define LIBFSHFS_EXTERN		/* extern */
-#define LIBFSHFS_EXTERN_VARIABLE	extern
+#define LIBFSHFS_EXTERN_VARIABLE	LIBFSHFS_INTERNAL
 
 #endif /* !defined( HAVE_LOCAL_LIBFSHFS ) */
 

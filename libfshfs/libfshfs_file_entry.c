@@ -3118,7 +3118,6 @@ int libfshfs_file_entry_get_utf16_symbolic_link_target(
 
 			result = -1;
 		}
-		result = 1;
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -3701,7 +3700,7 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf8_name(
 			 "%s: unable to retrieve attributes.",
 			 function );
 
-			result = -1;
+			return( -1 );
 		}
 	}
 	if( libcdata_array_get_number_of_entries(
@@ -3805,7 +3804,7 @@ int libfshfs_internal_file_entry_get_attribute_record_by_utf16_name(
 			 "%s: unable to retrieve attributes.",
 			 function );
 
-			result = -1;
+			return( -1 );
 		}
 	}
 	if( libcdata_array_get_number_of_entries(
@@ -5336,29 +5335,7 @@ int libfshfs_internal_file_entry_get_data_size(
 
 				goto on_error;
 			}
-			result = 0;
-
-			if( internal_file_entry->compressed_data_attribute_record->record_type == LIBFSHFS_ATTRIBUTE_RECORD_TYPE_INLINE_DATA )
-			{
-				result = libfshfs_compressed_data_header_read_data(
-				          internal_file_entry->compressed_data_header,
-				          internal_file_entry->compressed_data_attribute_record->inline_data,
-				          internal_file_entry->compressed_data_attribute_record->inline_data_size,
-				          error );
-
-				if( result == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read compressed data header.",
-					 function );
-
-					goto on_error;
-				}
-			}
-			else
+			if( internal_file_entry->compressed_data_attribute_record->record_type != LIBFSHFS_ATTRIBUTE_RECORD_TYPE_INLINE_DATA )
 			{
 /* TODO add support for additional attribute record types */
 				libcerror_error_set(
@@ -5370,7 +5347,24 @@ int libfshfs_internal_file_entry_get_data_size(
 
 				goto on_error;
 			}
-			if( result != 0 )
+			result = libfshfs_compressed_data_header_read_data(
+			          internal_file_entry->compressed_data_header,
+			          internal_file_entry->compressed_data_attribute_record->inline_data,
+			          internal_file_entry->compressed_data_attribute_record->inline_data_size,
+			          error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read compressed data header.",
+				 function );
+
+				goto on_error;
+			}
+			else if( result != 0 )
 			{
 				data_size = internal_file_entry->compressed_data_header->uncompressed_data_size;
 			}
