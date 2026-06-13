@@ -2555,7 +2555,9 @@ int info_handle_file_entry_fprint_by_identifier(
 	static char *function               = "info_handle_file_entry_fprint_by_identifier";
 	size_t file_entry_name_length       = 0;
 	size_t file_entry_name_size         = 0;
+/* TODO implement
 	int is_empty                        = 0;
+*/
 	int result                          = 0;
 
 	if( info_handle == NULL )

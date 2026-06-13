@@ -554,11 +554,14 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_thread_record_from_branch_node";
 	uint32_t sub_node_number                    = 0;
-	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint16_t last_record_index                  = 0;
+#endif
 
 	if( btree_file == NULL )
 	{
@@ -805,7 +808,9 @@ int libfshfs_catalog_btree_file_get_thread_record_from_branch_node(
 		}
 		last_node_key = node_key;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		last_record_index++;
+#endif
 	}
 	return( result );
 
@@ -1373,12 +1378,15 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_record";
 	uint32_t sub_node_number                    = 0;
-	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int compare_result                          = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint16_t last_record_index                  = 0;
+#endif
 
 	if( btree_file == NULL )
 	{
@@ -1692,7 +1700,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_thread_r
 		}
 		last_node_key = node_key;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		last_record_index++;
+#endif
 	}
 	return( result );
 
@@ -2102,12 +2112,15 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_name";
 	uint32_t sub_node_number                    = 0;
-	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int compare_result                          = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint16_t last_record_index                  = 0;
+#endif
 
 	if( btree_file == NULL )
 	{
@@ -2404,7 +2417,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf8_nam
 		}
 		last_node_key = node_key;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		last_record_index++;
+#endif
 	}
 	return( result );
 
@@ -3060,12 +3075,15 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_name";
 	uint32_t sub_node_number                    = 0;
-	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int compare_result                          = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint16_t last_record_index                  = 0;
+#endif
 
 	if( btree_file == NULL )
 	{
@@ -3362,7 +3380,9 @@ int libfshfs_catalog_btree_file_get_directory_entry_from_branch_node_by_utf16_na
 		}
 		last_node_key = node_key;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		last_record_index++;
+#endif
 	}
 	return( result );
 
@@ -3948,11 +3968,14 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 	libfshfs_catalog_btree_key_t *node_key      = NULL;
 	static char *function                       = "libfshfs_catalog_btree_file_get_directory_entries_from_branch_node";
 	uint32_t sub_node_number                    = 0;
-	uint16_t last_record_index                  = 0;
 	uint16_t record_index                       = 0;
 	uint8_t node_type                           = 0;
 	int is_branch_node                          = 0;
 	int result                                  = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	uint16_t last_record_index                  = 0;
+#endif
 
 	if( btree_file == NULL )
 	{
@@ -4187,7 +4210,9 @@ int libfshfs_catalog_btree_file_get_directory_entries_from_branch_node(
 		}
 		last_node_key = node_key;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		last_record_index++;
+#endif
 	}
 	return( 1 );
 

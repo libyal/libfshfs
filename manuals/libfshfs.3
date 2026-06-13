@@ -1,6 +1,6 @@
-.Dd June  4, 2026
-.Dt libfshfs 3
-.Os libfshfs
+.Dd June 13, 2026
+.Dt LIBFSHFS 3
+.Os
 .Sh NAME
 .Nm libfshfs.h
 .Nd Library to access the Hierarchical File System (HFS) format
@@ -8,223 +8,818 @@
 .In libfshfs.h
 .Pp
 Support functions
+.nf
 .Ft const char *
-.Fn libfshfs_get_version "void"
+.Fo libfshfs_get_version
+.Fa "void"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_get_access_flags_read "void"
+.Fo libfshfs_get_access_flags_read
+.Fa "void"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_get_codepage "int *codepage" "libfshfs_error_t **error"
+.Fo libfshfs_get_codepage
+.Fa "int *codepage"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_set_codepage "int codepage" "libfshfs_error_t **error"
+.Fo libfshfs_set_codepage
+.Fa "int codepage"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_check_volume_signature "const char *filename" "libfshfs_error_t **error"
+.Fo libfshfs_check_volume_signature
+.Fa "const char *filename"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Available when compiled with wide character string support:
+.nf
 .Ft int
-.Fn libfshfs_check_volume_signature_wide "const wchar_t *filename" "libfshfs_error_t **error"
+.Fo libfshfs_check_volume_signature_wide
+.Fa "const wchar_t *filename"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Available when compiled with libbfio support:
+.nf
 .Ft int
-.Fn libfshfs_check_volume_signature_file_io_handle "libbfio_handle_t *file_io_handle" "libfshfs_error_t **error"
+.Fo libfshfs_check_volume_signature_file_io_handle
+.Fa "libbfio_handle_t *file_io_handle"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Notify functions
+.nf
 .Ft void
-.Fn libfshfs_notify_set_verbose "int verbose"
+.Fo libfshfs_notify_set_verbose
+.Fa "int verbose"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_notify_set_stream "FILE *stream" "libfshfs_error_t **error"
+.Fo libfshfs_notify_set_stream
+.Fa "FILE *stream"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_notify_stream_open "const char *filename" "libfshfs_error_t **error"
+.Fo libfshfs_notify_stream_open
+.Fa "const char *filename"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_notify_stream_close "libfshfs_error_t **error"
+.Fo libfshfs_notify_stream_close
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Error functions
+.nf
 .Ft void
-.Fn libfshfs_error_free "libfshfs_error_t **error"
+.Fo libfshfs_error_free
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_error_fprint "libfshfs_error_t *error" "FILE *stream"
+.Fo libfshfs_error_fprint
+.Fa "libfshfs_error_t *error"
+.Fa "FILE *stream"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_error_sprint "libfshfs_error_t *error" "char *string" "size_t size"
+.Fo libfshfs_error_sprint
+.Fa "libfshfs_error_t *error"
+.Fa "char *string"
+.Fa "size_t size"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_error_backtrace_fprint "libfshfs_error_t *error" "FILE *stream"
+.Fo libfshfs_error_backtrace_fprint
+.Fa "libfshfs_error_t *error"
+.Fa "FILE *stream"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_error_backtrace_sprint "libfshfs_error_t *error" "char *string" "size_t size"
+.Fo libfshfs_error_backtrace_sprint
+.Fa "libfshfs_error_t *error"
+.Fa "char *string"
+.Fa "size_t size"
+.Fc
+.fi
 .Pp
 Volume functions
+.nf
 .Ft int
-.Fn libfshfs_volume_initialize "libfshfs_volume_t **volume" "libfshfs_error_t **error"
+.Fo libfshfs_volume_initialize
+.Fa "libfshfs_volume_t **volume"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_free "libfshfs_volume_t **volume" "libfshfs_error_t **error"
+.Fo libfshfs_volume_free
+.Fa "libfshfs_volume_t **volume"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_signal_abort "libfshfs_volume_t *volume" "libfshfs_error_t **error"
+.Fo libfshfs_volume_signal_abort
+.Fa "libfshfs_volume_t *volume"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_open "libfshfs_volume_t *volume" "const char *filename" "int access_flags" "libfshfs_error_t **error"
+.Fo libfshfs_volume_open
+.Fa "libfshfs_volume_t *volume"
+.Fa "const char *filename"
+.Fa "int access_flags"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_close "libfshfs_volume_t *volume" "libfshfs_error_t **error"
+.Fo libfshfs_volume_close
+.Fa "libfshfs_volume_t *volume"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_utf8_name_size "libfshfs_volume_t *volume" "size_t *utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_utf8_name_size
+.Fa "libfshfs_volume_t *volume"
+.Fa "size_t *utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_utf8_name "libfshfs_volume_t *volume" "uint8_t *utf8_string" "size_t utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_utf8_name
+.Fa "libfshfs_volume_t *volume"
+.Fa "uint8_t *utf8_string"
+.Fa "size_t utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_utf16_name_size "libfshfs_volume_t *volume" "size_t *utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_utf16_name_size
+.Fa "libfshfs_volume_t *volume"
+.Fa "size_t *utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_utf16_name "libfshfs_volume_t *volume" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_utf16_name
+.Fa "libfshfs_volume_t *volume"
+.Fa "uint16_t *utf16_string"
+.Fa "size_t utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_root_directory "libfshfs_volume_t *volume" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_root_directory
+.Fa "libfshfs_volume_t *volume"
+.Fa "libfshfs_file_entry_t **file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_file_entry_by_identifier "libfshfs_volume_t *volume" "uint32_t identifier" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_file_entry_by_identifier
+.Fa "libfshfs_volume_t *volume"
+.Fa "uint32_t identifier"
+.Fa "libfshfs_file_entry_t **file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_file_entry_by_utf8_path "libfshfs_volume_t *volume" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_file_entry_by_utf8_path
+.Fa "libfshfs_volume_t *volume"
+.Fa "const uint8_t *utf8_string"
+.Fa "size_t utf8_string_length"
+.Fa "libfshfs_file_entry_t **file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_volume_get_file_entry_by_utf16_path "libfshfs_volume_t *volume" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_volume_get_file_entry_by_utf16_path
+.Fa "libfshfs_volume_t *volume"
+.Fa "const uint16_t *utf16_string"
+.Fa "size_t utf16_string_length"
+.Fa "libfshfs_file_entry_t **file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Available when compiled with wide character string support:
+.nf
 .Ft int
-.Fn libfshfs_volume_open_wide "libfshfs_volume_t *volume" "const wchar_t *filename" "int access_flags" "libfshfs_error_t **error"
+.Fo libfshfs_volume_open_wide
+.Fa "libfshfs_volume_t *volume"
+.Fa "const wchar_t *filename"
+.Fa "int access_flags"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Available when compiled with libbfio support:
+.nf
 .Ft int
-.Fn libfshfs_volume_open_file_io_handle "libfshfs_volume_t *volume" "libbfio_handle_t *file_io_handle" "int access_flags" "libfshfs_error_t **error"
+.Fo libfshfs_volume_open_file_io_handle
+.Fa "libfshfs_volume_t *volume"
+.Fa "libbfio_handle_t *file_io_handle"
+.Fa "int access_flags"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 File entry functions
+.nf
 .Ft int
-.Fn libfshfs_file_entry_free "libfshfs_file_entry_t **file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_free
+.Fa "libfshfs_file_entry_t **file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *identifier" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_identifier
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *identifier"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_parent_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *parent_identifier" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_parent_identifier
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *parent_identifier"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_parent_file_entry "libfshfs_file_entry_t *file_entry" "libfshfs_file_entry_t **parent_file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_parent_file_entry
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "libfshfs_file_entry_t **parent_file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_link_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *link_identifier" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_link_identifier
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *link_identifier"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_creation_time "libfshfs_file_entry_t *file_entry" "uint32_t *hfs_time" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_creation_time
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *hfs_time"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_modification_time "libfshfs_file_entry_t *file_entry" "uint32_t *hfs_time" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_modification_time
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *hfs_time"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_entry_modification_time "libfshfs_file_entry_t *file_entry" "uint32_t *hfs_time" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_entry_modification_time
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *hfs_time"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_access_time "libfshfs_file_entry_t *file_entry" "uint32_t *hfs_time" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_access_time
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *hfs_time"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_backup_time "libfshfs_file_entry_t *file_entry" "uint32_t *hfs_time" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_backup_time
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *hfs_time"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_added_time "libfshfs_file_entry_t *file_entry" "int32_t *posix_time" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_added_time
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int32_t *posix_time"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_file_mode "libfshfs_file_entry_t *file_entry" "uint16_t *file_mode" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_file_mode
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint16_t *file_mode"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_number_of_links "libfshfs_file_entry_t *file_entry" "uint32_t *number_of_links" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_number_of_links
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *number_of_links"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_owner_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *owner_identifier" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_owner_identifier
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *owner_identifier"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_group_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *group_identifier" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_group_identifier
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *group_identifier"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_device_identifier "libfshfs_file_entry_t *file_entry" "uint32_t *device_identifier" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_device_identifier
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *device_identifier"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_device_number "libfshfs_file_entry_t *file_entry" "uint32_t *major_device_number" "uint32_t *minor_device_number" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_device_number
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint32_t *major_device_number"
+.Fa "uint32_t *minor_device_number"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf8_name_size "libfshfs_file_entry_t *file_entry" "size_t *utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf8_name_size
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "size_t *utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf8_name "libfshfs_file_entry_t *file_entry" "uint8_t *utf8_string" "size_t utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf8_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint8_t *utf8_string"
+.Fa "size_t utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf16_name_size "libfshfs_file_entry_t *file_entry" "size_t *utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf16_name_size
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "size_t *utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf16_name "libfshfs_file_entry_t *file_entry" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf16_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint16_t *utf16_string"
+.Fa "size_t utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf8_symbolic_link_target_size "libfshfs_file_entry_t *file_entry" "size_t *utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf8_symbolic_link_target_size
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "size_t *utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf8_symbolic_link_target "libfshfs_file_entry_t *file_entry" "uint8_t *utf8_string" "size_t utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf8_symbolic_link_target
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint8_t *utf8_string"
+.Fa "size_t utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf16_symbolic_link_target_size "libfshfs_file_entry_t *file_entry" "size_t *utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf16_symbolic_link_target_size
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "size_t *utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_utf16_symbolic_link_target "libfshfs_file_entry_t *file_entry" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_utf16_symbolic_link_target
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "uint16_t *utf16_string"
+.Fa "size_t utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_has_resource_fork "libfshfs_file_entry_t *file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_has_resource_fork
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_resource_fork "libfshfs_file_entry_t *file_entry" "libfshfs_data_stream_t **data_stream" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_resource_fork
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "libfshfs_data_stream_t **data_stream"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_number_of_extended_attributes "libfshfs_file_entry_t *file_entry" "int *number_of_extended_attributes" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_number_of_extended_attributes
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int *number_of_extended_attributes"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_extended_attribute_by_index "libfshfs_file_entry_t *file_entry" "int extended_attribute_index" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_extended_attribute_by_index
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int extended_attribute_index"
+.Fa "libfshfs_extended_attribute_t **extended_attribute"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_has_extended_attribute_by_utf8_name "libfshfs_file_entry_t *file_entry" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_has_extended_attribute_by_utf8_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "const uint8_t *utf8_string"
+.Fa "size_t utf8_string_length"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_has_extended_attribute_by_utf16_name "libfshfs_file_entry_t *file_entry" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_has_extended_attribute_by_utf16_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "const uint16_t *utf16_string"
+.Fa "size_t utf16_string_length"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_extended_attribute_by_utf8_name "libfshfs_file_entry_t *file_entry" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_extended_attribute_by_utf8_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "const uint8_t *utf8_string"
+.Fa "size_t utf8_string_length"
+.Fa "libfshfs_extended_attribute_t **extended_attribute"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_extended_attribute_by_utf16_name "libfshfs_file_entry_t *file_entry" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_extended_attribute_by_utf16_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "const uint16_t *utf16_string"
+.Fa "size_t utf16_string_length"
+.Fa "libfshfs_extended_attribute_t **extended_attribute"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_number_of_sub_file_entries "libfshfs_file_entry_t *file_entry" "int *number_of_sub_file_entries" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_number_of_sub_file_entries
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int *number_of_sub_file_entries"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_sub_file_entry_by_index "libfshfs_file_entry_t *file_entry" "int sub_file_entry_index" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_sub_file_entry_by_index
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int sub_file_entry_index"
+.Fa "libfshfs_file_entry_t **sub_file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_sub_file_entry_by_utf8_name "libfshfs_file_entry_t *file_entry" "const uint8_t *utf8_string" "size_t utf8_string_length" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_sub_file_entry_by_utf8_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "const uint8_t *utf8_string"
+.Fa "size_t utf8_string_length"
+.Fa "libfshfs_file_entry_t **sub_file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_sub_file_entry_by_utf16_name "libfshfs_file_entry_t *file_entry" "const uint16_t *utf16_string" "size_t utf16_string_length" "libfshfs_file_entry_t **sub_file_entry" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_sub_file_entry_by_utf16_name
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "const uint16_t *utf16_string"
+.Fa "size_t utf16_string_length"
+.Fa "libfshfs_file_entry_t **sub_file_entry"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft ssize_t
-.Fn libfshfs_file_entry_read_buffer "libfshfs_file_entry_t *file_entry" "void *buffer" "size_t buffer_size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_read_buffer
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "void *buffer"
+.Fa "size_t buffer_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft ssize_t
-.Fn libfshfs_file_entry_read_buffer_at_offset "libfshfs_file_entry_t *file_entry" "void *buffer" "size_t buffer_size" "off64_t offset" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_read_buffer_at_offset
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "void *buffer"
+.Fa "size_t buffer_size"
+.Fa "off64_t offset"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft off64_t
-.Fn libfshfs_file_entry_seek_offset "libfshfs_file_entry_t *file_entry" "off64_t offset" "int whence" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_seek_offset
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "off64_t offset"
+.Fa "int whence"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_offset "libfshfs_file_entry_t *file_entry" "off64_t *offset" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_offset
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "off64_t *offset"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_size "libfshfs_file_entry_t *file_entry" "size64_t *size" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_size
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "size64_t *size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_number_of_extents "libfshfs_file_entry_t *file_entry" "int *number_of_extents" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_number_of_extents
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int *number_of_extents"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_file_entry_get_extent_by_index "libfshfs_file_entry_t *file_entry" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
+.Fo libfshfs_file_entry_get_extent_by_index
+.Fa "libfshfs_file_entry_t *file_entry"
+.Fa "int extent_index"
+.Fa "off64_t *extent_offset"
+.Fa "size64_t *extent_size"
+.Fa "uint32_t *extent_flags"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Data stream functions
+.nf
 .Ft int
-.Fn libfshfs_data_stream_free "libfshfs_data_stream_t **data_stream" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_free
+.Fa "libfshfs_data_stream_t **data_stream"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft ssize_t
-.Fn libfshfs_data_stream_read_buffer "libfshfs_data_stream_t *data_stream" "void *buffer" "size_t buffer_size" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_read_buffer
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "void *buffer"
+.Fa "size_t buffer_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft ssize_t
-.Fn libfshfs_data_stream_read_buffer_at_offset "libfshfs_data_stream_t *data_stream" "void *buffer" "size_t buffer_size" "off64_t offset" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_read_buffer_at_offset
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "void *buffer"
+.Fa "size_t buffer_size"
+.Fa "off64_t offset"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft off64_t
-.Fn libfshfs_data_stream_seek_offset "libfshfs_data_stream_t *data_stream" "off64_t offset" "int whence" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_seek_offset
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "off64_t offset"
+.Fa "int whence"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_data_stream_get_offset "libfshfs_data_stream_t *data_stream" "off64_t *offset" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_get_offset
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "off64_t *offset"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_data_stream_get_size "libfshfs_data_stream_t *data_stream" "size64_t *size" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_get_size
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "size64_t *size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_data_stream_get_number_of_extents "libfshfs_data_stream_t *data_stream" "int *number_of_extents" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_get_number_of_extents
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "int *number_of_extents"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_data_stream_get_extent_by_index "libfshfs_data_stream_t *data_stream" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
+.Fo libfshfs_data_stream_get_extent_by_index
+.Fa "libfshfs_data_stream_t *data_stream"
+.Fa "int extent_index"
+.Fa "off64_t *extent_offset"
+.Fa "size64_t *extent_size"
+.Fa "uint32_t *extent_flags"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Pp
 Extended attribute functions
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_free "libfshfs_extended_attribute_t **extended_attribute" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_free
+.Fa "libfshfs_extended_attribute_t **extended_attribute"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_utf8_name_size "libfshfs_extended_attribute_t *extended_attribute" "size_t *utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_utf8_name_size
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "size_t *utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_utf8_name "libfshfs_extended_attribute_t *extended_attribute" "uint8_t *utf8_string" "size_t utf8_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_utf8_name
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "uint8_t *utf8_string"
+.Fa "size_t utf8_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_utf16_name_size "libfshfs_extended_attribute_t *extended_attribute" "size_t *utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_utf16_name_size
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "size_t *utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_utf16_name "libfshfs_extended_attribute_t *extended_attribute" "uint16_t *utf16_string" "size_t utf16_string_size" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_utf16_name
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "uint16_t *utf16_string"
+.Fa "size_t utf16_string_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft ssize_t
-.Fn libfshfs_extended_attribute_read_buffer "libfshfs_extended_attribute_t *extended_attribute" "void *buffer" "size_t buffer_size" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_read_buffer
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "void *buffer"
+.Fa "size_t buffer_size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft ssize_t
-.Fn libfshfs_extended_attribute_read_buffer_at_offset "libfshfs_extended_attribute_t *extended_attribute" "void *buffer" "size_t buffer_size" "off64_t offset" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_read_buffer_at_offset
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "void *buffer"
+.Fa "size_t buffer_size"
+.Fa "off64_t offset"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft off64_t
-.Fn libfshfs_extended_attribute_seek_offset "libfshfs_extended_attribute_t *extended_attribute" "off64_t offset" "int whence" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_seek_offset
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "off64_t offset"
+.Fa "int whence"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_offset "libfshfs_extended_attribute_t *extended_attribute" "off64_t *offset" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_offset
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "off64_t *offset"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_size "libfshfs_extended_attribute_t *extended_attribute" "size64_t *size" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_size
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "size64_t *size"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_number_of_extents "libfshfs_extended_attribute_t *extended_attribute" "int *number_of_extents" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_number_of_extents
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "int *number_of_extents"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
+.nf
 .Ft int
-.Fn libfshfs_extended_attribute_get_extent_by_index "libfshfs_extended_attribute_t *extended_attribute" "int extent_index" "off64_t *extent_offset" "size64_t *extent_size" "uint32_t *extent_flags" "libfshfs_error_t **error"
+.Fo libfshfs_extended_attribute_get_extent_by_index
+.Fa "libfshfs_extended_attribute_t *extended_attribute"
+.Fa "int extent_index"
+.Fa "off64_t *extent_offset"
+.Fa "size64_t *extent_size"
+.Fa "uint32_t *extent_flags"
+.Fa "libfshfs_error_t **error"
+.Fc
+.fi
 .Sh DESCRIPTION
 The
 .Fn libfshfs_get_version
 function is used to retrieve the library version.
 .Sh RETURN VALUES
-Most of the functions return NULL or \-1 on error, dependent on the return type.
-For the actual return values see "libfshfs.h".
+Most of the functions return NULL or \-1 on error, dependent on the return \
+type.
+For the actual return values see
+.In libfshfs.h .
 .Sh ENVIRONMENT
 None
 .Sh FILES
@@ -242,14 +837,16 @@ To compile libfshfs with wide character support use:
 .sp
 .Ar LIBFSHFS_WIDE_CHARACTER_TYPE
  in libfshfs/features.h can be used to determine if libfshfs was compiled with wide character support.
+.Sh SEE ALSO
+.In libfshfs.h
+.Sh AUTHORS
+.An Joachim Metz <joachim.metz@gmail.com>
 .Sh BUGS
-Please report bugs of any kind on the project issue tracker: https://github.com/libyal/libfshfs/issues
-.Sh AUTHOR
-These man pages are generated from "libfshfs.h".
+Please report bugs of any kind on the project issue tracker: \
+https://github.com/libyal/libfshfs/issues
 .Sh COPYRIGHT
 Copyright (C) 2009-2026, Joachim Metz <joachim.metz@gmail.com>.
 .sp
 This is free software; see the source for copying conditions.
-There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-.Sh SEE ALSO
-the libfshfs.h include file
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A \
+PARTICULAR PURPOSE.

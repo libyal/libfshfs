@@ -5289,7 +5289,7 @@ int libfshfs_internal_file_entry_get_data_size(
 
 		goto on_error;
 	}
-	else if( result != 0 ) 
+	else if( result != 0 )
 	{
 		if( data_fork_descriptor == NULL )
 		{

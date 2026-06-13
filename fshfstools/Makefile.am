@@ -102,6 +102,9 @@ fshfsmount_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBINTL@
 
+CLEANFILES = \
+	*.exe
+
 DISTCLEANFILES = \
 	Makefile \
 	Makefile.in
