@@ -9,6 +9,9 @@ TEST_SET="public";
 TEST_INPUT_DIRECTORY="tests/input";
 TEST_FILES="hfsplus.raw";
 
+mkdir -p "${TEST_INPUT_DIRECTORY}/.fshfsinfo_fs";
+echo "-H" > "${TEST_INPUT_DIRECTORY}/.fshfsinfo_fs/options";
+
 mkdir -p "${TEST_INPUT_DIRECTORY}/${TEST_SET}";
 
 for TEST_FILE in ${TEST_FILES};
