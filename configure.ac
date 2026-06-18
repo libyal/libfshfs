@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [libfshfs],
-  [20260616],
+  [20260618],
   [https://github.com/libyal/libfshfs/issues])
 
 AC_CONFIG_SRCDIR(

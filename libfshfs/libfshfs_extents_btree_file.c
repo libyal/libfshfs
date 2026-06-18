@@ -34,6 +34,7 @@
 #include "libfshfs_libcdata.h"
 #include "libfshfs_libcerror.h"
 #include "libfshfs_libcnotify.h"
+#include "libfshfs_unused.h"
 
 #include "fshfs_extents_file.h"
 
@@ -394,7 +395,7 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
      libfshfs_btree_file_t *btree_file,
      libfshfs_btree_node_t *node,
      uint32_t identifier,
-     uint8_t fork_type,
+     uint8_t fork_type LIBFSHFS_ATTRIBUTE_UNUSED,
      libcdata_array_t *extents,
      libcerror_error_t **error )
 {
@@ -403,6 +404,8 @@ int libfshfs_extents_btree_file_get_extents_from_leaf_node(
 	static char *function                  = "libfshfs_extents_btree_file_get_extents_from_leaf_node";
 	uint16_t record_index                  = 0;
 	int is_leaf_node                       = 0;
+
+	LIBFSHFS_UNREFERENCED_PARAMETER( fork_type )
 
 	if( btree_file == NULL )
 	{
