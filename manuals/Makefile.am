@@ -4,9 +4,7 @@ man_MANS = \
 	libfshfs.3
 
 EXTRA_DIST = \
-	fshfsinfo.1 \
-	fshfsmount.1 \
-	libfshfs.3
+	$(man_MANS)
 
 DISTCLEANFILES = \
 	Makefile \
