@@ -110,7 +110,7 @@ struct libfshfs_internal_file_entry
 	 */
 	size_t symbolic_link_data_size;
 
-	/* Link reference, contians the CNID of the indirect node file
+	/* Link reference, contains the CNID of the indirect node file
 	 */
 	uint32_t link_reference;
 

@@ -615,6 +615,24 @@ int libfshfs_internal_file_entry_get_data_stream(
 
 		return( -1 );
 	}
+	/* Make sure internal_file_entry->compressed_data_header has been initialized
+	 */
+	if( internal_file_entry->data_size == (size64_t) -1 )
+	{
+		if( libfshfs_internal_file_entry_get_data_size(
+		     internal_file_entry,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve data size.",
+			 function );
+
+			goto on_error;
+		}
+	}
 	if( internal_file_entry->compressed_data_header != NULL )
 	{
 		switch( internal_file_entry->compressed_data_header->compression_method )
