@@ -668,7 +668,8 @@ int libfshfs_internal_file_entry_get_data_stream(
 				goto on_error;
 		}
 		if( ( internal_file_entry->compressed_data_header->compression_method == 4 )
-		 || ( internal_file_entry->compressed_data_header->compression_method == 8 ) )
+		 || ( internal_file_entry->compressed_data_header->compression_method == 8 )
+		 || ( internal_file_entry->compressed_data_header->compression_method == 12 ) )
 		{
 			if( libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(
 			     internal_file_entry,

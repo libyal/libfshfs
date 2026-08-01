@@ -81,6 +81,7 @@ int libfshfs_compressed_data_handle_initialize(
 		return( -1 );
 	}
 	if( ( compression_method != LIBFSHFS_COMPRESSION_METHOD_DEFLATE )
+	 && ( compression_method != LIBFSHFS_COMPRESSION_METHOD_LZFSE )
 	 && ( compression_method != LIBFSHFS_COMPRESSION_METHOD_LZVN )
 	 && ( compression_method != LIBFSHFS_COMPRESSION_METHOD_UNKNOWN5 ) )
 	{
@@ -423,7 +424,7 @@ int libfshfs_compressed_data_handle_get_compressed_block_offsets(
 			 240,
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 
-			byte_stream_copy_to_uint32_little_endian(
+			byte_stream_copy_to_uint32_big_endian(
 			 &( data_handle->compressed_segment_data[ 256 ] ),
 			 value_32bit );
 			libcnotify_printf(
@@ -459,7 +460,8 @@ int libfshfs_compressed_data_handle_get_compressed_block_offsets(
 		compressed_descriptors_offset   += 4;
 		compressed_block_descriptor_size = 8;
 	}
-	else if( data_handle->compression_method == LIBFSHFS_COMPRESSION_METHOD_LZVN )
+	else if( ( data_handle->compression_method == LIBFSHFS_COMPRESSION_METHOD_LZFSE )
+	      || ( data_handle->compression_method == LIBFSHFS_COMPRESSION_METHOD_LZVN ) )
 	{
 		segment_data_offset = 0;
 

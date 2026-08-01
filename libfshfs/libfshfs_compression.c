@@ -274,8 +274,6 @@ int libfshfs_decompress_data(
 #endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL ) */
 		}
 	}
-#ifdef TODO
-/* TODO need sample data */
 	else if( compression_method == LIBFSHFS_COMPRESSION_METHOD_LZFSE )
 	{
 		result = libfmos_lzfse_decompress(
@@ -297,7 +295,6 @@ int libfshfs_decompress_data(
 			return( -1 );
 		}
 	}
-#endif /* TODO */
 	else if( compression_method == LIBFSHFS_COMPRESSION_METHOD_LZVN )
 	{
 		if( ( compressed_data_size >= 1 )
