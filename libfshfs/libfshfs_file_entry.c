@@ -651,6 +651,11 @@ int libfshfs_internal_file_entry_get_data_stream(
 				compression_method = LIBFSHFS_COMPRESSION_METHOD_LZVN;
 				break;
 
+			case 9:
+			case 10:
+				compression_method = LIBFSHFS_COMPRESSION_METHOD_RAW;
+				break;
+
 			case 11:
 			case 12:
 				compression_method = LIBFSHFS_COMPRESSION_METHOD_LZFSE;
@@ -669,6 +674,7 @@ int libfshfs_internal_file_entry_get_data_stream(
 		}
 		if( ( internal_file_entry->compressed_data_header->compression_method == 4 )
 		 || ( internal_file_entry->compressed_data_header->compression_method == 8 )
+		 || ( internal_file_entry->compressed_data_header->compression_method == 10 )
 		 || ( internal_file_entry->compressed_data_header->compression_method == 12 ) )
 		{
 			if( libfshfs_internal_file_entry_get_data_stream_from_fork_descriptor(

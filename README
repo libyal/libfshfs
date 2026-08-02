@@ -13,19 +13,24 @@ Read-only supported HFS formats:
 Unsupported HFS formats:
 
 * (traditional) HFS
+* HFS-wrapped HFS+
 * HFS+, Mac OS 8.1 through 10.2 (Unicode 2.1 case-insensitive)
 * HFSX, Mac OS 8.1 through 10.2 (Unicode 2.1 case-sensitive)
 
 Supported HFS format features:
 
-* ZLIB (DEFLATE) compression
-* LZVN compression
+* decmpfs compression
+  * LZFSE (compresssion methods 11 and 12)
+  * LZVN (compresssion methods 7 and 8)
+  * raw (compresssion methods 9 and 10)
+  * ZLIB (compresssion methods 3 and 4)
 * extended attributes
 
 Unsupported HFS format features:
 
-* LZFSE compression, compression methods 11 and 12
-* "uncompressed", compression methods 1, 9 and 10
+* decmpfs compression
+  * "uncompressed" (compression methods 1)
+  * LZBitmap (compression methods 13 and 14)
 
 Planned:
 
