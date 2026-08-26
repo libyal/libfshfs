@@ -24,7 +24,7 @@ jobs:
     - name: Install build dependencies
       run: |
         apt update -q
-        apt install -y autoconf automake autopoint autotools-dev build-essential debhelper dh-autoreconf dh-python fakeroot git libssl-dev libtool pkg-config python3-dev python3-setuptools zlib1g-dev
+        apt install -y autoconf automake autopoint autotools-dev build-essential debhelper dh-autoreconf dh-python fakeroot git libfuse3-dev libssl-dev libtool pkg-config python3-dev python3-setuptools zlib1g-dev
     - uses: actions/checkout@v6
     - name: Download test data
       run: |
