@@ -343,6 +343,7 @@ int libfshfs_allocation_block_stream_initialize_from_extents(
 	libfshfs_extent_t *extent                       = NULL;
 	static char *function                           = "libfshfs_allocation_block_stream_initialize_from_extents";
 	size64_t segment_size                           = 0;
+	off64_t data_offset                             = 0;
 	off64_t segment_offset                          = 0;
 	int extent_index                                = 0;
 	int number_of_extents                           = 0;
@@ -475,6 +476,10 @@ int libfshfs_allocation_block_stream_initialize_from_extents(
 		segment_offset = (off64_t) extent->block_number * io_handle->block_size;
 		segment_size   = (size64_t) extent->number_of_blocks * io_handle->block_size;
 
+		if( segment_size > ( data_size - data_offset ) )
+		{
+			segment_size = data_size - data_offset;
+		}
 		if( libfdata_stream_append_segment(
 		     safe_allocation_block_stream,
 		     &segment_index,
@@ -494,20 +499,12 @@ int libfshfs_allocation_block_stream_initialize_from_extents(
 
 			goto on_error;
 		}
-	}
-	if( libfdata_stream_set_mapped_size(
-	     safe_allocation_block_stream,
-	     data_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set mapped size of allocation block stream.",
-		 function );
+		data_offset += segment_size;
 
-		goto on_error;
+		if( (size64_t) data_offset >= data_size )
+		{
+			break;
+		}
 	}
 	*allocation_block_stream = safe_allocation_block_stream;
 

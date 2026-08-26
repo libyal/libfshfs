@@ -3203,37 +3203,66 @@ int libfshfs_file_entry_has_resource_fork(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_internal_file_entry_get_directory_entry(
-	     internal_file_entry,
-	     &directory_entry,
-	     error ) != 1 )
+	/* Make sure internal_file_entry->compressed_data_header has been initialized
+	 */
+	if( internal_file_entry->data_size == (size64_t) -1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve directory entry.",
-		 function );
-
-		result = -1;
-	}
-	else
-	{
-		result = libfshfs_directory_entry_get_resource_fork_descriptor(
-		          directory_entry,
-		          &fork_descriptor,
-		          error );
-
-		if( result == -1 )
+		if( libfshfs_internal_file_entry_get_data_size(
+		     internal_file_entry,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve resource fork descriptor from directory entry.",
+			 "%s: unable to retrieve data size.",
 			 function );
 
 			result = -1;
+		}
+	}
+	if( result == 0 )
+	{
+		if( ( internal_file_entry->compressed_data_header != NULL )
+		 && ( ( internal_file_entry->compressed_data_header->compression_method == 4 )
+		  ||  ( internal_file_entry->compressed_data_header->compression_method == 8 )
+		  ||  ( internal_file_entry->compressed_data_header->compression_method == 10 )
+		  ||  ( internal_file_entry->compressed_data_header->compression_method == 12 ) ) )
+		{
+			result = 0;
+		}
+		else if( libfshfs_internal_file_entry_get_directory_entry(
+		          internal_file_entry,
+		          &directory_entry,
+		          error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry.",
+			 function );
+
+			result = -1;
+		}
+		else
+		{
+			result = libfshfs_directory_entry_get_resource_fork_descriptor(
+			          directory_entry,
+			          &fork_descriptor,
+			          error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve resource fork descriptor from directory entry.",
+				 function );
+
+				result = -1;
+			}
 		}
 	}
 #if defined( HAVE_LIBFSHFS_MULTI_THREAD_SUPPORT )
@@ -3296,58 +3325,87 @@ int libfshfs_file_entry_get_resource_fork(
 		return( -1 );
 	}
 #endif
-	if( libfshfs_internal_file_entry_get_directory_entry(
-	     internal_file_entry,
-	     &directory_entry,
-	     error ) != 1 )
+	/* Make sure internal_file_entry->compressed_data_header has been initialized
+	 */
+	if( internal_file_entry->data_size == (size64_t) -1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve directory entry.",
-		 function );
-
-		result = -1;
-	}
-	else
-	{
-		result = libfshfs_directory_entry_get_resource_fork_descriptor(
-		          directory_entry,
-		          &fork_descriptor,
-		          error );
-
-		if( result == -1 )
+		if( libfshfs_internal_file_entry_get_data_size(
+		     internal_file_entry,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve resource fork descriptor from directory entry.",
+			 "%s: unable to retrieve data size.",
 			 function );
 
 			result = -1;
 		}
-		else if( result != 0 )
+	}
+	if( result == 0 )
+	{
+		if( ( internal_file_entry->compressed_data_header != NULL )
+		 && ( ( internal_file_entry->compressed_data_header->compression_method == 4 )
+		  ||  ( internal_file_entry->compressed_data_header->compression_method == 8 )
+		  ||  ( internal_file_entry->compressed_data_header->compression_method == 10 )
+		  ||  ( internal_file_entry->compressed_data_header->compression_method == 12 ) ) )
 		{
-			if( libfshfs_data_stream_initialize(
-			     data_stream,
-			     internal_file_entry->io_handle,
-			     internal_file_entry->file_io_handle,
-			     internal_file_entry->file_system,
-			     internal_file_entry->identifier,
-			     fork_descriptor,
-			     LIBFSHFS_FORK_TYPE_RESOURCE,
-			     error ) != 1 )
+			result = 0;
+		}
+		else if( libfshfs_internal_file_entry_get_directory_entry(
+		          internal_file_entry,
+		          &directory_entry,
+		          error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve directory entry.",
+			 function );
+
+			result = -1;
+		}
+		else
+		{
+			result = libfshfs_directory_entry_get_resource_fork_descriptor(
+			          directory_entry,
+			          &fork_descriptor,
+			          error );
+
+			if( result == -1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create resource fork data stream.",
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve resource fork descriptor from directory entry.",
 				 function );
 
 				result = -1;
+			}
+			else if( result != 0 )
+			{
+				if( libfshfs_data_stream_initialize(
+				     data_stream,
+				     internal_file_entry->io_handle,
+				     internal_file_entry->file_io_handle,
+				     internal_file_entry->file_system,
+				     internal_file_entry->identifier,
+				     fork_descriptor,
+				     LIBFSHFS_FORK_TYPE_RESOURCE,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create resource fork data stream.",
+					 function );
+
+					result = -1;
+				}
 			}
 		}
 	}
@@ -5391,6 +5449,17 @@ int libfshfs_internal_file_entry_get_data_size(
 			}
 			else if( result != 0 )
 			{
+				if( data_fork_descriptor->size != 0 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+					 "%s: unsupported non-empty data fork.",
+					 function );
+
+					goto on_error;
+				}
 				data_size = internal_file_entry->compressed_data_header->uncompressed_data_size;
 			}
 			else
