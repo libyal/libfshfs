@@ -2436,14 +2436,10 @@ int libfshfs_file_entry_get_device_number(
 					*major_device_number = ( device_identifier >> 8 ) & 0x000000ffUL;
 					*minor_device_number = device_identifier & 0x000000ffUL;
 				}
-				else if( ( device_identifier & 0x00ffff00UL ) == 0 )
-				{
-					*major_device_number = ( device_identifier >> 24 ) & 0x000000ffUL;
-					*minor_device_number = device_identifier & 0x000000ffUL;
-				}
 				else
 				{
-					result = 0;
+					*major_device_number = ( device_identifier >> 24 ) & 0x000000ffUL;
+					*minor_device_number = device_identifier & 0x00ffffffUL;
 				}
 			}
 		}
