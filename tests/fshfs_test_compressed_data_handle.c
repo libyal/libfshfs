@@ -121,6 +121,8 @@ int fshfs_test_compressed_data_handle_initialize(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	result = libfshfs_compressed_data_handle_free(
 	          &compressed_data_handle,
 	          &error );
@@ -133,6 +135,27 @@ int fshfs_test_compressed_data_handle_initialize(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
+
+	FSHFS_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Initialize test
+	 */
+	result = libfshfs_allocation_block_stream_initialize_from_data(
+	          &compressed_allocation_block_stream,
+	          fshfs_test_compressed_data_handle_lzvn_chunk_compressed_data1,
+	          35,
+	          &error );
+
+	FSHFS_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	FSHFS_TEST_ASSERT_IS_NOT_NULL(
+	 "compressed_allocation_block_stream",
+	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -463,6 +486,8 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test regular cases
 	 */
 	result = libfshfs_compressed_data_handle_get_compressed_block_offsets(
@@ -493,23 +518,6 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -556,6 +564,8 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test regular cases
 	 */
 	result = libfshfs_compressed_data_handle_get_compressed_block_offsets(
@@ -586,23 +596,6 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -649,6 +642,8 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test regular cases
 	 */
 	result = libfshfs_compressed_data_handle_get_compressed_block_offsets(
@@ -679,23 +674,6 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -742,6 +720,8 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test error cases
 	 */
 	result = libfshfs_compressed_data_handle_get_compressed_block_offsets(
@@ -775,23 +755,6 @@ int fshfs_test_compressed_data_handle_get_compressed_block_offsets(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -878,6 +841,8 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test regular cases
 	 */
 	read_count = libfshfs_compressed_data_handle_read_segment_data(
@@ -924,23 +889,6 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -987,6 +935,8 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test regular cases
 	 */
 	read_count = libfshfs_compressed_data_handle_read_segment_data(
@@ -1033,23 +983,6 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
@@ -1096,6 +1029,8 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	 "error",
 	 error );
 
+	compressed_allocation_block_stream = NULL;
+
 	/* Test regular cases
 	 */
 	read_count = libfshfs_compressed_data_handle_read_segment_data(
@@ -1140,64 +1075,6 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	 1 );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_data_handle",
-	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Initialize test
-	 */
-	result = libfshfs_allocation_block_stream_initialize_from_data(
-	          &compressed_allocation_block_stream,
-	          fshfs_test_compressed_data_handle_lzvn_chunk_compressed_data1,
-	          35,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfshfs_compressed_data_handle_initialize(
-	          &compressed_data_handle,
-	          compressed_allocation_block_stream,
-	          16,
-	          LIBFSHFS_COMPRESSION_METHOD_LZVN,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NOT_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
 
@@ -1318,23 +1195,6 @@ int fshfs_test_compressed_data_handle_read_segment_data(
 	 "error",
 	 error );
 
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
 	return( 1 );
 
 on_error:
@@ -1410,6 +1270,8 @@ int fshfs_test_compressed_data_handle_seek_segment_offset(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+
+	compressed_allocation_block_stream = NULL;
 
 	/* Test regular cases
 	 */
@@ -1506,23 +1368,6 @@ int fshfs_test_compressed_data_handle_seek_segment_offset(
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "compressed_data_handle",
 	 compressed_data_handle );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libfdata_stream_free(
-	          &compressed_allocation_block_stream,
-	          &error );
-
-	FSHFS_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	FSHFS_TEST_ASSERT_IS_NULL(
-	 "compressed_allocation_block_stream",
-	 compressed_allocation_block_stream );
 
 	FSHFS_TEST_ASSERT_IS_NULL(
 	 "error",
